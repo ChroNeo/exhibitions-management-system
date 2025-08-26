@@ -1,0 +1,15 @@
+{
+  "name": "ems-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "start": "pnpm --filter @ems/backend start",
+    "lint": "pnpm -r lint",
+    "docker:up": "docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env up -d",
+    "docker:down": "docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env down",
+    "docker:logs": "docker compose -f infra/docker/docker-compose.yml logs -f",
+    "db:shell": "docker exec -it ems-mysql mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE"
+  }
+}

@@ -1,0 +1,16 @@
+# node / editor
+node_modules
+.pnpm-store
+.DS_Store
+.vscode
+
+
+# env
+.env
+**/.env
+infra/docker/.env
+
+
+# logs
+logs
+*.log
