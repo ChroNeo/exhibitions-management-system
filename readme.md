@@ -12,10 +12,10 @@
       pnpm run dev
 
       # รันเฉพาะ frontend
-      pnpm --filter @ems/frontend dev
+      pnpm run start:frontend
 
       # รันเฉพาะ backend
-      pnpm --filter @ems/backend dev
+      pnpm run start:backend
 
       # หยุด Docker (DB)
       pnpm run docker:down

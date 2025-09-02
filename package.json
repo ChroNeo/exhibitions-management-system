@@ -6,6 +6,8 @@
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "start": "pnpm --filter @ems/backend start",
+    "start:frontend": "pnpm --filter @ems/frontend dev",
+    "start:backend": "pnpm --filter @ems/backend dev",
     "lint": "pnpm -r lint",
     "docker:up": "docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env up -d",
     "docker:down": "docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env down",
