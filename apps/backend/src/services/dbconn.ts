@@ -14,20 +14,25 @@ export const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-export async function safeQuery(sql, params = []) {
+export async function safeQuery<T = any>(
+  sql: string,
+  params: any[] = []
+): Promise<T[]> {
   try {
-    const [rows] = await pool.query(sql, params);
-    return rows;
-  } catch (err) {
+    const [rows] = await pool.query(sql, params as any);
+    return rows as T[];
+  } catch (err: any) {
     // จัดหมวด error พื้นฐานจาก mysql2
-    const map = {
+    const map: Record<string, [number, string]> = {
       ER_DUP_ENTRY: [409, "DUPLICATE"],
       ER_NO_REFERENCED_ROW_2: [409, "FK_CONSTRAINT"],
       ER_BAD_FIELD_ERROR: [400, "BAD_FIELD"],
       ER_PARSE_ERROR: [400, "SQL_SYNTAX"],
     };
-    const picked = map[err.code] || [500, "DB_ERROR"];
-    const { AppError } = await import("./errors.js");
-    throw new AppError(err.message, picked[0], picked[1], { code: err.code });
+    const picked = map[err?.code] || [500, "DB_ERROR"];
+    const { AppError } = await import("../errors.js");
+    throw new AppError(err?.message ?? "DB error", picked[0], picked[1], {
+      code: err?.code,
+    });
   }
 }

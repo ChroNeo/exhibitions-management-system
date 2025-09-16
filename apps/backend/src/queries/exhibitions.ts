@@ -1,6 +1,7 @@
-import { AppError } from "../src/errors.js";
+import { AppError } from "../errors.js";
+import { safeQuery } from "../services/dbconn.js";
 
-export async function getExhibitionsList() {
+export async function getExhibitionsList(): Promise<any[]> {
   const rows = await safeQuery(`
     SELECT title, location, description, start_date, end_date
     FROM exhibitions
@@ -9,7 +10,7 @@ export async function getExhibitionsList() {
   return rows;
 }
 
-export async function getExhibitionById(id) {
+export async function getExhibitionById(id: string | number): Promise<any> {
   if (!/^\d+$/.test(String(id))) {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
   }
