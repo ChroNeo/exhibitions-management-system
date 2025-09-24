@@ -1,0 +1,12 @@
+.header {
+      display: flex;
+      flex: 1;
+      flex-direction: row;
+      font-size: xx-large;
+      padding: 10px;
+
+      .children {
+            color: blue;
+      }
+
+}
