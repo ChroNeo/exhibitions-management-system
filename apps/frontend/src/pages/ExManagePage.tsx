@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
-import PageHeader from '../components/Header/PageHeader';
-import ExhibitionList from '../components/exhibition/ExhibitionList';
-import AddInline from '../components/AddInline/AddInline';
-import { useExhibitions } from '../hook/useExhibitions';
-import type { Exhibition } from '../types/exhibition';
+import { useMemo, useState } from "react";
+import PageHeader from "../components/Header/PageHeader";
+import ExhibitionList from "../components/exhibition/ExhibitionList";
+import AddInline from "../components/AddInline/AddInline";
+import { useExhibitions } from "../hook/useExhibitions";
+import type { Exhibition } from "../types/exhibition";
+import { useNavigate } from "react-router-dom";
 
 /*
 const SAMPLE: Exhibition[] = [
@@ -42,37 +43,53 @@ export default function ExhibitionPage() {
 */
 
 export default function ExhibitionPage() {
-      const [query] = useState('');
-      const { data, isLoading, isError } = useExhibitions();
+  const [query] = useState("");
+  const { data, isLoading, isError } = useExhibitions();
+  const navigate = useNavigate();
+  const items: Exhibition[] = useMemo(() => data ?? [], [data]);
+  // const [items, setItems] = useState<Exhibition[]>(SAMPLE);
 
-      const items: Exhibition[] = useMemo(() => data ?? [], [data]);
-      // const [items, setItems] = useState<Exhibition[]>(SAMPLE);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((x) =>
+      [x.title, x.description, x.location].some((t) =>
+        (t || "").toLowerCase().includes(q)
+      )
+    );
+  }, [items, query]);
 
-      const filtered = useMemo(() => {
-            const q = query.trim().toLowerCase();
-            if (!q) return items;
-            return items.filter(x => [x.title, x.description, x.location].some(t => (t || '').toLowerCase().includes(q)));
-      }, [items, query]);
+  const handleAdd = () => {
+    navigate("/exhibitions/new");
+  };
 
-      const handleAdd = () => {
-            // TODO: integrate create exhibition API then call refetch()
-      };
+  const handleSelect = (id: string) => {
+    navigate(`/exhibitions/${id}`);
+  };
 
-      return (
-            <div>
-                  <PageHeader title="จัดการงานนิทรรศการ" />
-                  <div className="container">
-                        <div className="cardWrap">
-                              {isLoading && <div>Loading exhibitions...</div>}
-                              {isError && <div>Failed to load exhibitions</div>}
-                              {!isLoading && !isError && (
-                                    <>
-                                          <ExhibitionList items={filtered} />
-                                          <AddInline onClick={handleAdd} />
-                                    </>
-                              )}
-                        </div>
-                  </div>
-            </div>
-      );
+  const handleEdit = (id: string) => {
+    navigate(`/exhibitions/${id}/edit`);
+  };
+
+  return (
+    <div>
+      <PageHeader title="จัดการงานนิทรรศการ" />
+      <div className="container">
+        <div className="cardWrap">
+          {isLoading && <div>Loading exhibitions...</div>}
+          {isError && <div>Failed to load exhibitions</div>}
+          {!isLoading && !isError && (
+            <>
+              <ExhibitionList
+                items={filtered}
+                onSelect={handleSelect}
+                onEdit={handleEdit}
+              />
+              <AddInline onClick={handleAdd} />
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

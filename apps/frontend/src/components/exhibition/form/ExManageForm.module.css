@@ -1,0 +1,50 @@
+.ex_card {
+  background: #ffffff;
+  border: 2px solid #de6424;
+  border-radius: 14px;
+  padding: 20px;
+  margin: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.ex_label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.ex_group {
+  margin-bottom: 16px;
+}
+
+.ex_input,
+.ex_textarea {
+  width: 100%;
+  border: 1px solid #e3e6ea;
+  background: #f5f7f9;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.ex_input:focus,
+.ex_textarea:focus {
+  border-color: #c7571f;
+  background: #fff;
+}
+
+.ex_dates {
+  display: flex;
+  gap: 16px;
+}
+
+.ex_dates .ex_input {
+  flex: 1;
+}
+
+@media (max-width: 560px) {
+  .ex_dates {
+    flex-direction: column;
+  }
+}
