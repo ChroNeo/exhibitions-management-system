@@ -6,6 +6,8 @@ import swaggerUI from "@fastify/swagger-ui";
 import multipart from "@fastify/multipart";
 import exhibitionsController from "./controller/exhibitions-controller.js";
 import { safeQuery } from "./services/dbconn.js";
+import path from "node:path";
+import fastifyStatic from "@fastify/static";
 dotenv.config();
 
 const app = Fastify({ logger: true });
@@ -22,7 +24,11 @@ await app.register(multipart, {
     files: 1,
   },
 });
-
+app.register(fastifyStatic, {
+  root: path.join(process.cwd(), "uploads"),
+  prefix: "/uploads/", // URL base
+  decorateReply: false,
+});
 // Register Swagger
 await app.register(swagger, {
   openapi: {
