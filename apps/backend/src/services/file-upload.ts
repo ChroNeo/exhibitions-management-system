@@ -26,7 +26,10 @@ export async function saveMultipartFile(
   { targetDir, publicPrefix, fallbackName = "file" }: SaveMultipartFileOptions
 ): Promise<SavedMultipartFile> {
   await mkdir(targetDir, { recursive: true });
-  const filename = `${Date.now()}-${sanitizeFilename(part.filename ?? fallbackName)}`;
+  const originalName = sanitizeFilename(part.filename ?? fallbackName);
+  const extension = path.extname(originalName);
+  const timestamp = Date.now();
+  const filename = `EXP${timestamp}${extension}`;
   const absolutePath = path.join(targetDir, filename);
   await pipeline(part.file, createWriteStream(absolutePath));
 
@@ -63,3 +66,4 @@ export function sanitizeFilename(name: string): string {
 function normalizeToPosix(segment: string): string {
   return segment.replace(/\\/g, "/");
 }
+
