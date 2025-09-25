@@ -3,6 +3,7 @@ import {
   getExhibitionById,
   addExhibitions,
   updateExhibition,
+  deleteExhibition,
 } from "../queries/exhibitions_query.js";
 import {
   EXHIBITION_STATUSES,
@@ -59,6 +60,16 @@ export default async function exhibitionsRoutes(fastify: FastifyInstance) {
 
       const exhibition = await updateExhibition(req.params.id, payload);
       return exhibition;
+    }
+  );
+  fastify.delete(
+    "/:id",
+    async (
+      req: FastifyRequest<{ Params: { id: string } }>,
+      reply: FastifyReply
+    ) => {
+      await deleteExhibition(req.params.id);
+      reply.code(204).send();
     }
   );
 }

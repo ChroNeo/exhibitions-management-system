@@ -162,3 +162,18 @@ export async function updateExhibition(
 
   return updated;
 }
+
+export async function deleteExhibition(id: string | number): Promise<void> {
+  if (!/^\d+$/.test(String(id))) {
+    throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
+  }
+
+  const result = await safeQuery<ResultSetHeader>(
+    `DELETE FROM exhibitions WHERE exhibition_id = ?`,
+    [id]
+  );
+
+  if (!result.affectedRows) {
+    throw new AppError("exhibition not found", 404, "NOT_FOUND");
+  }
+}
