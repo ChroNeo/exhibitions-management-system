@@ -34,7 +34,7 @@ function mapToExhibition(x: ExhibitionApi): Exhibition {
     title: x.title,
     description: x.description ?? "",
     location: x.location ?? "",
-    coverUrl: toFileUrl(x.picture_path),
+    coverUrl: toFileUrl(x.picture_path),      // เพื่อรองรับ field ที่ backend ส่งมาเพิ่มในอนาคต
     dateText: fmtDateRangeTH(x.start_date, x.end_date),
     isPinned: false,
   };
@@ -107,6 +107,13 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
   return mapToExhibition(data);
 }
 
+export async function deleteExhibition(id: string): Promise<void> {
+  const res = await fetch(`${BASE}/exhibitions/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) throw new Error("ลบงานนิทรรศการไม่สำเร็จ");
+}
 export async function updateExhibitionApi(
   id: string,
   body: ExhibitionUpdatePayload,
@@ -163,5 +170,3 @@ export async function updateExhibitionApi(
   const data = await res.json();
   return mapToExhibition(data);
 }
-
-

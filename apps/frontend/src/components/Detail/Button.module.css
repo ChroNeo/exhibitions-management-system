@@ -1,0 +1,40 @@
+.btn {
+  min-width: 140px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* ปุ่มยืนยัน (เขียว) */
+.confirm {
+  background: #7dfb7d;
+  color: #0f172a;
+  border-color: #579457;
+}
+.confirm:hover {
+  filter: brightness(0.96);
+}
+
+/* ปุ่มยกเลิก (แดง) */
+.cancel {
+  background: #fff;
+  color: #ef4444;
+  border-color: #fecaca;
+}
+.cancel:hover {
+  background: #fff1f2;
+}

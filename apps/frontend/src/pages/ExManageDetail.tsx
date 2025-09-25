@@ -4,6 +4,7 @@ import PageHeader from "../components/PageHeader/PageHeader";
 import { useExhibition } from "../hook/useExhibition";
 import { useUpdateExhibition } from "../hook/useUpdateExhibition";
 import { useCreateExhibition } from "../hook/userCreateExhibition";
+import DetailActions from "../components/Detail/DetailActions";
 import type { Mode } from "../types/mode";
 import ExhibitionForm, {
   type ExhibitionFormValues,
@@ -23,8 +24,10 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { data, isLoading, isError } = useExhibition(id, {
     enabled: shouldFetch,
   });
-  const { mutateAsync: createExh, isPending: isCreating } = useCreateExhibition();
-  const { mutateAsync: updateExh, isPending: isUpdating } = useUpdateExhibition();
+  const { mutateAsync: createExh, isPending: isCreating } =
+    useCreateExhibition();
+  const { mutateAsync: updateExh, isPending: isUpdating } =
+    useUpdateExhibition();
   const isSaving = isCreating || isUpdating;
 
   const title =
@@ -41,7 +44,9 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
 
     const api = data as unknown as ExhibitionApi;
     const picturePath = api.picture_path ?? "";
-    const fileName = picturePath ? picturePath.split("/").pop() || picturePath : undefined;
+    const fileName = picturePath
+      ? picturePath.split("/").pop() || picturePath
+      : undefined;
 
     return {
       initialValues: {
@@ -100,13 +105,22 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       {isError && <div>ไม่พบข้อมูลนิทรรศการ</div>}
 
       {!isLoading && !isError && (
-        <ExhibitionForm
-          mode={mode}
-          initialValues={initialValues}
-          initialFileName={initialFileName}
-          readOnly={mode === "view"}
-          onSubmit={handleSubmit}
-        />
+        <>
+          <ExhibitionForm
+            mode={mode}
+            initialValues={initialValues}
+            initialFileName={initialFileName}
+            readOnly={mode === "view"}
+            onSubmit={handleSubmit}
+          />
+
+          {/* ปุ่มแก้ไข/ลบ */}
+          <DetailActions
+            show={mode === "view"}
+            onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
+            onDelete={() => alert("กดลบ (ยังไม่เชื่อม API)")} 
+          />
+        </>
       )}
 
       {isSaving && <div>กำลังบันทึก...</div>}
