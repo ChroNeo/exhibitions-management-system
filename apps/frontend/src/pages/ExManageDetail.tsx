@@ -94,7 +94,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         ...(file ? { file } : {}),
       });
       alert("เพิ่มนิทรรศการสำเร็จ");
-      navigate(`/exhibition/${res.id}`);
+      navigate(`/exhibitions/${res.id}`);
       return;
     }
 
