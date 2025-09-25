@@ -1,9 +1,15 @@
-﻿.ex_card {
+﻿/* root ของฟอร์ม (ไม่มีกรอบ) */
+.formRoot {
+  margin: 0 20px;
+}
+
+/* กรอบส้มครอบเฉพาะฟิลด์ */
+.ex_card {
   background: #ffffff;
   border: 2px solid #de6424;
   border-radius: 14px;
   padding: 20px;
-  margin: 20px;
+  margin: 20px 0 12px; /* เว้นด้านล่างให้ปุ่ม */
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
@@ -38,7 +44,6 @@
   display: flex;
   gap: 16px;
 }
-
 .ex_dates .ex_input {
   flex: 1;
 }
@@ -55,3 +60,9 @@
   color: #5b5e64;
 }
 
+/* ปุ่มอยู่นอกกรอบส้ม */
+.ex_actions {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 20px;
+}
