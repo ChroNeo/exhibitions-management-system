@@ -1,6 +1,7 @@
 ﻿// แปลงข้อมูล API -> UI type
 import type { Exhibition, ExhibitionApi } from "../types/exhibition";
 import { fmtDateRangeTH } from "../utils/date";
+import { toFileUrl } from "../utils/url";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
@@ -33,7 +34,7 @@ function mapToExhibition(x: ExhibitionApi): Exhibition {
     title: x.title,
     description: x.description ?? "",
     location: x.location ?? "",
-    coverUrl: x.picture_path ?? "",      // เพื่อรองรับ field ที่ backend ส่งมาเพิ่มในอนาคต
+    coverUrl: toFileUrl(x.picture_path),
     dateText: fmtDateRangeTH(x.start_date, x.end_date),
     isPinned: false,
   };
@@ -162,3 +163,5 @@ export async function updateExhibitionApi(
   const data = await res.json();
   return mapToExhibition(data);
 }
+
+

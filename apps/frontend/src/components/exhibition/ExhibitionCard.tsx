@@ -1,7 +1,10 @@
-import styles from "./ExhibitionCard.module.css";
+﻿import styles from "./ExhibitionCard.module.css";
 import { Edit2 } from "lucide-react";
 import type { KeyboardEvent } from "react";
 import type { Exhibition } from "./../../types/exhibition";
+import { toFileUrl } from "../../utils/url";
+
+const FALLBACK_POSTER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"%3E%3Crect width="120" height="120" rx="16" fill="%23E5E7EB"/%3E%3Cpath d="M30 82l18-22 14 16 10-12 18 20H30z" fill="%23CBD5F5"/%3E%3Ccircle cx="76" cy="44" r="10" fill="%239CA3AF"/%3E%3Ctext x="60" y="70" text-anchor="middle" font-size="10" fill="%236B7280"%3ENo Image%3C/text%3E%3C/svg%3E';
 
 export default function ExhibitionCard({
   item,
@@ -12,9 +15,7 @@ export default function ExhibitionCard({
   onEdit?: (id: string) => void;
   onSelect?: (id: string) => void;
 }) {
-  const handleCardClick = () => {
-    onSelect?.(item.id);
-  };
+  const handleCardClick = () => onSelect?.(item.id);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!onSelect) return;
@@ -24,6 +25,8 @@ export default function ExhibitionCard({
     }
   };
 
+  const coverSrc = toFileUrl(item.coverUrl) || FALLBACK_POSTER;
+
   return (
     <div
       className={styles.card}
@@ -31,33 +34,43 @@ export default function ExhibitionCard({
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
       onKeyDown={handleKeyDown}
+      aria-label={onSelect ? `เน€เธเธดเธ” ${item.title}` : undefined}
     >
       <div className={styles.inner}>
-        {item.coverUrl ? (
-          <img src={item.coverUrl} alt={item.title} className={styles.cover} />
-        ) : (
-          <div className={styles.cover} />
-        )}
+        <img
+          src={coverSrc}
+          alt={item.title}
+          className={styles.cover}
+          loading="lazy"
+          onError={(e) => {
+            if (e.currentTarget.src === FALLBACK_POSTER) return;
+            e.currentTarget.src = FALLBACK_POSTER;
+          }}
+        />
+
         <div>
           <h3 className={styles.title}>
             {item.title}
             {item.isPinned && (
               <span
+                aria-label="เธเธฑเธเธซเธกเธธเธ”"
                 style={{
+                  display: "inline-block",
                   width: 8,
                   height: 8,
+                  marginLeft: 6,
                   borderRadius: 999,
                   background: "#38bdf8",
                 }}
               />
             )}
           </h3>
-          {item.description && (
-            <p className={styles.desc}>{item.description}</p>
-          )}
+
+          {item.description && <p className={styles.desc}>{item.description}</p>}
           <p className={styles.meta}>{item.dateText}</p>
           <p className={styles.meta}>สถานที่ {item.location}</p>
         </div>
+
         <div>
           <button
             className={styles.editBtn}
@@ -66,6 +79,7 @@ export default function ExhibitionCard({
               onEdit?.(item.id);
             }}
             title="แก้ไข"
+            type="button"
           >
             <Edit2 size={16} /> แก้ไข
           </button>
