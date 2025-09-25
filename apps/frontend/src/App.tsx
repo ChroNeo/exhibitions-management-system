@@ -1,10 +1,21 @@
-import ExhibitionPage from './pages/ExManagePage';
+import { Route, Routes } from "react-router-dom";
+import ExhibitionPage from "./pages/ExManagePage";
+import ExManageDetail from "./pages/ExManageDetail";
 
 function App() {
   return (
-    <div>
-      <ExhibitionPage />
-    </div>
+    <Routes>
+      <Route path="/" element={<ExhibitionPage />} />
+      <Route
+        path="/exhibitions/new"
+        element={<ExManageDetail mode="create" />}
+      />
+      <Route path="/exhibitions/:id" element={<ExManageDetail mode="view" />} />
+      <Route
+        path="/exhibitions/:id/edit"
+        element={<ExManageDetail mode="edit" />}
+      />
+    </Routes>
   );
 }
 

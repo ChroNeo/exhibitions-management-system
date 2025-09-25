@@ -1,4 +1,5 @@
 .card {
+    cursor: pointer;
     background: #fff;
     border: 1px solid var(--cardBorder);
     border-radius: var(--radius-xl);
