@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader/PageHeader";
 import { useExhibition } from "../hook/useExhibition";
 import { useUpdateExhibition } from "../hook/useUpdateExhibition";
-import { useCreateExhibition } from "../hook/userCreateExhibition";
+import { useCreateExhibition } from "../hook/useCreateExhibition";
 import DetailActions from "../components/Detail/DetailActions";
 import type { Mode } from "../types/mode";
 import ExhibitionForm, {
