@@ -17,10 +17,10 @@ export const pool = mysql.createPool({
 export async function safeQuery<T = any>(
   sql: string,
   params: any[] = []
-): Promise<T[]> {
+): Promise<T> {
   try {
     const [rows] = await pool.query(sql, params as any);
-    return rows as T[];
+    return rows as T;
   } catch (err: any) {
     // จัดหมวด error พื้นฐานจาก mysql2
     const map: Record<string, [number, string]> = {

@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import dotenv from "dotenv";
 import swagger from "@fastify/swagger";
 import swaggerUI from "@fastify/swagger-ui";
+import multipart from "@fastify/multipart";
 import exhibitionsController from "./controller/exhibitions-controller.js";
 import { safeQuery } from "./services/dbconn.js";
 dotenv.config();
@@ -10,6 +11,13 @@ dotenv.config();
 const app = Fastify({ logger: true });
 
 await app.register(cors, { origin: true });
+await app.register(multipart, {
+  limits: {
+    fields: 20,
+    fileSize: 5 * 1024 * 1024,
+    files: 1,
+  },
+});
 
 // Register Swagger
 await app.register(swagger, {
@@ -32,7 +40,7 @@ await app.register(swaggerUI, {
 app.get("/health", async () => ({ ok: true }));
 
 app.get("/db/ping", async () => {
-  const rows = await safeQuery<{ ping: number }>("SELECT 1 AS ping");
+  const rows = await safeQuery<{ ping: number }[]>("SELECT 1 AS ping");
   return { db: "ok", result: rows[0] };
 });
 app.register(exhibitionsController, { prefix: "/api/v1/exhibitions" });
