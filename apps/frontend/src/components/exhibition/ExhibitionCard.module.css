@@ -1,0 +1,84 @@
+.card {
+    background: #fff;
+    border: 1px solid var(--cardBorder);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow)
+}
+
+.inner {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 12px;
+    padding: 14px;
+    align-items: center;
+}
+
+.cover {
+    width: 80px;
+    height: 80px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: #f3f4f6
+}
+
+.title {
+    font-weight: 700;
+    font-size: 16px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px
+}
+
+.desc {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 2px 0
+}
+
+.meta {
+    font-size: 13px;
+    color: #374151
+}
+
+.editBtn {
+    display: none
+}
+
+/* มือถือ (≤ ~640px): ซ่อนรูป + ปรับ grid */
+@media (max-width: 40em) {
+
+    /* 40em ≈ 640px เมื่อ root = 16px */
+    .cover {
+        display: none !important;
+    }
+
+    .inner {
+        grid-template-columns: 1fr auto;
+    }
+}
+
+/* จอใหญ่ (≥ 640px): แสดงรูป + ปุ่มแก้ไข */
+@media (min-width:640px) {
+    .inner {
+        grid-template-columns: 120px 1fr auto;
+        gap: 16px;
+        padding: 18px;
+    }
+
+    .cover {
+        width: 112px;
+        height: 112px;
+        /* display: block (ค่าเริ่มต้น) */
+    }
+
+    .editBtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #e5e7eb;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: #fff;
+    }
+}

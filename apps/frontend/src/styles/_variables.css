@@ -1,0 +1,9 @@
+:root {
+    --brand: #2E4F8B;
+    --cardBorder: #D46518;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --bg: #f8fafc;
+    --radius-xl: 16px;
+    --shadow: 0 6px 20px -12px rgba(0, 0, 0, .25);
+}

@@ -1,19 +1,11 @@
-import { Route, Routes } from 'react-router-dom';
-import './App.css'
-import ExhibitionManagementPage from './pages/ExManagePage';
-
+import ExhibitionPage from './pages/ExManagePage';
 
 function App() {
-  const x = 29;
-  console.log(x);
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<ExhibitionManagementPage />} />
-        {/* <Route path="/homepage" element{<HomePage/>}/> */}
-      </Routes>
-    </>
-  )
+    <div>
+      <ExhibitionPage />
+    </div>
+  );
 }
 
-export default App
+export default App;
