@@ -14,3 +14,18 @@ export function fmtDateRangeTH(startISO: string, endISO: string): string {
             opt
       )} ${y} | เวลา ${time(s)}–${time(e)} น.`;
 }
+export function toApiDateTime(value: string): string {
+      if (!value) return value;
+      const [datePart, timePartRaw] = value.split("T");
+      if (!datePart || !timePartRaw) return value;
+      const timePart = timePartRaw.length === 5 ? `${timePartRaw}:00` : timePartRaw;
+      return `${datePart} ${timePart}`;
+}
+export function toInputDateTime(value?: string | null): string {
+      if (!value) return "";
+      const separator = value.includes("T") ? "T" : " ";
+      const [datePart, timePartRaw] = value.split(separator);
+      if (!datePart || !timePartRaw) return "";
+      const timePart = timePartRaw.slice(0, 5);
+      return `${datePart}T${timePart}`;
+}

@@ -1,49 +1,164 @@
-// แปลงข้อมูลจาก API -> UI type
+﻿// แปลงข้อมูล API -> UI type
 import type { Exhibition, ExhibitionApi } from "../types/exhibition";
 import { fmtDateRangeTH } from "../utils/date";
+
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
+export type ExhibitionCreatePayload = {
+  title: string;
+  start_date: string;
+  end_date: string;
+  organizer_name: string;
+  created_by: number;
+  description?: string;
+  location?: string;
+  status?: string;
+  file?: File;
+};
+
+export type ExhibitionUpdatePayload = {
+  title?: string;
+  start_date?: string;
+  end_date?: string;
+  location?: string;
+  organizer_name?: string;
+  description?: string;
+  status?: string;
+  file?: File;
+};
 
 function mapToExhibition(x: ExhibitionApi): Exhibition {
-      return {
-            id: String(x.exhibition_id),
-            title: x.title,
-            description: x.description ?? "",
-            location: x.location ?? "",
-            coverUrl: x.picture_path ?? "",      // ถ้ายังไม่มีรูป ใช้ field นี้แทนไปก่อน
-            dateText: fmtDateRangeTH(x.start_date, x.end_date),
-            isPinned: false,
-      };
+  return {
+    id: String(x.exhibition_id),
+    title: x.title,
+    description: x.description ?? "",
+    location: x.location ?? "",
+    coverUrl: x.picture_path ?? "",      // เพื่อรองรับ field ที่ backend ส่งมาเพิ่มในอนาคต
+    dateText: fmtDateRangeTH(x.start_date, x.end_date),
+    isPinned: false,
+  };
 }
 
 export async function fetchExhibitions(): Promise<Exhibition[]> {
-      const res = await fetch(`${BASE}/exhibitions`);
-      if (!res.ok) throw new Error("โหลดรายการนิทรรศการล้มเหลว");
-      const data = await res.json();
-      return data.map(mapToExhibition);
+  const res = await fetch(`${BASE}/exhibitions`);
+  if (!res.ok) throw new Error("ดึงรายการนิทรรศการไม่สำเร็จ");
+  const data = await res.json();
+  return data.map(mapToExhibition);
 }
 
 export async function fetchExhibitionById(id: string | number) {
-      const res = await fetch(`${BASE}/exhibitions/${id}`);
-      if (!res.ok) throw new Error("โหลดนิทรรศการไม่สำเร็จ");
-      return res.json();
+  const res = await fetch(`${BASE}/exhibitions/${id}`);
+  if (!res.ok) throw new Error("ไม่พบข้อมูลนิทรรศการ");
+  return res.json();
 }
 
-export async function createExhibition(payload: {
-      title: string;
-      description?: string;
-      start_date: string; // "2025-11-01 09:00:00"
-      end_date: string;   // "2025-11-05 18:00:00"
-      location?: string;
-      organizer_name: string;
-      layout_url?: string;
-}): Promise<Exhibition> {
-      const res = await fetch(`${BASE}/exhibitions`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("เพิ่มนิทรรศการล้มเหลว");
-      const x = await res.json();
-      return mapToExhibition(x);
+export async function createExhibition(payload: ExhibitionCreatePayload): Promise<Exhibition> {
+  const endpoint = `${BASE}/exhibitions`;
+  const { file, ...rest } = payload;
+
+  if (file) {
+    const fd = new FormData();
+    const appendString = (key: string, value: string | undefined) => {
+      if (value === undefined) return;
+      fd.append(key, value);
+    };
+
+    appendString("title", rest.title);
+    appendString("start_date", rest.start_date);
+    appendString("end_date", rest.end_date);
+    appendString("location", rest.location);
+    appendString("organizer_name", rest.organizer_name);
+    appendString("description", rest.description);
+    appendString("status", rest.status);
+    appendString("created_by", String(rest.created_by));
+    fd.append("picture_path", file);
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      body: fd,
+    });
+
+    if (!res.ok) throw new Error("สร้างนิทรรศการไม่สำเร็จ");
+    const data = await res.json();
+    return mapToExhibition(data);
+  }
+
+  const jsonPayload: Record<string, unknown> = {
+    title: rest.title,
+    start_date: rest.start_date,
+    end_date: rest.end_date,
+    organizer_name: rest.organizer_name,
+    created_by: rest.created_by,
+  };
+
+  if (rest.location !== undefined) jsonPayload.location = rest.location;
+  if (rest.description !== undefined) jsonPayload.description = rest.description;
+  if (rest.status !== undefined) jsonPayload.status = rest.status;
+
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(jsonPayload),
+  });
+
+  if (!res.ok) throw new Error("สร้างนิทรรศการไม่สำเร็จ");
+  const data = await res.json();
+  return mapToExhibition(data);
+}
+
+export async function updateExhibitionApi(
+  id: string,
+  body: ExhibitionUpdatePayload,
+): Promise<Exhibition> {
+  const endpoint = `${BASE}/exhibitions/${id}`;
+  const { file, ...rest } = body;
+
+  if (file) {
+    const fd = new FormData();
+    const appendString = (key: string, value: string | undefined) => {
+      if (value === undefined) return;
+      fd.append(key, value);
+    };
+
+    appendString("title", rest.title);
+    appendString("start_date", rest.start_date);
+    appendString("end_date", rest.end_date);
+    appendString("location", rest.location);
+    appendString("organizer_name", rest.organizer_name);
+    appendString("description", rest.description);
+    appendString("status", rest.status);
+    fd.append("picture_path", file);
+
+    const res = await fetch(endpoint, {
+      method: "PUT",
+      body: fd,
+    });
+
+    if (!res.ok) throw new Error("อัปเดตนิทรรศการไม่สำเร็จ");
+    const data = await res.json();
+    return mapToExhibition(data);
+  }
+
+  const jsonPayload: Record<string, unknown> = {};
+  if (rest.title !== undefined) jsonPayload.title = rest.title;
+  if (rest.start_date !== undefined) jsonPayload.start_date = rest.start_date;
+  if (rest.end_date !== undefined) jsonPayload.end_date = rest.end_date;
+  if (rest.location !== undefined) jsonPayload.location = rest.location;
+  if (rest.organizer_name !== undefined) jsonPayload.organizer_name = rest.organizer_name;
+  if (rest.description !== undefined) jsonPayload.description = rest.description;
+  if (rest.status !== undefined) jsonPayload.status = rest.status;
+
+  if (!Object.keys(jsonPayload).length) {
+    throw new Error("ไม่มีข้อมูลสำหรับอัปเดต");
+  }
+
+  const res = await fetch(endpoint, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(jsonPayload),
+  });
+
+  if (!res.ok) throw new Error("อัปเดตนิทรรศการไม่สำเร็จ");
+  const data = await res.json();
+  return mapToExhibition(data);
 }

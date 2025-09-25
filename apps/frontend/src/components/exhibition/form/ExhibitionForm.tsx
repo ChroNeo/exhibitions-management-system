@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import styles from "./ExManageForm.module.css";
 
 export type ExhibitionFormValues = {
@@ -8,19 +8,21 @@ export type ExhibitionFormValues = {
   location: string;
   organizer_name: string;
   description: string;
-  file?: File | undefined; // รูป/ไฟล์โปสเตอร์
+  file?: File | undefined; // เธฃเธนเธ/เนเธเธฅเนเนเธเธชเน€เธ•เธญเธฃเน
 };
 
 type Props = {
   mode: "view" | "edit" | "create";
   initialValues?: ExhibitionFormValues;
-  readOnly?: boolean;                // โหมด view → true
+  initialFileName?: string;
+  readOnly?: boolean;                // เนเธซเธกเธ” view โ’ true
   onSubmit?: (v: ExhibitionFormValues) => Promise<void> | void;
 };
 
 export default function ExhibitionForm({
   mode,
   initialValues,
+  initialFileName,
   readOnly = false,
   onSubmit,
 }: Props) {
@@ -54,7 +56,13 @@ export default function ExhibitionForm({
   useEffect(() => console.log("form disabled:", disabled), [disabled]);
   const canSubmit = useMemo(() => mode === "edit" || mode === "create", [mode]);
 
-  const set = (k: keyof ExhibitionFormValues, v: any) =>
+  const displayedFileName = useMemo(() => {
+    if (values.file) return values.file.name;
+    if (initialFileName) return initialFileName;
+    return "ยังไม่ได้เลือกไฟล์";
+  }, [values.file, initialFileName]);
+
+  const set = (k: keyof ExhibitionFormValues, v: unknown) =>
     setValues((prev) => ({ ...prev, [k]: v }));
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +74,7 @@ export default function ExhibitionForm({
   return (
     <form className={`${styles.exd_containers} ${styles.ex_card}`} onSubmit={handleSubmit}>
       <div className={`${styles.ex_group} ${styles.ex_name}`}>
-        <label className={styles.ex_label}>ชื่อนิทรรศการ</label>
+        <label className={styles.ex_label}>ชื่อรายการนิทรรศการ</label>
         <input
           className={styles.ex_input}
           type="text"
@@ -78,7 +86,7 @@ export default function ExhibitionForm({
       </div>
 
       <div className={`${styles.ex_group} ${styles.ex_date}`}>
-        <label className={styles.ex_label}>วันที่</label>
+        <label className={styles.ex_label}>ช่วงเวลา</label>
         <div className={styles.ex_dates}>
           <input
             className={styles.ex_input}
@@ -98,7 +106,7 @@ export default function ExhibitionForm({
       </div>
 
       <div className={`${styles.ex_group} ${styles.ex_location}`}>
-        <label className={styles.ex_label}>สถานที่จัด</label>
+        <label className={styles.ex_label}>สถานที่จัดงาน</label>
         <input
           className={styles.ex_input}
           type="text"
@@ -110,21 +118,24 @@ export default function ExhibitionForm({
       </div>
 
       <div className={`${styles.ex_group} ${styles.ex_file}`}>
-        <label className={styles.ex_label}>แนบไฟล์ (ถ้ามี)</label>
+        <label className={styles.ex_label}>แผนผังไฟล์ (ถ้ามี)</label>
         <input
           className={styles.ex_input}
           type="file"
           onChange={(e) => set("file", e.target.files?.[0])}
           disabled={disabled}
         />
+        <p className={styles.ex_fileName} aria-live="polite">
+          {displayedFileName}
+        </p>
       </div>
 
       <div className={`${styles.ex_group} ${styles.ex_organizer}`}>
-        <label className={styles.ex_label}>ผู้รับผิดชอบ</label>
+        <label className={styles.ex_label}>ผู้จัดงาน</label>
         <input
           className={styles.ex_input}
           type="text"
-          placeholder="ชื่อผู้จัด/หน่วยงาน"
+          placeholder="ชื่อหน่วยงาน/บริษัท"
           value={values.organizer_name}
           onChange={(e) => set("organizer_name", e.target.value)}
           disabled={disabled}
@@ -136,7 +147,7 @@ export default function ExhibitionForm({
         <textarea
           className={styles.ex_textarea}
           rows={6}
-          placeholder="สรุปเนื้อหา กิจกรรม ไฮไลต์"
+          placeholder="รายละเอียดเพิ่มเติมของนิทรรศการ"
           value={values.description}
           onChange={(e) => set("description", e.target.value)}
           disabled={disabled}

@@ -1,4 +1,4 @@
-.ex_card {
+﻿.ex_card {
   background: #ffffff;
   border: 2px solid #de6424;
   border-radius: 14px;
@@ -48,3 +48,10 @@
     flex-direction: column;
   }
 }
+
+.ex_fileName {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #5b5e64;
+}
+

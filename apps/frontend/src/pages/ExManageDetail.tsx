@@ -1,13 +1,17 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader/PageHeader";
 import { useExhibition } from "../hook/useExhibition";
 import { useUpdateExhibition } from "../hook/useUpdateExhibition";
+import { useCreateExhibition } from "../hook/userCreateExhibition";
 import type { Mode } from "../types/mode";
 import ExhibitionForm, {
   type ExhibitionFormValues,
 } from "../components/exhibition/form/ExhibitionForm";
 import type { ExhibitionApi } from "../types/exhibition";
+import { toApiDateTime, toInputDateTime } from "../utils/date";
+
+const DEFAULT_CREATED_BY = 1;
 
 type ExManageDetailProps = { mode?: Mode };
 
@@ -15,68 +19,91 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // เรียก hooks "เสมอ" ห้ามมี early return ก่อนหน้านี้
   const shouldFetch = mode !== "create" && !!id;
   const { data, isLoading, isError } = useExhibition(id, {
     enabled: shouldFetch,
   });
-  const { mutateAsync: updateExh, isPending: isSaving } = useUpdateExhibition();
+  const { mutateAsync: createExh, isPending: isCreating } = useCreateExhibition();
+  const { mutateAsync: updateExh, isPending: isUpdating } = useUpdateExhibition();
+  const isSaving = isCreating || isUpdating;
 
-  // title ตามโหมด
   const title =
     mode === "create"
-      ? "เพิ่มงานนิทรรศการ"
+      ? "เพิ่มนิทรรศการ"
       : mode === "edit"
-      ? "แก้ไขงานนิทรรศการ"
-      : "รายละเอียดงานนิทรรศการ";
+      ? "แก้ไขนิทรรศการ"
+      : "รายละเอียดนิทรรศการ";
 
-  // map API -> Form values (เรียก useMemo เสมอ ปลอดภัย)
-  const initialValues: ExhibitionFormValues | undefined = useMemo(() => {
-    if (!data || mode === "create") return undefined;
+  const { initialValues, initialFileName } = useMemo(() => {
+    if (!data || mode === "create") {
+      return { initialValues: undefined, initialFileName: undefined };
+    }
+
     const api = data as unknown as ExhibitionApi;
+    const picturePath = api.picture_path ?? "";
+    const fileName = picturePath ? picturePath.split("/").pop() || picturePath : undefined;
+
     return {
-      title: api.title ?? "",
-      start_date: api.start_date ?? "",
-      end_date: api.end_date ?? "",
-      location: api.location ?? "",
-      organizer_name: api.organizer_name ?? "",
-      description: api.description ?? "",
-      file: undefined,
+      initialValues: {
+        title: api.title ?? "",
+        start_date: toInputDateTime(api.start_date),
+        end_date: toInputDateTime(api.end_date),
+        location: api.location ?? "",
+        organizer_name: api.organizer_name ?? "",
+        description: api.description ?? "",
+        file: undefined,
+      },
+      initialFileName: fileName,
     };
   }, [data, mode]);
 
-  // mock create 
-  async function createExhibition(payload: ExhibitionFormValues) {
-    console.log("CREATE payload:", payload);
-    return { id: "new-id" };
-  }
-
   const handleSubmit = async (v: ExhibitionFormValues) => {
+    const basePayload = {
+      title: v.title,
+      start_date: toApiDateTime(v.start_date),
+      end_date: toApiDateTime(v.end_date),
+      location: v.location,
+      organizer_name: v.organizer_name,
+      description: v.description,
+    };
+    const file = v.file ?? undefined;
+
     if (mode === "create") {
-      const res = await createExhibition(v);
-      alert("สร้างนิทรรศการสำเร็จ");
+      const res = await createExh({
+        ...basePayload,
+        created_by: DEFAULT_CREATED_BY,
+        ...(file ? { file } : {}),
+      });
+      alert("เพิ่มนิทรรศการสำเร็จ");
       navigate(`/exhibition/${res.id}`);
       return;
     }
+
     if (mode === "edit" && id) {
-      await updateExh({ id, payload: v });
+      await updateExh({
+        id,
+        payload: {
+          ...basePayload,
+          ...(file ? { file } : {}),
+        },
+      });
       alert("บันทึกการแก้ไขสำเร็จ");
       navigate(-1);
     }
   };
 
-  // เรนเดอร์ตามสถานะ (ไม่มี early return ก่อนเรียก hooks)
   return (
     <div>
       <PageHeader title={title} />
 
       {isLoading && <div>กำลังโหลด...</div>}
-      {isError && <div>โหลดข้อมูลไม่สำเร็จ</div>}
+      {isError && <div>ไม่พบข้อมูลนิทรรศการ</div>}
 
       {!isLoading && !isError && (
         <ExhibitionForm
           mode={mode}
           initialValues={initialValues}
+          initialFileName={initialFileName}
           readOnly={mode === "view"}
           onSubmit={handleSubmit}
         />
