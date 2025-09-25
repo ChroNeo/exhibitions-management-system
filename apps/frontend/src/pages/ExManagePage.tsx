@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import useMediaQuery from "../hook/useMediaQuery";
 
 // มือถือ
-import PageHeader from "../components/Mobile_Header/PageHeader";
+import PageHeader from "../components/PageHeader/PageHeader";
 import ExhibitionList from "../components/exhibition/ExhibitionList";
 import AddInline from "../components/AddInline/AddInline";
 

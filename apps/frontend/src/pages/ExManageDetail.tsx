@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import PageHeader from "../components/Mobile_Header/PageHeader";
+import PageHeader from "../components/PageHeader/PageHeader";
 import { useExhibition } from "../hook/useExhibition";
 import type { Mode } from "../types/mode";
 import ExhibitionForm from "../components/exhibition/form/ExhibitionForm";
