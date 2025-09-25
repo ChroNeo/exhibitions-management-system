@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import PageHeader from "../components/Mobile_Header/PageHeader";
+import PageHeader from "../components/PageHeader/PageHeader";
 import { useExhibition } from "../hook/useExhibition";
 import { useUpdateExhibition } from "../hook/useUpdateExhibition";
 import type { Mode } from "../types/mode";
