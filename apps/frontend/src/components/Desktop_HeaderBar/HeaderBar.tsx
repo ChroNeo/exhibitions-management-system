@@ -1,17 +1,20 @@
-import styles from './HeaderBar.module.css';
+import { useNavigate } from "react-router-dom";
+import styles from "./HeaderBar.module.css"; // ✅ import css module
 
 export default function HeaderBar({
-  active = 'exhibition',
+  active = "exhibition",
   onTab,
   onLoginClick,
 }: {
-  active?: 'exhibition' | 'activity' | 'summary';
+  active?: "exhibition" | "activity" | "summary";
   onTab?: (t: string) => void;
   onLoginClick?: () => void;
 }) {
+  const navigate = useNavigate();
+
   const Tab = ({ id, label }: { id: string; label: string }) => (
     <div
-      className={`${styles.tab} ${active === id ? styles.active : ''}`}
+      className={`${styles.tab} ${active === id ? styles.active : ""}`}
       onClick={() => onTab?.(id)}
     >
       {label}
@@ -30,7 +33,7 @@ export default function HeaderBar({
         <div className={styles.right}>
           <button
             className={styles.createBtn}
-            onClick={() => console.log('create exhibition')}
+            onClick={() => navigate("/exhibitions/new")}
           >
             + สร้างนิทรรศการ
           </button>

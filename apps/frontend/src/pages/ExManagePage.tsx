@@ -103,7 +103,7 @@ export default function ExhibitionPage() {
     );
   }
 
-  // 🖥️ เดสก์ท็อป
+  // เดสก์ท็อป
   return (
     <div>
       <HeaderBar
@@ -111,7 +111,11 @@ export default function ExhibitionPage() {
         onLoginClick={() => console.log("login")}
       />
       <Panel title="จัดการงานนิทรรศการ">
-        <ExhibitionList items={filtered} />
+        <ExhibitionList
+          items={filtered}
+          onSelect={handleSelect}
+          onEdit={handleEdit}
+        />
       </Panel>
     </div>
   );
