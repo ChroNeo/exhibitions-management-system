@@ -1,5 +1,5 @@
 .bar {
-  background: #274B87;
+  background: #274b87;
   color: #fff;
   border-radius: 0 0 16px 16px;
 }
@@ -14,7 +14,10 @@
   padding: 12px 20px;
 }
 
-.left { grid-area: left; font-weight: 700; }
+.left {
+  grid-area: left;
+  font-weight: 700;
+}
 
 .tabs {
   grid-area: tabs;
@@ -23,8 +26,15 @@
   justify-content: center;
 }
 
-.tab { cursor: pointer; padding: 8px 0; opacity: 0.9; }
-.active { border-bottom: 3px solid #fff; color: #fff; }
+.tab {
+  cursor: pointer;
+  padding: 8px 0;
+  opacity: 0.9;
+}
+.active {
+  border-bottom: 3px solid #fff;
+  color: #fff;
+}
 
 .right {
   grid-area: right;
@@ -37,19 +47,21 @@
   padding: 8px 12px;
   border-radius: 8px;
   background: #fff;
-  color: #274B87;
+  color: #274b87;
   font-weight: 600;
   border: none;
   cursor: pointer;
 }
-.createBtn:hover { background: #f0f3ff; }
+.createBtn:hover {
+  background: #f0f3ff;
+}
 
 .login {
   display: flex;
   align-items: center;
   gap: 8px;
   background: #1f3d72;
-  border: 1px solid rgba(255,255,255,.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 6px 12px;
   border-radius: 999px;
   cursor: pointer;
