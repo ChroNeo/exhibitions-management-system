@@ -3,7 +3,7 @@ import {
   getExhibitionById,
   addExhibitions,
   updateExhibition,
-} from "../queries/exhibitions.js";
+} from "../queries/exhibitions_query.js";
 import {
   EXHIBITION_STATUSES,
   type AddExhibitionPayload,
