@@ -1,4 +1,4 @@
-import { FaEdit } from "react-icons/fa";
+﻿import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import styles from "./DetailActions.module.css";
 
@@ -20,9 +20,14 @@ export default function DetailActions({
         <span>แก้ไข</span>
       </button>
 
-      <button className={`${styles.btn} ${styles.delete}`} onClick={onDelete}>
+      <button
+        type="button"
+        className={`${styles.btn} ${styles.delete}`}
+        onClick={onDelete}
+        disabled={!onDelete}
+      >
         <FiTrash2 className={styles.icon} />
-        <span>ลบ</span>
+        <span>ยกเลิก</span>
       </button>
     </div>
   );

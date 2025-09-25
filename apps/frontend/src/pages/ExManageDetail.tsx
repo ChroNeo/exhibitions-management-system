@@ -11,6 +11,7 @@ import ExhibitionForm, {
 } from "../components/exhibition/form/ExhibitionForm";
 import type { ExhibitionApi } from "../types/exhibition";
 import { toApiDateTime, toInputDateTime } from "../utils/date";
+import { useDeleteExhibition } from "../hook/useDeleteExhibition";
 
 const DEFAULT_CREATED_BY = 1;
 
@@ -19,6 +20,8 @@ type ExManageDetailProps = { mode?: Mode };
 export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } =
+    useDeleteExhibition();
 
   const shouldFetch = mode !== "create" && !!id;
   const { data, isLoading, isError } = useExhibition(id, {
@@ -61,7 +64,18 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       initialFileName: fileName,
     };
   }, [data, mode]);
-
+  const handleDelete = async () => {
+    if (!id) return;
+    if (!window.confirm("ยืนยันการลบงานนี้หรือไม่?")) return;
+    try {
+      await deleteExhibitionAsync(id);
+      alert("ลบนิทรรศการเรียบร้อย");
+      navigate("/exhibitions");
+    } catch (error) {
+      console.error("Failed to delete exhibition", error);
+      alert("ลบไม่สำเร็จ กรุณาลองใหม่");
+    }
+  };
   const handleSubmit = async (v: ExhibitionFormValues) => {
     const basePayload = {
       title: v.title,
@@ -118,12 +132,22 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
           <DetailActions
             show={mode === "view"}
             onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
-            onDelete={() => alert("กดลบ (ยังไม่เชื่อม API)")} 
+            onDelete={handleDelete}
           />
         </>
       )}
 
       {isSaving && <div>กำลังบันทึก...</div>}
+      {isDeleting && <div>กำลังลบ...</div>}
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

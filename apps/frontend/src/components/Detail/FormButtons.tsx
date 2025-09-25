@@ -1,4 +1,4 @@
-import { FaEdit } from "react-icons/fa";
+﻿import { FaEdit } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 import styles from "./Button.module.css";
 
@@ -17,13 +17,21 @@ export default function FormButtons({ onConfirm, onCancel }: Props) {
         marginTop: "20px",
       }}
     >
-      <button className={`${styles.btn} ${styles.confirm}`} onClick={onConfirm}>
+      <button
+        type="button"
+        className={`${styles.btn} ${styles.confirm}`}
+        onClick={onConfirm}
+      >
         <FaEdit className={styles.icon} />
-        ยืนยัน
+        ตกลง
       </button>
-      <button className={`${styles.btn} ${styles.cancel}`} onClick={onCancel}>
+      <button
+        type="button"
+        className={`${styles.btn} ${styles.cancel}`}
+        onClick={onCancel}
+      >
         <MdClose className={styles.icon} />
-        ยกเลิก
+        ลบ
       </button>
     </div>
   );

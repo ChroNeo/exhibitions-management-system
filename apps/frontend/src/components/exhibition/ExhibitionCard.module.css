@@ -1,4 +1,4 @@
-.card {
+﻿.card {
     cursor: pointer;
     background: #fff;
     border: 1px solid var(--cardBorder);
@@ -22,6 +22,15 @@
     background: #f3f4f6
 }
 
+.actions {
+    display: none;
+    gap: 8px;
+}
+
+.actionBtn {
+    display: none;
+}
+
 .title {
     font-weight: 700;
     font-size: 16px;
@@ -40,10 +49,6 @@
 .meta {
     font-size: 13px;
     color: #374151
-}
-
-.editBtn {
-    display: none
 }
 
 /* มือถือ (≤ ~640px): ซ่อนรูป + ปรับ grid */
@@ -70,10 +75,15 @@
     .cover {
         width: 112px;
         height: 112px;
-        /* display: block (ค่าเริ่มต้น) */
+        /* display: block (เธเนเธฒเน€เธฃเธดเนเธกเธ•เนเธ) */
     }
 
-    .editBtn {
+    .actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .actionBtn {
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -81,5 +91,21 @@
         padding: 8px 10px;
         border-radius: 10px;
         background: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        transition: background 0.2s ease;
+    }
+
+    .actionBtn:hover {
+        background: #f3f4f6;
+    }
+
+    .actionBtnDanger {
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    .actionBtnDanger:hover {
+        background: #fee2e2;
     }
 }

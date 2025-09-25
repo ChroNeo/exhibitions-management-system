@@ -1,6 +1,6 @@
 ﻿import styles from "./ExhibitionCard.module.css";
-import { Edit2 } from "lucide-react";
-import type { KeyboardEvent } from "react";
+import { Edit2, Trash2 } from "lucide-react";
+import type { KeyboardEvent, MouseEvent } from "react";
 import type { Exhibition } from "./../../types/exhibition";
 import { toFileUrl } from "../../utils/url";
 
@@ -9,10 +9,12 @@ const FALLBACK_POSTER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000
 export default function ExhibitionCard({
   item,
   onEdit,
+  onDelete,
   onSelect,
 }: {
   item: Exhibition;
   onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
   onSelect?: (id: string) => void;
 }) {
   const handleCardClick = () => onSelect?.(item.id);
@@ -27,6 +29,16 @@ export default function ExhibitionCard({
 
   const coverSrc = toFileUrl(item.coverUrl) || FALLBACK_POSTER;
 
+  const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onEdit?.(item.id);
+  };
+
+  const handleDeleteClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onDelete?.(item.id);
+  };
+
   return (
     <div
       className={styles.card}
@@ -34,7 +46,7 @@ export default function ExhibitionCard({
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
       onKeyDown={handleKeyDown}
-      aria-label={onSelect ? `เน€เธเธดเธ” ${item.title}` : undefined}
+      aria-label={onSelect ? `เปิดดู ${item.title}` : undefined}
     >
       <div className={styles.inner}>
         <img
@@ -53,7 +65,7 @@ export default function ExhibitionCard({
             {item.title}
             {item.isPinned && (
               <span
-                aria-label="เธเธฑเธเธซเธกเธธเธ”"
+                aria-label="ปักหมุด"
                 style={{
                   display: "inline-block",
                   width: 8,
@@ -68,21 +80,30 @@ export default function ExhibitionCard({
 
           {item.description && <p className={styles.desc}>{item.description}</p>}
           <p className={styles.meta}>{item.dateText}</p>
-          <p className={styles.meta}>สถานที่ {item.location}</p>
+          <p className={styles.meta}>สถานที่จัด {item.location}</p>
         </div>
 
-        <div>
-          <button
-            className={styles.editBtn}
-            onClick={(event) => {
-              event.stopPropagation();
-              onEdit?.(item.id);
-            }}
-            title="แก้ไข"
-            type="button"
-          >
-            <Edit2 size={16} /> แก้ไข
-          </button>
+        <div className={styles.actions}>
+          {onEdit && (
+            <button
+              className={styles.actionBtn}
+              onClick={handleEditClick}
+              title="แก้ไข"
+              type="button"
+            >
+              <Edit2 size={16} /> แก้ไข
+            </button>
+          )}
+          {onDelete && (
+            <button
+              className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+              onClick={handleDeleteClick}
+              title="ลบ"
+              type="button"
+            >
+              <Trash2 size={16} /> ลบ
+            </button>
+          )}
         </div>
       </div>
     </div>
