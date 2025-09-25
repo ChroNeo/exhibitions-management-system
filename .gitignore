@@ -14,3 +14,6 @@ infra/docker/.env
 # logs
 logs
 *.log
+
+# runtime uploads
+apps/backend/uploads/

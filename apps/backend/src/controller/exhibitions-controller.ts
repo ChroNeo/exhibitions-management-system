@@ -3,12 +3,9 @@ import type { AddExhibitionPayload } from "../models/exhibition.js";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { MultipartFile, MultipartValue } from "@fastify/multipart";
 import { AppError } from "../errors.js";
-import { createWriteStream } from "node:fs";
-import { mkdir } from "node:fs/promises";
-import { pipeline } from "node:stream/promises";
-import { Writable } from "node:stream";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { drainMultipartStream, saveMultipartFile } from "../services/file-upload.js";
 
 export default async function exhibitionsRoutes(fastify: FastifyInstance) {
   fastify.get("/", async () => {
@@ -50,9 +47,14 @@ async function parseMultipartPayload(req: FastifyRequest): Promise<AddExhibition
   for await (const part of req.parts()) {
     if (isFilePart(part)) {
       if (part.fieldname === "picture_path") {
-        savedPicturePath = await persistExhibitionFile(part);
+        const { publicPath } = await saveMultipartFile(part, {
+          targetDir: exhibitionsDir,
+          publicPrefix: "uploads/exhibitions",
+          fallbackName: "asset",
+        });
+        savedPicturePath = publicPath;
       } else {
-        await drainStream(part);
+        await drainMultipartStream(part);
       }
       continue;
     }
@@ -71,32 +73,6 @@ async function parseMultipartPayload(req: FastifyRequest): Promise<AddExhibition
 
 function isFilePart(part: MultipartFile | MultipartValue): part is MultipartFile {
   return (part as MultipartFile).type === "file";
-}
-
-async function persistExhibitionFile(part: MultipartFile): Promise<string> {
-  await mkdir(exhibitionsDir, { recursive: true });
-  const filename = `${Date.now()}-${sanitizeFilename(part.filename ?? "asset")}`;
-  const targetPath = path.join(exhibitionsDir, filename);
-  await pipeline(part.file, createWriteStream(targetPath));
-  return path.posix.join("uploads", "exhibitions", filename);
-}
-
-async function drainStream(part: MultipartFile) {
-  if (part.file.readableEnded) {
-    return;
-  }
-  await pipeline(
-    part.file,
-    new Writable({
-      write(_chunk, _encoding, callback) {
-        callback();
-      },
-    })
-  );
-}
-
-function sanitizeFilename(name: string): string {
-  return name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
 }
 
 function normalisePayload(fields: Record<string, string>): AddExhibitionPayload {
