@@ -3,7 +3,6 @@ import styles from "./HeaderBar.module.css"; // ✅ import css module
 
 export default function HeaderBar({
   active = "exhibition",
-  onTab,
   onLoginClick,
 }: {
   active?: "exhibition" | "activity" | "summary";
@@ -12,14 +11,23 @@ export default function HeaderBar({
 }) {
   const navigate = useNavigate();
 
-  const Tab = ({ id, label }: { id: string; label: string }) => (
-    <div
-      className={`${styles.tab} ${active === id ? styles.active : ""}`}
-      onClick={() => onTab?.(id)}
-    >
-      {label}
-    </div>
-  );
+  const Tab = ({ id, label }: { id: string; label: string }) => {
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+      if (id === "exhibition") navigate("/exhibitions");
+      if (id === "activity") navigate("/activities");
+    };
+
+    return (
+      <div
+        className={`${styles.tab} ${active === id ? styles.active : ""}`}
+        onClick={handleClick}
+      >
+        {label}
+      </div>
+    );
+  };
 
   return (
     <header className={styles.bar}>
