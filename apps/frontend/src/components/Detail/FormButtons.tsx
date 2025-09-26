@@ -31,7 +31,7 @@ export default function FormButtons({ onConfirm, onCancel }: Props) {
         onClick={onCancel}
       >
         <MdClose className={styles.icon} />
-        ลบ
+        ยกเลิก
       </button>
     </div>
   );
