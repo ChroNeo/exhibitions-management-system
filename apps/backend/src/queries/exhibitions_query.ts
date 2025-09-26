@@ -12,7 +12,7 @@ export async function getExhibitionsList(): Promise<any[]> {
   const rows = await safeQuery(`
     SELECT *
     FROM v_exhibitions
-    ORDER BY start_date ASC
+    ORDER BY exhibition_code DESC 
   `);
   return rows;
 }
