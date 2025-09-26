@@ -1,4 +1,8 @@
 export type Exhibition = {
+    picture_path: string | undefined;
+    organizer_name: string | undefined;
+    end_date: string | number | Date;
+    start_date: string | number | Date;
     id: string;
     title: string;
     description?: string;

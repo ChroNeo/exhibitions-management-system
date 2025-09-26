@@ -37,6 +37,10 @@ function mapToExhibition(x: ExhibitionApi): Exhibition {
     coverUrl: toFileUrl(x.picture_path),      // เพื่อรองรับ field ที่ backend ส่งมาเพิ่มในอนาคต
     dateText: fmtDateRangeTH(x.start_date, x.end_date),
     isPinned: false,
+    start_date: x.start_date,
+    end_date: x.end_date,
+    organizer_name: x.organizer_name ?? "",
+    picture_path:  x.picture_path ?? "",
   };
 }
 
