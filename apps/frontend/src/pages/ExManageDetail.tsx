@@ -13,6 +13,8 @@ import ExhibitionForm, {
 import type { ExhibitionApi } from "../types/exhibition";
 import { toApiDateTime, toInputDateTime } from "../utils/date";
 import { useDeleteExhibition } from "../hook/useDeleteExhibition";
+import useMediaQuery from "../hook/useMediaQuery";
+import HeaderBar from "../components/Desktop_HeaderBar/HeaderBar";
 
 const DEFAULT_CREATED_BY = 1;
 
@@ -20,6 +22,7 @@ type ExManageDetailProps = { mode?: Mode };
 
 export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { id } = useParams<{ id: string }>();
+  const isDesktop = useMediaQuery("(min-width: 900px)");
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
   const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } =
@@ -120,14 +123,56 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       navigate(`/exhibitions/${id}`);
     }
   };
+  if (!isDesktop) {
+    return (
+      <div>
+        <PageHeader title={title} />
+
+        {isLoading && <div>กำลังโหลด...</div>}
+        {isError && <div>ไม่พบข้อมูลนิทรรศการ</div>}
+
+        {!isLoading && !isError && (
+          <>
+            <ExhibitionForm
+              ref={formRef}
+              mode={mode}
+              initialValues={initialValues}
+              initialFileName={initialFileName}
+              readOnly={mode === "view"}
+              onSubmit={handleSubmit}
+              footer={mode === "edit" ? null : undefined}
+            />
+
+            {/* ปุ่มแก้ไข/ลบ */}
+            {mode === "edit" ? (
+              <FormButtons
+                onConfirm={() => formRef.current?.requestSubmit()}
+                onCancel={handleCancelEdit}
+              />
+            ) : (
+              <DetailActions
+                show={mode === "view"}
+                onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
+                onDelete={handleDelete}
+              />
+            )}
+          </>
+        )}
+
+        {isSaving && <div>กำลังบันทึก...</div>}
+        {isDeleting && <div>กำลังลบ...</div>}
+      </div>
+    );
+  }
 
   return (
     <div>
-      <PageHeader title={title} />
-
+      <HeaderBar
+        active="exhibition"
+        onLoginClick={() => console.log("login")}
+      />
       {isLoading && <div>กำลังโหลด...</div>}
       {isError && <div>ไม่พบข้อมูลนิทรรศการ</div>}
-
       {!isLoading && !isError && (
         <>
           <ExhibitionForm
@@ -155,9 +200,6 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
           )}
         </>
       )}
-
-      {isSaving && <div>กำลังบันทึก...</div>}
-      {isDeleting && <div>กำลังลบ...</div>}
     </div>
   );
 }
