@@ -87,9 +87,9 @@ export default function ExhibitionPage() {
       <Panel title="จัดการนิทรรศการ">
         <ExhibitionList
           items={filtered}
-          onSelect={handleSelect}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+            onSelect={handleSelect}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
         />
         {isDeleting && <div style={{ marginTop: 12 }}>กำลังลบ...</div>}
       </Panel>
