@@ -8,7 +8,9 @@ export default function PageHeader({ title }: { title: string }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const onSelect = (k: MenuKey) => console.log("mobile menu:", k);
-  const goBack = () => navigate(-1);
+  const goBack = () => {
+    navigate("/exhibitions");
+  };
 
   return (
     <div className={styles.header}>

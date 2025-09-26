@@ -1,10 +1,11 @@
-﻿import { useMemo } from "react";
+﻿import { useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader/PageHeader";
 import { useExhibition } from "../hook/useExhibition";
 import { useUpdateExhibition } from "../hook/useUpdateExhibition";
 import { useCreateExhibition } from "../hook/useCreateExhibition";
 import DetailActions from "../components/Detail/DetailActions";
+import FormButtons from "../components/Detail/FormButtons";
 import type { Mode } from "../types/mode";
 import ExhibitionForm, {
   type ExhibitionFormValues,
@@ -20,13 +21,15 @@ type ExManageDetailProps = { mode?: Mode };
 export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const formRef = useRef<HTMLFormElement | null>(null);
   const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } =
     useDeleteExhibition();
 
   const shouldFetch = mode !== "create" && !!id;
-  const { data, isLoading, isError } = useExhibition(id, {
+  const { data, isLoading, isError } = useExhibition(id ?? "", {
     enabled: shouldFetch,
   });
+
   const { mutateAsync: createExh, isPending: isCreating } =
     useCreateExhibition();
   const { mutateAsync: updateExh, isPending: isUpdating } =
@@ -76,6 +79,13 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       alert("ลบไม่สำเร็จ กรุณาลองใหม่");
     }
   };
+  const handleCancelEdit = () => {
+    if (id) {
+      navigate(`/exhibitions/${id}`);
+    } else {
+      navigate(-1);
+    }
+  };
   const handleSubmit = async (v: ExhibitionFormValues) => {
     const basePayload = {
       title: v.title,
@@ -107,7 +117,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         },
       });
       alert("บันทึกการแก้ไขสำเร็จ");
-      navigate(-1);
+      navigate(`/exhibitions/${id}`);
     }
   };
 
@@ -121,19 +131,28 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       {!isLoading && !isError && (
         <>
           <ExhibitionForm
+            ref={formRef}
             mode={mode}
             initialValues={initialValues}
             initialFileName={initialFileName}
             readOnly={mode === "view"}
             onSubmit={handleSubmit}
+            footer={mode === "edit" ? null : undefined}
           />
 
           {/* ปุ่มแก้ไข/ลบ */}
-          <DetailActions
-            show={mode === "view"}
-            onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
-            onDelete={handleDelete}
-          />
+          {mode === "edit" ? (
+            <FormButtons
+              onConfirm={() => formRef.current?.requestSubmit()}
+              onCancel={handleCancelEdit}
+            />
+          ) : (
+            <DetailActions
+              show={mode === "view"}
+              onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
+              onDelete={handleDelete}
+            />
+          )}
         </>
       )}
 
@@ -142,12 +161,3 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-

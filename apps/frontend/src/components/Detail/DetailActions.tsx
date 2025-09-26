@@ -27,7 +27,7 @@ export default function DetailActions({
         disabled={!onDelete}
       >
         <FiTrash2 className={styles.icon} />
-        <span>ยกเลิก</span>
+        <span>ลบ</span>
       </button>
     </div>
   );

@@ -1,4 +1,5 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { MutableRefObject, ReactNode } from "react";
 import styles from "./ExManageForm.module.css";
 import FormButtons from "../../Detail/FormButtons";
 import { useNavigate } from "react-router-dom";
@@ -19,16 +20,20 @@ type Props = {
   initialFileName?: string;
   readOnly?: boolean;
   onSubmit?: (v: ExhibitionFormValues) => Promise<void> | void;
-  footer?: React.ReactNode;
+  footer?: ReactNode;
 };
 
-export default function ExhibitionForm({
-  mode,
-  initialValues,
-  initialFileName,
-  readOnly = false,
-  onSubmit,
-}: Props) {
+const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionForm(
+  {
+    mode,
+    initialValues,
+    initialFileName,
+    readOnly = false,
+    onSubmit,
+    footer,
+  }: Props,
+  ref
+) {
   const [values, setValues] = useState<ExhibitionFormValues>({
     title: "",
     start_date: "",
@@ -76,9 +81,21 @@ export default function ExhibitionForm({
   // ใช้ ref เพื่อกด submit จากปุ่มยืนยัน
   const formRef = useRef<HTMLFormElement>(null);
   const navigate = useNavigate();
+  const setFormRef = useCallback(
+    (node: HTMLFormElement | null) => {
+      formRef.current = node;
+      if (!ref) return;
+      if (typeof ref === "function") {
+        ref(node);
+      } else {
+        (ref as MutableRefObject<HTMLFormElement | null>).current = node;
+      }
+    },
+    [ref]
+  );
 
   return (
-    <form ref={formRef} className={styles.formRoot} onSubmit={handleSubmit}>
+    <form ref={setFormRef} className={styles.formRoot} onSubmit={handleSubmit}>
       {/* กรอบส้มครอบเฉพาะฟิลด์ */}
       <div className={styles.ex_card}>
         <div className={`${styles.ex_group} ${styles.ex_name}`}>
@@ -126,7 +143,7 @@ export default function ExhibitionForm({
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_file}`}>
-          <label className={styles.ex_label}>ไฟล์แผนผัง (ถ้ามี)</label>
+          <label className={styles.ex_label}>ไฟล์รูปภาพ (ถ้ามี)</label>
           <input
             className={styles.ex_input}
             type="file"
@@ -166,12 +183,19 @@ export default function ExhibitionForm({
       {/* ปุ่มอยู่นอกกรอบส้ม */}
       {canSubmit && (
         <div className={styles.ex_actions}>
-          <FormButtons
-            onConfirm={() => formRef.current?.requestSubmit()}
-            onCancel={() => navigate(-1)}
-          />
+          {footer !== undefined ? (
+            footer
+          ) : (
+            <FormButtons
+              onConfirm={() => formRef.current?.requestSubmit()}
+              onCancel={() => navigate(-1)}
+            />
+          )}
         </div>
       )}
     </form>
   );
-}
+});
+
+export default ExhibitionForm;
+
