@@ -1,10 +1,10 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { AppError } from "../errors.js";
-import { getUnitsByExhibitionId, getUnitsById } from "../queries/units-query.js";
+import { addUnit, deleteUnit, getUnitsByExhibitionId, getUnitsById, updateUnit } from "../queries/units-query.js";
 import { collectMultipartFields } from "../services/file-upload.js";
-import { UNIT_TYPES, type AddUnitPayload, type UnitType } from "../models/unit_model.js";
+import { UNIT_TYPES, type AddUnitPayload, type UnitType, type UpdateUnitPayload } from "../models/unit_model.js";
 
 export default async function unitsController(fastify: FastifyInstance) {
   await fastify.register(
@@ -93,6 +93,7 @@ export default async function unitsController(fastify: FastifyInstance) {
       fastify.post(
         "/units",
         {
+          attachValidation: true,
           schema: {
             tags: ["Units"],
             summary: "Create unit",
@@ -105,18 +106,8 @@ export default async function unitsController(fastify: FastifyInstance) {
             },
             body: { $ref: "CreateUnitInput#" },
             response: {
-              200: {
-                type: "object",
-                allOf: [
-                  { $ref: "CreateUnitInput#" },
-                  {
-                    type: "object",
-                    properties: {
-                      exhibition_id: { type: "integer", example: 42 },
-                    },
-                    required: ["exhibition_id"],
-                  },
-                ],
+              201: {
+                $ref: "Unit#",
               },
             },
           },
@@ -125,13 +116,91 @@ export default async function unitsController(fastify: FastifyInstance) {
           req: FastifyRequest<{
             Params: { ex_id: string };
             Body: unknown;
-          }>
+          }>,
+          reply: FastifyReply
         ) => {
+          if (req.validationError && !req.isMultipart()) {
+            throw req.validationError;
+          }
           const payload = req.isMultipart()
             ? await parseMultipartPayload(req)
             : buildCreatePayload(req.params.ex_id, req.body);
 
-          return payload;
+          const unit = await addUnit(payload);
+          reply.code(201);
+          return unit;
+        }
+      );
+
+      fastify.put(
+        "/units/:id",
+        {
+          attachValidation: true,
+          schema: {
+            tags: ["Units"],
+            summary: "Update unit",
+            params: {
+              type: "object",
+              required: ["ex_id", "id"],
+              properties: {
+                ex_id: { type: "integer", minimum: 1, example: 42 },
+                id: { type: "integer", minimum: 1, example: 105 },
+              },
+            },
+            body: { $ref: "UpdateUnitInput#" },
+            response: {
+              200: {
+                $ref: "Unit#",
+              },
+            },
+          },
+        },
+        async (
+          req: FastifyRequest<{
+            Params: { ex_id: string; id: string };
+            Body: unknown;
+          }>,
+          reply: FastifyReply
+        ) => {
+          if (req.validationError && !req.isMultipart()) {
+            throw req.validationError;
+          }
+
+          const payload = req.isMultipart()
+            ? await parseMultipartUpdatePayload(req)
+            : buildUpdatePayload(req.body);
+
+          const unit = await updateUnit(req.params.ex_id, req.params.id, payload);
+          reply.code(200);
+          return unit;
+        }
+      );
+
+      fastify.delete(
+        "/units/:id",
+        {
+          schema: {
+            tags: ["Units"],
+            summary: "Delete unit",
+            params: {
+              type: "object",
+              required: ["ex_id", "id"],
+              properties: {
+                ex_id: { type: "integer", minimum: 1, example: 42 },
+                id: { type: "integer", minimum: 1, example: 105 },
+              },
+            },
+            response: {
+              204: {
+                type: "null",
+                description: "Unit deleted",
+              },
+            },
+          },
+        },
+        async (req: FastifyRequest<{ Params: { ex_id: string; id: string } }>, reply: FastifyReply) => {
+          await deleteUnit(req.params.ex_id, req.params.id);
+          reply.code(204);
         }
       );
     },
@@ -232,6 +301,126 @@ function buildCreatePayload(exhibitionIdParam: string, source: unknown): AddUnit
   const endsAt = getString("ends_at");
   if (endsAt !== undefined) {
     payload.ends_at = endsAt || null;
+  }
+
+  return payload;
+}
+
+
+
+async function parseMultipartUpdatePayload(
+  req: FastifyRequest<{ Params: { ex_id: string; id: string } }>
+): Promise<UpdateUnitPayload> {
+  const { fields, files } = await collectMultipartFields(req, {
+    fileFields: {
+      poster_url: {
+        save: {
+          targetDir: unitsDir,
+          publicPrefix: "uploads/units",
+          fallbackName: "poster",
+        },
+      },
+    },
+  });
+
+  const savedPosterPath = files.poster_url?.publicPath;
+  if (savedPosterPath) {
+    fields.poster_url = savedPosterPath;
+  }
+
+  return buildUpdatePayload(fields);
+}
+
+function buildUpdatePayload(source: unknown): UpdateUnitPayload {
+  if (!source || typeof source !== "object") {
+    throw new AppError("request body is required", 400, "VALIDATION_ERROR");
+  }
+
+  const fields = source as Record<string, unknown>;
+  const payload: UpdateUnitPayload = {};
+  let touched = 0;
+
+  const hasField = (key: string) => Object.prototype.hasOwnProperty.call(fields, key);
+
+  if (hasField("unit_name")) {
+    const raw = fields["unit_name"];
+    if (raw === null || raw === undefined) {
+      throw new AppError("unit_name cannot be null", 400, "VALIDATION_ERROR");
+    }
+    const value = (typeof raw === "string" ? raw : String(raw)).trim();
+    if (!value) {
+      throw new AppError("unit_name is required when provided", 400, "VALIDATION_ERROR");
+    }
+    payload.unit_name = value;
+    touched++;
+  }
+
+  if (hasField("unit_type")) {
+    const raw = fields["unit_type"];
+    if (raw === null || raw === undefined) {
+      throw new AppError("unit_type cannot be null", 400, "VALIDATION_ERROR");
+    }
+    const value = typeof raw === "string" ? raw : String(raw);
+    const normalised = value.trim().toLowerCase();
+    if (!normalised || !UNIT_TYPES.includes(normalised as UnitType)) {
+      throw new AppError("invalid unit_type", 400, "VALIDATION_ERROR");
+    }
+    payload.unit_type = normalised as UnitType;
+    touched++;
+  }
+
+  if (hasField("description")) {
+    const raw = fields["description"];
+    if (raw === null || raw === undefined) {
+      payload.description = null;
+    } else {
+      const value = typeof raw === "string" ? raw : String(raw);
+      payload.description = value ? value : null;
+    }
+    touched++;
+  }
+
+  if (hasField("staff_user_id")) {
+    const raw = fields["staff_user_id"];
+    if (raw === null || raw === undefined) {
+      payload.staff_user_id = null;
+    } else {
+      const value = typeof raw === "string" ? raw : String(raw);
+      if (!value) {
+        payload.staff_user_id = null;
+      } else {
+        const staffUserId = Number(value);
+        if (!Number.isInteger(staffUserId)) {
+          throw new AppError("staff_user_id must be an integer", 400, "VALIDATION_ERROR");
+        }
+        payload.staff_user_id = staffUserId;
+      }
+    }
+    touched++;
+  }
+
+  const setNullableString = (
+    key: keyof Pick<UpdateUnitPayload, "poster_url" | "starts_at" | "ends_at">
+  ) => {
+    if (!hasField(key)) {
+      return;
+    }
+    const raw = fields[key as string];
+    if (raw === null || raw === undefined) {
+      (payload as Record<string, unknown>)[key as string] = null;
+    } else {
+      const value = typeof raw === "string" ? raw : String(raw);
+      (payload as Record<string, unknown>)[key as string] = value ? value : null;
+    }
+    touched++;
+  };
+
+  setNullableString("poster_url");
+  setNullableString("starts_at");
+  setNullableString("ends_at");
+
+  if (!touched) {
+    throw new AppError("no fields to update", 400, "VALIDATION_ERROR");
   }
 
   return payload;

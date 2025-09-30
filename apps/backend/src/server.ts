@@ -177,6 +177,31 @@ app.addSchema({
     },
   ],
 });
+app.addSchema({
+  $id: "UpdateUnitInput",
+  type: "object",
+  properties: {
+    unit_name: { type: "string", example: "AI Playground" },
+    unit_type: { type: "string", enum: ["booth", "activity"], example: "activity" },
+    description: { type: ["string", "null"], example: "Hands-on AI demo area." },
+    staff_user_id: { type: ["integer", "null"], example: 13 },
+    poster_url: { type: ["string", "null"], example: "uploads/units/ai-playground.png" },
+    starts_at: { type: ["string", "null"], format: "date-time", example: "2024-05-02T10:00:00Z" },
+    ends_at: { type: ["string", "null"], format: "date-time", example: "2024-05-02T18:00:00Z" },
+  },
+  additionalProperties: false,
+  examples: [
+    {
+      unit_name: "AI Playground - Day 2",
+      unit_type: "activity",
+      description: "Updated stage schedule.",
+      staff_user_id: 99,
+      poster_url: "uploads/units/ai-playground-day2.png",
+      starts_at: "2024-05-02T10:00:00Z",
+      ends_at: "2024-05-02T18:00:00Z",
+    },
+  ],
+});
 
 await app.register(cors, {
   origin: true,
@@ -277,3 +302,4 @@ app.listen({ port }).then(() => {
   console.log(`API running on http://localhost:${port}`);
   console.log(`Swagger docs at http://localhost:${port}/docs`);
 });
+
