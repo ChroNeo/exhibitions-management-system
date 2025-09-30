@@ -1,59 +1,92 @@
+﻿import { useId, useRef } from "react";
+import { UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import styles from "./HeaderBar.module.css"; // ✅ import css module
+import styles from "./HeaderBar.module.css";
+
+type TabId = "exhibition" | "activity" | "summary";
+
+const TABS: Array<{ id: TabId; label: string }> = [
+  { id: "exhibition", label: "นิทรรศการ" },
+  { id: "activity", label: "กิจกรรม" },
+  { id: "summary", label: "สรุปข้อมูล" },
+];
 
 export default function HeaderBar({
   active = "exhibition",
   onLoginClick,
 }: {
-  active?: "exhibition" | "activity" | "summary";
-  onTab?: (t: string) => void;
+  active?: TabId;
   onLoginClick?: () => void;
 }) {
   const navigate = useNavigate();
+  const toggleRef = useRef<HTMLInputElement>(null);
+  const toggleId = useId().replace(/:/g, "-");
+  const navId = `${toggleId}-nav`;
 
-  const Tab = ({ id, label }: { id: string; label: string }) => {
-    const navigate = useNavigate();
+  const closeMenu = () => {
+    if (toggleRef.current?.checked) {
+      toggleRef.current.checked = false;
+    }
+  };
 
-    const handleClick = () => {
-      if (id === "exhibition") navigate("/exhibitions");
-      if (id === "activity") navigate("/activities");
-    };
+  const handleTabClick = (id: TabId) => {
+    if (id === "exhibition") {
+      navigate("/exhibitions");
+    }
 
-    return (
-      <div
-        className={`${styles.tab} ${active === id ? styles.active : ""}`}
-        onClick={handleClick}
-      >
-        {label}
-      </div>
-    );
+    if (id === "activity") {
+      navigate("/activities");
+    }
+
+    closeMenu();
+  };
+
+  const handleLoginClick = () => {
+    closeMenu();
+    onLoginClick?.();
   };
 
   return (
     <header className={styles.bar}>
       <div className={styles.row}>
+        <input
+          ref={toggleRef}
+          type="checkbox"
+          id={toggleId}
+          className={styles.toggle}
+          aria-label="Toggle navigation menu"
+          aria-controls={navId}
+        />
+        <label htmlFor={toggleId} className={styles.hamburger} aria-hidden="true">
+          <span className={styles.hamburgerBar} />
+          <span className={styles.hamburgerBar} />
+          <span className={styles.hamburgerBar} />
+        </label>
         <div className={styles.left}>Exhibition Management System</div>
-        <nav className={styles.tabs}>
-          <Tab id="exhibition" label="นิทรรศการ" />
-          <Tab id="activity" label="กิจกรรม" />
-          <Tab id="summary" label="สรุปข้อมูล" />
+        <nav className={styles.tabs} id={navId} aria-label="Main navigation">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`${styles.tab}${
+                active === tab.id ? ` ${styles.tabActive}` : ""
+              }`}
+              onClick={() => handleTabClick(tab.id)}
+              aria-current={active === tab.id ? "page" : undefined}
+            >
+              {tab.label}
+            </button>
+          ))}
         </nav>
         <div className={styles.right}>
           <button
-            className={styles.createBtn}
-            onClick={() => navigate("/exhibitions/new")}
-          >
-            + สร้างนิทรรศการ
-          </button>
-          <div
+            type="button"
             className={styles.login}
-            onClick={onLoginClick}
-            role="button"
-            tabIndex={0}
+            onClick={handleLoginClick}
+            aria-label="Account menu"
           >
-            <div className={styles.avatar} />
-            <span>Admin 01</span>
-          </div>
+            <UserCircle size={22} aria-hidden="true" />
+          </button>
         </div>
       </div>
     </header>

@@ -1,14 +1,11 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import HeaderBar from "../components/Desktop_HeaderBar/HeaderBar";
 import ExhibitionList from "../components/exhibition/ExhibitionList";
-import PageHeader from "../components/PageHeader/PageHeader";
-import useMediaQuery from "../hook/useMediaQuery";
 import { useExhibitions } from "../hook/useExhibitions";
 import type { Exhibition } from "../types/exhibition";
-import Panel from "../components/Panel/Panel";
+
 
 export default function ActManagePage() {
-  const isDesktop = useMediaQuery("(min-width: 900px)");
   const [query] = useState("");
 
   const { data, isLoading, isError } = useExhibitions();
@@ -23,30 +20,26 @@ export default function ActManagePage() {
       )
     );
   }, [items, query]);
-  if (!isDesktop) {
-    return (
-      <div>
-        <PageHeader title="จัดการกิจกรรม" />
-        <div className="container">
-          <div className="cardWrap">
-            {isLoading && <div>Loading exhibitions...</div>}
-            {isError && <div>Failed to load exhibitions</div>}
-            {!isLoading && !isError && (
-              <>
-                <ExhibitionList items={filtered} />
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
+
   return (
     <div>
-      <HeaderBar active="activity" />
-      <Panel title="จัดการนิทรรศการ">
-        <ExhibitionList items={filtered} />
-      </Panel>
+      <HeaderBar active="activity" onLoginClick={() => console.log("login")} />
+      <div className="container">
+        <div className="cardWrap">
+          {isLoading && <div>Loading activities...</div>}
+          {isError && <div>Failed to load activities</div>}
+          {!isLoading && !isError && <ExhibitionList items={filtered} />}
+        </div>
+      </div>
     </div>
   );
 }
+
+// return (
+//   <div>
+//     <HeaderBar active="activity" onLoginClick={() => console.log("login")} />
+//     <Panel title="จัดการกิจกรรม">
+//       <ExhibitionList items={filtered} />
+//     </Panel>
+//   </div>
+// );

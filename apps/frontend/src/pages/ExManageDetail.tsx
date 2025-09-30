@@ -1,10 +1,10 @@
 ﻿import { useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import PageHeader from "../components/PageHeader/PageHeader";
+
 import { useExhibition } from "../hook/useExhibition";
 import { useUpdateExhibition } from "../hook/useUpdateExhibition";
 import { useCreateExhibition } from "../hook/useCreateExhibition";
-import DetailActions from "../components/Detail/DetailActions";           // ✅ ใช้ปุ่มนอกการ์ด
+import DetailActions from "../components/Detail/DetailActions"; // ✅ ใช้ปุ่มนอกการ์ด
 import FormButtons from "../components/Detail/FormButtons";
 import type { Mode } from "../types/mode";
 import ExhibitionForm, {
@@ -17,6 +17,7 @@ import useMediaQuery from "../hook/useMediaQuery";
 import HeaderBar from "../components/Desktop_HeaderBar/HeaderBar";
 import ExhibitionDetailCard from "../components/exhibition/ExhibitionDetailCard";
 import { toFileUrl } from "../utils/url";
+import Panel from "../components/Panel/Panel";
 
 const DEFAULT_CREATED_BY = 1;
 
@@ -24,16 +25,20 @@ type ExManageDetailProps = { mode?: Mode };
 
 export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { id } = useParams<{ id: string }>();
-  const isDesktop = useMediaQuery("(min-width: 900px)");
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
 
   // hooks
-  const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } = useDeleteExhibition();
+  const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } =
+    useDeleteExhibition();
   const shouldFetch = mode !== "create" && !!id;
-  const { data, isLoading, isError } = useExhibition(id ?? "", { enabled: shouldFetch });
-  const { mutateAsync: createExh, isPending: isCreating } = useCreateExhibition();
-  const { mutateAsync: updateExh, isPending: isUpdating } = useUpdateExhibition();
+  const { data, isLoading, isError } = useExhibition(id ?? "", {
+    enabled: shouldFetch,
+  });
+  const { mutateAsync: createExh, isPending: isCreating } =
+    useCreateExhibition();
+  const { mutateAsync: updateExh, isPending: isUpdating } =
+    useUpdateExhibition();
   const isSaving = isCreating || isUpdating;
 
   const title =
@@ -50,7 +55,9 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     }
     const api = data as unknown as ExhibitionApi;
     const picturePath = api.picture_path ?? "";
-    const fileName = picturePath ? picturePath.split("/").pop() || picturePath : undefined;
+    const fileName = picturePath
+      ? picturePath.split("/").pop() || picturePath
+      : undefined;
 
     return {
       initialValues: {
@@ -119,31 +126,41 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     }
   };
 
-  // ------------------------ Render มือถือ
-  if (!isDesktop) {
-    return (
-      <div>
-        <PageHeader title={title} />
+  return (
+    <div>
+      <HeaderBar
+        active="exhibition"
+        onLoginClick={() => console.log("login")}
+      />
 
-        {isLoading && <div>กำลังโหลด...</div>}
-        {isError && <div>ไม่พบข้อมูลนิทรรศการ</div>}
+      {isLoading && <div>กำลังโหลด...</div>}
+      {isError && <div>ไม่พบข้อมูลนิทรรศการ</div>}
 
-        {!isLoading && !isError && (
-          <>
+      {!isLoading && !isError && (
+        <div className="container">
+          <Panel title={title}>
             {mode === "view" && data ? (
               <>
                 <ExhibitionDetailCard
                   title={data.title}
-                  startText={new Date(data.start_date).toLocaleDateString("th-TH")}
+                  startText={new Date(data.start_date).toLocaleDateString(
+                    "th-TH"
+                  )}
                   endText={new Date(data.end_date).toLocaleDateString("th-TH")}
-                  timeText={`${new Date(data.start_date).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} - ${new Date(data.end_date).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}`}
+                  timeText={`${new Date(data.start_date).toLocaleTimeString(
+                    "th-TH",
+                    { hour: "2-digit", minute: "2-digit" }
+                  )} - ${new Date(data.end_date).toLocaleTimeString("th-TH", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}`}
                   location={data.location}
                   organizer={data.organizer_name}
                   description={data.description}
-                  imageUrl={toFileUrl(data.picture_path || "")}   // ✅ กัน undefined
-                  // หากการ์ดมี prop showActions ให้ใส่ showActions={false}
+                  imageUrl={toFileUrl(data.picture_path || "")} // ✅ กัน undefined
+                  // showActions={false}
                 />
-                <DetailActions                                 // ✅ ปุ่มอยู่นอกการ์ด
+                <DetailActions // ✅ ปุ่มอยู่นอกการ์ด
                   show
                   onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
                   onDelete={handleDelete}
@@ -168,64 +185,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                 )}
               </>
             )}
-          </>
-        )}
-
-        {isSaving && <div>กำลังบันทึก...</div>}
-        {isDeleting && <div>กำลังลบ...</div>}
-      </div>
-    );
-  }
-
-  // ------------------------ Render เดสก์ท็อป
-  return (
-    <div>
-      <HeaderBar active="exhibition" onLoginClick={() => console.log("login")} />
-
-      {isLoading && <div>กำลังโหลด...</div>}
-      {isError && <div>ไม่พบข้อมูลนิทรรศการ</div>}
-
-      {!isLoading && !isError && (
-        <>
-          {mode === "view" && data ? (
-            <>
-              <ExhibitionDetailCard
-                title={data.title}
-                startText={new Date(data.start_date).toLocaleDateString("th-TH")}
-                endText={new Date(data.end_date).toLocaleDateString("th-TH")}
-                timeText={`${new Date(data.start_date).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} - ${new Date(data.end_date).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}`}
-                location={data.location}
-                organizer={data.organizer_name}
-                description={data.description}
-                imageUrl={toFileUrl(data.picture_path || "")}     // ✅ กัน undefined
-                // showActions={false}
-              />
-              <DetailActions                                   // ✅ ปุ่มอยู่นอกการ์ด
-                show
-                onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
-                onDelete={handleDelete}
-              />
-            </>
-          ) : (
-            <>
-              <ExhibitionForm
-                ref={formRef}
-                mode={mode}
-                initialValues={initialValues}
-                initialFileName={initialFileName}
-                readOnly={mode === "view"}
-                onSubmit={handleSubmit}
-                footer={mode === "edit" ? null : undefined}
-              />
-              {mode === "edit" && (
-                <FormButtons
-                  onConfirm={() => formRef.current?.requestSubmit()}
-                  onCancel={handleCancelEdit}
-                />
-              )}
-            </>
-          )}
-        </>
+          </Panel>
+        </div>
       )}
     </div>
   );

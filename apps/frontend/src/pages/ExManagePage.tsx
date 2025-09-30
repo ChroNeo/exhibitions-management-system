@@ -1,19 +1,16 @@
 ﻿import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useMediaQuery from "../hook/useMediaQuery";
 
-import PageHeader from "../components/PageHeader/PageHeader";
 import ExhibitionList from "../components/exhibition/ExhibitionList";
 import AddInline from "../components/AddInline/AddInline";
 import HeaderBar from "../components/Desktop_HeaderBar/HeaderBar";
-import Panel from "../components/Panel/Panel";
 
 import { useExhibitions } from "../hook/useExhibitions";
 import { useDeleteExhibition } from "../hook/useDeleteExhibition";
 import type { Exhibition } from "../types/exhibition";
+import Panel from "../components/Panel/Panel";
 
 export default function ExhibitionPage() {
-  const isDesktop = useMediaQuery("(min-width: 900px)");
   const [query] = useState("");
   const navigate = useNavigate();
 
@@ -55,11 +52,14 @@ export default function ExhibitionPage() {
     }
   };
 
-  if (!isDesktop) {
-    return (
-      <div>
-        <PageHeader title="จัดการนิทรรศการ" />
-        <div className="container">
+  return (
+    <div>
+      <HeaderBar
+        active="exhibition"
+        onLoginClick={() => console.log("login")}
+      />
+      <div className="container">
+        <Panel title="หน้าจัดการงานนิทรรศการ">
           <div className="cardWrap">
             {isLoading && <div>Loading exhibitions...</div>}
             {isError && <div>Failed to load exhibitions</div>}
@@ -76,23 +76,23 @@ export default function ExhibitionPage() {
             )}
             {isDeleting && <div>กำลังลบ...</div>}
           </div>
-        </div>
+        </Panel>
       </div>
-    );
-  }
-
-  return (
-    <div>
-      <HeaderBar active="exhibition" onLoginClick={() => console.log("login")} />
-      <Panel title="จัดการนิทรรศการ">
-        <ExhibitionList
-          items={filtered}
-            onSelect={handleSelect}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-        />
-        {isDeleting && <div style={{ marginTop: 12 }}>กำลังลบ...</div>}
-      </Panel>
     </div>
   );
 }
+
+// return (
+//   <div>
+
+//     <Panel title="จัดการนิทรรศการ">
+//       <ExhibitionList
+//         items={filtered}
+//           onSelect={handleSelect}
+//           onEdit={handleEdit}
+//           onDelete={handleDelete}
+//       />
+//       {isDeleting && <div style={{ marginTop: 12 }}>กำลังลบ...</div>}
+//     </Panel>
+//   </div>
+// );
