@@ -11,6 +11,39 @@ export default async function unitsController(fastify: FastifyInstance) {
     async (fastify) => {
       fastify.get(
         "/units",
+        {
+          schema: {
+            tags: ["Units"],
+            summary: "List units by exhibition",
+            params: {
+              type: "object",
+              required: ["ex_id"],
+              properties: {
+                ex_id: { type: "integer", minimum: 1, example: 42 },
+              },
+            },
+            response: {
+              200: {
+                type: "array",
+                items: { $ref: "Unit#" },
+                example: [
+                  {
+                    unit_id: 105,
+                    exhibition_id: 42,
+                    unit_code: "U-05",
+                    unit_name: "AI Playground",
+                    unit_type: "booth",
+                    description: "Interactive demos of AI gadgets.",
+                    staff_user_id: 13,
+                    poster_url: "uploads/units/ai-playground.png",
+                    starts_at: "2024-05-01T10:00:00Z",
+                    ends_at: "2024-05-01T18:00:00Z",
+                  },
+                ],
+              },
+            },
+          },
+        },
         async (req: FastifyRequest<{ Params: { ex_id: string } }>) => {
           return await getUnitsByExhibitionId(req.params.ex_id);
         }
@@ -18,6 +51,40 @@ export default async function unitsController(fastify: FastifyInstance) {
 
       fastify.get(
         "/units/:id",
+        {
+          schema: {
+            tags: ["Units"],
+            summary: "Get unit",
+            params: {
+              type: "object",
+              required: ["ex_id", "id"],
+              properties: {
+                ex_id: { type: "integer", minimum: 1, example: 42 },
+                id: { type: "integer", minimum: 1, example: 105 },
+              },
+            },
+            response: {
+              200: {
+                type: "array",
+                items: { $ref: "Unit#" },
+                example: [
+                  {
+                    unit_id: 105,
+                    exhibition_id: 42,
+                    unit_code: "U-05",
+                    unit_name: "AI Playground",
+                    unit_type: "booth",
+                    description: "Interactive demos of AI gadgets.",
+                    staff_user_id: 13,
+                    poster_url: "uploads/units/ai-playground.png",
+                    starts_at: "2024-05-01T10:00:00Z",
+                    ends_at: "2024-05-01T18:00:00Z",
+                  },
+                ],
+              },
+            },
+          },
+        },
         async (req: FastifyRequest<{ Params: { ex_id: string; id: string } }>) => {
           return await getUnitsById(req.params.ex_id, req.params.id);
         }
@@ -25,6 +92,35 @@ export default async function unitsController(fastify: FastifyInstance) {
 
       fastify.post(
         "/units",
+        {
+          schema: {
+            tags: ["Units"],
+            summary: "Create unit",
+            params: {
+              type: "object",
+              required: ["ex_id"],
+              properties: {
+                ex_id: { type: "integer", minimum: 1, example: 42 },
+              },
+            },
+            body: { $ref: "CreateUnitInput#" },
+            response: {
+              200: {
+                type: "object",
+                allOf: [
+                  { $ref: "CreateUnitInput#" },
+                  {
+                    type: "object",
+                    properties: {
+                      exhibition_id: { type: "integer", example: 42 },
+                    },
+                    required: ["exhibition_id"],
+                  },
+                ],
+              },
+            },
+          },
+        },
         async (
           req: FastifyRequest<{
             Params: { ex_id: string };
