@@ -8,6 +8,7 @@ import exhibitionsController from "./controller/exhibitions-controller.js";
 import { safeQuery } from "./services/dbconn.js";
 import path from "node:path";
 import fastifyStatic from "@fastify/static";
+import unitsController from "./controller/units-controller.js";
 dotenv.config();
 
 const app = Fastify({ logger: true });
@@ -54,7 +55,7 @@ app.get("/db/ping", async () => {
   return { db: "ok", result: rows[0] };
 });
 app.register(exhibitionsController, { prefix: "/api/v1/exhibitions" });
-
+app.register(unitsController, { prefix: "/api/v1/exhibitions" });
 const port = Number(process.env.PORT || 3001);
 app.listen({ port }).then(() => {
   console.log(`API running on http://localhost:${port}`);

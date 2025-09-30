@@ -18,7 +18,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { drainMultipartStream, saveMultipartFile } from "../services/file-upload.js";
 
-export default async function exhibitionsRoutes(fastify: FastifyInstance) {
+export default async function exhibitionsController(fastify: FastifyInstance) {
   fastify.get("/", async () => {
     return await getExhibitionsList();
   });
