@@ -1,5 +1,5 @@
 ﻿import { useMemo, useState } from "react";
-import HeaderBar from "../components/Desktop_HeaderBar/HeaderBar";
+import HeaderBar from "../components/HeaderBar/HeaderBar";
 import ExhibitionList from "../components/exhibition/ExhibitionList";
 import { useExhibitions } from "../hook/useExhibitions";
 import type { Exhibition } from "../types/exhibition";

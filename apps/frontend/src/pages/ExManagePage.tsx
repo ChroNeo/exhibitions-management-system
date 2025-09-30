@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import ExhibitionList from "../components/exhibition/ExhibitionList";
 import AddInline from "../components/AddInline/AddInline";
-import HeaderBar from "../components/Desktop_HeaderBar/HeaderBar";
+import HeaderBar from "../components/HeaderBar/HeaderBar";
 
 import { useExhibitions } from "../hook/useExhibitions";
 import { useDeleteExhibition } from "../hook/useDeleteExhibition";

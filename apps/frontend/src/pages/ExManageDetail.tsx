@@ -14,7 +14,7 @@ import type { ExhibitionApi } from "../types/exhibition";
 import { toApiDateTime, toInputDateTime } from "../utils/date";
 import { useDeleteExhibition } from "../hook/useDeleteExhibition";
 import useMediaQuery from "../hook/useMediaQuery";
-import HeaderBar from "../components/Desktop_HeaderBar/HeaderBar";
+import HeaderBar from "../components/HeaderBar/HeaderBar";
 import ExhibitionDetailCard from "../components/exhibition/ExhibitionDetailCard";
 import { toFileUrl } from "../utils/url";
 import Panel from "../components/Panel/Panel";
