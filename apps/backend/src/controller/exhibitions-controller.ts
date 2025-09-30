@@ -12,11 +12,10 @@ import {
   type ExhibitionStatus,
 } from "../models/exhibition_model.js";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import type { MultipartFile, MultipartValue } from "@fastify/multipart";
 import { AppError } from "../errors.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { drainMultipartStream, saveMultipartFile } from "../services/file-upload.js";
+import { collectMultipartFields } from "../services/file-upload.js";
 
 export default async function exhibitionsController(fastify: FastifyInstance) {
   fastify.get("/", async () => {
@@ -90,29 +89,19 @@ async function parseMultipartPayload(
   req: FastifyRequest,
   mode: "create" | "update" = "create"
 ): Promise<AddExhibitionPayload | UpdateExhibitionPayload> {
-  const fields: Record<string, string> = {};
-  let savedPicturePath: string | undefined;
-
-  for await (const part of req.parts()) {
-    if (isFilePart(part)) {
-      if (part.fieldname === "picture_path") {
-        const { publicPath } = await saveMultipartFile(part, {
+  const { fields, files } = await collectMultipartFields(req, {
+    fileFields: {
+      picture_path: {
+        save: {
           targetDir: exhibitionsDir,
           publicPrefix: "uploads/exhibitions",
           fallbackName: "asset",
-        });
-        savedPicturePath = publicPath;
-      } else {
-        await drainMultipartStream(part);
-      }
-      continue;
-    }
+        },
+      },
+    },
+  });
 
-    const rawValue = part.value;
-    const value = typeof rawValue === "string" ? rawValue : String(rawValue ?? "");
-    fields[part.fieldname] = value;
-  }
-
+  const savedPicturePath = files.picture_path?.publicPath;
   if (savedPicturePath) {
     fields.picture_path = savedPicturePath;
   }
@@ -120,10 +109,6 @@ async function parseMultipartPayload(
   return mode === "create"
     ? normaliseCreatePayload(fields)
     : buildUpdatePayload(fields);
-}
-
-function isFilePart(part: MultipartFile | MultipartValue): part is MultipartFile {
-  return (part as MultipartFile).type === "file";
 }
 
 function normaliseCreatePayload(fields: Record<string, string>): AddExhibitionPayload {
