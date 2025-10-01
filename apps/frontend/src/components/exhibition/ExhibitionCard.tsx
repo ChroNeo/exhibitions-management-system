@@ -1,6 +1,9 @@
-﻿import styles from "./ExhibitionCard.module.css";
+import styles from "./ExhibitionCard.module.css";
 import { Edit2, Trash2 } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
+import { MdOutlineCalendarToday } from "react-icons/md";
+import { LuClock } from "react-icons/lu";
+import { IoLocationOutline } from "react-icons/io5";
 import type { Exhibition } from "./../../types/exhibition";
 import { toFileUrl } from "../../utils/url";
 
@@ -28,6 +31,10 @@ export default function ExhibitionCard({
   };
 
   const coverSrc = toFileUrl(item.coverUrl) || FALLBACK_POSTER;
+  const [datePart, timePart] = item.dateText
+    .split("|")
+    .map((part) => part.trim());
+  const hasActions = Boolean(onEdit || onDelete);
 
   const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -60,51 +67,62 @@ export default function ExhibitionCard({
           }}
         />
 
-        <div>
-          <h3 className={styles.title}>
-            {item.title}
-            {item.isPinned && (
-              <span
-                aria-label="ปักหมุด"
-                style={{
-                  display: "inline-block",
-                  width: 8,
-                  height: 8,
-                  marginLeft: 6,
-                  borderRadius: 999,
-                  background: "#38bdf8",
-                }}
-              />
+        <div className={styles.content}>
+          <div className={styles.titleRow}>
+            <h3 className={styles.title}>{item.title}</h3>
+            {item.isPinned && <span className={styles.pin} aria-label="ปักหมุด" />}
+          </div>
+
+          <div className={styles.metaGroup}>
+            {datePart && (
+              <div className={styles.metaRow}>
+                <MdOutlineCalendarToday className={styles.metaIcon} />
+                <span>{datePart}</span>
+              </div>
             )}
-          </h3>
+
+            {timePart && (
+              <div className={styles.metaRow}>
+                <LuClock className={styles.metaIcon} />
+                <span>{timePart}</span>
+              </div>
+            )}
+
+            {item.location && (
+              <div className={styles.metaRow}>
+                <IoLocationOutline className={styles.metaIcon} />
+                <span>{item.location}</span>
+              </div>
+            )}
+          </div>
 
           {item.description && <p className={styles.desc}>{item.description}</p>}
-          <p className={styles.meta}>{item.dateText}</p>
-          <p className={styles.meta}>สถานที่จัด {item.location}</p>
         </div>
 
-        <div className={styles.actions}>
-          {onEdit && (
-            <button
-              className={styles.actionBtn}
-              onClick={handleEditClick}
-              title="แก้ไข"
-              type="button"
-            >
-              <Edit2 size={16} /> แก้ไข
-            </button>
-          )}
-          {onDelete && (
-            <button
-              className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
-              onClick={handleDeleteClick}
-              title="ลบ"
-              type="button"
-            >
-              <Trash2 size={16} /> ลบ
-            </button>
-          )}
-        </div>
+        {hasActions && (
+          <div className={styles.actions}>
+            {onEdit && (
+              <button
+                className={styles.actionBtn}
+                onClick={handleEditClick}
+                title="แก้ไข"
+                type="button"
+              >
+                <Edit2 size={16} /> แก้ไข
+              </button>
+            )}
+            {onDelete && (
+              <button
+                className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                onClick={handleDeleteClick}
+                title="ลบ"
+                type="button"
+              >
+                <Trash2 size={16} /> ลบ
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
