@@ -3,7 +3,8 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { Writable } from "node:stream";
-import type { MultipartFile } from "@fastify/multipart";
+import type { MultipartFile, MultipartValue } from "@fastify/multipart";
+import type { FastifyRequest } from "fastify";
 
 export interface SaveMultipartFileOptions {
   /** Absolute directory where the file should be stored */
@@ -65,5 +66,53 @@ export function sanitizeFilename(name: string): string {
 
 function normalizeToPosix(segment: string): string {
   return segment.replace(/\\/g, "/");
+}
+
+export interface CollectMultipartFieldsOptions {
+  fileFields?: Record<string, MultipartFileHandler>;
+  drainUnknownFiles?: boolean;
+}
+
+export interface CollectedMultipartFields {
+  fields: Record<string, string>;
+  files: Record<string, SavedMultipartFile | undefined>;
+}
+
+export interface MultipartFileHandler {
+  save?: SaveMultipartFileOptions;
+  onFilePart?: (part: MultipartFile) => Promise<void> | void;
+  drain?: boolean;
+}
+
+export async function collectMultipartFields(
+  req: FastifyRequest,
+  { fileFields = {}, drainUnknownFiles = true }: CollectMultipartFieldsOptions = {}
+): Promise<CollectedMultipartFields> {
+  const fields: Record<string, string> = {};
+  const files: Record<string, SavedMultipartFile | undefined> = {};
+
+  for await (const part of req.parts()) {
+    if (isFilePart(part)) {
+      const handler = fileFields[part.fieldname];
+      if (handler?.save) {
+        files[part.fieldname] = await saveMultipartFile(part, handler.save);
+      } else if (handler?.onFilePart) {
+        await handler.onFilePart(part);
+      } else if (handler?.drain ?? drainUnknownFiles) {
+        await drainMultipartStream(part);
+      }
+      continue;
+    }
+
+    const rawValue = part.value;
+    const value = typeof rawValue === "string" ? rawValue : String(rawValue ?? "");
+    fields[part.fieldname] = value;
+  }
+
+  return { fields, files };
+}
+
+export function isFilePart(part: MultipartFile | MultipartValue): part is MultipartFile {
+  return (part as MultipartFile).type === "file";
 }
 
