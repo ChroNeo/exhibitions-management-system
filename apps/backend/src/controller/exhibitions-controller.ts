@@ -82,7 +82,7 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
       schema: {
         tags: ["Exhibitions"],
         summary: "Create exhibition",
-        body: { $ref: "CreateExhibitionInput#" },
+        body: { anyOf: [{ $ref: "CreateExhibitionInput#" }, { type: "null" }] },
         response: {
           201: {
             $ref: "Exhibition#",
@@ -118,7 +118,7 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
             id: { type: "integer", minimum: 1, example: 42 },
           },
         },
-        body: { $ref: "UpdateExhibitionInput#" },
+        body: { anyOf: [{ $ref: "UpdateExhibitionInput#" }, { type: "null" }] },
         response: {
           200: {
             $ref: "Exhibition#",
@@ -342,3 +342,4 @@ function buildUpdatePayload(source: unknown): UpdateExhibitionPayload {
 
   return payload;
 }
+
