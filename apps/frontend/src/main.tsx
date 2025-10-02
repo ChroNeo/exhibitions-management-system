@@ -5,6 +5,7 @@ import App from './App';
 import './index.css';
 import './styles/_variables.css';
 import './styles/globals.css';
+import 'sweetalert2/dist/sweetalert2.min.css';
 import { BrowserRouter } from 'react-router-dom';
 
 const queryClient = new QueryClient();
