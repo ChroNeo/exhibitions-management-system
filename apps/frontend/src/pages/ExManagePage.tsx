@@ -9,6 +9,7 @@ import { useExhibitions } from "../hook/useExhibitions";
 import { useDeleteExhibition } from "../hook/useDeleteExhibition";
 import type { Exhibition } from "../types/exhibition";
 import Panel from "../components/Panel/Panel";
+import Swal from "sweetalert2";
 
 export default function ExhibitionPage() {
   const [query] = useState("");
@@ -42,13 +43,32 @@ export default function ExhibitionPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("ยืนยันการลบงานนี้หรือไม่?")) return;
+    const confirmResult = await Swal.fire({
+      title: "ยืนยันการลบงานนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!confirmResult.isConfirmed) return;
+
     try {
       await deleteExhibitionAsync(id);
-      alert("ลบนิทรรศการเรียบร้อย");
+      await Swal.fire({
+        title: "ลบนิทรรศการเรียบร้อย",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
     } catch (error) {
       console.error("Failed to delete exhibition", error);
-      alert("ลบไม่สำเร็จ กรุณาลองใหม่");
+      await Swal.fire({
+        title: "ลบไม่สำเร็จ กรุณาลองใหม่",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
     }
   };
 

@@ -1,10 +1,10 @@
-﻿import { useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useExhibition } from "../hook/useExhibition";
 import { useUpdateExhibition } from "../hook/useUpdateExhibition";
 import { useCreateExhibition } from "../hook/useCreateExhibition";
-import DetailActions from "../components/Detail/DetailActions"; // ✅ ใช้ปุ่มนอกการ์ด
+import DetailActions from "../components/Detail/DetailActions";
 import FormButtons from "../components/Detail/FormButtons";
 import type { Mode } from "../types/mode";
 import ExhibitionForm, {
@@ -13,11 +13,11 @@ import ExhibitionForm, {
 import type { ExhibitionApi } from "../types/exhibition";
 import { toApiDateTime, toInputDateTime } from "../utils/date";
 import { useDeleteExhibition } from "../hook/useDeleteExhibition";
-import useMediaQuery from "../hook/useMediaQuery";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import ExhibitionDetailCard from "../components/exhibition/ExhibitionDetailCard";
 import { toFileUrl } from "../utils/url";
 import Panel from "../components/Panel/Panel";
+import Swal from "sweetalert2";
 
 const DEFAULT_CREATED_BY = 1;
 
@@ -29,17 +29,13 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
 
   // hooks
-  const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } =
-    useDeleteExhibition();
+  const { mutateAsync: deleteExhibitionAsync } = useDeleteExhibition();
   const shouldFetch = mode !== "create" && !!id;
   const { data, isLoading, isError } = useExhibition(id ?? "", {
     enabled: shouldFetch,
   });
-  const { mutateAsync: createExh, isPending: isCreating } =
-    useCreateExhibition();
-  const { mutateAsync: updateExh, isPending: isUpdating } =
-    useUpdateExhibition();
-  const isSaving = isCreating || isUpdating;
+  const { mutateAsync: createExh } = useCreateExhibition();
+  const { mutateAsync: updateExh } = useUpdateExhibition();
 
   const title =
     mode === "create"
@@ -48,7 +44,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       ? "แก้ไขนิทรรศการ"
       : "รายละเอียดนิทรรศการ";
 
-  // เตรียมค่าเริ่มต้นของฟอร์ม
+  // ค่าตั้งต้นของแบบฟอร์ม
   const { initialValues, initialFileName } = useMemo(() => {
     if (!data || mode === "create") {
       return { initialValues: undefined, initialFileName: undefined };
@@ -76,14 +72,34 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   // ลบ
   const handleDelete = async () => {
     if (!id) return;
-    if (!window.confirm("ยืนยันการลบงานนี้หรือไม่?")) return;
+
+    const confirmResult = await Swal.fire({
+      title: "ยืนยันการลบงานนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!confirmResult.isConfirmed) return;
+
     try {
       await deleteExhibitionAsync(id);
-      alert("ลบนิทรรศการเรียบร้อย");
+      await Swal.fire({
+        title: "ลบนิทรรศการเรียบร้อย",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
       navigate("/exhibitions");
     } catch (error) {
       console.error("Failed to delete exhibition", error);
-      alert("ลบไม่สำเร็จ กรุณาลองใหม่");
+      await Swal.fire({
+        title: "ลบไม่สำเร็จ กรุณาลองใหม่",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
     }
   };
 
@@ -111,7 +127,11 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         created_by: DEFAULT_CREATED_BY,
         ...(file ? { file } : {}),
       });
-      alert("เพิ่มนิทรรศการสำเร็จ");
+      await Swal.fire({
+        title: "เพิ่มนิทรรศการสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
       navigate(`/exhibitions/${res.id}`);
       return;
     }
@@ -121,7 +141,11 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         id,
         payload: { ...basePayload, ...(file ? { file } : {}) },
       });
-      alert("บันทึกการแก้ไขสำเร็จ");
+      await Swal.fire({
+        title: "บันทึกการแก้ไขสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
       navigate(`/exhibitions/${id}`);
     }
   };
@@ -134,7 +158,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       />
 
       {isLoading && <div>กำลังโหลด...</div>}
-      {isError && <div>ไม่พบข้อมูลนิทรรศการ</div>}
+      {isError && <div>ไม่สามารถโหลดนิทรรศการได้</div>}
 
       {!isLoading && !isError && (
         <div className="container">
@@ -149,7 +173,10 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                   endText={new Date(data.end_date).toLocaleDateString("th-TH")}
                   timeText={`${new Date(data.start_date).toLocaleTimeString(
                     "th-TH",
-                    { hour: "2-digit", minute: "2-digit" }
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }
                   )} - ${new Date(data.end_date).toLocaleTimeString("th-TH", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -157,10 +184,9 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                   location={data.location}
                   organizer={data.organizer_name}
                   description={data.description}
-                  imageUrl={toFileUrl(data.picture_path || "")} // ✅ กัน undefined
-                  // showActions={false}
+                  imageUrl={toFileUrl(data.picture_path || "")}
                 />
-                <DetailActions // ✅ ปุ่มอยู่นอกการ์ด
+                <DetailActions
                   show
                   onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
                   onDelete={handleDelete}
