@@ -1,4 +1,11 @@
-﻿import { useId, useRef } from "react";
+﻿import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "./HeaderBar.module.css";
@@ -19,9 +26,55 @@ export default function HeaderBar({
   onLoginClick?: () => void;
 }) {
   const navigate = useNavigate();
+  const navRef = useRef<HTMLElement | null>(null);
   const toggleRef = useRef<HTMLInputElement>(null);
   const toggleId = useId().replace(/:/g, "-");
   const navId = `${toggleId}-nav`;
+  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    exhibition: null,
+    activity: null,
+    summary: null,
+  });
+  const indicatorTargetRef = useRef<TabId>(active);
+  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
+
+  const updateIndicator = useCallback(
+    (tabId: TabId) => {
+      indicatorTargetRef.current = tabId;
+      const navEl = navRef.current;
+      const tabEl = tabRefs.current[tabId];
+
+      if (!navEl || !tabEl) {
+        setIndicatorStyle({ width: 0, left: 0 });
+        return;
+      }
+
+      const navRect = navEl.getBoundingClientRect();
+      const tabRect = tabEl.getBoundingClientRect();
+
+      setIndicatorStyle({
+        width: tabRect.width,
+        left: tabRect.left - navRect.left,
+      });
+    },
+    []
+  );
+
+  useLayoutEffect(() => {
+    updateIndicator(active);
+  }, [active, updateIndicator]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      updateIndicator(indicatorTargetRef.current);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [updateIndicator]);
 
   const closeMenu = () => {
     if (toggleRef.current?.checked) {
@@ -63,7 +116,22 @@ export default function HeaderBar({
           <span className={styles.hamburgerBar} />
         </label>
         <div className={styles.left}>Exhibition Management System</div>
-        <nav className={styles.tabs} id={navId} aria-label="Main navigation">
+        <nav
+          ref={navRef}
+          className={styles.tabs}
+          id={navId}
+          aria-label="Main navigation"
+          onMouseLeave={() => updateIndicator(active)}
+        >
+          <span
+            className={styles.tabIndicator}
+            style={{
+              width: `${indicatorStyle.width}px`,
+              transform: `translateX(${indicatorStyle.left}px)`,
+              opacity: indicatorStyle.width ? 1 : 0,
+            }}
+            aria-hidden="true"
+          />
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -72,7 +140,18 @@ export default function HeaderBar({
                 active === tab.id ? ` ${styles.tabActive}` : ""
               }`}
               onClick={() => handleTabClick(tab.id)}
+              onMouseEnter={() => updateIndicator(tab.id)}
+              onFocus={() => updateIndicator(tab.id)}
+              onBlur={(event) => {
+                const next = event.relatedTarget as Element | null;
+                if (!next || !event.currentTarget.parentElement?.contains(next)) {
+                  updateIndicator(active);
+                }
+              }}
               aria-current={active === tab.id ? "page" : undefined}
+              ref={(node) => {
+                tabRefs.current[tab.id] = node;
+              }}
             >
               {tab.label}
             </button>
