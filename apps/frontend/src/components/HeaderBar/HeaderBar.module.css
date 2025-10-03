@@ -1,8 +1,8 @@
 ﻿.bar {
-  background: #274b87;
+  background: #224177;
   color: #fff;
   border-radius: 0 0 16px 16px;
-
+  box-shadow: var(--shadow-s);
 }
 
 .row {
@@ -29,6 +29,7 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  padding-bottom: 6px;
 }
 
 .tab {
@@ -39,7 +40,7 @@
   cursor: pointer;
   padding: 8px 0;
   opacity: 0.9;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
 
 .tab:hover,
@@ -49,9 +50,21 @@
 }
 
 .tabActive {
-  border-bottom: 3px solid #fff;
   color: #fff;
   opacity: 1;
+  font-weight: 600;
+}
+
+.tabIndicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: #fff;
+  transform: translateX(0);
+  transition: transform 0.3s ease, width 0.3s ease, opacity 0.2s ease;
+  pointer-events: none;
 }
 
 .right {
@@ -116,7 +129,7 @@
 }
 
 .hamburgerBar+.hamburgerBar {
-  margin-top: 5px;
+  margin-top: var(--margin-xxs);
 }
 
 @media (max-width: 899px) {
@@ -163,6 +176,10 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease, padding 0.3s ease;
+  }
+
+  .tabIndicator {
+    display: none;
   }
 
   .tab {
