@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+﻿import { useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useExhibition } from "../hook/useExhibition";
@@ -162,7 +162,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
 
       {!isLoading && !isError && (
         <div className="container">
-          <Panel title={title}>
+          <Panel title={title} onBack={() => navigate("/exhibitions")}>
             {mode === "view" && data ? (
               <>
                 <ExhibitionDetailCard

@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import ExhibitionPage from "./pages/ExManagePage";
 import ExManageDetail from "./pages/ExManageDetail";
-import ActManagePage from "./pages/ActManagePage";
+import ActManagePage from "./pages/UnitManagePage";
 
 function App() {
   return (

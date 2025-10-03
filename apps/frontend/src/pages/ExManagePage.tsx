@@ -8,7 +8,7 @@ import HeaderBar from "../components/HeaderBar/HeaderBar";
 import { useExhibitions } from "../hook/useExhibitions";
 import { useDeleteExhibition } from "../hook/useDeleteExhibition";
 import type { Exhibition } from "../types/exhibition";
-import Panel from "../components/Panel/Panel";
+import styles from "./ExManagePage.module.css";
 import Swal from "sweetalert2";
 
 export default function ExhibitionPage() {
@@ -79,7 +79,10 @@ export default function ExhibitionPage() {
         onLoginClick={() => console.log("login")}
       />
       <div className="container">
-        <Panel title="หน้าจัดการงานนิทรรศการ">
+        <section className={styles.panel}>
+          <div className={styles.header}>
+            <h2 className={styles.title}>จัดการนิทรรศการ</h2>
+          </div>
           <div className="cardWrap">
             {isLoading && <div>Loading exhibitions...</div>}
             {isError && <div>Failed to load exhibitions</div>}
@@ -96,7 +99,7 @@ export default function ExhibitionPage() {
             )}
             {isDeleting && <div>กำลังลบ...</div>}
           </div>
-        </Panel>
+        </section>
       </div>
     </div>
   );
