@@ -5,5 +5,31 @@
     --muted: #6b7280;
     --bg: #f8fafc;
     --radius-xl: 16px;
-    --shadow: 0 6px 20px -12px rgba(0, 0, 0, .25);
+    --margin-xxs: 0.25rem;
+    --margin-xs: 0.5rem;
+    --margin-s: 0.75rem;
+    --margin-m: 1rem;
+    --margin-l: 1.25rem;
+    --margin-xl: 1.75rem;
+    --margin-xxl: 2.5rem;
+
+    /* shadows */
+    --shadow-s: inset 0 1px 2px #ffffff30,
+        /* top highlight */
+        0 1px 2px #00000030,
+        /* dark shadow */
+        0 2px 4px #00000015;
+    /* soft shadow */
+    --shadow-m: inset 0 1px 2px #ffffff50,
+        /* top highlight */
+        0 2px 4px #00000030,
+        /* dark shadow */
+        0 4px 8px #00000015;
+    /* soft shadow */
+    --shadow-l: inset 0 1px 2px #ffffff70,
+        /* top highlight */
+        0 4px 6px #00000030,
+        /* dark shadow */
+        0 6px 10px #00000015;
+    /* soft shadow */
 }

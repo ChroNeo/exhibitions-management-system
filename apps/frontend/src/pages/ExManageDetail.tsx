@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+﻿import { useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useExhibition } from "../hook/useExhibition";
@@ -121,32 +121,45 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     };
     const file = v.file ?? undefined;
 
-    if (mode === "create") {
-      const res = await createExh({
-        ...basePayload,
-        created_by: DEFAULT_CREATED_BY,
-        ...(file ? { file } : {}),
-      });
-      await Swal.fire({
-        title: "เพิ่มนิทรรศการสำเร็จ",
-        icon: "success",
-        confirmButtonText: "ตกลง",
-      });
-      navigate(`/exhibitions/${res.id}`);
-      return;
-    }
+    try {
+      if (mode === "create") {
+        const res = await createExh({
+          ...basePayload,
+          created_by: DEFAULT_CREATED_BY,
+          ...(file ? { file } : {}),
+        });
+        await Swal.fire({
+          title: "เพิ่มนิทรรศการสำเร็จ",
+          icon: "success",
+          confirmButtonText: "ตกลง",
+        });
+        navigate(`/exhibitions/${res.id}`);
+        return;
+      }
 
-    if (mode === "edit" && id) {
-      await updateExh({
-        id,
-        payload: { ...basePayload, ...(file ? { file } : {}) },
-      });
+      if (mode === "edit" && id) {
+        await updateExh({
+          id,
+          payload: { ...basePayload, ...(file ? { file } : {}) },
+        });
+        await Swal.fire({
+          title: "บันทึกการแก้ไขสำเร็จ",
+          icon: "success",
+          confirmButtonText: "ตกลง",
+        });
+        navigate(`/exhibitions/${id}`);
+      }
+    } catch (error) {
+      console.error("Failed to submit exhibition form", error);
+      const message = (error instanceof Error && error.message)
+        ? error.message
+        : "กรุณาลองใหม่อีกครั้ง";
       await Swal.fire({
-        title: "บันทึกการแก้ไขสำเร็จ",
-        icon: "success",
+        title: "เกิดข้อผิดพลาด",
+        text: message,
+        icon: "error",
         confirmButtonText: "ตกลง",
       });
-      navigate(`/exhibitions/${id}`);
     }
   };
 
@@ -162,7 +175,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
 
       {!isLoading && !isError && (
         <div className="container">
-          <Panel title={title}>
+          <Panel title={title} onBack={() => navigate("/exhibitions")}>
             {mode === "view" && data ? (
               <>
                 <ExhibitionDetailCard
