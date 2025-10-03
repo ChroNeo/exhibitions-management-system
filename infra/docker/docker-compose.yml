@@ -38,6 +38,8 @@ services:
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_NAME: ${MYSQL_DATABASE}
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
     ports: ["${BACKEND_PORT}:${BACKEND_PORT}"]
     depends_on:
       db: { condition: service_healthy }
@@ -55,6 +57,12 @@ services:
     env_file: .env
     environment:
       VITE_API_URL: ${VITE_API_URL}
+      HOST: 0.0.0.0
+      FRONTEND_PORT: ${FRONTEND_PORT}
+      VITE_HMR_HOST: localhost
+      VITE_HMR_PORT: ${FRONTEND_PORT}
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
     ports: ["${FRONTEND_PORT}:${FRONTEND_PORT}"]
     depends_on: [backend]
     volumes:
@@ -65,3 +73,4 @@ volumes:
   db-data:
   backend_node_modules:
   frontend_node_modules:
+

@@ -81,7 +81,7 @@ export default function ExhibitionPage() {
       <div className="container">
         <section className={styles.panel}>
           <div className={styles.header}>
-            <h2 className={styles.title}>จัดการนิทรรศการwhat</h2>
+            <h2 className={styles.title}>จัดการนิทรรศการ</h2>
           </div>
           <div className="cardWrap">
             {isLoading && <div>Loading exhibitions...</div>}
