@@ -298,8 +298,9 @@ app.get(
 app.register(exhibitionsController, { prefix: "/api/v1/exhibitions" });
 app.register(unitsController, { prefix: "/api/v1/exhibitions" });
 const port = Number(process.env.PORT || 3001);
-app.listen({ port }).then(() => {
+app.listen({ port, host: "0.0.0.0" }).then(() => {
   console.log(`API running on http://localhost:${port}`);
   console.log(`Swagger docs at http://localhost:${port}/docs`);
 });
+
 
