@@ -9,6 +9,7 @@ import { safeQuery } from "./services/dbconn.js";
 import path from "node:path";
 import fastifyStatic from "@fastify/static";
 import unitsController from "./controller/units-controller.js";
+import authController from "./controller/auth-controller.js";
 dotenv.config();
 
 const app = Fastify({
@@ -295,8 +296,10 @@ app.get(
     return { db: "ok", result: rows[0] };
   }
 );
+
 app.register(exhibitionsController, { prefix: "/api/v1/exhibitions" });
 app.register(unitsController, { prefix: "/api/v1/exhibitions" });
+app.register(authController, { prefix: "/api/v1/auth" });
 const port = Number(process.env.PORT || 3001);
 app.listen({ port, host: "0.0.0.0" }).then(() => {
   console.log(`API running on http://localhost:${port}`);
