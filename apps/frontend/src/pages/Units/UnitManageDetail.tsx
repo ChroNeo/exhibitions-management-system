@@ -96,6 +96,11 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
   const { dateText, timeText } = data
     ? buildDateTimeText(data.startsAt, data.endsAt)
     : { dateText: "-", timeText: undefined };
+  const staffText = data?.staffName
+    ? `ผู้ดูแล: ${data.staffName}`
+    : data?.staffUserId
+    ? `ผู้ดูแล ID ${data.staffUserId}`
+    : undefined;
 
   const initialFormValues = useMemo<UnitFormValues | undefined>(() => {
     if (!data) return undefined;
@@ -253,7 +258,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
                 dateText={dateText}
                 timeText={timeText}
                 typeText={translateType(data.type)}
-                staffText={data.staffUserId ? `ผู้ดูแล ID ${data.staffUserId}` : undefined}
+                staffText={staffText}
                 description={description}
                 posterUrl={data.posterUrl}
                 onEdit={handleEdit}

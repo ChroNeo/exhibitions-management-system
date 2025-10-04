@@ -10,11 +10,11 @@ function mapToUnit(x: UnitApi): Unit {
   return {
     id: String(x.unit_id),
     exhibitionId: x.exhibition_id,
-    code: x.unit_code || undefined,
     name: x.unit_name,
     type,
     description: x.description ?? undefined,
     staffUserId: x.staff_user_id ?? undefined,
+    staffName: x.staff_name ?? undefined,
     posterUrl: posterUrl || undefined,
     startsAt: x.starts_at,
     endsAt: x.ends_at,

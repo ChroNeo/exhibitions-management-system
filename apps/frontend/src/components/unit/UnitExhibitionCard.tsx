@@ -5,7 +5,6 @@ export type UnitCardItem = {
   id: string;
   title: string;
   dateText?: string;
-  codeLabel?: string;
   typeLabel?: string;
   location?: string;
   description?: string;
@@ -35,7 +34,7 @@ export default function UnitExhibitionCard({ item, onSelect, onEdit }: Props) {
     onEdit?.(item.id);
   };
 
-  const metaLines = [item.dateText, item.codeLabel, item.typeLabel, item.location].filter(
+  const metaLines = [item.dateText, item.typeLabel, item.location].filter(
     (text): text is string => Boolean(text)
   );
 

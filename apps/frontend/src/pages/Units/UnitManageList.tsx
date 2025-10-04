@@ -54,7 +54,6 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
         title: unit.name,
         description: unit.description ?? "",
         dateText,
-        codeLabel: unit.code ? `รหัสกิจกรรม: ${unit.code}` : undefined,
         typeLabel: unit.type ? `ประเภท: ${unit.type}` : undefined,
       } satisfies UnitCardItem;
     });
