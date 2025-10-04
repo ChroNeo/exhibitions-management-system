@@ -1,7 +1,6 @@
 ﻿import { useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-
 import Swal from "sweetalert2";
 import { useDeleteExhibition } from "../../hook/useDeleteExhibition";
 import { useExhibition } from "../../hook/useExhibition";
@@ -151,9 +150,10 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       }
     } catch (error) {
       console.error("Failed to submit exhibition form", error);
-      const message = (error instanceof Error && error.message)
-        ? error.message
-        : "กรุณาลองใหม่อีกครั้ง";
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "กรุณาลองใหม่อีกครั้ง";
       await Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: message,

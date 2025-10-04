@@ -37,7 +37,9 @@ export async function fetchUnit(
   const uId = encodeURIComponent(String(unitId));
   const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`);
   if (!res.ok) throw new Error("ไม่พบข้อมูลกิจกรรม");
-  const data: UnitApi = await res.json();
+  const json = await res.json();
+  const data: UnitApi | undefined = Array.isArray(json) ? json[0] : json;
+  if (!data) throw new Error("ไม่พบข้อมูลกิจกรรม");
   return mapToUnit(data);
 }
 
