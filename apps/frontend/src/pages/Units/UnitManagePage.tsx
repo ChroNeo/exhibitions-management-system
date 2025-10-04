@@ -21,7 +21,7 @@ export default function UnitManagePage() {
     );
   }, [items, query]);
   const handleSelect = (id: string) => {
-    navigate(`/exhibitions/${id}`);
+    navigate(`/units/${id}`);
   };
   return (
     <div>

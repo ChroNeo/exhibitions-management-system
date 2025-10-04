@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import UnitManagePage from "./pages/Units/UnitManagePage";
+import UnitManageList from "./pages/Units/UnitManageList";
 import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
 import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
 
@@ -20,9 +21,9 @@ function App() {
         element={<ExManageDetail mode="edit" />}
       />
       <Route path="/units" element={<UnitManagePage />} />
-      <Route path="/units/new" element={<ExManageDetail mode="create" />} />
-      <Route path="/units/:id" element={<ExManageDetail mode="view" />} />
-      <Route path="/units/:id/edit" element={<ExManageDetail mode="edit" />} />
+      <Route path="/units/new" element={<UnitManageList mode="create" />} />
+      <Route path="/units/:id" element={<UnitManageList mode="view" />} />
+      <Route path="/units/:id/edit" element={<UnitManageList mode="edit" />} />
     </Routes>
   );
 }
