@@ -1,11 +1,18 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
 import UnitDetailCard from "../../components/unit/UnitDetailCard";
+import UnitForm, { type UnitFormValues } from "../../components/unit/UnitForm";
+import { useCreateUnit } from "../../hook/useCreateUnit";
+import { useDeleteUnit } from "../../hook/useDeleteUnit";
 import { useUnit } from "../../hook/useUnit";
+import { useUpdateUnit } from "../../hook/useUpdateUnit";
 import type { Mode } from "../../types/mode";
+import type { UnitCreatePayload } from "../../types/units";
+import { toApiDateTime, toInputDateTime } from "../../utils/date";
+import Swal from "sweetalert2";
 
 type UnitManageDetailProps = { mode?: Mode };
 
@@ -53,16 +60,31 @@ function buildDateTimeText(start: string | number | Date, end: string | number |
   return { dateText, timeText } as const;
 }
 
-export default function UnitManageDetail({
-  mode = "view",
-}: UnitManageDetailProps) {
+function toInputValue(value: string | number | Date) {
+  const date = toDate(value);
+  if (!date) return "";
+  return toInputDateTime(date.toISOString());
+}
+
+export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProps) {
   const { exhibitionId, unitId } = useParams<{
     exhibitionId: string;
     unitId?: string;
   }>();
   const navigate = useNavigate();
 
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const createUnitMutation = useCreateUnit(exhibitionId);
+  const updateUnitMutation = useUpdateUnit();
+  const deleteUnitMutation = useDeleteUnit();
+
   const { data, isLoading, isError } = useUnit(exhibitionId, unitId);
+
+  const isSubmitting =
+    createUnitMutation.isPending ||
+    updateUnitMutation.isPending ||
+    deleteUnitMutation.isPending;
 
   const title = useMemo(() => {
     if (mode === "edit") return "แก้ไขกิจกรรม";
@@ -75,6 +97,97 @@ export default function UnitManageDetail({
     ? buildDateTimeText(data.startsAt, data.endsAt)
     : { dateText: "-", timeText: undefined };
 
+  const initialFormValues = useMemo<UnitFormValues | undefined>(() => {
+    if (!data) return undefined;
+
+    return {
+      name: data.name,
+      type: data.type,
+      starts_at: toInputValue(data.startsAt),
+      ends_at: toInputValue(data.endsAt),
+      staff_user_id: data.staffUserId ? String(data.staffUserId) : "",
+      poster_url: data.posterUrl ?? "",
+      description: data.description ?? "",
+    } satisfies UnitFormValues;
+  }, [data]);
+
+  const buildPayload = (values: UnitFormValues): UnitCreatePayload => {
+    const trimmedName = values.name.trim();
+    const startsAt = values.starts_at ? toApiDateTime(values.starts_at) : undefined;
+    const endsAt = values.ends_at ? toApiDateTime(values.ends_at) : undefined;
+
+    if (!trimmedName) {
+      throw new Error("กรุณากรอกชื่อกิจกรรม");
+    }
+
+    if (!startsAt || !endsAt) {
+      throw new Error("กรุณากรอกช่วงเวลาให้ครบถ้วน");
+    }
+
+    const staffId = Number(values.staff_user_id);
+
+    return {
+      unit_name: trimmedName,
+      unit_type: values.type,
+      description: values.description.trim() ? values.description.trim() : undefined,
+      staff_user_id:
+        values.staff_user_id.trim() && !Number.isNaN(staffId) ? staffId : undefined,
+      poster_url: values.poster_url.trim() ? values.poster_url.trim() : undefined,
+      starts_at: startsAt,
+      ends_at: endsAt,
+    };
+  };
+
+  const handleCreateSubmit = async (values: UnitFormValues) => {
+    if (!exhibitionId) return;
+    setFormError(null);
+
+    try {
+      const payload = buildPayload(values);
+      const unit = await createUnitMutation.mutateAsync(payload);
+      await Swal.fire({
+        title: "เพิ่มกิจกรรมสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+      navigate(`/units/${exhibitionId}/unit/${unit.id}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "ไม่สามารถบันทึกกิจกรรมได้";
+      setFormError(message);
+      await Swal.fire({
+        title: "เพิ่มกิจกรรมไม่สำเร็จ",
+        text: message,
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
+  const handleEditSubmit = async (values: UnitFormValues) => {
+    if (!exhibitionId || !unitId) return;
+    setFormError(null);
+
+    try {
+      const payload = buildPayload(values);
+      await updateUnitMutation.mutateAsync({ exhibitionId, unitId, payload });
+      await Swal.fire({
+        title: "บันทึกกิจกรรมสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+      navigate(`/units/${exhibitionId}/unit/${unitId}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "ไม่สามารถบันทึกกิจกรรมได้";
+      setFormError(message);
+      await Swal.fire({
+        title: "บันทึกไม่สำเร็จ",
+        text: message,
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
   const handleBack = () => {
     if (exhibitionId) navigate(`/units/${exhibitionId}`);
     else navigate("/units");
@@ -85,23 +198,55 @@ export default function UnitManageDetail({
     navigate(`/units/${exhibitionId}/unit/${unitId}/edit`);
   };
 
+  const handleDelete = async () => {
+    if (!exhibitionId || !unitId) return;
+
+    const confirmResult = await Swal.fire({
+      title: "ยืนยันการลบกิจกรรมนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+      focusCancel: true,
+      reverseButtons: true,
+    });
+
+    if (!confirmResult.isConfirmed) return;
+
+    try {
+      await deleteUnitMutation.mutateAsync({ exhibitionId, unitId });
+      await Swal.fire({
+        title: "ลบกิจกรรมเรียบร้อย",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+      navigate(`/units/${exhibitionId}`);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "ไม่สามารถลบกิจกรรมได้ กรุณาลองใหม่";
+      setFormError(message);
+      await Swal.fire({
+        title: "ลบกิจกรรมไม่สำเร็จ",
+        text: message,
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
+  const isViewMode = mode === "view";
+  const isCreateMode = mode === "create";
+  const isEditMode = mode === "edit";
+
   return (
     <div>
       <HeaderBar active="unit" onLoginClick={() => console.log("login")} />
       <div className="container">
         <Panel title={title} onBack={handleBack}>
-          {mode !== "create" && isLoading && <div>กำลังโหลดกิจกรรม...</div>}
-          {mode !== "create" && isError && (
-            <div>ไม่สามารถโหลดข้อมูลกิจกรรมได้</div>
-          )}
+          {isViewMode && isLoading && <div>กำลังโหลดกิจกรรม...</div>}
+          {isViewMode && isError && <div>ไม่สามารถโหลดข้อมูลกิจกรรมได้</div>}
 
-          {mode === "create" && (
-            <div>
-              <p>ฟอร์มสำหรับเพิ่มกิจกรรมจะถูกเพิ่มในภายหลัง</p>
-            </div>
-          )}
-
-          {mode !== "create" && !isLoading && !isError && data && (
+          {isViewMode && !isLoading && !isError && data && (
             <div className="cardWrap">
               <UnitDetailCard
                 title={data.name}
@@ -111,9 +256,48 @@ export default function UnitManageDetail({
                 staffText={data.staffUserId ? `ผู้ดูแล ID ${data.staffUserId}` : undefined}
                 description={description}
                 posterUrl={data.posterUrl}
-                onEdit={mode === "view" ? handleEdit : undefined}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
             </div>
+          )}
+
+          {isCreateMode && (
+            <>
+              {formError && (
+                <div style={{ color: "#b91c1c", marginBottom: "12px" }} role="alert">
+                  {formError}
+                </div>
+              )}
+              <UnitForm
+                mode="create"
+                onSubmit={handleCreateSubmit}
+                isSubmitting={isSubmitting}
+              />
+            </>
+          )}
+
+          {isEditMode && (
+            <>
+              {isLoading && <div>กำลังโหลดกิจกรรม...</div>}
+              {isError && <div>ไม่สามารถโหลดข้อมูลกิจกรรมได้</div>}
+              {!isLoading && !isError && data && initialFormValues && (
+                <>
+                  {formError && (
+                    <div style={{ color: "#b91c1c", marginBottom: "12px" }} role="alert">
+                      {formError}
+                    </div>
+                  )}
+                  <UnitForm
+                    key={unitId}
+                    mode="edit"
+                    initialValues={initialFormValues}
+                    onSubmit={handleEditSubmit}
+                    isSubmitting={isSubmitting}
+                  />
+                </>
+              )}
+            </>
           )}
         </Panel>
       </div>
