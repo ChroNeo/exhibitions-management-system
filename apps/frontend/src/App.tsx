@@ -1,7 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import ExhibitionPage from "./pages/ExManagePage";
-import ExManageDetail from "./pages/ExManageDetail";
-import ActManagePage from "./pages/UnitManagePage";
+
+import UnitManagePage from "./pages/Units/UnitManagePage";
+import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
+import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
 
 function App() {
   return (
@@ -9,7 +10,6 @@ function App() {
       <Route path="/" element={<Navigate to="/exhibitions" replace />} />{" "}
       {/*ให้ exhibition เป็นหน้าแรกชั่วคราว */}
       <Route path="/exhibitions" element={<ExhibitionPage />} />
-      <Route path="/activities" element={<ActManagePage />} />
       <Route
         path="/exhibitions/new"
         element={<ExManageDetail mode="create" />}
@@ -19,6 +19,10 @@ function App() {
         path="/exhibitions/:id/edit"
         element={<ExManageDetail mode="edit" />}
       />
+      <Route path="/units" element={<UnitManagePage />} />
+      <Route path="/units/new" element={<ExManageDetail mode="create" />} />
+      <Route path="/units/:id" element={<ExManageDetail mode="view" />} />
+      <Route path="/units/:id/edit" element={<ExManageDetail mode="edit" />} />
     </Routes>
   );
 }
