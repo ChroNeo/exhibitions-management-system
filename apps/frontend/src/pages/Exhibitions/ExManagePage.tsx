@@ -1,15 +1,14 @@
 ﻿import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import ExhibitionList from "../components/exhibition/ExhibitionList";
-import AddInline from "../components/AddInline/AddInline";
-import HeaderBar from "../components/HeaderBar/HeaderBar";
-
-import { useExhibitions } from "../hook/useExhibitions";
-import { useDeleteExhibition } from "../hook/useDeleteExhibition";
-import type { Exhibition } from "../types/exhibition";
 import styles from "./ExManagePage.module.css";
 import Swal from "sweetalert2";
+import AddInline from "../../components/AddInline/AddInline";
+import ExhibitionList from "../../components/exhibition/ExhibitionList";
+import HeaderBar from "../../components/HeaderBar/HeaderBar";
+import { useDeleteExhibition } from "../../hook/useDeleteExhibition";
+import { useExhibitions } from "../../hook/useExhibitions";
+import type { Exhibition } from "../../types/exhibition";
 
 export default function ExhibitionPage() {
   const [query] = useState("");
