@@ -31,18 +31,18 @@ function formatUnitDateRange(start: string | number | Date, end: string | number
 }
 
 export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
-  const { id } = useParams<{ id: string }>();
+  const { id: exhibitionId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: exhibition } = useExhibition(id ?? "", {
-    enabled: !!id,
+  const { data: exhibition } = useExhibition(exhibitionId ?? "", {
+    enabled: !!exhibitionId,
   });
 
   const {
     data: unitList,
     isLoading,
     isError,
-  } = useUnits(id);
+  } = useUnits(exhibitionId);
 
   const items = useMemo<UnitCardItem[]>(() => {
     if (!unitList) return [];
@@ -63,16 +63,18 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
   const handleBack = () => navigate("/units");
 
   const handleSelect = (unitId: string) => {
-    navigate(`/units/${unitId}`);
+    if (!exhibitionId) return;
+    navigate(`/units/${exhibitionId}/unit/${unitId}`);
   };
 
   const handleEdit = (unitId: string) => {
-    navigate(`/units/${unitId}/edit`);
+    if (!exhibitionId) return;
+    navigate(`/units/${exhibitionId}/unit/${unitId}/edit`);
   };
 
   const handleAdd = () => {
-    if (!id) return;
-    navigate(`/units/new?exhibitionId=${id}`);
+    if (!exhibitionId) return;
+    navigate(`/units/${exhibitionId}/unit/new`);
   };
 
   const title = exhibition?.title ? `กิจกรรมใน ${exhibition.title}` : "จัดการกิจกรรม";

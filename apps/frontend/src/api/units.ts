@@ -29,6 +29,18 @@ export async function fetchUnits(exhibitionId: string | number): Promise<Unit[]>
       return data.map(mapToUnit);
 }
 
+export async function fetchUnit(
+  exhibitionId: string | number,
+  unitId: string | number,
+): Promise<Unit> {
+  const exId = encodeURIComponent(String(exhibitionId));
+  const uId = encodeURIComponent(String(unitId));
+  const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`);
+  if (!res.ok) throw new Error("ไม่พบข้อมูลกิจกรรม");
+  const data: UnitApi = await res.json();
+  return mapToUnit(data);
+}
+
 export async function createUnit(
   exhibitionId: string | number,
   payload: UnitCreatePayload,
