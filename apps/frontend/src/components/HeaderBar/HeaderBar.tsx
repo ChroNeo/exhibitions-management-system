@@ -10,11 +10,11 @@ import { UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "./HeaderBar.module.css";
 
-type TabId = "exhibition" | "activity" | "summary";
+type TabId = "exhibition" | "unit" | "summary";
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "exhibition", label: "นิทรรศการ" },
-  { id: "activity", label: "กิจกรรม" },
+  { id: "unit", label: "กิจกรรม" },
   { id: "summary", label: "สรุปข้อมูล" },
 ];
 
@@ -32,7 +32,7 @@ export default function HeaderBar({
   const navId = `${toggleId}-nav`;
   const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
     exhibition: null,
-    activity: null,
+    unit: null,
     summary: null,
   });
   const indicatorTargetRef = useRef<TabId>(active);
@@ -87,8 +87,8 @@ export default function HeaderBar({
       navigate("/exhibitions");
     }
 
-    if (id === "activity") {
-      navigate("/activities");
+    if (id === "unit") {
+      navigate("/units");
     }
 
     closeMenu();
