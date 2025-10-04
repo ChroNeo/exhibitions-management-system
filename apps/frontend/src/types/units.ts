@@ -1,7 +1,7 @@
 export type Unit = {
   id: string;
   exhibitionId: number;
-  code: string;
+            code?: string;
   name: string;
   type: "booth" | "activity"; // adjust enum as needed
   description?: string;
@@ -24,3 +24,16 @@ export interface UnitApi {
   starts_at: string;
   ends_at: string;
 }
+
+export type UnitCreatePayload = {
+  unit_name: string;
+  unit_type: "booth" | "activity";
+  description?: string;
+  staff_user_id?: number;
+  poster_url?: string;
+  starts_at: string;
+  ends_at: string;
+  unit_code?: string;
+};
+
+export type UnitUpdatePayload = Partial<UnitCreatePayload>;
