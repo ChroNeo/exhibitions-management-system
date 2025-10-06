@@ -93,7 +93,12 @@ export default function ExhibitionPage() {
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                 />
-                <AddInline onClick={handleAdd} />
+                <AddInline
+                  variant="floating"
+                  label="เพิ่มนิทรรศการ"
+                  ariaLabel="เพิ่มนิทรรศการ"
+                  onClick={handleAdd}
+                />
               </>
             )}
             {isDeleting && <div>กำลังลบ...</div>}

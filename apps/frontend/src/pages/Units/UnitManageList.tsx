@@ -5,7 +5,9 @@ import AddInline from "../../components/AddInline/AddInline";
 import listStyles from "../../components/exhibition/ExhibitionList.module.css";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
-import UnitExhibitionCard, { type UnitCardItem } from "../../components/unit/UnitExhibitionCard";
+import UnitExhibitionCard, {
+  type UnitCardItem,
+} from "../../components/unit/UnitExhibitionCard";
 import { useExhibition } from "../../hook/useExhibition";
 import { useUnits } from "../../hook/useUnits";
 import type { Mode } from "../../types/mode";
@@ -22,7 +24,10 @@ function toDate(value: string | number | Date): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function formatUnitDateRange(start: string | number | Date, end: string | number | Date): string {
+function formatUnitDateRange(
+  start: string | number | Date,
+  end: string | number | Date
+): string {
   const startDate = toDate(start);
   const endDate = toDate(end);
 
@@ -38,11 +43,7 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
     enabled: !!exhibitionId,
   });
 
-  const {
-    data: unitList,
-    isLoading,
-    isError,
-  } = useUnits(exhibitionId);
+  const { data: unitList, isLoading, isError } = useUnits(exhibitionId);
 
   const items = useMemo<UnitCardItem[]>(() => {
     if (!unitList) return [];
@@ -76,7 +77,9 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
     navigate(`/units/${exhibitionId}/unit/new`);
   };
 
-  const title = exhibition?.title ? `กิจกรรมใน ${exhibition.title}` : "จัดการกิจกรรม";
+  const title = exhibition?.title
+    ? `กิจกรรมใน ${exhibition.title}`
+    : "จัดการกิจกรรม";
   const shouldShowActions = mode === "view";
 
   return (
@@ -103,7 +106,14 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
                   ))}
                 </div>
               )}
-              {shouldShowActions && <AddInline onClick={handleAdd} />}
+              {shouldShowActions && (
+                <AddInline
+                  variant="floating"
+                  label="เพิ่มกิจกรรม"
+                  ariaLabel="เพิ่มกิจกรรม"
+                  onClick={handleAdd}
+                />
+              )}
             </>
           )}
         </Panel>

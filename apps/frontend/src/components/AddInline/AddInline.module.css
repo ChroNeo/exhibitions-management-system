@@ -1,22 +1,52 @@
-.wrap {
-    display: flex;
-    justify-content: center;
-    padding: 10px 0 24px;
+:root {
+  --fab-bg: #224177;
+  --fab-fg: #fff;
 }
 
-.btn {
-    cursor: pointer;
-    width: 48px;
-    height: 48px;
-    border-radius: 999px;
-    border: 2px solid #111827;
-    background: #fff;
-    color: #111827;
-    display: grid;
-    place-items: center;
-    box-shadow: 0 8px 16px -10px rgba(0, 0, 0, .25);
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--fab-bg);
+  color: var(--fab-fg);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+.root:hover {
+  transform: translateY(-1px);
+}
+.root:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+.icon {
+  font-size: 20px;
+  line-height: 1;
+}
+.label {
+  line-height: 1;
 }
 
-.btn:active {
-    transform: scale(.96);
+.floating {
+  position: fixed;
+  right: clamp(16px, 3vw, 24px);
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+}
+
+@media (max-width: 420px) {
+  .floating .label {
+    display: none;
+  }
+  .floating {
+    padding: 14px;
+  }
+}
+:global(body) {
+  padding-bottom: 88px;
 }
