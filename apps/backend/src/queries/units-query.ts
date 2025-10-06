@@ -20,7 +20,7 @@ export async function getUnitsByExhibitionId(exId: string | number): Promise<Uni
   if (!/^\d+$/.test(String(exId))) {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
   }
-  const rows = await safeQuery<UnitRow>(
+  const rows = await safeQuery<UnitRow[]>(
     `
       SELECT
         u.unit_id,
@@ -51,7 +51,7 @@ export async function getUnitsById(
   if (!/^\d+$/.test(String(exId)) || !/^\d+$/.test(String(unitId))) {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
   }
-  const rows = await safeQuery<UnitRow>(
+  const rows = await safeQuery<UnitRow[]>(
     `
       SELECT
         u.unit_id,
@@ -94,7 +94,7 @@ export async function addUnit(payload: AddUnitPayload): Promise<any> {
             ]
       );
 
-      const rows = await safeQuery<UnitRow>(
+      const rows = await safeQuery<UnitRow[]>(
             `
             SELECT
               u.unit_id,
@@ -177,7 +177,7 @@ export async function updateUnit(
             throw new AppError("unit not found for this exhibition", 404, "NOT_FOUND");
       }
 
-      const rows = await safeQuery<UnitRow>(
+      const rows = await safeQuery<UnitRow[]>(
             `
             SELECT
               u.unit_id,
