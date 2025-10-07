@@ -1,55 +1,74 @@
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px 20px;
-  border: 1px solid var(--cardBorder);
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: var(--shadow-s);
   cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--cardBorder);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-s);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-m);
+  box-shadow: var(--shadow-l);
+}
+
+.inner {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .title {
   margin: 0;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   color: #0f172a;
 }
 
-.meta {
+.metaGroup {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  color: #374151;
-  font-size: 14px;
+  gap: 8px;
+  color: #1f2937;
+  font-size: 15px;
 }
 
-.description {
-  margin: 0;
-  color: #4b5563;
-  font-size: 14px;
+.metaRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   line-height: 1.6;
 }
 
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-  color: #1f2937;
-  font-weight: 500;
-  font-size: 13px;
+.metaIcon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: #274b87;
 }
 
-.footer span {
-  display: inline-block;
+.desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #111827;
+  word-break: break-word;
 }
 
 .actions {
@@ -96,15 +115,13 @@
     padding: 20px;
   }
 
-  .media {
-    flex-direction: column;
+  .content {
     align-items: center;
     text-align: center;
   }
 
-  .content {
-    max-width: 450px;
-    align-items: center;
+  .metaRow {
+    justify-content: center;
   }
 
   .desc {
