@@ -1,5 +1,6 @@
 import type { KeyboardEvent, MouseEvent } from "react";
 import styles from "./UnitExhibitionCard.module.css";
+import { Edit2, Trash2 } from "lucide-react";
 
 export type UnitCardItem = {
   id: string;
@@ -14,9 +15,15 @@ type Props = {
   item: UnitCardItem;
   onSelect?: (id: string) => void;
   onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 };
 
-export default function UnitExhibitionCard({ item, onSelect, onEdit }: Props) {
+export default function UnitExhibitionCard({
+  item,
+  onSelect,
+  onEdit,
+  onDelete,
+}: Props) {
   const handleClick = () => {
     onSelect?.(item.id);
   };
@@ -33,7 +40,10 @@ export default function UnitExhibitionCard({ item, onSelect, onEdit }: Props) {
     event.stopPropagation();
     onEdit?.(item.id);
   };
-
+  const handleDeleteClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onDelete?.(item.id);
+  };
   const metaLines = [item.dateText, item.typeLabel, item.location].filter(
     (text): text is string => Boolean(text)
   );
@@ -60,8 +70,23 @@ export default function UnitExhibitionCard({ item, onSelect, onEdit }: Props) {
       <div className={styles.footer}>
         <span>คลิกเพื่อดูรายละเอียด</span>
         {onEdit && (
-          <button type="button" className={styles.editBtn} onClick={handleEditClick}>
-            แก้ไข
+          <button
+            className={styles.actionBtn}
+            onClick={handleEditClick}
+            title="แก้ไข"
+            type="button"
+          >
+            <Edit2 size={16} /> แก้ไข
+          </button>
+        )}
+        {onDelete && (
+          <button
+            className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+            onClick={handleDeleteClick}
+            title="ลบ"
+            type="button"
+          >
+            <Trash2 size={16} /> ลบ
           </button>
         )}
       </div>

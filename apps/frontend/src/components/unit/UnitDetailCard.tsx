@@ -29,52 +29,57 @@ export default function UnitDetailCard({
   onDelete,
 }: Props) {
   return (
-    <section className={styles.card}>
-      <header className={styles.heading}>
-        <h3 className={styles.title}>{title}</h3>
-      </header>
+    <div className={styles.btw}>
+      <section className={styles.card}>
+        <header className={styles.heading}>
+          <h3 className={styles.title}>{title}</h3>
+        </header>
 
-      <div className={styles.meta}>
-        <div className={styles.metaRow}>
-          <MdOutlineCalendarToday className={styles.metaIcon} />
-          <span>{dateText}</span>
+        <div className={styles.meta}>
+          <div className={styles.metaRow}>
+            <MdOutlineCalendarToday className={styles.metaIcon} />
+            <span>{dateText}</span>
+          </div>
+
+          {timeText && (
+            <div className={styles.metaRow}>
+              <LuClock className={styles.metaIcon} />
+              <span>{timeText}</span>
+            </div>
+          )}
+
+          {typeText && (
+            <div className={styles.metaRow}>
+              <BsTag className={styles.metaIcon} />
+              <span>{typeText}</span>
+            </div>
+          )}
+
+          {staffText && (
+            <div className={styles.metaRow}>
+              <FiUser className={styles.metaIcon} />
+              <span>{staffText}</span>
+            </div>
+          )}
         </div>
 
-        {timeText && (
-          <div className={styles.metaRow}>
-            <LuClock className={styles.metaIcon} />
-            <span>{timeText}</span>
+        {posterUrl && (
+          <div className={styles.poster}>
+            <img src={posterUrl} alt={title} loading="lazy" />
           </div>
         )}
 
-        {typeText && (
-          <div className={styles.metaRow}>
-            <BsTag className={styles.metaIcon} />
-            <span>{typeText}</span>
-          </div>
+        {description && description.trim().length > 0 && (
+          <p className={styles.description}>{description}</p>
         )}
-
-        {staffText && (
-          <div className={styles.metaRow}>
-            <FiUser className={styles.metaIcon} />
-            <span>{staffText}</span>
-          </div>
-        )}
-      </div>
-
-      {posterUrl && (
-        <div className={styles.poster}>
-          <img src={posterUrl} alt={title} loading="lazy" />
-        </div>
-      )}
-
-      {description && description.trim().length > 0 && (
-        <p className={styles.description}>{description}</p>
-      )}
-
+      </section>
       <div className={styles.footer}>
-        <DetailActions show={Boolean(onEdit || onDelete)} onEdit={onEdit ?? (() => {})} onDelete={onDelete} />
+        <DetailActions
+          show={Boolean(onEdit || onDelete)}
+          onEdit={onEdit ?? (() => {})}
+          onDelete={onDelete}
+        />
       </div>
-    </section>
+    </div>
   );
 }

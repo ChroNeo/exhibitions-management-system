@@ -12,6 +12,8 @@ import { useExhibition } from "../../hook/useExhibition";
 import { useUnits } from "../../hook/useUnits";
 import type { Mode } from "../../types/mode";
 import { fmtDateRangeTH } from "../../utils/date";
+import Swal from "sweetalert2";
+import { useDeleteUnit } from "../../hook/useDeleteUnit";
 
 type UnitManageListProps = { mode?: Mode };
 
@@ -38,7 +40,7 @@ function formatUnitDateRange(
 export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
   const { id: exhibitionId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
+  const { mutateAsync: deleteUnit } = useDeleteUnit();
   const { data: exhibition } = useExhibition(exhibitionId ?? "", {
     enabled: !!exhibitionId,
   });
@@ -71,16 +73,45 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
     if (!exhibitionId) return;
     navigate(`/units/${exhibitionId}/unit/${unitId}/edit`);
   };
+  const handleDelete = async (exhibitionId: string, unitId: string) => {
+    const confirmResult = await Swal.fire({
+      title: "ยืนยันการลบกิจกรรมนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+      reverseButtons: true,
+      focusCancel: true,
+    });
 
-  const handleAdd = () => {
-    if (!exhibitionId) return;
-    navigate(`/units/${exhibitionId}/unit/new`);
+    if (!confirmResult.isConfirmed) return;
+
+    try {
+      await deleteUnit({ exhibitionId, unitId });
+      await Swal.fire({
+        title: "ลบกิจกรรมสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+    } catch (error) {
+      console.error("Failed to delete exhibition", error);
+      await Swal.fire({
+        title: "ลบไม่สำเร็จ กรุณาลองใหม่",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
   };
 
   const title = exhibition?.title
     ? `กิจกรรมใน ${exhibition.title}`
     : "จัดการกิจกรรม";
   const shouldShowActions = mode === "view";
+
+  const handleAdd = () => {
+    if (!exhibitionId) return;
+    navigate(`/units/${exhibitionId}/unit/new`);
+  };
 
   return (
     <div>
@@ -101,6 +132,13 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
                       key={item.id}
                       item={item}
                       onSelect={handleSelect}
+                      onDelete={
+                        shouldShowActions && exhibitionId
+                          ? (unitId) => {
+                              void handleDelete(exhibitionId, unitId);
+                            }
+                          : undefined
+                      }
                       onEdit={shouldShowActions ? handleEdit : undefined}
                     />
                   ))}

@@ -66,6 +66,9 @@
 .footer {
   display: flex;
   justify-content: flex-end;
+  align-self: center;
+  flex-direction: column;
+  margin-top: 10px;
 }
 
 @media (max-width: 640px) {

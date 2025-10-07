@@ -1,6 +1,11 @@
 import styles from "./ExhibitionCard.module.css";
 import { Edit2, Trash2 } from "lucide-react";
-import { useEffect, useState, type KeyboardEvent, type MouseEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import { MdOutlineCalendarToday } from "react-icons/md";
 import { LuClock } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
@@ -20,7 +25,9 @@ export default function ExhibitionCard({
   onDelete?: (id: string) => void;
   onSelect?: (id: string) => void;
 }) {
-  const [posterSrc, setPosterSrc] = useState(() => toFileUrl(item.coverUrl) || FALLBACK_POSTER);
+  const [posterSrc, setPosterSrc] = useState(
+    () => toFileUrl(item.coverUrl) || FALLBACK_POSTER
+  );
 
   useEffect(() => {
     setPosterSrc(toFileUrl(item.coverUrl) || FALLBACK_POSTER);
