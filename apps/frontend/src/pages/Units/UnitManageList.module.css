@@ -1,0 +1,32 @@
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 32px 0;
+}
+
+@media (min-width: 1024px) {
+  .list {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 375px) {
+  .list {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

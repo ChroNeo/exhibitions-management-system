@@ -6,13 +6,15 @@
   margin: 20px auto;
   max-width: 960px;
 }
+
 .title {
-  font-size: 20px;
+  font-size: clamp(0.9rem, 1.5vw + 0.9rem, 1.5rem);
   font-weight: 700;
   margin-bottom: 16px;
   text-align: center;
   margin: 0;
 }
+
 .body {
   display: flex;
   flex-direction: column;
@@ -20,18 +22,20 @@
 }
 
 .header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
   align-items: center;
-  justify-content: center;
+  margin-bottom: 36px;
   position: relative;
-  margin-bottom: 16px;
 }
 
 .backLink {
-  position: absolute;
-  left: 0;
+  justify-self: start;
   font-size: 20px;
-  margin-top: 5px;
-  color: #000000;
+  color: #000;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
 }

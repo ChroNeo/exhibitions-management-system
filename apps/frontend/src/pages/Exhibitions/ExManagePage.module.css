@@ -14,10 +14,13 @@
   position: relative;
   margin-bottom: 16px;
 }
+
 .title {
-  font-size: 20px;
+  font-size: clamp(1rem, 1.5vw + 1rem, 1.5rem);
   font-weight: 700;
   margin-bottom: 16px;
   text-align: center;
   margin: 0;
 }
+
+/* test css change */

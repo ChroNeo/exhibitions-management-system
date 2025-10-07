@@ -30,7 +30,6 @@ export default async function unitsController(fastify: FastifyInstance) {
                   {
                     unit_id: 105,
                     exhibition_id: 42,
-                    unit_code: "U-05",
                     unit_name: "AI Playground",
                     unit_type: "booth",
                     description: "Interactive demos of AI gadgets.",
@@ -71,7 +70,6 @@ export default async function unitsController(fastify: FastifyInstance) {
                   {
                     unit_id: 105,
                     exhibition_id: 42,
-                    unit_code: "U-05",
                     unit_name: "AI Playground",
                     unit_type: "booth",
                     description: "Interactive demos of AI gadgets.",

@@ -1,14 +1,18 @@
 import styles from "./ExhibitionCard.module.css";
 import { Edit2, Trash2 } from "lucide-react";
-import type { KeyboardEvent, MouseEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import { MdOutlineCalendarToday } from "react-icons/md";
 import { LuClock } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
 import type { Exhibition } from "./../../types/exhibition";
 import { toFileUrl } from "../../utils/url";
 
-const FALLBACK_POSTER =
-  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"%3E%3Crect width="120" height="120" rx="16" fill="%23E5E7EB"/%3E%3Cpath d="M30 82l18-22 14 16 10-12 18 20H30z" fill="%23CBD5F5"/%3E%3Ccircle cx="76" cy="44" r="10" fill="%239CA3AF"/%3E%3Ctext x="60" y="70" text-anchor="middle" font-size="10" fill="%236B7280"%3ENo Image%3C/text%3E%3C/svg%3E';
+const FALLBACK_POSTER = "https://placehold.co/1920x1080";
 
 export default function ExhibitionCard({
   item,
@@ -21,6 +25,14 @@ export default function ExhibitionCard({
   onDelete?: (id: string) => void;
   onSelect?: (id: string) => void;
 }) {
+  const [posterSrc, setPosterSrc] = useState(
+    () => toFileUrl(item.coverUrl) || FALLBACK_POSTER
+  );
+
+  useEffect(() => {
+    setPosterSrc(toFileUrl(item.coverUrl) || FALLBACK_POSTER);
+  }, [item.coverUrl]);
+
   const handleCardClick = () => onSelect?.(item.id);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -31,7 +43,6 @@ export default function ExhibitionCard({
     }
   };
 
-  const coverSrc = toFileUrl(item.coverUrl) || FALLBACK_POSTER;
   const [datePart, timePart] = item.dateText
     .split("|")
     .map((part) => part.trim());
@@ -54,26 +65,28 @@ export default function ExhibitionCard({
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
       onKeyDown={handleKeyDown}
-      aria-label={onSelect ? `เน€เธเธดเธ”เธ”เธน ${item.title}` : undefined}
+      aria-label={onSelect ? `เปิดดู ${item.title}` : undefined}
     >
       <div className={styles.inner}>
         <div className={styles.media}>
-          <img
-            src={coverSrc}
-            alt={item.title}
-            className={styles.cover}
-            loading="lazy"
-            onError={(e) => {
-              if (e.currentTarget.src === FALLBACK_POSTER) return;
-              e.currentTarget.src = FALLBACK_POSTER;
-            }}
-          />
+          <div className={styles.cover_container}>
+            <img
+              src={posterSrc}
+              alt={item.title}
+              className={styles.cover}
+              loading="lazy"
+              onError={() => {
+                if (posterSrc === FALLBACK_POSTER) return;
+                setPosterSrc(FALLBACK_POSTER);
+              }}
+            />
+          </div>
 
           <div className={styles.content}>
             <div className={styles.titleRow}>
               <h3 className={styles.title}>{item.title}</h3>
               {item.isPinned && (
-                <span className={styles.pin} aria-label="เธเธฑเธเธซเธกเธธเธ”" />
+                <span className={styles.pin} aria-label="ปักหมุด" />
               )}
             </div>
 
