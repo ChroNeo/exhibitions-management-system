@@ -3,8 +3,9 @@ import styles from "./UnitExhibitionCard.module.css";
 import { Edit2, Trash2 } from "lucide-react";
 import type { IconType } from "react-icons";
 import { MdOutlineCalendarToday } from "react-icons/md";
-import { LuLayers } from "react-icons/lu";
+import { LuLayers, LuClock } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
+import { useMemo } from "react";
 
 export type UnitCardItem = {
   id: string;
@@ -13,6 +14,7 @@ export type UnitCardItem = {
   typeLabel?: string;
   location?: string;
   description?: string;
+  posterUrl?: string;
 };
 
 type Props = {
@@ -54,6 +56,11 @@ export default function UnitExhibitionCard({
     onDelete?.(item.id);
   };
 
+  const posterInitial = useMemo(() => {
+    const trimmed = item.title.trim();
+    return trimmed ? trimmed.charAt(0).toUpperCase() : "#";
+  }, [item.title]);
+
   const metaItems: MetaItem[] = [];
 
   const appendMetaItem = (text: string | undefined, Icon: IconType) => {
@@ -62,8 +69,14 @@ export default function UnitExhibitionCard({
     if (!trimmed) return;
     metaItems.push({ Icon, text: trimmed });
   };
-
-  appendMetaItem(item.dateText, MdOutlineCalendarToday);
+  if (item.dateText) {
+    const [datePart, timePart] = item.dateText
+      .split(/\r?\n|\|/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    appendMetaItem(datePart, MdOutlineCalendarToday);
+    appendMetaItem(timePart, LuClock);
+  }
   appendMetaItem(item.typeLabel, LuLayers);
   appendMetaItem(item.location, IoLocationOutline);
 
@@ -78,12 +91,29 @@ export default function UnitExhibitionCard({
       onKeyDown={handleKeyDown}
       aria-label={onSelect ? `เปิดดู ${item.title}` : undefined}
     >
-      <div className={styles.inner}>
-        <div className={styles.content}>
+      <div className={styles.media}>
+        <div className={styles.posterWrap}>
+          {item.posterUrl ? (
+            <img
+              src={item.posterUrl}
+              alt={item.title}
+              className={styles.poster}
+              loading="lazy"
+            />
+          ) : (
+            <div className={styles.posterFallback} aria-hidden="true">
+              <span className={styles.posterInitial}>{posterInitial}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.content}>
+        <div className={styles.contentInner}>
           <h3 className={styles.title}>{item.title}</h3>
 
           {metaItems.length > 0 && (
-            <div className={styles.metaGroup}>
+            <div className={styles.meta}>
               {metaItems.map(({ Icon, text }, index) => (
                 <div
                   key={`${item.id}-meta-${index}`}

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import AddInline from "../../components/AddInline/AddInline";
-import listStyles from "../../components/exhibition/ExhibitionList.module.css";
+import styles from "./UnitManageList.module.css";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
 import UnitExhibitionCard, {
@@ -58,6 +58,7 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
         description: unit.description ?? "",
         dateText,
         typeLabel: unit.type ? `ประเภท: ${unit.type}` : undefined,
+        posterUrl: unit.posterUrl,
       } satisfies UnitCardItem;
     });
   }, [unitList]);
@@ -124,9 +125,9 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
           {!isLoading && !isError && (
             <>
               {items.length === 0 ? (
-                <div className={listStyles.empty}>ยังไม่มีกิจกรรม</div>
+                <div className={styles.empty}>ยังไม่มีกิจกรรม</div>
               ) : (
-                <div className={listStyles.list}>
+                <div className={styles.list}>
                   {items.map((item) => (
                     <UnitExhibitionCard
                       key={item.id}

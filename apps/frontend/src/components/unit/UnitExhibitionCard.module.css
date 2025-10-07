@@ -1,60 +1,104 @@
 .card {
+  display: flex;
+  flex-direction: column;
   cursor: pointer;
   background: #fff;
   border: 1px solid var(--cardBorder);
-  border-radius: var(--radius-xl);
+  border-radius: 18px;
   box-shadow: var(--shadow-s);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
 }
 
 .card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-l);
 }
 
-.inner {
+.media {
+  position: relative;
+  background: #f1f5f9;
+  aspect-ratio: 9 / 16;
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+}
+
+.posterWrap {
+  width: 100%;
+  height: 100%;
+}
+
+.poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.posterFallback {
   display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 24px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #dbeafe, #bfdbfe);
+}
+
+.posterInitial {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e3a8a;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
   flex: 1 1 auto;
-  min-width: 0;
+  min-height: 200px;
+  padding: 20px;
+  gap: 20px;
+}
+
+.contentInner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .title {
   margin: 0;
-  font-size: 22px;
+  font-size: clamp(1rem, 1.2vw + 0.8rem, 1.25rem);
   font-weight: 700;
   color: #0f172a;
 }
 
-.metaGroup {
+.meta {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   color: #1f2937;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .metaRow {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
-  line-height: 1.6;
+  line-height: 1.4;
+}
+
+.metaRow span {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .metaIcon {
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
+  width: 16px;
+  height: 16px;
   color: #274b87;
 }
 
@@ -65,17 +109,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 4px 0 0;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.7;
-  color: #111827;
+  color: #475569;
   word-break: break-word;
 }
 
 .actions {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .actionBtn {
@@ -83,7 +126,7 @@
   align-items: center;
   gap: 6px;
   border: 1px solid #e5e7eb;
-  padding: 10px 14px;
+  padding: 10px;
   border-radius: 12px;
   background: #fff;
   cursor: pointer;
@@ -91,6 +134,8 @@
   font-weight: 500;
   color: #1f2937;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  flex: 1 1 auto;
+  justify-content: center;
 }
 
 .actionBtn:hover {
@@ -108,31 +153,74 @@
   border-color: #fca5a5;
 }
 
-@media (max-width: 600px) {
-  .inner {
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
+@media (max-width: 640px) {
+  .card {
+    border-radius: 14px;
   }
 
   .content {
-    align-items: center;
-    text-align: center;
+    padding: 10px 8px;
+    gap: 8px;
+    min-height: auto;
   }
+
+
 
   .metaRow {
-    justify-content: center;
+    font-size: 11px;
+    gap: 4px;
   }
 
-  .desc {
-    text-align: left;
-    width: 100%;
+  .metaIcon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .metaRow span {
+    font-size: 12px;
   }
 
   .actions {
-    flex-direction: row;
+    flex-direction: column;
+    width: 100%;
     justify-content: center;
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+
+  .actionBtn {
+    padding: 6px;
+    font-size: 0;
+    border-radius: 5px;
+    display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+  }
+
+  .actionBtn :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .desc {
+    display: none;
+  }
+
+  .posterInitial {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 8px 6px;
+  }
+
+  .title {
+    font-size: 13px;
+  }
+
+  .metaRow {
+    font-size: 10px;
   }
 }
