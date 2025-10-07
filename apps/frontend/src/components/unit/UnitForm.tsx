@@ -11,8 +11,8 @@ export type UnitFormValues = {
   starts_at: string;
   ends_at: string;
   staff_user_id: string;
-  poster_url: string;
   description: string;
+  file?: File;
 };
 
 type Props = {
@@ -21,6 +21,7 @@ type Props = {
   onSubmit?: (values: UnitFormValues) => Promise<void> | void;
   footer?: ReactNode;
   isSubmitting?: boolean;
+  initialPosterName?: string;
 };
 
 const EMPTY_VALUES: UnitFormValues = {
@@ -29,12 +30,12 @@ const EMPTY_VALUES: UnitFormValues = {
   starts_at: "",
   ends_at: "",
   staff_user_id: "",
-  poster_url: "",
   description: "",
+  file: undefined,
 };
 
 const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
-  { mode, initialValues, onSubmit, footer, isSubmitting = false }: Props,
+  { mode, initialValues, onSubmit, footer, isSubmitting = false, initialPosterName }: Props,
   ref,
 ) {
   const [values, setValues] = useState<UnitFormValues>(EMPTY_VALUES);
@@ -43,7 +44,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     if (!initialValues || mode === "create") {
       setValues(EMPTY_VALUES);
     } else {
-      setValues({ ...initialValues });
+      setValues({ ...initialValues, file: undefined });
     }
   }, [mode, initialValues]);
 
@@ -52,6 +53,12 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   const updateValue = <K extends keyof UnitFormValues>(key: K, value: UnitFormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
   };
+
+  const displayedPosterName = useMemo(() => {
+    if (values.file) return values.file.name;
+    if (initialPosterName) return initialPosterName;
+    return "ยังไม่ได้เลือกไฟล์";
+  }, [values.file, initialPosterName]);
 
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -146,15 +153,20 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_file}`}>
-          <label className={styles.ex_label}>ลิงก์โปสเตอร์ (ถ้ามี)</label>
+          <label className={styles.ex_label} htmlFor="unit-poster-input">
+            อัปโหลดโปสเตอร์ (ถ้ามี)
+          </label>
           <input
+            id="unit-poster-input"
             className={styles.ex_input}
-            type="text"
-            placeholder="uploads/units/filename.png"
-            value={values.poster_url}
-            onChange={(e) => updateValue("poster_url", e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={(e) => updateValue("file", e.target.files?.[0])}
             disabled={isSubmitting}
           />
+          <p className={styles.ex_fileName} aria-live="polite">
+            {displayedPosterName}
+          </p>
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_details}`}>

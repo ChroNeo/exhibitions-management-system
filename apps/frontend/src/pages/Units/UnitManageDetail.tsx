@@ -102,19 +102,35 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
     ? `ผู้ดูแล ID ${data.staffUserId}`
     : undefined;
 
-  const initialFormValues = useMemo<UnitFormValues | undefined>(() => {
-    if (!data) return undefined;
+  const { initialFormValues, initialPosterName } = useMemo(() => {
+    if (!data || mode === "create") {
+      return { initialFormValues: undefined, initialPosterName: undefined };
+    }
+
+    const posterSource = data.posterPath ?? data.posterUrl ?? "";
+    let posterName: string | undefined;
+    if (posterSource) {
+      const rawName = posterSource.split("/").pop()?.split("?")[0] ?? posterSource;
+      try {
+        posterName = decodeURIComponent(rawName);
+      } catch {
+        posterName = rawName;
+      }
+    }
 
     return {
-      name: data.name,
-      type: data.type,
-      starts_at: toInputValue(data.startsAt),
-      ends_at: toInputValue(data.endsAt),
-      staff_user_id: data.staffUserId ? String(data.staffUserId) : "",
-      poster_url: data.posterUrl ?? "",
-      description: data.description ?? "",
-    } satisfies UnitFormValues;
-  }, [data]);
+      initialFormValues: {
+        name: data.name,
+        type: data.type,
+        starts_at: toInputValue(data.startsAt),
+        ends_at: toInputValue(data.endsAt),
+        staff_user_id: data.staffUserId ? String(data.staffUserId) : "",
+        description: data.description ?? "",
+        file: undefined,
+      } satisfies UnitFormValues,
+      initialPosterName: posterName,
+    };
+  }, [data, mode]);
 
   const buildPayload = (values: UnitFormValues): UnitCreatePayload => {
     const trimmedName = values.name.trim();
@@ -131,16 +147,21 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
 
     const staffId = Number(values.staff_user_id);
 
-    return {
+    const payload: UnitCreatePayload = {
       unit_name: trimmedName,
       unit_type: values.type,
       description: values.description.trim() ? values.description.trim() : undefined,
       staff_user_id:
         values.staff_user_id.trim() && !Number.isNaN(staffId) ? staffId : undefined,
-      poster_url: values.poster_url.trim() ? values.poster_url.trim() : undefined,
       starts_at: startsAt,
       ends_at: endsAt,
     };
+
+    if (values.file) {
+      payload.posterFile = values.file;
+    }
+
+    return payload;
   };
 
   const handleCreateSubmit = async (values: UnitFormValues) => {
@@ -297,6 +318,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
                     key={unitId}
                     mode="edit"
                     initialValues={initialFormValues}
+                    initialPosterName={initialPosterName}
                     onSubmit={handleEditSubmit}
                     isSubmitting={isSubmitting}
                   />

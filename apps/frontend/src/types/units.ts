@@ -7,6 +7,7 @@ export type Unit = {
   staffUserId?: number;
   staffName?: string;
   posterUrl?: string;
+  posterPath?: string;
   startsAt: string | number | Date;
   endsAt: string | number | Date;
 };
@@ -31,6 +32,7 @@ export type UnitCreatePayload = {
   description?: string;
   staff_user_id?: number;
   poster_url?: string;
+  posterFile?: File;
   starts_at: string;
   ends_at: string;
 };
