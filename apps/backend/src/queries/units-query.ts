@@ -4,49 +4,48 @@ import type { AddUnitPayload, UpdateUnitPayload } from "../models/unit_model.js"
 import { safeQuery } from "../services/dbconn.js";
 
 type UnitRow = {
-  unit_id: number;
-  exhibition_id: number;
-  unit_name: string;
-  unit_type: string;
-  description: string | null;
-  poster_url: string | null;
-  starts_at: string;
-  ends_at: string;
+      unit_id: number;
+      exhibition_id: number;
+      unit_name: string;
+      unit_type: string;
+      description: string | null;
+      poster_url: string | null;
+      starts_at: string;
+      ends_at: string;
 };
 
 export async function getUnitsByExhibitionId(exId: string | number): Promise<UnitRow[]> {
-  if (!/^\d+$/.test(String(exId))) {
-    throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
-  }
-  const rows = await safeQuery<UnitRow[]>(
-    `
+      if (!/^\d+$/.test(String(exId))) {
+            throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
+      }
+      const rows = await safeQuery<UnitRow[]>(
+            `
       SELECT
         *
       FROM v_units_by_exhibition u
       WHERE u.exhibition_id = ?
       ORDER BY u.starts_at, u.unit_id
     `,
-    [exId],
-  );
-  return rows;
+            [exId],
+      );
+      return rows;
 }
 
 export async function getUnitsById(
-  exId: string | number,
-  unitId: string | number,
+      exId: string | number,
+      unitId: string | number,
 ): Promise<UnitRow[]> {
-  if (!/^\d+$/.test(String(exId)) || !/^\d+$/.test(String(unitId))) {
-    throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
-  }
-  const rows = await safeQuery<UnitRow[]>(
-    `
+      if (!/^\d+$/.test(String(exId)) || !/^\d+$/.test(String(unitId))) {
+            throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
+      }
+      const rows = await safeQuery<UnitRow[]>(
+            `
       SELECT
         u.unit_id,
         u.exhibition_id,
         u.unit_name,
         u.unit_type,
         u.description,
-        v.staff_name,
         u.poster_url,
         u.starts_at,
         u.ends_at
@@ -55,12 +54,12 @@ export async function getUnitsById(
         ON v.unit_id = u.unit_id AND v.exhibition_id = u.exhibition_id
       WHERE u.exhibition_id = ? AND u.unit_id = ?
     `,
-    [exId, unitId],
-  );
-  if (!rows.length) {
-    throw new AppError("no units found for this exhibition", 404, "NOT_FOUND");
-  }
-  return rows;
+            [exId, unitId],
+      );
+      if (!rows.length) {
+            throw new AppError("no units found for this exhibition", 404, "NOT_FOUND");
+      }
+      return rows;
 }
 
 export async function addUnit(payload: AddUnitPayload): Promise<any> {
@@ -87,7 +86,6 @@ export async function addUnit(payload: AddUnitPayload): Promise<any> {
               u.unit_name,
               u.unit_type,
               u.description,
-              v.staff_name,
               u.poster_url,
               u.starts_at,
               u.ends_at
@@ -166,7 +164,6 @@ export async function updateUnit(
               u.unit_name,
               u.unit_type,
               u.description,
-              v.staff_name,
               u.poster_url,
               u.starts_at,
               u.ends_at

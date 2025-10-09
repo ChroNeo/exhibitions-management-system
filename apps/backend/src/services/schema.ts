@@ -66,6 +66,21 @@ const schemas = [
     ],
   },
   {
+    $id: "UserDropdownOption",
+    type: "object",
+    properties: {
+      value: { type: "integer", example: 1 },
+      label: { type: "string", example: "Alice Example" },
+    },
+    required: ["value", "label"],
+    examples: [
+      {
+        value: 1,
+        label: "Alice Example",
+      },
+    ],
+  },
+  {
     $id: "CreateExhibitionInput",
     type: "object",
     required: ["title", "start_date", "end_date", "organizer_name", "created_by"],
