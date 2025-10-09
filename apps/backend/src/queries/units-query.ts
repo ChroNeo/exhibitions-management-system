@@ -9,8 +9,6 @@ type UnitRow = {
   unit_name: string;
   unit_type: string;
   description: string | null;
-  staff_user_id: number | null;
-  staff_name: string | null;
   poster_url: string | null;
   starts_at: string;
   ends_at: string;
@@ -23,19 +21,8 @@ export async function getUnitsByExhibitionId(exId: string | number): Promise<Uni
   const rows = await safeQuery<UnitRow[]>(
     `
       SELECT
-        u.unit_id,
-        u.exhibition_id,
-        u.unit_name,
-        u.unit_type,
-        u.description,
-        u.staff_user_id,
-        v.staff_name,
-        u.poster_url,
-        u.starts_at,
-        u.ends_at
-      FROM units u
-      LEFT JOIN v_units_by_exhibition v
-        ON v.unit_id = u.unit_id AND v.exhibition_id = u.exhibition_id
+        *
+      FROM v_units_by_exhibition u
       WHERE u.exhibition_id = ?
       ORDER BY u.starts_at, u.unit_id
     `,
@@ -59,7 +46,6 @@ export async function getUnitsById(
         u.unit_name,
         u.unit_type,
         u.description,
-        u.staff_user_id,
         v.staff_name,
         u.poster_url,
         u.starts_at,
@@ -80,14 +66,13 @@ export async function getUnitsById(
 export async function addUnit(payload: AddUnitPayload): Promise<any> {
       const result = await safeQuery<ResultSetHeader>(
             `INSERT INTO units
-                  (exhibition_id, unit_name, unit_type, description, staff_user_id, poster_url, starts_at, ends_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                  (exhibition_id, unit_name, unit_type, description, poster_url, starts_at, ends_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                   payload.exhibition_id,
                   payload.unit_name,
                   payload.unit_type,
                   payload.description ?? null,
-                  payload.staff_user_id ?? null,
                   payload.poster_url ?? null,
                   payload.starts_at ?? null,
                   payload.ends_at ?? null,
@@ -102,7 +87,6 @@ export async function addUnit(payload: AddUnitPayload): Promise<any> {
               u.unit_name,
               u.unit_type,
               u.description,
-              u.staff_user_id,
               v.staff_name,
               u.poster_url,
               u.starts_at,
@@ -151,9 +135,6 @@ export async function updateUnit(
       if (changes.description !== undefined) {
             push("description", changes.description);
       }
-      if (changes.staff_user_id !== undefined) {
-            push("staff_user_id", changes.staff_user_id);
-      }
       if (changes.poster_url !== undefined) {
             push("poster_url", changes.poster_url);
       }
@@ -185,7 +166,6 @@ export async function updateUnit(
               u.unit_name,
               u.unit_type,
               u.description,
-              u.staff_user_id,
               v.staff_name,
               u.poster_url,
               u.starts_at,
