@@ -1,5 +1,9 @@
-import type { FastifyInstance } from "fastify";
-import { getListUsers } from "../queries/users-query.js";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import { getListUsers, type UserRoleFilter } from "../queries/users-query.js";
+
+type ListUsersQuery = {
+  role?: UserRoleFilter;
+};
 
 export default async function userController(fastify: FastifyInstance) {
   fastify.get(
@@ -8,6 +12,16 @@ export default async function userController(fastify: FastifyInstance) {
       schema: {
         tags: ["Users"],
         summary: "List users for dropdown selections",
+        querystring: {
+          type: "object",
+          properties: {
+            role: {
+              type: "string",
+              enum: ["staff", "user"],
+              description: "Filter by user role",
+            },
+          },
+        },
         response: {
           200: {
             type: "array",
@@ -22,8 +36,8 @@ export default async function userController(fastify: FastifyInstance) {
         },
       },
     },
-    async () => {
-      const users = await getListUsers();
+    async (req: FastifyRequest<{ Querystring: ListUsersQuery }>) => {
+      const users = await getListUsers(req.query.role);
       return users.map((user) => ({
         value: user.user_id,
         label: user.full_name,
