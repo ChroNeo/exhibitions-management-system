@@ -1,0 +1,202 @@
+/* ===== Layout base ===== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  background: #f9fafb;
+}
+
+/* ===== HERO (slider) ===== */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #e6a66a; /* กรอบส้มเดียว */
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  margin-bottom: 28px;
+}
+
+.slideWrapper {
+  position: relative;
+  overflow: hidden;
+}
+.slideTrack {
+  display: flex;
+  transition: transform 0.6s ease;
+}
+.slide {
+  flex: 0 0 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+/* 16:9 คงที่ */
+.slideAspect {
+  aspect-ratio: 16/9;
+  width: 100%;
+  overflow: hidden;
+}
+.slideImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.7));
+}
+.slideTitle {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+.slideMeta {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* arrows + dots */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+.arrow:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+.left {
+  left: 12px;
+}
+.right {
+  right: 12px;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 10px 0;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #d1d5db;
+  cursor: pointer;
+}
+.dot.active {
+  background: #2563eb;
+}
+
+/* ===== LIST ===== */
+.listSection {
+  margin-top: 12px;
+}
+.sectionTitle {
+  font-size: 19px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 16px;
+}
+
+/* Grid: Desktop 3 / Tablet 2 / Mobile 1 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Wrapper ของการ์ด (ไม่ทำกรอบซ้ำ) */
+.cardLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.cardLink:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Card overrides (เฉพาะหน้า Home) ===== */
+/* Desktop: บังคับรูปบน/ข้อความล่าง + hover ซูมรูป */
+@media (min-width: 1025px) {
+  .cardLink article {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch;
+    text-align: left;
+    gap: 12px;
+  }
+
+  /* เจาะทุกเคสแม้รูปถูกห่อ */
+  .cardLink article img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: transform 0.35s ease;
+  }
+
+  .cardLink:hover article img {
+    transform: scale(1.05);
+  }
+
+  .cardLink article h3 {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 4px 0 6px;
+    color: #111827;
+  }
+
+  .cardLink article p {
+    margin: 2px 0;
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+  }
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .slideTitle {
+    font-size: 18px;
+  }
+}

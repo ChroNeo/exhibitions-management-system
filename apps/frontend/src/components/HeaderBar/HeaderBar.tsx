@@ -10,16 +10,19 @@ import { UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "./HeaderBar.module.css";
 
-type TabId = "exhibition" | "unit" | "summary";
+// เพิ่ม "home" เข้ามาใน type
+type TabId = "home" | "exhibition" | "unit" | "summary";
 
+// เพิ่มแท็บ "หน้าแรก"
 const TABS: Array<{ id: TabId; label: string }> = [
+  { id: "home", label: "หน้าแรก" },
   { id: "exhibition", label: "นิทรรศการ" },
   { id: "unit", label: "กิจกรรม" },
   { id: "summary", label: "สรุปข้อมูล" },
 ];
 
 export default function HeaderBar({
-  active = "exhibition",
+  active = "home",
   onLoginClick,
 }: {
   active?: TabId;
@@ -30,67 +33,55 @@ export default function HeaderBar({
   const toggleRef = useRef<HTMLInputElement>(null);
   const toggleId = useId().replace(/:/g, "-");
   const navId = `${toggleId}-nav`;
+
   const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    home: null,
     exhibition: null,
     unit: null,
     summary: null,
   });
+
   const indicatorTargetRef = useRef<TabId>(active);
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
 
-  const updateIndicator = useCallback(
-    (tabId: TabId) => {
-      indicatorTargetRef.current = tabId;
-      const navEl = navRef.current;
-      const tabEl = tabRefs.current[tabId];
+  const updateIndicator = useCallback((tabId: TabId) => {
+    indicatorTargetRef.current = tabId;
+    const navEl = navRef.current;
+    const tabEl = tabRefs.current[tabId];
 
-      if (!navEl || !tabEl) {
-        setIndicatorStyle({ width: 0, left: 0 });
-        return;
-      }
+    if (!navEl || !tabEl) {
+      setIndicatorStyle({ width: 0, left: 0 });
+      return;
+    }
 
-      const navRect = navEl.getBoundingClientRect();
-      const tabRect = tabEl.getBoundingClientRect();
+    const navRect = navEl.getBoundingClientRect();
+    const tabRect = tabEl.getBoundingClientRect();
 
-      setIndicatorStyle({
-        width: tabRect.width,
-        left: tabRect.left - navRect.left,
-      });
-    },
-    []
-  );
+    setIndicatorStyle({
+      width: tabRect.width,
+      left: tabRect.left - navRect.left,
+    });
+  }, []);
 
   useLayoutEffect(() => {
     updateIndicator(active);
   }, [active, updateIndicator]);
 
   useEffect(() => {
-    const handleResize = () => {
-      updateIndicator(indicatorTargetRef.current);
-    };
-
+    const handleResize = () => updateIndicator(indicatorTargetRef.current);
     window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, [updateIndicator]);
 
   const closeMenu = () => {
-    if (toggleRef.current?.checked) {
-      toggleRef.current.checked = false;
-    }
+    if (toggleRef.current?.checked) toggleRef.current.checked = false;
   };
 
   const handleTabClick = (id: TabId) => {
-    if (id === "exhibition") {
-      navigate("/exhibitions");
-    }
-
-    if (id === "unit") {
-      navigate("/units");
-    }
-
+    if (id === "home") navigate("/");
+    if (id === "exhibition") navigate("/exhibitions");
+    if (id === "unit") navigate("/units");
+    if (id === "summary") navigate("/summary");
     closeMenu();
   };
 
@@ -110,12 +101,20 @@ export default function HeaderBar({
           aria-label="Toggle navigation menu"
           aria-controls={navId}
         />
-        <label htmlFor={toggleId} className={styles.hamburger} aria-hidden="true">
+        <label
+          htmlFor={toggleId}
+          className={styles.hamburger}
+          aria-hidden="true"
+        >
           <span className={styles.hamburgerBar} />
           <span className={styles.hamburgerBar} />
           <span className={styles.hamburgerBar} />
         </label>
+
+        {/* ชื่อระบบ */}
         <div className={styles.left}>Exhibition Management System</div>
+
+        {/* เมนูหลัก */}
         <nav
           ref={navRef}
           className={styles.tabs}
@@ -123,6 +122,7 @@ export default function HeaderBar({
           aria-label="Main navigation"
           onMouseLeave={() => updateIndicator(active)}
         >
+          {/* indicator bar */}
           <span
             className={styles.tabIndicator}
             style={{
@@ -132,6 +132,7 @@ export default function HeaderBar({
             }}
             aria-hidden="true"
           />
+
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -144,7 +145,10 @@ export default function HeaderBar({
               onFocus={() => updateIndicator(tab.id)}
               onBlur={(event) => {
                 const next = event.relatedTarget as Element | null;
-                if (!next || !event.currentTarget.parentElement?.contains(next)) {
+                if (
+                  !next ||
+                  !event.currentTarget.parentElement?.contains(next)
+                ) {
                   updateIndicator(active);
                 }
               }}
@@ -157,6 +161,8 @@ export default function HeaderBar({
             </button>
           ))}
         </nav>
+
+        {/* ปุ่มผู้ใช้ */}
         <div className={styles.right}>
           <button
             type="button"

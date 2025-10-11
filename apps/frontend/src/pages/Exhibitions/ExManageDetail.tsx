@@ -175,7 +175,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
 
       {!isLoading && !isError && (
         <div className="container">
-          <Panel title={title} onBack={() => navigate("/exhibitions")}>
+          <Panel title={title} onBack={() => navigate(-1)}>
             {mode === "view" && data ? (
               <>
                 <ExhibitionDetailCard
