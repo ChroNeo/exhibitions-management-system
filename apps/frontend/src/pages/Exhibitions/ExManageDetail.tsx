@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef } from "react";
+﻿import { useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Swal from "sweetalert2";
@@ -17,6 +17,7 @@ import FormButtons from "../../components/Detail/FormButtons";
 import ExhibitionForm from "../../components/exhibition/form/ExhibitionForm";
 import type { Mode } from "../../types/mode";
 import { toFileUrl } from "../../utils/url";
+import NotFound from "../../components/NotFound";
 
 const DEFAULT_CREATED_BY = 1;
 
@@ -33,6 +34,19 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { data, isLoading, isError } = useExhibition(id ?? "", {
     enabled: shouldFetch,
   });
+  useEffect(() => {
+    if (isLoading) {
+      Swal.fire({
+        title: "กำลังโหลด",
+        didOpen: () => {
+          Swal.showLoading();
+          console.log("loading");
+        },
+      });
+    } else {
+      Swal.close();
+    }
+  }, [isLoading]);
   const { mutateAsync: createExh } = useCreateExhibition();
   const { mutateAsync: updateExh } = useUpdateExhibition();
 
@@ -165,14 +179,6 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
 
   return (
     <div>
-      <HeaderBar
-        active="exhibition"
-        onLoginClick={() => console.log("login")}
-      />
-
-      {isLoading && <div>กำลังโหลด...</div>}
-      {isError && <div>ไม่สามารถโหลดนิทรรศการได้</div>}
-
       {!isLoading && !isError && (
         <div className="container">
           <Panel title={title} onBack={() => navigate(-1)}>
@@ -189,44 +195,42 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     {
                       hour: "2-digit",
                       minute: "2-digit",
-                    }
-                  )} - ${new Date(data.end_date).toLocaleTimeString("th-TH", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}`}
-                  location={data.location}
-                  organizer={data.organizer_name}
-                  description={data.description}
-                  imageUrl={toFileUrl(data.picture_path || "")}
-                />
-                <DetailActions
-                  show
-                  onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
-                  onDelete={handleDelete}
-                />
-              </>
-            ) : (
-              <>
-                <ExhibitionForm
-                  ref={formRef}
-                  mode={mode}
-                  initialValues={initialValues}
-                  initialFileName={initialFileName}
-                  readOnly={mode === "view"}
-                  onSubmit={handleSubmit}
-                  footer={mode === "edit" ? null : undefined}
-                />
-                {mode === "edit" && (
-                  <FormButtons
-                    onConfirm={() => formRef.current?.requestSubmit()}
-                    onCancel={handleCancelEdit}
+                    })}`}
+                    location={data.location}
+                    organizer={data.organizer_name}
+                    description={data.description}
+                    imageUrl={toFileUrl(data.picture_path || "")}
                   />
-                )}
-              </>
-            )}
-          </Panel>
-        </div>
+                  <DetailActions
+                    show
+                    onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
+                    onDelete={handleDelete}
+                  />
+                </>
+              ) : (
+                <>
+                  <ExhibitionForm
+                    ref={formRef}
+                    mode={mode}
+                    initialValues={initialValues}
+                    initialFileName={initialFileName}
+                    readOnly={mode === "view"}
+                    onSubmit={handleSubmit}
+                    footer={mode === "edit" ? null : undefined}
+                  />
+                  {mode === "edit" && (
+                    <FormButtons
+                      onConfirm={() => formRef.current?.requestSubmit()}
+                      onCancel={handleCancelEdit}
+                    />
+                  )}
+                </>
+              )}
+            </Panel>
+          </div>
+        </>
       )}
+      {isError && <NotFound />}
     </div>
   );
 }

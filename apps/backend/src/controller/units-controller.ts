@@ -378,25 +378,6 @@ function buildUpdatePayload(source: unknown): UpdateUnitPayload {
     touched++;
   }
 
-  if (hasField("staff_user_id")) {
-    const raw = fields["staff_user_id"];
-    if (raw === null || raw === undefined) {
-      payload.staff_user_id = null;
-    } else {
-      const value = typeof raw === "string" ? raw : String(raw);
-      if (!value) {
-        payload.staff_user_id = null;
-      } else {
-        const staffUserId = Number(value);
-        if (!Number.isInteger(staffUserId)) {
-          throw new AppError("staff_user_id must be an integer", 400, "VALIDATION_ERROR");
-        }
-        payload.staff_user_id = staffUserId;
-      }
-    }
-    touched++;
-  }
-
   const setNullableString = (
     key: keyof Pick<UpdateUnitPayload, "poster_url" | "starts_at" | "ends_at">
   ) => {
