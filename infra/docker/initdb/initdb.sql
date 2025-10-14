@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Oct 03, 2025 at 07:20 AM
+-- Generation Time: Oct 14, 2025 at 08:30 AM
 -- Server version: 8.4.6
 -- PHP Version: 8.2.29
 
@@ -20,6 +20,24 @@ SET time_zone = "+00:00";
 --
 -- Database: `exhibition_db`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `app_settings`
+--
+
+CREATE TABLE `app_settings` (
+  `key_name` varchar(100) NOT NULL,
+  `value_json` json NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `app_settings`
+--
+
+INSERT INTO `app_settings` (`key_name`, `value_json`) VALUES
+('home_hero', '{\"mode\": \"both\", \"sort\": \"ongoing_then_soon\", \"limit\": 6, \"include_status\": \"published,ongoing\"}');
 
 -- --------------------------------------------------------
 
@@ -78,8 +96,8 @@ INSERT INTO `exhibitions` (`exhibition_id`, `exhibition_code`, `title`, `descrip
 (5, 'EX202401', 'Modern Art Showcase 2011', 'A curated selection of contemporary pieces from emerging artists.', '2024-08-30 02:00:00', '2024-09-13 10:00:00', 'Gallery Hall A', 'City Arts Council', 'uploads/exhibitions/EXP1758868393393.png', 'draft', 42, NULL, '2025-09-25 13:07:39', '2025-09-26 06:33:13', NULL),
 (8, 'EX202404', 'Modern Art Showcase 2024', 'A curated selection of contemporary pieces.', '2024-08-31 20:00:00', '2024-09-15 04:00:00', 'Gallery Hall A', 'City Arts Council', 'uploads/exhibitions/EXP1758868400309.png', 'draft', 42, NULL, '2025-09-25 13:35:02', '2025-09-26 06:33:20', NULL),
 (12, 'EX202505', 're', 'test', '2025-09-25 09:05:00', '2025-09-26 09:05:00', 'test', 'test', 'uploads/exhibitions/EXP1758868407111.png', 'draft', 1, NULL, '2025-09-25 23:05:55', '2025-09-26 06:33:27', NULL),
-(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ “Smart Tech Expo 2025” ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ “อนาคตของการอยู่อาศัย” และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', '2025-09-20 17:35:00', '2025-09-21 22:35:00', NULL, 'test', 'uploads/exhibitions/EXP1758868430956.png', 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-02 18:55:55', NULL),
-(15, 'EX202507', 'test', 'test', '2025-10-02 18:57:00', '2025-10-22 18:57:00', 'test', 'test', 'uploads/exhibitions/EXP1759433238838.jpg', 'draft', 1, NULL, '2025-10-02 19:27:19', '2025-10-02 19:27:19', NULL);
+(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ “Smart Tech Expo 2025” ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ “อนาคตของการอยู่อาศัย” และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', 'uploads/exhibitions/EXP1758868430956.png', 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL),
+(15, 'EX202507', 'test', 'test', '2025-10-02 11:57:00', '2025-10-22 11:57:00', 'test', 'test', 'uploads/exhibitions/EXP1759433238838.jpg', 'draft', 1, NULL, '2025-10-02 19:27:19', '2025-10-09 07:22:22', NULL);
 
 --
 -- Triggers `exhibitions`
@@ -128,6 +146,21 @@ INSERT INTO `exhibition_feedback` (`feedback_id`, `exhibition_id`, `user_id`, `r
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `feature_banners`
+--
+
+CREATE TABLE `feature_banners` (
+  `banner_id` int NOT NULL,
+  `image_path` varchar(255) NOT NULL,
+  `href` varchar(255) DEFAULT NULL,
+  `sort_order` int DEFAULT '0',
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `normal_users`
 --
 
@@ -152,7 +185,7 @@ INSERT INTO `normal_users` (`user_id`, `line_user_id`, `full_name`, `gender`, `b
 (1, 'U1234567890', 'Alice Chan', 'female', '1998-05-12', 'alicec', NULL, 'alice@example.com', NULL, 'user'),
 (2, 'U0987654321', 'Bob Lee', 'male', '1995-09-22', 'boblee', NULL, 'bob@example.com', NULL, 'user'),
 (3, 'U1122334455', 'Charlie Kim', 'male', '1999-03-18', 'charliek', NULL, 'charlie@example.com', NULL, 'staff'),
-(4, 'U5566778899', 'ดลยา มงคล', 'female', '2000-01-15', 'donlaya', NULL, 'donlaya@example.com', NULL, 'user'),
+(4, 'U5566778899', 'ดลยา มงคล', 'female', '2000-01-15', 'donlaya', NULL, 'donlaya@example.com', NULL, 'staff'),
 (5, 'U6677889900', 'ปรีชา ใจดี', 'male', '1997-07-07', 'preecha', NULL, 'preecha@example.com', NULL, 'user'),
 (6, 'U1010101010', 'Som Tana', 'male', '1996-02-20', 'somt', NULL, 'somt@example.com', NULL, 'user'),
 (7, 'U2020202020', 'Mina Phan', 'female', '2001-11-11', 'minaph', NULL, 'mina@example.com', NULL, 'user'),
@@ -183,10 +216,11 @@ CREATE TABLE `organizer_users` (
 --
 
 INSERT INTO `organizer_users` (`user_id`, `username`, `password_hash`, `email`, `last_synced_at`, `role`, `last_login_at`) VALUES
-(1, 'admin01', 'hashedpass1', 'admin01@example.com', NULL, 'admin', NULL),
-(2, 'org_john', 'hashedpass2', 'john@expo.com', NULL, 'organizer', NULL),
+(1, 'admin01', '$2a$12$G6hlqoz6yKviU4Oult3lgOSkiw0aP7urh3gKW9dCF6XP5QS6EiFNy', 'admin01@example.com', NULL, 'admin', NULL),
+(2, 'org_john', '$2a$12$G6hlqoz6yKviU4Oult3lgOSkiw0aP7urh3gKW9dCF6XP5QS6EiFNy', 'john@expo.com', NULL, 'organizer', NULL),
 (3, 'org_somchai', 'hashedpass3', 'somchai@expo.com', NULL, 'organizer', NULL),
-(4, 'org_mai', 'hashedpass4', 'mai@expo.com', NULL, 'organizer', NULL);
+(4, 'org_mai', 'hashedpass4', 'mai@expo.com', NULL, 'organizer', NULL),
+(5, 'organizer_new', 'a615a46a9f52e117dffce7d7235b464a910f74508dfb51a27ce8c63d0413d9a0', 'organizer_new@example.com', NULL, 'organizer', NULL);
 
 -- --------------------------------------------------------
 
@@ -221,7 +255,6 @@ CREATE TABLE `units` (
   `exhibition_id` int NOT NULL,
   `unit_name` varchar(255) NOT NULL,
   `description` text,
-  `staff_user_id` int DEFAULT NULL,
   `unit_type` enum('activity','booth') NOT NULL DEFAULT 'booth',
   `poster_url` varchar(500) DEFAULT NULL,
   `starts_at` datetime DEFAULT NULL,
@@ -232,15 +265,17 @@ CREATE TABLE `units` (
 -- Dumping data for table `units`
 --
 
-INSERT INTO `units` (`unit_id`, `unit_code`, `exhibition_id`, `unit_name`, `description`, `staff_user_id`, `unit_type`, `poster_url`, `starts_at`, `ends_at`) VALUES
-(1, 'EX20250101', 1, 'Robotics Lab Demo2', 'Hands-on robotics challenge', 1, 'booth', 'uploads/units/EXP1759246238844.jpg', '2024-05-01 10:00:00', '2024-05-01 18:00:00'),
-(2, 'EX20250102', 1, 'Robot Show', 'โชว์บนเวทีใหญ่', 2, 'activity', 'https://cdn.example.com/posters/robot.jpg', '2025-11-02 14:00:00', '2025-11-02 15:00:00'),
-(3, 'EX20250103', 1, 'IoT Corner', 'ของเล่น IoT', 3, 'booth', NULL, '2025-11-01 10:00:00', '2025-11-05 17:00:00'),
-(4, 'EX20250104', 1, 'Cloud 101 Talk', 'แนะนำพื้นฐานคลาวด์', NULL, 'activity', NULL, '2025-11-03 11:00:00', '2025-11-03 12:00:00'),
-(5, 'EX20250105', 1, 'AR/VR Demo', 'ลองของจริง', 7, 'booth', NULL, '2025-11-01 09:30:00', '2025-11-05 17:30:00'),
-(6, 'EX20250106', 1, 'Security Workshop', 'เวิร์กช็อปความปลอดภัย', 6, 'activity', NULL, '2025-11-04 13:00:00', '2025-11-04 15:00:00'),
-(7, 'EX20250107', 1, 'Startup Pitch', 'พิตช์บนเวที', 8, 'activity', NULL, '2025-11-05 10:00:00', '2025-11-05 12:00:00'),
-(8, 'EX20250108', 1, 'Hardware Lab', 'ทดลองบอร์ด ESP32', 3, 'booth', NULL, '2025-11-02 09:00:00', '2025-11-05 18:00:00');
+INSERT INTO `units` (`unit_id`, `unit_code`, `exhibition_id`, `unit_name`, `description`, `unit_type`, `poster_url`, `starts_at`, `ends_at`) VALUES
+(1, 'EX20250101', 1, 'Robotics Lab Demo2', 'Hands-on robotics challenge', 'booth', 'uploads/units/EXP1759848361494.jpg', '2024-04-30 20:00:00', '2024-05-01 04:00:00'),
+(2, 'EX20250102', 1, 'Robot Show', 'โชว์บนเวทีใหญ่', 'activity', 'uploads/units/EXP1759849066017.webp', '2025-11-02 07:00:00', '2025-11-02 08:00:00'),
+(3, 'EX20250103', 1, 'IoT Corner', 'ของเล่น IoT', 'booth', 'uploads/units/EXP1759849287066.png', '2025-11-01 03:00:00', '2025-11-05 10:00:00'),
+(4, 'EX20250104', 1, 'Cloud 101 Talk', 'แนะนำพื้นฐานคลาวด์', 'activity', NULL, '2025-11-03 11:00:00', '2025-11-03 12:00:00'),
+(5, 'EX20250105', 1, 'AR/VR Demo', 'ลองของจริง', 'booth', 'uploads/units/EXP1759848371446.jpg', '2025-11-01 02:30:00', '2025-11-05 10:30:00'),
+(6, 'EX20250106', 1, 'Security Workshop', 'เวิร์กช็อปความปลอดภัย', 'activity', NULL, '2025-11-04 13:00:00', '2025-11-04 15:00:00'),
+(7, 'EX20250107', 1, 'Startup Pitch', 'พิตช์บนเวที', 'activity', NULL, '2025-11-05 10:00:00', '2025-11-05 12:00:00'),
+(8, 'EX20250108', 1, 'Hardware Lab', 'ทดลองบอร์ด ESP32', 'booth', NULL, '2025-11-02 09:00:00', '2025-11-05 18:00:00'),
+(12, 'EX20250109', 1, 'Robotics Lab Demo', 'Hands-on robotics challenge', 'booth', 'uploads/units/EXP1760008335192.png', '2024-05-01 03:00:00', '2024-05-01 11:00:00'),
+(15, 'EX20250110', 1, 'dfdfkdj', 'รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด', 'booth', 'uploads/units/EXP1760260365114.png', '2025-10-12 10:12:00', '2025-10-13 11:14:00');
 
 --
 -- Triggers `units`
@@ -311,6 +346,24 @@ CREATE TABLE `unit_feedback` (
 
 INSERT INTO `unit_feedback` (`feedback_id`, `unit_id`, `user_id`, `rating`, `comment`, `created_at`) VALUES
 (1, 1, 1, 5, 'บูธ AI สุดยอด เข้าใจง่าย คนอธิบายเก่ง', '2025-11-01 11:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `unit_staffs`
+--
+
+CREATE TABLE `unit_staffs` (
+  `unit_id` int NOT NULL,
+  `staff_user_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `unit_staffs`
+--
+
+INSERT INTO `unit_staffs` (`unit_id`, `staff_user_id`) VALUES
+(3, 5);
 
 -- --------------------------------------------------------
 
@@ -395,7 +448,7 @@ CREATE TABLE `v_units_by_exhibition` (
 ,`exhibition_id` int
 ,`exhibition_code` varchar(20)
 ,`exhibition_title` varchar(255)
-,`staff_name` varchar(255)
+,`staff_names` text
 );
 
 -- --------------------------------------------------------
@@ -421,17 +474,6 @@ CREATE TABLE `v_units_checkins` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_units_full` (
-`unit_id` int
-,`exhibition_code` varchar(20)
-,`exhibition_title` varchar(255)
-,`unit_name` varchar(255)
-,`unit_type` enum('activity','booth')
-,`poster_url` varchar(500)
-,`starts_at` datetime
-,`ends_at` datetime
-,`staff_name` varchar(255)
-,`avg_rating` decimal(7,4)
-,`feedback_count` bigint
 );
 
 -- --------------------------------------------------------
@@ -456,6 +498,12 @@ CREATE TABLE `v_unit_feedback` (
 --
 
 --
+-- Indexes for table `app_settings`
+--
+ALTER TABLE `app_settings`
+  ADD PRIMARY KEY (`key_name`);
+
+--
 -- Indexes for table `certificate_templates`
 --
 ALTER TABLE `certificate_templates`
@@ -476,6 +524,12 @@ ALTER TABLE `exhibition_feedback`
   ADD PRIMARY KEY (`feedback_id`),
   ADD KEY `idx_exhf_exhibition` (`exhibition_id`),
   ADD KEY `fk_exhf_user` (`user_id`);
+
+--
+-- Indexes for table `feature_banners`
+--
+ALTER TABLE `feature_banners`
+  ADD PRIMARY KEY (`banner_id`);
 
 --
 -- Indexes for table `normal_users`
@@ -508,8 +562,7 @@ ALTER TABLE `registrations`
 ALTER TABLE `units`
   ADD PRIMARY KEY (`unit_id`),
   ADD UNIQUE KEY `uq_units_exh_name` (`exhibition_id`,`unit_name`),
-  ADD UNIQUE KEY `uq_unit_code` (`unit_code`),
-  ADD KEY `idx_units_staff` (`staff_user_id`);
+  ADD UNIQUE KEY `uq_unit_code` (`unit_code`);
 
 --
 -- Indexes for table `units_checkins`
@@ -528,6 +581,13 @@ ALTER TABLE `unit_feedback`
   ADD PRIMARY KEY (`feedback_id`),
   ADD KEY `idx_uf_unit` (`unit_id`),
   ADD KEY `idx_uf_user` (`user_id`);
+
+--
+-- Indexes for table `unit_staffs`
+--
+ALTER TABLE `unit_staffs`
+  ADD PRIMARY KEY (`unit_id`,`staff_user_id`),
+  ADD KEY `staff_user_id` (`staff_user_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -552,6 +612,12 @@ ALTER TABLE `exhibition_feedback`
   MODIFY `feedback_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `feature_banners`
+--
+ALTER TABLE `feature_banners`
+  MODIFY `banner_id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `normal_users`
 --
 ALTER TABLE `normal_users`
@@ -561,7 +627,7 @@ ALTER TABLE `normal_users`
 -- AUTO_INCREMENT for table `organizer_users`
 --
 ALTER TABLE `organizer_users`
-  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `registrations`
@@ -573,7 +639,7 @@ ALTER TABLE `registrations`
 -- AUTO_INCREMENT for table `units`
 --
 ALTER TABLE `units`
-  MODIFY `unit_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `unit_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `units_checkins`
@@ -630,7 +696,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_regis
 --
 DROP TABLE IF EXISTS `v_units_by_exhibition`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units_by_exhibition`  AS SELECT `u`.`unit_id` AS `unit_id`, `u`.`unit_code` AS `unit_code`, `u`.`unit_name` AS `unit_name`, `u`.`unit_type` AS `unit_type`, `u`.`poster_url` AS `poster_url`, `u`.`starts_at` AS `starts_at`, `u`.`ends_at` AS `ends_at`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, coalesce(`nu`.`full_name`,'') AS `staff_name` FROM ((`units` `u` join `exhibitions` `e` on((`u`.`exhibition_id` = `e`.`exhibition_id`))) left join `normal_users` `nu` on((`u`.`staff_user_id` = `nu`.`user_id`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units_by_exhibition`  AS SELECT `u`.`unit_id` AS `unit_id`, `u`.`unit_code` AS `unit_code`, `u`.`unit_name` AS `unit_name`, `u`.`unit_type` AS `unit_type`, `u`.`poster_url` AS `poster_url`, `u`.`starts_at` AS `starts_at`, `u`.`ends_at` AS `ends_at`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, coalesce(group_concat(`nu`.`full_name` separator ', '),'') AS `staff_names` FROM (((`units` `u` join `exhibitions` `e` on((`u`.`exhibition_id` = `e`.`exhibition_id`))) left join `unit_staffs` `us` on((`u`.`unit_id` = `us`.`unit_id`))) left join `normal_users` `nu` on((`us`.`staff_user_id` = `nu`.`user_id`))) GROUP BY `u`.`unit_id`, `e`.`exhibition_id`, `e`.`exhibition_code`, `e`.`title`, `u`.`unit_code`, `u`.`unit_name`, `u`.`unit_type`, `u`.`poster_url`, `u`.`starts_at`, `u`.`ends_at` ;
 
 -- --------------------------------------------------------
 
@@ -687,8 +753,7 @@ ALTER TABLE `registrations`
 -- Constraints for table `units`
 --
 ALTER TABLE `units`
-  ADD CONSTRAINT `fk_units_exhibition` FOREIGN KEY (`exhibition_id`) REFERENCES `exhibitions` (`exhibition_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_units_staff` FOREIGN KEY (`staff_user_id`) REFERENCES `normal_users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_units_exhibition` FOREIGN KEY (`exhibition_id`) REFERENCES `exhibitions` (`exhibition_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `units_checkins`
@@ -704,6 +769,13 @@ ALTER TABLE `units_checkins`
 ALTER TABLE `unit_feedback`
   ADD CONSTRAINT `fk_uf_unit` FOREIGN KEY (`unit_id`) REFERENCES `units` (`unit_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_uf_user` FOREIGN KEY (`user_id`) REFERENCES `normal_users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `unit_staffs`
+--
+ALTER TABLE `unit_staffs`
+  ADD CONSTRAINT `unit_staffs_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `units` (`unit_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `unit_staffs_ibfk_2` FOREIGN KEY (`staff_user_id`) REFERENCES `normal_users` (`user_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
