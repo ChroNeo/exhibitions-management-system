@@ -1,19 +1,15 @@
-/* ===== Layout base ===== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 16px 60px;
-  background: #f9fafb;
+  background: #fff;
 }
 
-/* ===== HERO (slider) ===== */
+/* ====================== สไลด์ด้านบน ====================== */
 .hero {
   position: relative;
   overflow: hidden;
-  border: 2px solid #e6a66a; /* กรอบส้มเดียว */
   border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
   margin-bottom: 28px;
 }
 
@@ -25,14 +21,13 @@
   display: flex;
   transition: transform 0.6s ease;
 }
+
 .slide {
   flex: 0 0 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 14px;
 }
-
-/* 16:9 คงที่ */
 .slideAspect {
   aspect-ratio: 16/9;
   width: 100%;
@@ -43,8 +38,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.35s ease;
 }
-
+.slide:hover .slideImg {
+  transform: scale(1.02);
+}
 .overlay {
   position: absolute;
   inset: 0;
@@ -66,23 +64,23 @@
   opacity: 0.9;
 }
 
-/* arrows + dots */
+/* ปุ่มเลื่อน */
 .arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.35);
   color: #fff;
   border: none;
+  border-radius: 999px;
   width: 38px;
   height: 38px;
-  border-radius: 999px;
   cursor: pointer;
   font-size: 18px;
-  transition: background 0.2s;
+  transition: background 0.2s ease;
 }
 .arrow:hover {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.6);
 }
 .left {
   left: 12px;
@@ -91,11 +89,12 @@
   right: 12px;
 }
 
+/* จุดบอกตำแหน่ง */
 .dots {
   display: flex;
   justify-content: center;
   gap: 6px;
-  margin: 10px 0;
+  margin-top: 10px;
 }
 .dot {
   width: 10px;
@@ -104,14 +103,15 @@
   border: none;
   background: #d1d5db;
   cursor: pointer;
+  transition: background 0.3s;
 }
 .dot.active {
   background: #2563eb;
 }
 
-/* ===== LIST ===== */
+/* ====================== SECTION รายการนิทรรศการ ====================== */
 .listSection {
-  margin-top: 12px;
+  margin-top: 20px;
 }
 .sectionTitle {
   font-size: 19px;
@@ -120,16 +120,15 @@
   margin: 0 0 16px;
 }
 
-/* Grid: Desktop 3 / Tablet 2 / Mobile 1 */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 22px;
 }
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 18px;
   }
 }
 @media (max-width: 768px) {
@@ -138,15 +137,11 @@
   }
 }
 
-/* Wrapper ของการ์ด (ไม่ทำกรอบซ้ำ) */
+/* ====================== CARD การ์ดนิทรรศการ ====================== */
 .cardLink {
   display: block;
   text-decoration: none;
   color: inherit;
-  background: transparent;
-  border: none;
-  padding: 0;
-  box-shadow: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .cardLink:hover {
@@ -154,49 +149,95 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-/* ===== Card overrides (เฉพาะหน้า Home) ===== */
-/* Desktop: บังคับรูปบน/ข้อความล่าง + hover ซูมรูป */
-@media (min-width: 1025px) {
-  .cardLink article {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch;
-    text-align: left;
-    gap: 12px;
-  }
-
-  /* เจาะทุกเคสแม้รูปถูกห่อ */
-  .cardLink article img {
-    width: 100% !important;
-    height: auto !important;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    transition: transform 0.35s ease;
-  }
-
-  .cardLink:hover article img {
-    transform: scale(1.05);
-  }
-
-  .cardLink article h3 {
-    font-size: 16px;
-    font-weight: 800;
-    margin: 4px 0 6px;
-    color: #111827;
-  }
-
-  .cardLink article p {
-    margin: 2px 0;
-    font-size: 14px;
-    color: #4b5563;
-    line-height: 1.5;
-  }
+.forceVertical {
+  background: #fff;
+  border: 2px solid #e6a66a;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease;
+}
+.cardLink:hover .forceVertical {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
 }
 
-/* Mobile tweaks */
-@media (max-width: 768px) {
-  .slideTitle {
-    font-size: 18px;
-  }
+/* ====================== Layout ภายในการ์ด (รูปบน-ข้อความล่าง) ====================== */
+.forceVertical :is(article, [class*="Card"], [class*="card"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.forceVertical
+  :is([class*="media"], [class*="thumb"], [class*="cover"], [class*="image"]) {
+  order: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+.forceVertical :is(img, .thumb, .cover, .poster, .image) {
+  width: 100% !important;
+  height: auto !important;
+  object-fit: cover !important;
+  border-radius: 10px !important;
+  display: block !important;
+  transition: transform 0.35s ease !important;
+}
+.cardLink:hover .forceVertical :is(img, .thumb, .cover, .poster, .image) {
+  transform: scale(1.03);
+}
+
+/* ส่วนข้อความ */
+.forceVertical
+  :is([class*="body"], [class*="content"], [class*="info"], [class*="detail"]) {
+  order: 1 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+
+.forceVertical :is(h3, .title) {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  margin: 4px 0 6px !important;
+  color: #111827 !important;
+}
+.forceVertical :is(p, .meta, time, .location) {
+  margin: 2px 0 !important;
+  font-size: 14px !important;
+  color: #4b5563 !important;
+  line-height: 1.5 !important;
+}
+
+.forceVertical hr,
+.forceVertical .divider {
+  display: none !important;
+}
+
+.forceVertical
+  :is(
+    .description,
+    .desc,
+    .detail,
+    [class*="description"],
+    [class*="desc"],
+    [class*="detail"]
+  ) {
+  display: none !important;
+}
+
+.hero .arrow {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.hero:hover .arrow {
+  opacity: 1;
+  pointer-events: auto;
 }

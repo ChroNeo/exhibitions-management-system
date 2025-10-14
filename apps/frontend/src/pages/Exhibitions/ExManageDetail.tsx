@@ -180,19 +180,31 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   return (
     <div>
       {!isLoading && !isError && (
-        <div className="container">
-          <Panel title={title} onBack={() => navigate(-1)}>
-            {mode === "view" && data ? (
-              <>
-                <ExhibitionDetailCard
-                  title={data.title}
-                  startText={new Date(data.start_date).toLocaleDateString(
-                    "th-TH"
-                  )}
-                  endText={new Date(data.end_date).toLocaleDateString("th-TH")}
-                  timeText={`${new Date(data.start_date).toLocaleTimeString(
-                    "th-TH",
-                    {
+        <>
+          <HeaderBar
+            active="exhibition"
+            onLoginClick={() => console.log("login")}
+          />
+
+          <div className="container">
+            <Panel title={title} onBack={() => navigate(-1)}>
+              {mode === "view" && data ? (
+                <>
+                  <ExhibitionDetailCard
+                    title={data.title}
+                    startText={new Date(data.start_date).toLocaleDateString(
+                      "th-TH"
+                    )}
+                    endText={new Date(data.end_date).toLocaleDateString(
+                      "th-TH"
+                    )}
+                    timeText={`${new Date(data.start_date).toLocaleTimeString(
+                      "th-TH",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )} - ${new Date(data.end_date).toLocaleTimeString("th-TH", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}`}

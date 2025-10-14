@@ -9,7 +9,6 @@ export default function HomePage() {
   const { data: exhibitions = [], isLoading } = useExhibitions();
   const slides = exhibitions.filter((ex) => ex.coverUrl);
 
-  // Carousel state
   const [index, setIndex] = useState(0);
   useEffect(() => {
     if (!slides.length) return;
@@ -38,7 +37,6 @@ export default function HomePage() {
                     to={`/exhibitions/${ex.id}`}
                     className={styles.slide}
                   >
-                    {/* 16:9 คงที่ */}
                     <div className={styles.slideAspect}>
                       <img
                         className={styles.slideImg}
@@ -70,6 +68,7 @@ export default function HomePage() {
                 ❯
               </button>
             </div>
+
             <div className={styles.dots}>
               {slides.map((_, i) => (
                 <button
@@ -85,10 +84,10 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* LIST */}
         <section className={styles.listSection}>
           <h2 className={styles.sectionTitle}>รายการนิทรรศการทั้งหมด</h2>
           {isLoading && <p>กำลังโหลด...</p>}
+
           <div className={styles.grid}>
             {exhibitions.map((ex) => (
               <Link
@@ -96,7 +95,9 @@ export default function HomePage() {
                 to={`/exhibitions/${ex.id}`}
                 className={styles.cardLink}
               >
-                <ExhibitionCard item={ex} />
+                <div className={styles.forceVertical}>
+                  <ExhibitionCard item={ex} />
+                </div>
               </Link>
             ))}
           </div>

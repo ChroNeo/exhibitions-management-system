@@ -15,7 +15,6 @@ type TabId = "home" | "exhibition" | "unit" | "summary";
 
 // เพิ่มแท็บ "หน้าแรก"
 const TABS: Array<{ id: TabId; label: string }> = [
-  { id: "home", label: "หน้าแรก" },
   { id: "exhibition", label: "นิทรรศการ" },
   { id: "unit", label: "กิจกรรม" },
   { id: "summary", label: "สรุปข้อมูล" },
@@ -111,8 +110,13 @@ export default function HeaderBar({
           <span className={styles.hamburgerBar} />
         </label>
 
-        {/* ชื่อระบบ */}
-        <div className={styles.left}>Exhibition Management System</div>
+        <div
+          className={styles.left}
+          onClick={() => navigate("/")}
+          style={{ cursor: "pointer" }}
+        >
+          Exhibition Management System
+        </div>
 
         {/* เมนูหลัก */}
         <nav
