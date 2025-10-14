@@ -5,12 +5,15 @@ import UnitManageList from "./pages/Units/UnitManageList";
 import UnitManageDetail from "./pages/Units/UnitManageDetail";
 import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
 import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
+import HomePage from "./pages/Homepage/HomePage";
 
-function App() {
+export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/exhibitions" replace />} />{" "}
-      {/*ให้ exhibition เป็นหน้าแรกชั่วคราว */}
+      {/* หน้าแรก = Home */}
+      <Route path="/" element={<HomePage />} />
+
+      {/* Exhibitions */}
       <Route path="/exhibitions" element={<ExhibitionPage />} />
       <Route
         path="/exhibitions/new"
@@ -21,13 +24,25 @@ function App() {
         path="/exhibitions/:id/edit"
         element={<ExManageDetail mode="edit" />}
       />
+
+      {/* Units */}
       <Route path="/units" element={<UnitManagePage />} />
       <Route path="/units/:id" element={<UnitManageList mode="view" />} />
-      <Route path="/units/:exhibitionId/unit/new" element={<UnitManageDetail mode="create" />} />
-      <Route path="/units/:exhibitionId/unit/:unitId" element={<UnitManageDetail mode="view" />} />
-      <Route path="/units/:exhibitionId/unit/:unitId/edit" element={<UnitManageDetail mode="edit" />} />
+      <Route
+        path="/units/:exhibitionId/unit/new"
+        element={<UnitManageDetail mode="create" />}
+      />
+      <Route
+        path="/units/:exhibitionId/unit/:unitId"
+        element={<UnitManageDetail mode="view" />}
+      />
+      <Route
+        path="/units/:exhibitionId/unit/:unitId/edit"
+        element={<UnitManageDetail mode="edit" />}
+      />
+
+      {/* กันหลงทาง */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
-
-export default App;
