@@ -25,7 +25,7 @@ export async function getFeature(
     .filter(Boolean);
   const status = statusList.length ? statusList.join(",") : "published,ongoing";
 
-  const featureImages = await safeQuery<any[]>(
+  const bannerRows = await safeQuery<any[]>(
     `SELECT image_path AS image, href
      FROM feature_banners
      WHERE is_active = 1
@@ -46,6 +46,21 @@ export async function getFeature(
      SELECT * FROM picked`,
     [status, limit]
   );
+
+  const featureImages = [
+    ...bannerRows.map((banner) => ({
+      type: "banner",
+      image: banner.image,
+      href: banner.href,
+    })),
+    ...exhibitions.map((exhibition) => ({
+      type: "exhibition",
+      image: exhibition.picture_path,
+      href: `/exhibitions/${exhibition.exhibition_id}`,
+      ref_id: exhibition.exhibition_id,
+      title: exhibition.title,
+    })),
+  ];
 
   return {
     featureImages,
