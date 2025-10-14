@@ -59,6 +59,9 @@ export async function getFeature(
       href: `/exhibitions/${exhibition.exhibition_id}`,
       ref_id: exhibition.exhibition_id,
       title: exhibition.title,
+      start_date: exhibition.start_date,
+      end_date: exhibition.end_date,
+      location: exhibition.location,
     })),
   ];
 
