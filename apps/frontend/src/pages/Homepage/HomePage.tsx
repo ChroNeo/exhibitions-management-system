@@ -2,14 +2,18 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import ExhibitionCard from "../../components/exhibition/ExhibitionCard";
-import { useExhibitions } from "../../hook/useExhibitions";
+import { useFeature } from "../../hook/useFeature";
 import styles from "./HomePage.module.css";
+import { toFileUrl } from "../../utils/url";
 
 export default function HomePage() {
-  const { data: exhibitions = [], isLoading } = useExhibitions();
-  const slides = exhibitions.filter((ex) => ex.coverUrl);
+  const { data, isLoading } = useFeature();
+
+  const slides = data?.featureImages ?? [];
+  const exhibitions = data?.exhibitions ?? [];
 
   const [index, setIndex] = useState(0);
+
   useEffect(() => {
     if (!slides.length) return;
     const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), 4000);
@@ -31,39 +35,40 @@ export default function HomePage() {
                 className={styles.slideTrack}
                 style={{ transform: `translateX(-${index * 100}%)` }}
               >
-                {slides.map((ex) => (
+                {slides.map((slide) => (
                   <Link
-                    key={ex.id}
-                    to={`/exhibitions/${ex.id}`}
+                    key={slide.ref_id}
+                    to={slide.href}
                     className={styles.slide}
                   >
                     <div className={styles.slideAspect}>
                       <img
                         className={styles.slideImg}
-                        src={ex.coverUrl!}
-                        alt={ex.title}
+                        src={toFileUrl(slide.image)}
+                        alt={slide.title}
                       />
                     </div>
                     <div className={styles.overlay}>
-                      <h3 className={styles.slideTitle}>{ex.title}</h3>
+                      <h3 className={styles.slideTitle}>{slide.title}</h3>
                       <p className={styles.slideMeta}>
-                        {ex.dateText} • {ex.location}
+                        {new Date(slide.start_date).toLocaleDateString()} –{" "}
+                        {new Date(slide.end_date).toLocaleDateString()} •{" "}
+                        {slide.location}
                       </p>
                     </div>
                   </Link>
                 ))}
               </div>
+
               <button
                 className={`${styles.arrow} ${styles.left}`}
                 onClick={prev}
-                aria-label="Previous"
               >
                 ❮
               </button>
               <button
                 className={`${styles.arrow} ${styles.right}`}
                 onClick={next}
-                aria-label="Next"
               >
                 ❯
               </button>
@@ -77,13 +82,13 @@ export default function HomePage() {
                     i === index ? styles.active : ""
                   }`}
                   onClick={() => setIndex(i)}
-                  aria-label={`Go to slide ${i + 1}`}
                 />
               ))}
             </div>
           </section>
         )}
 
+        {/* EXHIBITIONS */}
         <section className={styles.listSection}>
           <h2 className={styles.sectionTitle}>รายการนิทรรศการทั้งหมด</h2>
           {isLoading && <p>กำลังโหลด...</p>}
@@ -91,12 +96,30 @@ export default function HomePage() {
           <div className={styles.grid}>
             {exhibitions.map((ex) => (
               <Link
-                key={ex.id}
-                to={`/exhibitions/${ex.id}`}
+                key={ex.exhibition_id}
+                to={`/exhibitions/${ex.exhibition_id}`}
                 className={styles.cardLink}
               >
                 <div className={styles.forceVertical}>
-                  <ExhibitionCard item={ex} />
+                  <ExhibitionCard
+                    item={{
+                      id: String(ex.exhibition_id),
+                      title: ex.title,
+                      location: ex.location,
+                      coverUrl: `${ex.picture_path}`,
+                      dateText: `${new Date(
+                        ex.start_date
+                      ).toLocaleDateString()} - ${new Date(
+                        ex.end_date
+                      ).toLocaleDateString()}`,
+                      picture_path: ex.picture_path,
+                      start_date: ex.start_date,
+                      end_date: ex.end_date,
+                      organizer_name: "",
+                      description: "",
+                      isPinned: false,
+                    }}
+                  />
                 </div>
               </Link>
             ))}
