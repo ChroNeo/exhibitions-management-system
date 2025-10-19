@@ -24,6 +24,7 @@ describe("userController", () => {
     vi.clearAllMocks();
   });
 
+  // ทดสอบว่า GET / ดึงผู้ใช้ทั้งหมดและแมประบบเป็น dropdown
   it("ดึงข้อมูลทั้งหมด", async () => {
     const app = await buildApp();
     const mockedResponse = [
@@ -53,6 +54,7 @@ describe("userController", () => {
     }
   });
 
+  // ทดสอบว่า GET /?role=staff ส่ง role เข้า query และคืนข้อมูลเฉพาะ role นั้น
   it("กรองตาม role", async () => {
     const app = await buildApp();
     const mockedResponse = [

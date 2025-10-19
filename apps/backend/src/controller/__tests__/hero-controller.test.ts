@@ -24,6 +24,7 @@ describe("heroController", () => {
     vi.clearAllMocks();
   });
 
+  // ทดสอบว่า controller ส่งต่อ query params ให้ getFeature และคืนผล mock
   it("คืนค่าข้อมูล feature จากการใส่ query", async () => {
     const app = buildApp();
     const mockedResponse = {
@@ -56,6 +57,7 @@ describe("heroController", () => {
     }
   });
 
+  // ทดสอบว่า controller ใช้ค่า default เมื่อลูกค้าไม่ส่ง query มา
   it("uses default query values when none provided", async () => {
     const app = buildApp();
     const mockedResponse = { featureImages: [], exhibitions: [] };
