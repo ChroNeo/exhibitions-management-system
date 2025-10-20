@@ -12,6 +12,7 @@
     "docker:up": "docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env up -d",
     "docker:down": "docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env down",
     "docker:logs": "docker compose -f infra/docker/docker-compose.yml logs -f",
-    "db:shell": "docker exec -it ems-mysql mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE"
+    "db:shell": "docker exec -it ems-mysql mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE",
+    "test:backend": "pnpm --filter @ems/backend test"
   }
 }

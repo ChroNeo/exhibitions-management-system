@@ -194,6 +194,101 @@ const schemas = [
       },
     ],
   },
+  {
+    $id: "RegistrationInput",
+    type: "object",
+    required: ["exhibition_id", "full_name", "email", "role"],
+    additionalProperties: false,
+    properties: {
+      exhibition_id: { type: "integer", minimum: 1, example: 1 },
+      full_name: {
+        type: "string",
+        minLength: 1,
+        example: "สมชาย ใจดี",
+      },
+      gender: {
+        type: "string",
+        enum: ["male", "female", "other"],
+        example: "male",
+      },
+      birthdate: {
+        type: "string",
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+        example: "1999-05-21",
+      },
+      email: {
+        type: "string",
+        format: "email",
+        example: "user@example.com",
+      },
+      phone: {
+        type: "string",
+        minLength: 1,
+        example: "0812345678",
+      },
+      role: {
+        type: "string",
+        enum: ["visitor", "staff"],
+        example: "visitor",
+      },
+      unit_code: {
+        type: "string",
+        minLength: 1,
+        example: "EX20250103",
+        description: "Required when role is staff.",
+      },
+    },
+    examples: [
+      {
+        exhibition_id: 1,
+        full_name: "สมชาย ใจดี",
+        gender: "male",
+        birthdate: "1999-05-21",
+        email: "user@example.com",
+        phone: "0812345678",
+        role: "staff",
+        unit_code: "EX20250103",
+      },
+    ],
+  },
+  {
+    $id: "RegistrationResponse",
+    type: "object",
+    required: ["user", "registration"],
+    properties: {
+      user: {
+        type: "object",
+        required: ["user_id", "role"],
+        properties: {
+          user_id: { type: "integer", example: 123 },
+          role: { type: "string", enum: ["user", "staff"], example: "staff" },
+        },
+      },
+      registration: {
+        type: "object",
+        required: ["registration_id", "exhibition_id"],
+        properties: {
+          registration_id: { type: "integer", example: 456 },
+          exhibition_id: { type: "integer", example: 1 },
+        },
+      },
+      staff_linked: {
+        type: "object",
+        required: ["unit_id", "added"],
+        properties: {
+          unit_id: { type: "integer", example: 3 },
+          added: { type: "boolean", example: true },
+        },
+      },
+    },
+    examples: [
+      {
+        user: { user_id: 123, role: "staff" },
+        registration: { registration_id: 456, exhibition_id: 1 },
+        staff_linked: { unit_id: 3, added: true },
+      },
+    ],
+  },
 ];
 
 export const registerSchemas = (app: FastifyInstance) => {

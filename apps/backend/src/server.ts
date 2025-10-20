@@ -13,6 +13,7 @@ import unitsController from "./controller/units-controller.js";
 import authController from "./controller/auth-controller.js";
 import userController from "./controller/user-controller.js";
 import heroController from "./controller/hero-controller.js";
+import registrationsController from "./controller/registrations-controller.js";
 dotenv.config();
 
 const app = Fastify({
@@ -59,6 +60,10 @@ await app.register(swagger, {
       },
       { name: "Units", description: "Manage exhibition units and activities." },
       { name: "Users", description: "Manage system users and assignments." },
+      {
+        name: "Registrations",
+        description: "Register visitors and staff to exhibitions.",
+      },
     ],
   },
 });
@@ -124,7 +129,8 @@ app.register(exhibitionsController, { prefix: "/api/v1/exhibitions" });
 app.register(unitsController, { prefix: "/api/v1/exhibitions" });
 app.register(authController, { prefix: "/api/v1/auth" });
 app.register(userController, { prefix: "/api/v1/users" });
-app.register(heroController, { prefix: "/api/v1/feature" })
+app.register(heroController, { prefix: "/api/v1/feature" });
+app.register(registrationsController, { prefix: "/api/v1/registrations" });
 
 const port = Number(process.env.PORT || 3001);
 app.listen({ port, host: "0.0.0.0" }).then(() => {
