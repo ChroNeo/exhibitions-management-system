@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Swal from "sweetalert2";
 import { useDeleteExhibition } from "../../hook/useDeleteExhibition";
@@ -238,6 +238,14 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                   )}
                 </>
               )}
+              <div style={{ marginTop: 12 }}>
+                <Link
+                  to={`/exhibitions/${id}/register`}
+                  className="btn success"
+                >
+                  ลงทะเบียน
+                </Link>
+              </div>
             </Panel>
           </div>
         </>
