@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Oct 14, 2025 at 08:30 AM
+-- Generation Time: Oct 20, 2025 at 10:52 AM
 -- Server version: 8.4.6
 -- PHP Version: 8.2.29
 
@@ -173,6 +173,7 @@ CREATE TABLE `normal_users` (
   `username` varchar(100) DEFAULT NULL,
   `picture_url` varchar(500) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(30) DEFAULT NULL,
   `last_synced_at` timestamp NULL DEFAULT NULL,
   `role` enum('user','staff') DEFAULT 'user'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -181,19 +182,21 @@ CREATE TABLE `normal_users` (
 -- Dumping data for table `normal_users`
 --
 
-INSERT INTO `normal_users` (`user_id`, `line_user_id`, `full_name`, `gender`, `birthdate`, `username`, `picture_url`, `email`, `last_synced_at`, `role`) VALUES
-(1, 'U1234567890', 'Alice Chan', 'female', '1998-05-12', 'alicec', NULL, 'alice@example.com', NULL, 'user'),
-(2, 'U0987654321', 'Bob Lee', 'male', '1995-09-22', 'boblee', NULL, 'bob@example.com', NULL, 'user'),
-(3, 'U1122334455', 'Charlie Kim', 'male', '1999-03-18', 'charliek', NULL, 'charlie@example.com', NULL, 'staff'),
-(4, 'U5566778899', 'ดลยา มงคล', 'female', '2000-01-15', 'donlaya', NULL, 'donlaya@example.com', NULL, 'staff'),
-(5, 'U6677889900', 'ปรีชา ใจดี', 'male', '1997-07-07', 'preecha', NULL, 'preecha@example.com', NULL, 'user'),
-(6, 'U1010101010', 'Som Tana', 'male', '1996-02-20', 'somt', NULL, 'somt@example.com', NULL, 'user'),
-(7, 'U2020202020', 'Mina Phan', 'female', '2001-11-11', 'minaph', NULL, 'mina@example.com', NULL, 'user'),
-(8, 'U3030303030', 'Ken Wong', 'male', '1994-04-04', 'kenw', NULL, 'ken@example.com', NULL, 'user'),
-(9, 'U4040404040', 'ศศิธร สายชล', 'female', '1998-08-21', 'sasithorn', NULL, 'sasi@example.com', NULL, 'user'),
-(10, 'U5050505050', 'Napat J.', 'male', '1997-12-05', 'napatj', NULL, 'napat@example.com', NULL, 'user'),
-(11, 'U6060606060', 'Ploy Nun', 'female', '1999-06-30', 'ploynun', NULL, 'ploy@example.com', NULL, 'user'),
-(12, 'U7070707070', 'Arthit K.', 'male', '1995-03-03', 'arthitk', NULL, 'arthit@example.com', NULL, 'user');
+INSERT INTO `normal_users` (`user_id`, `line_user_id`, `full_name`, `gender`, `birthdate`, `username`, `picture_url`, `email`, `phone`, `last_synced_at`, `role`) VALUES
+(1, 'U1234567890', 'Alice Chan', 'female', '1998-05-12', 'alicec', NULL, 'alice@example.com', NULL, NULL, 'user'),
+(2, 'U0987654321', 'Bob Lee', 'male', '1995-09-22', 'boblee', NULL, 'bob@example.com', NULL, NULL, 'user'),
+(3, 'U1122334455', 'Charlie Kim', 'male', '1999-03-18', 'charliek', NULL, 'charlie@example.com', NULL, NULL, 'staff'),
+(4, 'U5566778899', 'ดลยา มงคล', 'female', '2000-01-15', 'donlaya', NULL, 'donlaya@example.com', NULL, NULL, 'staff'),
+(5, 'U6677889900', 'ปรีชา ใจดี', 'male', '1997-07-07', 'preecha', NULL, 'preecha@example.com', NULL, NULL, 'user'),
+(6, 'U1010101010', 'Som Tana', 'male', '1996-02-20', 'somt', NULL, 'somt@example.com', NULL, NULL, 'user'),
+(7, 'U2020202020', 'Mina Phan', 'female', '2001-11-11', 'minaph', NULL, 'mina@example.com', NULL, NULL, 'user'),
+(8, 'U3030303030', 'Ken Wong', 'male', '1994-04-04', 'kenw', NULL, 'ken@example.com', NULL, NULL, 'user'),
+(9, 'U4040404040', 'ศศิธร สายชล', 'female', '1998-08-21', 'sasithorn', NULL, 'sasi@example.com', NULL, NULL, 'user'),
+(10, 'U5050505050', 'Napat J.', 'male', '1997-12-05', 'napatj', NULL, 'napat@example.com', NULL, NULL, 'user'),
+(11, 'U6060606060', 'Ploy Nun', 'female', '1999-06-30', 'ploynun', NULL, 'ploy@example.com', NULL, NULL, 'user'),
+(12, 'U7070707070', 'Arthit K.', 'male', '1995-03-03', 'arthitk', NULL, 'arthit@example.com', NULL, NULL, 'user'),
+(13, NULL, 'สมชาย ใจดี', 'male', '1999-05-21', NULL, NULL, 'visitor@example.com', '0812345678', NULL, 'user'),
+(14, NULL, 'สุกัญญา ใจดี', 'female', '1995-03-10', NULL, NULL, 'staff@example.com', '0897654321', NULL, 'staff');
 
 -- --------------------------------------------------------
 
@@ -241,7 +244,9 @@ CREATE TABLE `registrations` (
 
 INSERT INTO `registrations` (`registration_id`, `exhibition_id`, `user_id`, `registered_at`) VALUES
 (1, 1, 1, '2025-10-20 14:30:00'),
-(2, 1, 2, '2025-10-22 16:00:00');
+(2, 1, 2, '2025-10-22 16:00:00'),
+(3, 1, 13, '2025-10-20 10:04:26'),
+(4, 1, 14, '2025-10-20 10:20:43');
 
 -- --------------------------------------------------------
 
@@ -363,7 +368,8 @@ CREATE TABLE `unit_staffs` (
 --
 
 INSERT INTO `unit_staffs` (`unit_id`, `staff_user_id`) VALUES
-(3, 5);
+(3, 5),
+(3, 14);
 
 -- --------------------------------------------------------
 
@@ -465,15 +471,6 @@ CREATE TABLE `v_units_checkins` (
 ,`unit_code` varchar(30)
 ,`unit_name` varchar(255)
 ,`checkin_at` timestamp
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_units_full`
--- (See below for the actual view)
---
-CREATE TABLE `v_units_full` (
 );
 
 -- --------------------------------------------------------
@@ -621,7 +618,7 @@ ALTER TABLE `feature_banners`
 -- AUTO_INCREMENT for table `normal_users`
 --
 ALTER TABLE `normal_users`
-  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `organizer_users`
@@ -633,7 +630,7 @@ ALTER TABLE `organizer_users`
 -- AUTO_INCREMENT for table `registrations`
 --
 ALTER TABLE `registrations`
-  MODIFY `registration_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `registration_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `units`
@@ -706,15 +703,6 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units
 DROP TABLE IF EXISTS `v_units_checkins`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units_checkins`  AS SELECT `uc`.`checkin_id` AS `checkin_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `nu`.`full_name` AS `user_name`, `u`.`unit_code` AS `unit_code`, `u`.`unit_name` AS `unit_name`, `uc`.`checkin_at` AS `checkin_at` FROM (((`units_checkins` `uc` join `exhibitions` `e` on((`uc`.`exhibition_id` = `e`.`exhibition_id`))) join `normal_users` `nu` on((`uc`.`user_id` = `nu`.`user_id`))) join `units` `u` on((`uc`.`unit_id` = `u`.`unit_id`))) ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `v_units_full`
---
-DROP TABLE IF EXISTS `v_units_full`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units_full`  AS SELECT `u`.`unit_id` AS `unit_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `u`.`unit_name` AS `unit_name`, `u`.`unit_type` AS `unit_type`, `u`.`poster_url` AS `poster_url`, `u`.`starts_at` AS `starts_at`, `u`.`ends_at` AS `ends_at`, `nu`.`full_name` AS `staff_name`, coalesce(avg(`uf`.`rating`),0) AS `avg_rating`, count(`uf`.`feedback_id`) AS `feedback_count` FROM (((`units` `u` join `exhibitions` `e` on((`u`.`exhibition_id` = `e`.`exhibition_id`))) left join `normal_users` `nu` on((`u`.`staff_user_id` = `nu`.`user_id`))) left join `unit_feedback` `uf` on((`uf`.`unit_id` = `u`.`unit_id`))) GROUP BY `u`.`unit_id`, `e`.`exhibition_code`, `e`.`title`, `u`.`unit_name`, `u`.`unit_type`, `u`.`poster_url`, `u`.`starts_at`, `u`.`ends_at`, `nu`.`full_name` ;
 
 -- --------------------------------------------------------
 
