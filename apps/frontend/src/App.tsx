@@ -6,6 +6,7 @@ import UnitManageDetail from "./pages/Units/UnitManageDetail";
 import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
 import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
 import HomePage from "./pages/Homepage/HomePage";
+import RegisterPage from "./pages/RegisterPage/RegisterPage";
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
         path="/units/:exhibitionId/unit/:unitId/edit"
         element={<UnitManageDetail mode="edit" />}
       />
+      <Route path="/exhibitions/:id/register" element={<RegisterPage />} />
 
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />
