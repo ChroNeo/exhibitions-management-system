@@ -14,6 +14,7 @@ import type { Mode } from "../../types/mode";
 import { fmtDateRangeTH } from "../../utils/date";
 import Swal from "sweetalert2";
 import { useDeleteUnit } from "../../hook/useDeleteUnit";
+import { useAuthStatus } from "../../hook/useAuthStatus";
 
 type UnitManageListProps = { mode?: Mode };
 
@@ -40,6 +41,7 @@ function formatUnitDateRange(
 export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
   const { id: exhibitionId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStatus();
   const { mutateAsync: deleteUnit } = useDeleteUnit();
   const { data: exhibition } = useExhibition(exhibitionId ?? "", {
     enabled: !!exhibitionId,
@@ -107,7 +109,7 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
   const title = exhibition?.title
     ? `กิจกรรมใน ${exhibition.title}`
     : "จัดการกิจกรรม";
-  const shouldShowActions = mode === "view";
+  const shouldShowActions = mode === "view" && isAuthenticated;
 
   const handleAdd = () => {
     if (!exhibitionId) return;

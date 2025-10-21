@@ -9,10 +9,12 @@ import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import { useDeleteExhibition } from "../../hook/useDeleteExhibition";
 import { useExhibitions } from "../../hook/useExhibitions";
 import type { Exhibition } from "../../types/exhibition";
+import { useAuthStatus } from "../../hook/useAuthStatus";
 
 export default function ExhibitionPage() {
   const [query] = useState("");
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStatus();
 
   const { data, isLoading, isError } = useExhibitions();
   const items: Exhibition[] = useMemo(() => data ?? [], [data]);
@@ -90,15 +92,17 @@ export default function ExhibitionPage() {
                 <ExhibitionList
                   items={filtered}
                   onSelect={handleSelect}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
+                  onEdit={isAuthenticated ? handleEdit : undefined}
+                  onDelete={isAuthenticated ? handleDelete : undefined}
                 />
-                <AddInline
-                  variant="floating"
-                  label="เพิ่มนิทรรศการ"
-                  ariaLabel="เพิ่มนิทรรศการ"
-                  onClick={handleAdd}
-                />
+                {isAuthenticated && (
+                  <AddInline
+                    variant="floating"
+                    label="เพิ่มนิทรรศการ"
+                    ariaLabel="เพิ่มนิทรรศการ"
+                    onClick={handleAdd}
+                  />
+                )}
               </>
             )}
             {isDeleting && <div>กำลังลบ...</div>}

@@ -4,8 +4,8 @@ import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
 import styles from "./LoginPage.module.css";
 import { useSignIn } from "../../hook/useSignIn";
-
-const AUTH_STORAGE_KEY = "exhibition-auth";
+import { persistAuth } from "../../utils/authStorage";
+import Swal from "sweetalert2";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -35,33 +35,32 @@ export default function LoginPage() {
         password: form.password,
       });
 
-      const storageValue = JSON.stringify({
-        token: result.token,
-        tokenType: result.token_type,
-        expiresAt: Date.now() + result.expires_in * 1000,
-        user: result.user,
+      persistAuth(
+        {
+          token: result.token,
+          tokenType: result.token_type,
+          expiresAt: Date.now() + result.expires_in * 1000,
+          user: result.user,
+        },
+        form.remember
+      );
+
+      await Swal.fire({
+        title: "เข้าสู่ระบบสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
       });
-
-      try {
-        const primaryStorage = form.remember
-          ? window.localStorage
-          : window.sessionStorage;
-        const secondaryStorage = form.remember
-          ? window.sessionStorage
-          : window.localStorage;
-
-        primaryStorage.setItem(AUTH_STORAGE_KEY, storageValue);
-        secondaryStorage.removeItem(AUTH_STORAGE_KEY);
-      } catch (storageError) {
-        console.error("Failed to persist auth token", storageError);
-      }
-
-      alert("เข้าสู่ระบบสำเร็จ");
       navigate("/");
     } catch (err) {
       const message =
         err instanceof Error && err.message ? err.message : "เกิดข้อผิดพลาด";
       setError(message);
+      await Swal.fire({
+        title: "เข้าสู่ระบบไม่สำเร็จ",
+        text: message,
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
     }
   };
 

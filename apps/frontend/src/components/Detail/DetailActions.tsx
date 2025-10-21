@@ -8,14 +8,19 @@ export default function DetailActions({
   onDelete,
 }: {
   show?: boolean;
-  onEdit: () => void;
+  onEdit?: () => void;
   onDelete?: () => void;
 }) {
   if (!show) return null;
 
   return (
     <div className={styles.actions}>
-      <button className={`${styles.btn} ${styles.edit}`} onClick={onEdit}>
+      <button
+        type="button"
+        className={`${styles.btn} ${styles.edit}`}
+        onClick={onEdit}
+        disabled={!onEdit}
+      >
         <FaEdit className={styles.icon} />
         <span>แก้ไข</span>
       </button>

@@ -6,9 +6,11 @@
   useRef,
   useState,
 } from "react";
-import { UserCircle } from "lucide-react";
+import { LogOut, UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "./HeaderBar.module.css";
+import { clearAuth } from "../../utils/authStorage";
+import { useAuthStatus } from "../../hook/useAuthStatus";
 
 // เพิ่ม "home" เข้ามาใน type
 type TabId = "home" | "exhibition" | "unit" | "summary";
@@ -23,9 +25,11 @@ const TABS: Array<{ id: TabId; label: string }> = [
 export default function HeaderBar({
   active = "home",
   onLoginClick,
+  onLogoutClick,
 }: {
   active?: TabId;
   onLoginClick?: () => void;
+  onLogoutClick?: () => void;
 }) {
   const navigate = useNavigate();
   const navRef = useRef<HTMLElement | null>(null);
@@ -42,6 +46,7 @@ export default function HeaderBar({
 
   const indicatorTargetRef = useRef<TabId>(active);
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
+  const hasAuth = useAuthStatus();
 
   const updateIndicator = useCallback((tabId: TabId) => {
     indicatorTargetRef.current = tabId;
@@ -86,6 +91,16 @@ export default function HeaderBar({
 
   const handleLoginClick = () => {
     closeMenu();
+
+    if (hasAuth) {
+      clearAuth();
+      onLogoutClick?.();
+      if (!onLogoutClick) {
+        navigate("/");
+      }
+      return;
+    }
+
     if (onLoginClick) {
       onLoginClick();
     } else {
@@ -176,9 +191,13 @@ export default function HeaderBar({
             type="button"
             className={styles.login}
             onClick={handleLoginClick}
-            aria-label="Account menu"
+            aria-label={hasAuth ? "Logout" : "Account menu"}
           >
-            <UserCircle size={22} aria-hidden="true" />
+            {hasAuth ? (
+              <LogOut size={22} aria-hidden="true" />
+            ) : (
+              <UserCircle size={22} aria-hidden="true" />
+            )}
           </button>
         </div>
       </div>

@@ -18,6 +18,7 @@ import ExhibitionForm from "../../components/exhibition/form/ExhibitionForm";
 import type { Mode } from "../../types/mode";
 import { toFileUrl } from "../../utils/url";
 import NotFound from "../../components/NotFound";
+import { useAuthStatus } from "../../hook/useAuthStatus";
 
 const DEFAULT_CREATED_BY = 1;
 
@@ -177,6 +178,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     }
   };
 
+  const hasAuthToken = useAuthStatus();
+
   return (
     <div>
       {!isLoading && !isError && (
@@ -214,9 +217,15 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     imageUrl={toFileUrl(data.picture_path || "")}
                   />
                   <DetailActions
-                    show
-                    onEdit={() => id && navigate(`/exhibitions/${id}/edit`)}
-                    onDelete={handleDelete}
+                    show={hasAuthToken}
+                    onEdit={
+                      hasAuthToken
+                        ? () => {
+                            if (id) navigate(`/exhibitions/${id}/edit`);
+                          }
+                        : undefined
+                    }
+                    onDelete={hasAuthToken ? handleDelete : undefined}
                   />
                 </>
               ) : (

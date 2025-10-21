@@ -13,6 +13,7 @@ import type { Mode } from "../../types/mode";
 import type { UnitCreatePayload } from "../../types/units";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
 import Swal from "sweetalert2";
+import { useAuthStatus } from "../../hook/useAuthStatus";
 
 type UnitManageDetailProps = { mode?: Mode };
 
@@ -72,6 +73,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
     unitId?: string;
   }>();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStatus();
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -282,8 +284,8 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
                 staffText={staffText}
                 description={description}
                 posterUrl={data.posterUrl}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+                onEdit={isAuthenticated ? handleEdit : undefined}
+                onDelete={isAuthenticated ? handleDelete : undefined}
               />
             </div>
           )}

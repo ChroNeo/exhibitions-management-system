@@ -76,7 +76,7 @@ export default function UnitDetailCard({
       <div className={styles.footer}>
         <DetailActions
           show={Boolean(onEdit || onDelete)}
-          onEdit={onEdit ?? (() => {})}
+          onEdit={onEdit}
           onDelete={onDelete}
         />
       </div>

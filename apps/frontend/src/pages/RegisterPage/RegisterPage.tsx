@@ -4,6 +4,7 @@ import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
 import styles from "./RegisterPage.module.css";
 import { IoMdCheckboxOutline } from "react-icons/io";
+import Swal from "sweetalert2";
 
 type Role = "VISITOR" | "STAFF";
 
@@ -30,7 +31,7 @@ export default function RegisterPage() {
     if (r === "VISITOR") setForm((s) => ({ ...s, code: "" })); // ล้าง code เมื่อไม่ใช่ STAFF
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload =
       role === "STAFF"
@@ -38,7 +39,11 @@ export default function RegisterPage() {
         : (({ code, ...rest }) => ({ ...rest, role, exhibitionId }))(form);
 
     console.log("submit:", payload);
-    alert("ลงทะเบียนสำเร็จ!");
+    await Swal.fire({
+      title: "ลงทะเบียนสำเร็จ!",
+      icon: "success",
+      confirmButtonText: "ตกลง",
+    });
     navigate(-1);
   };
 
