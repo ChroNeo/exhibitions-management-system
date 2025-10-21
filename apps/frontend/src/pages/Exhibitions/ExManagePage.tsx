@@ -76,7 +76,7 @@ export default function ExhibitionPage() {
   return (
     <div>
       <HeaderBar
-        active="exhibition"
+        active="exhibition_unit"
         onLoginClick={() => navigate("/login")}
       />
       <div className="container">

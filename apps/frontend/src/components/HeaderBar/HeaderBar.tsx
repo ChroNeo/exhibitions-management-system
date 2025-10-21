@@ -13,14 +13,13 @@ import { clearAuth } from "../../utils/authStorage";
 import { useAuthStatus } from "../../hook/useAuthStatus";
 
 // เพิ่ม "home" เข้ามาใน type
-type TabId = "home" | "exhibition" | "unit" | "summary";
+type TabId = "home" | "exhibition_unit";
 
 // เพิ่มแท็บ "หน้าแรก"
 const TABS: Array<{ id: TabId; label: string }> = [
-  { id: "exhibition", label: "นิทรรศการ" },
-  { id: "unit", label: "กิจกรรม" },
-  { id: "summary", label: "สรุปข้อมูล" },
+  { id: "exhibition_unit", label: "นิทรรศการ & กิจกรรม" },
 ];
+
 
 export default function HeaderBar({
   active = "home",
@@ -39,9 +38,7 @@ export default function HeaderBar({
 
   const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
     home: null,
-    exhibition: null,
-    unit: null,
-    summary: null,
+    exhibition_unit: null,
   });
 
   const indicatorTargetRef = useRef<TabId>(active);
@@ -84,9 +81,7 @@ export default function HeaderBar({
 
   const handleTabClick = (id: TabId) => {
     if (id === "home") navigate("/");
-    if (id === "exhibition") navigate("/exhibitions");
-    if (id === "unit") navigate("/units");
-    if (id === "summary") navigate("/summary");
+    if (id === "exhibition_unit") navigate("/exhibitions");
     closeMenu();
   };
 
@@ -205,3 +200,4 @@ export default function HeaderBar({
     </header>
   );
 }
+

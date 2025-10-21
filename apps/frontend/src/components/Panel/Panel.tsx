@@ -1,21 +1,29 @@
+import type { ReactNode } from "react";
 import styles from "./Panel.module.css";
 import { FaArrowLeft } from "react-icons/fa6";
 
-export default function Panel({
-  title,
-  children,
-  onBack,
-}: {
+type PanelProps = {
   title: string;
-  children: React.ReactNode;
-  onBack: () => void;
-}) {
+  children: ReactNode;
+  onBack?: () => void;
+};
+
+export default function Panel({ title, children, onBack }: PanelProps) {
   return (
     <section className={styles.panel}>
       <div className={styles.header}>
-        <a href="#" onClick={onBack} className={styles.backLink}>
-          <FaArrowLeft />
-        </a>
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className={styles.backLink}
+            aria-label="Go back"
+          >
+            <FaArrowLeft />
+          </button>
+        ) : (
+          <span className={styles.backPlaceholder} aria-hidden="true" />
+        )}
 
         <h2 className={styles.title}>{title}</h2>
       </div>

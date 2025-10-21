@@ -23,7 +23,7 @@ type Props = {
   onSelect?: (id: string) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
-  exhibition: Exhibition;
+  exhibition?: Exhibition;
 };
 
 type MetaItem = {

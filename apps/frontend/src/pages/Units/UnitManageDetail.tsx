@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
@@ -178,7 +178,9 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
         icon: "success",
         confirmButtonText: "ตกลง",
       });
-      navigate(`/units/${exhibitionId}/unit/${unit.id}`);
+      navigate(`/exhibitions/${exhibitionId}/unit/${unit.id}`, {
+        replace: true,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "ไม่สามารถบันทึกกิจกรรมได้";
       setFormError(message);
@@ -203,7 +205,9 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
         icon: "success",
         confirmButtonText: "ตกลง",
       });
-      navigate(`/units/${exhibitionId}/unit/${unitId}`);
+      navigate(`/exhibitions/${exhibitionId}/unit/${unitId}`, {
+        replace: true,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "ไม่สามารถบันทึกกิจกรรมได้";
       setFormError(message);
@@ -217,13 +221,26 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
   };
 
   const handleBack = () => {
-    if (exhibitionId) navigate(`/units/${exhibitionId}`);
-    else navigate("/units");
+    const canGoBack =
+      typeof window !== "undefined" &&
+      typeof window.history.state?.idx === "number" &&
+      window.history.state.idx > 0;
+
+    if (canGoBack) {
+      navigate(-1);
+      return;
+    }
+
+    if (exhibitionId) {
+      navigate(`/exhibitions/${exhibitionId}`);
+    } else {
+      navigate("/exhibitions");
+    }
   };
 
   const handleEdit = () => {
     if (!exhibitionId || !unitId) return;
-    navigate(`/units/${exhibitionId}/unit/${unitId}/edit`);
+    navigate(`/exhibitions/${exhibitionId}/unit/${unitId}/edit`);
   };
 
   const handleDelete = async () => {
@@ -248,7 +265,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
         icon: "success",
         confirmButtonText: "ตกลง",
       });
-      navigate(`/units/${exhibitionId}`);
+      navigate(`/exhibitions/${exhibitionId}`, { replace: true });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "ไม่สามารถลบกิจกรรมได้ กรุณาลองใหม่";
@@ -268,7 +285,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
 
   return (
     <div>
-      <HeaderBar active="unit" onLoginClick={() => navigate("/login")} />
+      <HeaderBar active="exhibition_unit" onLoginClick={() => navigate("/login")} />
       <div className="container">
         <Panel title={title} onBack={handleBack}>
           {isViewMode && isLoading && <div>กำลังโหลดกิจกรรม...</div>}

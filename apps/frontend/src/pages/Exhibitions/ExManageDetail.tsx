@@ -19,6 +19,7 @@ import type { Mode } from "../../types/mode";
 import { toFileUrl } from "../../utils/url";
 import NotFound from "../../components/NotFound";
 import { useAuthStatus } from "../../hook/useAuthStatus";
+import UnitManageList from "../Units/UnitManageList";
 
 const DEFAULT_CREATED_BY = 1;
 
@@ -180,17 +181,32 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
 
   const hasAuthToken = useAuthStatus();
 
+  const handlePanelBack = () => {
+    const historyIdx =
+      typeof window !== "undefined" &&
+      typeof window.history.state?.idx === "number"
+        ? window.history.state.idx
+        : null;
+
+    if (historyIdx !== null && historyIdx > 0) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/exhibitions");
+  };
+
   return (
     <div>
       {!isLoading && !isError && (
         <>
           <HeaderBar
-            active="exhibition"
+            active="exhibition_unit"
             onLoginClick={() => navigate("/login")}
           />
 
           <div className="container">
-            <Panel title={title} onBack={() => navigate(-1)}>
+            <Panel title={title} onBack={handlePanelBack}>
               {mode === "view" && data ? (
                 <>
                   <ExhibitionDetailCard
@@ -256,6 +272,9 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                 </Link>
               </div>
             </Panel>
+            {id && mode !== "create" && (
+              <UnitManageList mode={mode} embedded />
+            )}
           </div>
         </>
       )}
