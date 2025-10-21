@@ -183,7 +183,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         <>
           <HeaderBar
             active="exhibition"
-            onLoginClick={() => console.log("login")}
+            onLoginClick={() => navigate("/login")}
           />
 
           <div className="container">

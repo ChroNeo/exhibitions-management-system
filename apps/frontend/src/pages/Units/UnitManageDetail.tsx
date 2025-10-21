@@ -266,7 +266,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
 
   return (
     <div>
-      <HeaderBar active="unit" onLoginClick={() => console.log("login")} />
+      <HeaderBar active="unit" onLoginClick={() => navigate("/login")} />
       <div className="container">
         <Panel title={title} onBack={handleBack}>
           {isViewMode && isLoading && <div>กำลังโหลดกิจกรรม...</div>}

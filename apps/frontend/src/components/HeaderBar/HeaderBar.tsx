@@ -86,7 +86,11 @@ export default function HeaderBar({
 
   const handleLoginClick = () => {
     closeMenu();
-    onLoginClick?.();
+    if (onLoginClick) {
+      onLoginClick();
+    } else {
+      navigate("/login");
+    }
   };
 
   return (

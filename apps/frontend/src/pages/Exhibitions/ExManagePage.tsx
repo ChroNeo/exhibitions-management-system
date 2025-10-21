@@ -75,7 +75,7 @@ export default function ExhibitionPage() {
     <div>
       <HeaderBar
         active="exhibition"
-        onLoginClick={() => console.log("login")}
+        onLoginClick={() => navigate("/login")}
       />
       <div className="container">
         <section className={styles.panel}>

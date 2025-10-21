@@ -25,7 +25,7 @@ export default function UnitManagePage() {
   };
   return (
     <div>
-      <HeaderBar active="unit" onLoginClick={() => console.log("login")} />
+      <HeaderBar active="unit" onLoginClick={() => navigate("/login")} />
       <div className="container">
         <section className={styles.panel}>
           <div className={styles.header}>

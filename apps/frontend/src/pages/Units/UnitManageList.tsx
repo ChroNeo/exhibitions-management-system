@@ -116,7 +116,7 @@ export default function UnitManageList({ mode = "view" }: UnitManageListProps) {
 
   return (
     <div>
-      <HeaderBar active="unit" onLoginClick={() => console.log("login")} />
+      <HeaderBar active="unit" onLoginClick={() => navigate("/login")} />
       <div className="container">
         <Panel title={title} onBack={handleBack}>
           {isLoading && <div>กำลังโหลดกิจกรรม...</div>}
