@@ -47,6 +47,7 @@ export default function HeaderBar({
   const indicatorTargetRef = useRef<TabId>(active);
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
   const hasAuth = useAuthStatus();
+  const visibleTabs = hasAuth ? TABS : [];
 
   const updateIndicator = useCallback((tabId: TabId) => {
     indicatorTargetRef.current = tabId;
@@ -156,7 +157,7 @@ export default function HeaderBar({
             aria-hidden="true"
           />
 
-          {TABS.map((tab) => (
+          {visibleTabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
