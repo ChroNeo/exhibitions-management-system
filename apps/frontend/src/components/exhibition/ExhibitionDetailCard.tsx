@@ -2,6 +2,7 @@ import styles from "./ExhibitionDetailCard.module.css";
 import { MdOutlineCalendarToday } from "react-icons/md";
 import { LuClock, LuBadgeCheck } from "react-icons/lu";
 import { IoLocationOutline, IoPersonOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
 
 export default function ExhibitionDetailCard({
   title,
@@ -15,6 +16,7 @@ export default function ExhibitionDetailCard({
   onEdit,
   onDelete,
   status,
+  registerLink,
 }: {
   title: string;
   startText: string;
@@ -27,6 +29,7 @@ export default function ExhibitionDetailCard({
   onEdit?: () => void;
   onDelete?: () => void;
   status?: string;
+  registerLink?: string;
 }) {
   return (
     <section className={styles.card}>
@@ -89,6 +92,14 @@ export default function ExhibitionDetailCard({
               ลบ
             </button>
           )}
+        </div>
+      )}
+
+      {registerLink && (
+        <div className={styles.registerWrap}>
+          <Link to={registerLink} className="btn success">
+            ลงทะเบียน
+          </Link>
         </div>
       )}
     </section>

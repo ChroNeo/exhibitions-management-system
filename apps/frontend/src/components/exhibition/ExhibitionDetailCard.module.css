@@ -77,6 +77,11 @@
   padding: 10px 18px;
   font-weight: 700;
 }
+.registerWrap {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-start;
+}
 
 @media (max-width: 768px) {
   .header {
