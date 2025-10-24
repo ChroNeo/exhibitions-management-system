@@ -6,7 +6,9 @@ export type Exhibition = {
     id: string;
     title: string;
     status: string;
-    description?: string;
+    description?: string; // plain text excerpt for previews/search
+    descriptionHtml?: string;
+    descriptionDelta?: string;
     dateText: string;
     location: string;
     coverUrl?: string;
@@ -17,6 +19,7 @@ export interface ExhibitionApi {
   exhibition_id: number;
   title: string;
   description?: string | null;
+  description_delta?: string | null;
   start_date: string;
   end_date: string;
   location?: string | null;

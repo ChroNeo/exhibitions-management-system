@@ -2,6 +2,7 @@
 import type { Exhibition, ExhibitionApi } from "../types/exhibition";
 import { fmtDateRangeTH } from "../utils/date";
 import { toFileUrl } from "../utils/url";
+import { extractPlainTextDescription } from "../utils/text";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
@@ -12,6 +13,7 @@ export type ExhibitionCreatePayload = {
   organizer_name: string;
   created_by: number;
   description?: string;
+  description_delta?: string;
   location?: string;
   status?: string;
   file?: File;
@@ -24,6 +26,7 @@ export type ExhibitionUpdatePayload = {
   location?: string;
   organizer_name?: string;
   description?: string;
+  description_delta?: string;
   status?: string;
   file?: File;
 };
@@ -33,7 +36,12 @@ function mapToExhibition(x: ExhibitionApi): Exhibition {
     id: String(x.exhibition_id),
     title: x.title,
     status: x.status ?? "draft",
-    description: x.description ?? "",
+    description: extractPlainTextDescription({
+      html: x.description ?? "",
+      delta: x.description_delta ?? "",
+    }),
+    descriptionHtml: x.description ?? "",
+    descriptionDelta: x.description_delta ?? "",
     location: x.location ?? "",
     coverUrl: toFileUrl(x.picture_path),      // เพื่อรองรับ field ที่ backend ส่งมาเพิ่มในอนาคต
     dateText: fmtDateRangeTH(x.start_date, x.end_date),
@@ -75,6 +83,7 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
     appendString("location", rest.location);
     appendString("organizer_name", rest.organizer_name);
     appendString("description", rest.description);
+    appendString("description_delta", rest.description_delta);
     appendString("status", rest.status);
     appendString("created_by", String(rest.created_by));
     fd.append("picture_path", file);
@@ -99,6 +108,9 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
 
   if (rest.location !== undefined) jsonPayload.location = rest.location;
   if (rest.description !== undefined) jsonPayload.description = rest.description;
+  if (rest.description_delta !== undefined) {
+    jsonPayload.description_delta = rest.description_delta;
+  }
   if (rest.status !== undefined) jsonPayload.status = rest.status;
 
   const res = await fetch(endpoint, {
@@ -139,6 +151,7 @@ export async function updateExhibitionApi(
     appendString("location", rest.location);
     appendString("organizer_name", rest.organizer_name);
     appendString("description", rest.description);
+    appendString("description_delta", rest.description_delta);
     appendString("status", rest.status);
     fd.append("picture_path", file);
 
@@ -159,6 +172,9 @@ export async function updateExhibitionApi(
   if (rest.location !== undefined) jsonPayload.location = rest.location;
   if (rest.organizer_name !== undefined) jsonPayload.organizer_name = rest.organizer_name;
   if (rest.description !== undefined) jsonPayload.description = rest.description;
+  if (rest.description_delta !== undefined) {
+    jsonPayload.description_delta = rest.description_delta;
+  }
   if (rest.status !== undefined) jsonPayload.status = rest.status;
 
   if (!Object.keys(jsonPayload).length) {

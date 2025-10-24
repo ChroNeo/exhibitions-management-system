@@ -11,6 +11,7 @@ export type ExhibitionStatus = (typeof EXHIBITION_STATUSES)[number];
 export interface AddExhibitionPayload {
   title: string;
   description?: string;
+  description_delta?: string;
   start_date: string; // ISO datetime string
   end_date: string; // ISO datetime string
   location?: string;
@@ -23,6 +24,7 @@ export interface AddExhibitionPayload {
 export type UpdateExhibitionPayload = Partial<{
   title: string;
   description: string | null;
+  description_delta: string | null;
   start_date: string;
   end_date: string;
   location: string | null;

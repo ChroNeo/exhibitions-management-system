@@ -222,7 +222,12 @@ function normaliseCreatePayload(fields: Record<string, string>): AddExhibitionPa
     throw new AppError("invalid status value", 400, "VALIDATION_ERROR");
   }
 
-  const requiredFields: Array<keyof Omit<AddExhibitionPayload, "description" | "location" | "picture_path" | "status">> = [
+  const requiredFields: Array<
+    keyof Omit<
+      AddExhibitionPayload,
+      "description" | "description_delta" | "location" | "picture_path" | "status"
+    >
+  > = [
     "title",
     "start_date",
     "end_date",
@@ -240,6 +245,7 @@ function normaliseCreatePayload(fields: Record<string, string>): AddExhibitionPa
   return {
     title: fields.title ?? "",
     description: fields.description || undefined,
+    description_delta: fields.description_delta || undefined,
     start_date: fields.start_date ?? "",
     end_date: fields.end_date ?? "",
     location: fields.location || undefined,
@@ -308,6 +314,11 @@ function buildUpdatePayload(source: unknown): UpdateExhibitionPayload {
     treatEmptyAsNull: false,
   });
   assignStringField("description", { allowNull: true, allowEmpty: true, treatEmptyAsNull: true });
+  assignStringField("description_delta", {
+    allowNull: true,
+    allowEmpty: true,
+    treatEmptyAsNull: true,
+  });
   assignStringField("location", { allowNull: true, allowEmpty: true, treatEmptyAsNull: true });
   assignStringField("picture_path", {
     allowNull: true,

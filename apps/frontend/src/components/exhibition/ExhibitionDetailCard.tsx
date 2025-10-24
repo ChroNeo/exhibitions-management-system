@@ -12,6 +12,7 @@ export default function ExhibitionDetailCard({
   location,
   organizer,
   description,
+  descriptionHtml,
   imageUrl,
   onEdit,
   onDelete,
@@ -25,12 +26,18 @@ export default function ExhibitionDetailCard({
   location?: string;
   organizer?: string;
   description?: string;
+  descriptionHtml?: string;
   imageUrl?: string;
   onEdit?: () => void;
   onDelete?: () => void;
   status?: string;
   registerLink?: string;
 }) {
+  const hasDescriptionHtml =
+    typeof descriptionHtml === "string" && descriptionHtml.trim().length > 0;
+  const hasDescriptionText =
+    typeof description === "string" && description.trim().length > 0;
+
   return (
     <section className={styles.card}>
       <div className={styles.header}>
@@ -78,7 +85,14 @@ export default function ExhibitionDetailCard({
         </div>
       </div>
 
-      {description && <p className={styles.desc}>{description}</p>}
+      {hasDescriptionHtml ? (
+        <div
+          className={styles.desc}
+          dangerouslySetInnerHTML={{ __html: descriptionHtml ?? "" }}
+        />
+      ) : hasDescriptionText ? (
+        <p className={styles.desc}>{description}</p>
+      ) : null}
 
       {(onEdit || onDelete) && (
         <div className={styles.actions}>

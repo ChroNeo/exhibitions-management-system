@@ -39,11 +39,12 @@ export async function addExhibitions(payload: AddExhibitionPayload): Promise<any
 
   const result = await safeQuery<ResultSetHeader>(
     `INSERT INTO exhibitions
-      (title, description, start_date, end_date, location, organizer_name, picture_path, status, created_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (title, description, description_delta, start_date, end_date, location, organizer_name, picture_path, status, created_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       payload.title,
       payload.description || null,
+      payload.description_delta || null,
       payload.start_date,
       payload.end_date,
       payload.location || null,
@@ -98,6 +99,7 @@ export async function updateExhibition(
   const optionalFields: Array<keyof UpdateExhibitionPayload> = [
     "title",
     "description",
+    "description_delta",
     "start_date",
     "end_date",
     "location",
@@ -133,7 +135,12 @@ export async function updateExhibition(
     }
 
     const column = field;
-    if (field === "description" || field === "location" || field === "picture_path") {
+    if (
+      field === "description" ||
+      field === "description_delta" ||
+      field === "location" ||
+      field === "picture_path"
+    ) {
       updates.push(`${column} = ?`);
       params.push(value ?? null);
     } else {

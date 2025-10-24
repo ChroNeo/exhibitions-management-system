@@ -20,6 +20,7 @@ import { toFileUrl } from "../../utils/url";
 import NotFound from "../../components/NotFound";
 import { useAuthStatus } from "../../hook/useAuthStatus";
 import UnitManageList from "../Units/UnitManageList";
+import { extractPlainTextDescription } from "../../utils/text";
 
 const DEFAULT_CREATED_BY = 1;
 const DEFAULT_STATUS = "draft";
@@ -60,6 +61,14 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   }, [isLoading]);
   const { mutateAsync: createExh } = useCreateExhibition();
   const { mutateAsync: updateExh } = useUpdateExhibition();
+  const descriptionPlain = useMemo(() => {
+    if (!data) return "";
+    const api = data as unknown as ExhibitionApi;
+    return extractPlainTextDescription({
+      html: api.description,
+      delta: api.description_delta,
+    });
+  }, [data]);
 
   const title =
     mode === "create"
@@ -87,6 +96,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         location: api.location ?? "",
         organizer_name: api.organizer_name ?? "",
         description: api.description ?? "",
+        description_delta: api.description_delta ?? "",
         status: api.status ?? DEFAULT_STATUS,
         file: undefined,
       },
@@ -143,6 +153,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       location: v.location,
       organizer_name: v.organizer_name,
       description: v.description,
+      description_delta: v.description_delta,
       status:
         mode === "create"
           ? DEFAULT_STATUS
@@ -245,7 +256,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     })}`}
                     location={data.location}
                     organizer={data.organizer_name}
-                    description={data.description}
+                    descriptionHtml={data.description ?? ""}
+                    description={descriptionPlain}
                     imageUrl={toFileUrl(data.picture_path || "")}
                     status={
                       data.status
@@ -298,3 +310,4 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     </div>
   );
 }
+

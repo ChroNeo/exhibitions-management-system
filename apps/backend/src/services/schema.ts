@@ -9,6 +9,7 @@ const schemas = [
       exhibition_code: { type: "string", example: "EXH-042" },
       title: { type: "string", example: "Tech Innovation Expo" },
       description: { type: ["string", "null"], example: "Annual technology showcase." },
+      description_delta: { type: ["string", "null"], example: "{\"ops\":[{\"insert\":\"Annual technology showcase.\\n\"}]}" },
       start_date: { type: "string", format: "date-time", example: "2024-05-01T09:00:00Z" },
       end_date: { type: "string", format: "date-time", example: "2024-05-05T17:00:00Z" },
       location: { type: ["string", "null"], example: "Hall A, Bangkok Convention Centre" },
@@ -24,6 +25,7 @@ const schemas = [
         exhibition_code: "EXH-042",
         title: "Tech Innovation Expo",
         description: "Annual technology showcase.",
+        description_delta: "{\"ops\":[{\"insert\":\"Annual technology showcase.\\n\"}]}",
         start_date: "2024-05-01T09:00:00Z",
         end_date: "2024-05-05T17:00:00Z",
         location: "Hall A, Bangkok Convention Centre",
@@ -87,6 +89,7 @@ const schemas = [
     properties: {
       title: { type: "string", example: "Tech Innovation Expo" },
       description: { type: ["string", "null"], example: "Annual technology showcase." },
+      description_delta: { type: ["string", "null"], example: "{\"ops\":[{\"insert\":\"Annual technology showcase.\\n\"}]}" },
       start_date: { type: "string", format: "date-time", example: "2024-05-01T09:00:00Z" },
       end_date: { type: "string", format: "date-time", example: "2024-05-05T17:00:00Z" },
       location: { type: ["string", "null"], example: "Hall A, Bangkok Convention Centre" },
@@ -103,6 +106,7 @@ const schemas = [
       {
         title: "Tech Innovation Expo",
         description: "Annual technology showcase.",
+        description_delta: "{\"ops\":[{\"insert\":\"Annual technology showcase.\\n\"}]}",
         start_date: "2024-05-01T09:00:00Z",
         end_date: "2024-05-05T17:00:00Z",
         location: "Hall A, Bangkok Convention Centre",
@@ -119,6 +123,7 @@ const schemas = [
     properties: {
       title: { type: "string", example: "Tech Innovation Expo - Day 2" },
       description: { type: ["string", "null"], example: "Updated description" },
+      description_delta: { type: ["string", "null"], example: "{\"ops\":[{\"insert\":\"Updated description\\n\"}]}" },
       start_date: { type: "string", format: "date-time", example: "2024-05-02T09:00:00Z" },
       end_date: { type: "string", format: "date-time", example: "2024-05-06T17:00:00Z" },
       location: { type: ["string", "null"], example: "Hall B" },
@@ -134,6 +139,7 @@ const schemas = [
       {
         title: "Tech Innovation Expo - Day 2",
         description: "Updated description",
+        description_delta: "{\"ops\":[{\"insert\":\"Updated description\\n\"}]}",
         start_date: "2024-05-02T09:00:00Z",
         end_date: "2024-05-06T17:00:00Z",
         location: "Hall B",
