@@ -1,6 +1,6 @@
 import styles from "./ExhibitionDetailCard.module.css";
 import { MdOutlineCalendarToday } from "react-icons/md";
-import { LuClock } from "react-icons/lu";
+import { LuClock, LuBadgeCheck } from "react-icons/lu";
 import { IoLocationOutline, IoPersonOutline } from "react-icons/io5";
 
 export default function ExhibitionDetailCard({
@@ -14,6 +14,7 @@ export default function ExhibitionDetailCard({
   imageUrl,
   onEdit,
   onDelete,
+  status,
 }: {
   title: string;
   startText: string;
@@ -25,6 +26,7 @@ export default function ExhibitionDetailCard({
   imageUrl?: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  status?: string;
 }) {
   return (
     <section className={styles.card}>
@@ -41,6 +43,13 @@ export default function ExhibitionDetailCard({
         <LuClock className={styles.icon} />
         <span>{timeText}</span>
       </div>
+
+      {status && (
+        <div className={styles.row}>
+          <LuBadgeCheck className={styles.icon} />
+          <span>สถานะ : {status}</span>
+        </div>
+      )}
 
       {location && (
         <div className={styles.row}>

@@ -32,6 +32,7 @@ function mapToExhibition(x: ExhibitionApi): Exhibition {
   return {
     id: String(x.exhibition_id),
     title: x.title,
+    status: x.status ?? "draft",
     description: x.description ?? "",
     location: x.location ?? "",
     coverUrl: toFileUrl(x.picture_path),      // เพื่อรองรับ field ที่ backend ส่งมาเพิ่มในอนาคต

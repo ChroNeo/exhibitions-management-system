@@ -22,6 +22,15 @@ import { useAuthStatus } from "../../hook/useAuthStatus";
 import UnitManageList from "../Units/UnitManageList";
 
 const DEFAULT_CREATED_BY = 1;
+const DEFAULT_STATUS = "draft";
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  published: "Published",
+  ongoing: "Ongoing",
+  ended: "Ended",
+  archived: "Archived",
+};
 
 type ExManageDetailProps = { mode?: Mode };
 
@@ -78,6 +87,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         location: api.location ?? "",
         organizer_name: api.organizer_name ?? "",
         description: api.description ?? "",
+        status: api.status ?? DEFAULT_STATUS,
         file: undefined,
       },
       initialFileName: fileName,
@@ -133,6 +143,12 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       location: v.location,
       organizer_name: v.organizer_name,
       description: v.description,
+      status:
+        mode === "create"
+          ? DEFAULT_STATUS
+          : v.status && v.status.length
+          ? v.status
+          : DEFAULT_STATUS,
     };
     const file = v.file ?? undefined;
 
@@ -231,6 +247,11 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     organizer={data.organizer_name}
                     description={data.description}
                     imageUrl={toFileUrl(data.picture_path || "")}
+                    status={
+                      data.status
+                        ? STATUS_LABELS[data.status] ?? data.status
+                        : undefined
+                    }
                   />
                   <DetailActions
                     show={hasAuthToken}

@@ -4,6 +4,18 @@ import styles from "./ExManageForm.module.css";
 import FormButtons from "../../Detail/FormButtons";
 import { useNavigate } from "react-router-dom";
 
+const DEFAULT_STATUS = "draft";
+
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  published: "Published",
+  ongoing: "Ongoing",
+  ended: "Ended",
+  archived: "Archived",
+};
+
+const EDITABLE_STATUS_VALUES = ["draft", "published", "archived"];
+
 export type ExhibitionFormValues = {
   title: string;
   start_date: string; // YYYY-MM-DDTHH:mm
@@ -11,6 +23,7 @@ export type ExhibitionFormValues = {
   location: string;
   organizer_name: string;
   description: string;
+  status: string;
   file?: File | undefined;
 };
 
@@ -41,6 +54,7 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
     location: "",
     organizer_name: "",
     description: "",
+    status: DEFAULT_STATUS,
     file: undefined,
   });
 
@@ -53,10 +67,15 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
         location: "",
         organizer_name: "",
         description: "",
+        status: DEFAULT_STATUS,
         file: undefined,
       });
     } else {
-      setValues({ ...initialValues, file: undefined });
+      setValues({
+        ...initialValues,
+        status: initialValues.status ?? DEFAULT_STATUS,
+        file: undefined,
+      });
     }
   }, [mode, initialValues]);
 
@@ -68,6 +87,21 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
     if (initialFileName) return initialFileName;
     return "ยังไม่ได้เลือกไฟล์";
   }, [values.file, initialFileName]);
+
+  const statusOptions = useMemo(() => {
+    const baseValues =
+      mode === "edit" ? EDITABLE_STATUS_VALUES : [DEFAULT_STATUS];
+    const mergedValues = [...baseValues];
+
+    if (values.status && !mergedValues.includes(values.status)) {
+      mergedValues.push(values.status);
+    }
+
+    return mergedValues.map((value) => ({
+      value,
+      label: STATUS_LABELS[value] ?? value,
+    }));
+  }, [mode, values.status]);
 
   const set = (k: keyof ExhibitionFormValues, v: unknown) =>
     setValues((prev) => ({ ...prev, [k]: v }));
@@ -108,6 +142,22 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
             onChange={(e) => set("title", e.target.value)}
             disabled={disabled}
           />
+        </div>
+
+        <div className={styles.ex_group}>
+          <label className={styles.ex_label}>สถานะ</label>
+          <select
+            className={styles.ex_input}
+            value={values.status}
+            onChange={(e) => set("status", e.target.value)}
+            disabled={disabled || mode === "create"}
+          >
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_date}`}>

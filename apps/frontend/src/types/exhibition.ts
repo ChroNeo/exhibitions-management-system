@@ -5,6 +5,7 @@ export type Exhibition = {
     start_date: string | number | Date;
     id: string;
     title: string;
+    status: string;
     description?: string;
     dateText: string;
     location: string;
@@ -20,5 +21,6 @@ export interface ExhibitionApi {
   end_date: string;
   location?: string | null;
   organizer_name: string;
+  status: string;
   picture_path?: string | null;
 }
