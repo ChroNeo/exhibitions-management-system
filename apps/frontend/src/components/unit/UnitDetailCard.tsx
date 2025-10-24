@@ -29,13 +29,17 @@ export default function UnitDetailCard({
   onDelete,
 }: Props) {
   return (
-    <div className={styles.btw}>
-      <section className={styles.card}>
-        <header className={styles.heading}>
-          <h3 className={styles.title}>{title}</h3>
-        </header>
+    <section className={styles.card}>
+      <div className={styles.header}>
+        {posterUrl && (
+          <div className={styles.thumbnail}>
+            <img src={posterUrl} alt={title} loading="lazy" />
+          </div>
+        )}
 
         <div className={styles.meta}>
+          <h3 className={styles.title}>{title}</h3>
+
           <div className={styles.metaRow}>
             <MdOutlineCalendarToday className={styles.metaIcon} />
             <span>{dateText}</span>
@@ -62,17 +66,12 @@ export default function UnitDetailCard({
             </div>
           )}
         </div>
+      </div>
 
-        {posterUrl && (
-          <div className={styles.poster}>
-            <img src={posterUrl} alt={title} loading="lazy" />
-          </div>
-        )}
+      {description && description.trim().length > 0 && (
+        <p className={styles.description}>{description}</p>
+      )}
 
-        {description && description.trim().length > 0 && (
-          <p className={styles.description}>{description}</p>
-        )}
-      </section>
       <div className={styles.footer}>
         <DetailActions
           show={Boolean(onEdit || onDelete)}
@@ -80,6 +79,6 @@ export default function UnitDetailCard({
           onDelete={onDelete}
         />
       </div>
-    </div>
+    </section>
   );
 }

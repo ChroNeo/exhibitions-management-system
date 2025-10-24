@@ -30,46 +30,50 @@ export default function ExhibitionDetailCard({
 }) {
   return (
     <section className={styles.card}>
-      <h2 className={styles.title}>{title}</h2>
+      <div className={styles.header}>
+        {imageUrl && (
+          <div className={styles.thumbnail}>
+            <img src={imageUrl} alt={title} />
+          </div>
+        )}
 
-      <div className={styles.row}>
-        <MdOutlineCalendarToday className={styles.icon} />
-        <span>
-          {startText} – {endText}
-        </span>
+        <div className={styles.meta}>
+          <h2 className={styles.title}>{title}</h2>
+
+          <div className={styles.row}>
+            <MdOutlineCalendarToday className={styles.icon} />
+            <span>
+              {startText} – {endText}
+            </span>
+          </div>
+
+          <div className={styles.row}>
+            <LuClock className={styles.icon} />
+            <span>{timeText}</span>
+          </div>
+
+          {status && (
+            <div className={styles.row}>
+              <LuBadgeCheck className={styles.icon} />
+              <span>สถานะ : {status}</span>
+            </div>
+          )}
+
+          {location && (
+            <div className={styles.row}>
+              <IoLocationOutline className={styles.icon} />
+              <span>{location}</span>
+            </div>
+          )}
+
+          {organizer && (
+            <div className={styles.row}>
+              <IoPersonOutline className={styles.icon} />
+              <span>{organizer}</span>
+            </div>
+          )}
+        </div>
       </div>
-
-      <div className={styles.row}>
-        <LuClock className={styles.icon} />
-        <span>{timeText}</span>
-      </div>
-
-      {status && (
-        <div className={styles.row}>
-          <LuBadgeCheck className={styles.icon} />
-          <span>สถานะ : {status}</span>
-        </div>
-      )}
-
-      {location && (
-        <div className={styles.row}>
-          <IoLocationOutline className={styles.icon} />
-          <span>{location}</span>
-        </div>
-      )}
-
-      {organizer && (
-        <div className={styles.row}>
-          <IoPersonOutline className={styles.icon} />
-          <span>{organizer}</span>
-        </div>
-      )}
-
-      {imageUrl && (
-        <div className={styles.imageWrap}>
-          <img src={imageUrl} alt={title} />
-        </div>
-      )}
 
       {description && <p className={styles.desc}>{description}</p>}
 
