@@ -56,6 +56,7 @@ describe("unitsController", () => {
         unit_name: "Main Stage",
         unit_type: "booth",
         description: "Stage shows",
+        description_delta: null,
         staff_user_id: 5,
         poster_url: "uploads/units/main-stage.png",
         starts_at: "2025-05-01T09:00:00Z",
@@ -87,6 +88,7 @@ describe("unitsController", () => {
       unit_name: "Demo Booth",
       unit_type: "booth",
       description: "Demo area",
+      description_delta: null,
       staff_user_id: null,
       poster_url: null,
       starts_at: "2025-05-01T00:00:00Z",
@@ -119,11 +121,13 @@ describe("unitsController", () => {
       poster_url: "uploads/units/stage.png",
       starts_at: "2025-05-02T10:00:00Z",
       ends_at: "2025-05-02T12:00:00Z",
+      description_delta: { ops: [{ insert: "Daily performance\n" }] },
     };
     const createdUnit = {
       unit_id: 12,
       exhibition_id: 123,
       ...payload,
+      description_delta: JSON.stringify(payload.description_delta),
     };
     addUnitMock.mockResolvedValue(createdUnit);
 
@@ -144,6 +148,7 @@ describe("unitsController", () => {
           unit_name: "Stage Show",
           unit_type: "booth",
           description: "Daily performance",
+          description_delta: JSON.stringify(payload.description_delta),
           staff_user_id: 8,
           poster_url: "uploads/units/stage.png",
           starts_at: "2025-05-02T10:00:00Z",
@@ -166,6 +171,7 @@ describe("unitsController", () => {
       poster_url: "uploads/units/updated.png",
       starts_at: "2025-05-03T10:00:00Z",
       ends_at: "2025-05-03T12:00:00Z",
+      description_delta: "{\"ops\":[{\"insert\":\"Updated program\\n\"}]}",
     };
     const updatedUnit = {
       unit_id: 12,
@@ -189,7 +195,15 @@ describe("unitsController", () => {
       expect(updateUnitMock).toHaveBeenCalledWith(
         123,
         12,
-        expect.objectContaining(updatePayload)
+        expect.objectContaining({
+          unit_name: "Updated Stage",
+          unit_type: "activity",
+          description: "Updated program",
+          poster_url: "uploads/units/updated.png",
+          starts_at: "2025-05-03T10:00:00Z",
+          ends_at: "2025-05-03T12:00:00Z",
+          description_delta: updatePayload.description_delta,
+        })
       );
       expect(response.json()).toEqual(updatedUnit);
     } finally {

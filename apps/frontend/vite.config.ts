@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv, type ServerOptions } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default ({ mode }) => {
+export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const host = env.HOST || '0.0.0.0'
   const port = Number(env.FRONTEND_PORT ?? env.PORT ?? 5173)

@@ -94,7 +94,8 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
     return data?.name ? `รายละเอียดกิจกรรม: ${data.name}` : "รายละเอียดกิจกรรม";
   }, [mode, data?.name]);
 
-  const description = data?.description?.trim() || undefined;
+  const descriptionPlain = data?.description?.trim() || undefined;
+  const descriptionHtml = data?.descriptionHtml;
   const { dateText, timeText } = data
     ? buildDateTimeText(data.startsAt, data.endsAt)
     : { dateText: "-", timeText: undefined };
@@ -127,7 +128,8 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
         starts_at: toInputValue(data.startsAt),
         ends_at: toInputValue(data.endsAt),
         staff_user_id: data.staffUserId ? String(data.staffUserId) : "",
-        description: data.description ?? "",
+        description: data.descriptionHtml ?? "",
+        description_delta: data.descriptionDelta ?? "",
         file: undefined,
       } satisfies UnitFormValues,
       initialPosterName: posterName,
@@ -152,12 +154,20 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
     const payload: UnitCreatePayload = {
       unit_name: trimmedName,
       unit_type: values.type,
-      description: values.description.trim() ? values.description.trim() : undefined,
       staff_user_id:
         values.staff_user_id.trim() && !Number.isNaN(staffId) ? staffId : undefined,
       starts_at: startsAt,
       ends_at: endsAt,
     };
+
+    const descriptionHtml = values.description.trim();
+    const descriptionDelta = values.description_delta.trim();
+    if (descriptionDelta.length) {
+      payload.description_delta = descriptionDelta;
+      payload.description = descriptionHtml || undefined;
+    } else if (descriptionHtml.length) {
+      payload.description = descriptionHtml;
+    }
 
     if (values.file) {
       payload.posterFile = values.file;
@@ -299,7 +309,8 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
                 timeText={timeText}
                 typeText={translateType(data.type)}
                 staffText={staffText}
-                description={description}
+                description={descriptionPlain}
+                descriptionHtml={descriptionHtml}
                 posterUrl={data.posterUrl}
                 onEdit={isAuthenticated ? handleEdit : undefined}
                 onDelete={isAuthenticated ? handleDelete : undefined}
@@ -350,3 +361,4 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
     </div>
   );
 }
+

@@ -1,9 +1,11 @@
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MutableRefObject, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import Quill from "quill";
 
 import styles from "../exhibition/form/ExManageForm.module.css";
 import FormButtons from "../Detail/FormButtons";
+import { ensureQuillDeltaString } from "../../utils/text";
 
 export type UnitFormValues = {
   name: string;
@@ -12,8 +14,11 @@ export type UnitFormValues = {
   ends_at: string;
   staff_user_id: string;
   description: string;
+  description_delta: string;
   file?: File;
 };
+
+type DescriptionState = Pick<UnitFormValues, "description" | "description_delta">;
 
 type Props = {
   mode: "view" | "edit" | "create";
@@ -31,22 +36,165 @@ const EMPTY_VALUES: UnitFormValues = {
   ends_at: "",
   staff_user_id: "",
   description: "",
+  description_delta: "",
   file: undefined,
 };
 
 const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   { mode, initialValues, onSubmit, footer, isSubmitting = false, initialPosterName }: Props,
-  ref,
+  ref
 ) {
   const [values, setValues] = useState<UnitFormValues>(EMPTY_VALUES);
+  const quillContainerRef = useRef<HTMLDivElement | null>(null);
+  const quillRef = useRef<Quill | null>(null);
+  const suppressQuillEventRef = useRef(false);
+  const pendingEditorValueRef = useRef<DescriptionState | null>(null);
+
+  const applyEditorValue = useCallback((payload: DescriptionState) => {
+    const quill = quillRef.current;
+    if (!quill) {
+      pendingEditorValueRef.current = payload;
+      return;
+    }
+
+    suppressQuillEventRef.current = true;
+    try {
+      if (payload.description_delta) {
+        try {
+          const parsed = JSON.parse(payload.description_delta);
+          quill.setContents(parsed);
+        } catch (error) {
+          console.warn("Failed to parse unit description delta", error);
+          quill.clipboard.dangerouslyPasteHTML(payload.description ?? "");
+        }
+      } else if (payload.description) {
+        quill.clipboard.dangerouslyPasteHTML(payload.description);
+      } else {
+        quill.setText("");
+      }
+      quill.setSelection(0, 0);
+    } finally {
+      suppressQuillEventRef.current = false;
+    }
+  }, []);
 
   useEffect(() => {
     if (!initialValues || mode === "create") {
-      setValues(EMPTY_VALUES);
-    } else {
-      setValues({ ...initialValues, file: undefined });
+      const emptyState: UnitFormValues = { ...EMPTY_VALUES };
+      setValues(emptyState);
+      applyEditorValue(emptyState);
+      return;
     }
-  }, [mode, initialValues]);
+
+    const nextValues: UnitFormValues = {
+      ...initialValues,
+      description: initialValues.description ?? "",
+      description_delta: ensureQuillDeltaString(initialValues.description_delta) ?? "",
+      file: undefined,
+    };
+    setValues(nextValues);
+    applyEditorValue(nextValues);
+  }, [mode, initialValues, applyEditorValue]);
+
+  useEffect(() => {
+    const container = quillContainerRef.current;
+    if (!container || quillRef.current) return;
+
+    container.innerHTML = "";
+    container.removeAttribute("class");
+    container.removeAttribute("style");
+    container.removeAttribute("tabindex");
+    container.removeAttribute("data-gramm");
+    container.removeAttribute("contenteditable");
+    container.removeAttribute("role");
+
+    const wrapper = container.parentElement;
+    if (wrapper) {
+      wrapper.querySelectorAll(".ql-toolbar").forEach((node) => {
+        if (node instanceof HTMLElement) node.remove();
+      });
+    }
+
+    const toolbarOptions = [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["link"],
+      ["clean"],
+    ];
+
+    const quill = new Quill(container, {
+      theme: "snow",
+      modules: { toolbar: toolbarOptions },
+      placeholder: "รายละเอียดกิจกรรม",
+    });
+
+    const handleTextChange = () => {
+      if (suppressQuillEventRef.current) return;
+      const html = quill.root.innerHTML;
+      const plainText = quill.getText().trim();
+
+      if (!plainText.length || html === "<p><br></p>") {
+        setValues((prev) => {
+          if (!prev.description && !prev.description_delta) return prev;
+          return { ...prev, description: "", description_delta: "" };
+        });
+        return;
+      }
+
+      const deltaString = JSON.stringify(quill.getContents());
+      setValues((prev) => {
+        if (prev.description === html && prev.description_delta === deltaString) {
+          return prev;
+        }
+        return {
+          ...prev,
+          description: html,
+          description_delta: deltaString,
+        };
+      });
+    };
+
+    quill.on("text-change", handleTextChange);
+    quillRef.current = quill;
+
+    if (pendingEditorValueRef.current) {
+      applyEditorValue(pendingEditorValueRef.current);
+      pendingEditorValueRef.current = null;
+    } else {
+      applyEditorValue({
+        description: values.description,
+        description_delta: values.description_delta,
+      });
+    }
+
+    return () => {
+      quill.off("text-change", handleTextChange);
+      quillRef.current = null;
+      if (wrapper) {
+        wrapper.querySelectorAll(".ql-toolbar").forEach((node) => {
+          if (node instanceof HTMLElement) node.remove();
+        });
+      }
+      container.innerHTML = "";
+      container.removeAttribute("class");
+      container.removeAttribute("style");
+      container.removeAttribute("tabindex");
+      container.removeAttribute("data-gramm");
+      container.removeAttribute("contenteditable");
+      container.removeAttribute("role");
+    };
+  }, [applyEditorValue]);
+
+  useEffect(() => {
+    const quill = quillRef.current;
+    if (!quill) return;
+    quill.enable(!isSubmitting);
+    const toolbarModule = quill.getModule("toolbar") as { container?: HTMLElement } | undefined;
+    if (toolbarModule?.container) {
+      toolbarModule.container.style.display = isSubmitting ? "none" : "";
+    }
+  }, [isSubmitting]);
 
   const canSubmit = useMemo(() => mode === "edit" || mode === "create", [mode]);
 
@@ -72,7 +220,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         (ref as MutableRefObject<HTMLFormElement | null>).current = node;
       }
     },
-    [ref],
+    [ref]
   );
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -100,7 +248,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
             value={values.name}
             onChange={(e) => updateValue("name", e.target.value)}
             required
-            disabled={isSubmitting}
+             disabled={isSubmitting}
           />
         </div>
 
@@ -171,20 +319,13 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
         <div className={`${styles.ex_group} ${styles.ex_details}`}>
           <label className={styles.ex_label}>รายละเอียด</label>
-          <textarea
-            className={styles.ex_textarea}
-            rows={6}
-            placeholder="รายละเอียดกิจกรรม"
-            value={values.description}
-            onChange={(e) => updateValue("description", e.target.value)}
-            disabled={isSubmitting}
-          />
+          <div className={styles.ex_editor} data-readonly={isSubmitting ? "true" : "false"}>
+            <div ref={quillContainerRef} aria-label="รายละเอียดกิจกรรม" />
+          </div>
         </div>
       </div>
 
-      {canSubmit && (
-        <div className={styles.ex_actions}>{renderedFooter}</div>
-      )}
+      {canSubmit && <div className={styles.ex_actions}>{renderedFooter}</div>}
     </form>
   );
 });

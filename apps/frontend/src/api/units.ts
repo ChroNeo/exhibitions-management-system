@@ -1,5 +1,6 @@
 import type { Unit, UnitApi, UnitCreatePayload, UnitUpdatePayload } from "../types/units";
 import { toFileUrl } from "../utils/url";
+import { ensureQuillDeltaString, extractPlainTextDescription } from "../utils/text";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
@@ -7,13 +8,22 @@ function mapToUnit(x: UnitApi): Unit {
   const type = x.unit_type === "booth" || x.unit_type === "activity" ? x.unit_type : "activity";
   const posterPath = x.poster_url ?? undefined;
   const posterUrl = toFileUrl(posterPath);
+  const descriptionHtml = x.description ?? "";
+  const rawDelta = x.description_delta ?? undefined;
+  const descriptionDelta = ensureQuillDeltaString(rawDelta);
+  const description = extractPlainTextDescription({
+    html: descriptionHtml,
+    delta: rawDelta,
+  });
 
   return {
     id: String(x.unit_id),
     exhibitionId: x.exhibition_id,
     name: x.unit_name,
     type,
-    description: x.description ?? undefined,
+    description: description || undefined,
+    descriptionHtml: descriptionHtml || undefined,
+    descriptionDelta,
     staffUserId: x.staff_user_id ?? undefined,
     staffName: x.staff_name ?? undefined,
     posterUrl: posterUrl || undefined,
@@ -62,6 +72,7 @@ export async function createUnit(
     appendString("unit_name", rest.unit_name);
     appendString("unit_type", rest.unit_type);
     appendString("description", rest.description);
+    appendString("description_delta", rest.description_delta);
     appendString("staff_user_id", rest.staff_user_id);
     appendString("starts_at", rest.starts_at);
     appendString("ends_at", rest.ends_at);
@@ -85,6 +96,7 @@ export async function createUnit(
   };
 
   if (rest.description !== undefined) jsonPayload.description = rest.description;
+  if (rest.description_delta !== undefined) jsonPayload.description_delta = rest.description_delta;
   if (rest.staff_user_id !== undefined) jsonPayload.staff_user_id = rest.staff_user_id;
   if (poster_url !== undefined) jsonPayload.poster_url = poster_url;
 

@@ -222,6 +222,32 @@ function normaliseCreatePayload(fields: Record<string, string>): AddExhibitionPa
     throw new AppError("invalid status value", 400, "VALIDATION_ERROR");
   }
 
+  const parseJsonField = (value: unknown, fieldName: string): string | null | undefined => {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed.length) return null;
+      try {
+        JSON.parse(trimmed);
+      } catch {
+        throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+      }
+      return trimmed;
+    }
+
+    if (typeof value === "object") {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+      }
+    }
+
+    throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+  };
+
   const requiredFields: Array<
     keyof Omit<
       AddExhibitionPayload,
@@ -236,16 +262,15 @@ function normaliseCreatePayload(fields: Record<string, string>): AddExhibitionPa
   const missing = requiredFields.filter((field) => !fields[field]);
   if (missing.length) {
     throw new AppError(
-      `missing required fields: ${missing.join(", ")}`,
-      400,
-      "VALIDATION_ERROR"
+      `missing required fields: ${missing.join(", ")}`
+      , 400, "VALIDATION_ERROR"
     );
   }
 
   return {
     title: fields.title ?? "",
     description: fields.description || undefined,
-    description_delta: fields.description_delta || undefined,
+    description_delta: parseJsonField(fields.description_delta, "description_delta"),
     start_date: fields.start_date ?? "",
     end_date: fields.end_date ?? "",
     location: fields.location || undefined,
@@ -265,14 +290,36 @@ function buildUpdatePayload(source: unknown): UpdateExhibitionPayload {
   const payload: UpdateExhibitionPayload = {};
   let accepted = 0;
 
+  const parseJsonField = (value: unknown, fieldName: string): string | null | undefined => {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed.length) return null;
+      try {
+        JSON.parse(trimmed);
+      } catch {
+        throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+      }
+      return trimmed;
+    }
+
+    if (typeof value === "object") {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+      }
+    }
+
+    throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+  };
+
   const hasField = (key: string) => Object.prototype.hasOwnProperty.call(fields, key);
   const assignStringField = (
     key: keyof UpdateExhibitionPayload,
-    {
-      allowNull,
-      allowEmpty,
-      treatEmptyAsNull,
-    }: { allowNull: boolean; allowEmpty: boolean; treatEmptyAsNull: boolean }
+    { allowNull, allowEmpty, treatEmptyAsNull }: { allowNull: boolean; allowEmpty: boolean; treatEmptyAsNull: boolean }
   ) => {
     if (!hasField(key)) {
       return;
@@ -314,11 +361,15 @@ function buildUpdatePayload(source: unknown): UpdateExhibitionPayload {
     treatEmptyAsNull: false,
   });
   assignStringField("description", { allowNull: true, allowEmpty: true, treatEmptyAsNull: true });
-  assignStringField("description_delta", {
-    allowNull: true,
-    allowEmpty: true,
-    treatEmptyAsNull: true,
-  });
+
+  if (hasField("description_delta")) {
+    const parsed = parseJsonField(fields.description_delta, "description_delta");
+    if (parsed !== undefined) {
+      payload.description_delta = parsed;
+      accepted++;
+    }
+  }
+
   assignStringField("location", { allowNull: true, allowEmpty: true, treatEmptyAsNull: true });
   assignStringField("picture_path", {
     allowNull: true,
@@ -329,7 +380,7 @@ function buildUpdatePayload(source: unknown): UpdateExhibitionPayload {
   if (hasField("status")) {
     const raw = fields.status;
     if (raw === undefined) {
-      // ignore undefined to mimic JSON.stringify removing undefined fields
+      // ignore undefined
     } else {
       if (raw === null) {
         throw new AppError("status cannot be null", 400, "VALIDATION_ERROR");

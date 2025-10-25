@@ -6,7 +6,6 @@ import { MdOutlineCalendarToday } from "react-icons/md";
 import { LuLayers, LuClock } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
 import { useMemo } from "react";
-import type { Exhibition } from "../../types/exhibition";
 
 export type UnitCardItem = {
   id: string;
@@ -23,7 +22,6 @@ type Props = {
   onSelect?: (id: string) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
-  exhibition?: Exhibition;
 };
 
 type MetaItem = {
@@ -33,7 +31,6 @@ type MetaItem = {
 
 export default function UnitExhibitionCard({
   item,
-  exhibition,
   onSelect,
   onEdit,
   onDelete,

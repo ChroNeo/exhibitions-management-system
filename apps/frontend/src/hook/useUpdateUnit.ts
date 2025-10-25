@@ -14,9 +14,13 @@ export function useUpdateUnit() {
   return useMutation<Unit, Error, UpdateArgs>({
     mutationFn: ({ exhibitionId, unitId, payload }) =>
       updateUnit(exhibitionId, unitId, payload),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["units", variables.exhibitionId] });
-      queryClient.invalidateQueries({ queryKey: ["unit", variables.unitId] });
+    onSuccess: (data, variables) => {
+      const { exhibitionId, unitId } = variables;
+      queryClient.setQueryData<Unit>(
+        ["unit", exhibitionId, unitId],
+        data,
+      );
+      queryClient.invalidateQueries({ queryKey: ["units", exhibitionId] });
     },
   });
 }

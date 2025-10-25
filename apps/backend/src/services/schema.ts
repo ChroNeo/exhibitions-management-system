@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+﻿import type { FastifyInstance } from "fastify";
 
 const schemas = [
   {
@@ -9,7 +9,10 @@ const schemas = [
       exhibition_code: { type: "string", example: "EXH-042" },
       title: { type: "string", example: "Tech Innovation Expo" },
       description: { type: ["string", "null"], example: "Annual technology showcase." },
-      description_delta: { type: ["string", "null"], example: "{\"ops\":[{\"insert\":\"Annual technology showcase.\\n\"}]}" },
+      description_delta: {
+        type: ["object", "string", "null"],
+        example: { ops: [{ insert: "Annual technology showcase.\n" }] },
+      },
       start_date: { type: "string", format: "date-time", example: "2024-05-01T09:00:00Z" },
       end_date: { type: "string", format: "date-time", example: "2024-05-05T17:00:00Z" },
       location: { type: ["string", "null"], example: "Hall A, Bangkok Convention Centre" },
@@ -25,7 +28,7 @@ const schemas = [
         exhibition_code: "EXH-042",
         title: "Tech Innovation Expo",
         description: "Annual technology showcase.",
-        description_delta: "{\"ops\":[{\"insert\":\"Annual technology showcase.\\n\"}]}",
+        description_delta: { ops: [{ insert: "Annual technology showcase.\n" }] },
         start_date: "2024-05-01T09:00:00Z",
         end_date: "2024-05-05T17:00:00Z",
         location: "Hall A, Bangkok Convention Centre",
@@ -45,6 +48,10 @@ const schemas = [
       unit_name: { type: "string", example: "AI Playground" },
       unit_type: { type: "string", enum: ["booth", "activity"], example: "booth" },
       description: { type: ["string", "null"], example: "Interactive demos of AI gadgets." },
+      description_delta: {
+        type: ["object", "string", "null"],
+        example: { ops: [{ insert: "Interactive demos of AI gadgets.\n" }] },
+      },
       staff_user_id: { type: ["integer", "null"], example: 13 },
       staff_name: { type: ["string", "null"], example: "คุณสมชาย" },
       poster_url: { type: ["string", "null"], example: "uploads/units/ai-playground.png" },
@@ -59,6 +66,7 @@ const schemas = [
         unit_name: "AI Playground",
         unit_type: "booth",
         description: "Interactive demos of AI gadgets.",
+        description_delta: { ops: [{ insert: "Interactive demos of AI gadgets.\n" }] },
         staff_user_id: 13,
         staff_name: "คุณสมชาย",
         poster_url: "uploads/units/ai-playground.png",
@@ -89,7 +97,10 @@ const schemas = [
     properties: {
       title: { type: "string", example: "Tech Innovation Expo" },
       description: { type: ["string", "null"], example: "Annual technology showcase." },
-      description_delta: { type: ["string", "null"], example: "{\"ops\":[{\"insert\":\"Annual technology showcase.\\n\"}]}" },
+      description_delta: {
+        type: ["object", "string", "null"],
+        example: { ops: [{ insert: "Annual technology showcase.\n" }] },
+      },
       start_date: { type: "string", format: "date-time", example: "2024-05-01T09:00:00Z" },
       end_date: { type: "string", format: "date-time", example: "2024-05-05T17:00:00Z" },
       location: { type: ["string", "null"], example: "Hall A, Bangkok Convention Centre" },
@@ -106,7 +117,7 @@ const schemas = [
       {
         title: "Tech Innovation Expo",
         description: "Annual technology showcase.",
-        description_delta: "{\"ops\":[{\"insert\":\"Annual technology showcase.\\n\"}]}",
+        description_delta: { ops: [{ insert: "Annual technology showcase.\n" }] },
         start_date: "2024-05-01T09:00:00Z",
         end_date: "2024-05-05T17:00:00Z",
         location: "Hall A, Bangkok Convention Centre",
@@ -123,7 +134,10 @@ const schemas = [
     properties: {
       title: { type: "string", example: "Tech Innovation Expo - Day 2" },
       description: { type: ["string", "null"], example: "Updated description" },
-      description_delta: { type: ["string", "null"], example: "{\"ops\":[{\"insert\":\"Updated description\\n\"}]}" },
+      description_delta: {
+        type: ["object", "string", "null"],
+        example: { ops: [{ insert: "Updated description\n" }] },
+      },
       start_date: { type: "string", format: "date-time", example: "2024-05-02T09:00:00Z" },
       end_date: { type: "string", format: "date-time", example: "2024-05-06T17:00:00Z" },
       location: { type: ["string", "null"], example: "Hall B" },
@@ -139,7 +153,7 @@ const schemas = [
       {
         title: "Tech Innovation Expo - Day 2",
         description: "Updated description",
-        description_delta: "{\"ops\":[{\"insert\":\"Updated description\\n\"}]}",
+        description_delta: { ops: [{ insert: "Updated description\n" }] },
         start_date: "2024-05-02T09:00:00Z",
         end_date: "2024-05-06T17:00:00Z",
         location: "Hall B",
@@ -157,6 +171,10 @@ const schemas = [
       unit_name: { type: "string", example: "AI Playground" },
       unit_type: { type: "string", enum: ["booth", "activity"], example: "booth" },
       description: { type: ["string", "null"], example: "Hands-on AI demo area." },
+      description_delta: {
+        type: ["object", "string", "null"],
+        example: { ops: [{ insert: "Hands-on AI demo area.\n" }] },
+      },
       staff_user_id: { type: ["integer", "null"], example: 13 },
       poster_url: { type: ["string", "null"], example: "uploads/units/ai-playground.png" },
       starts_at: { type: ["string", "null"], format: "date-time", example: "2024-05-01T10:00:00Z" },
@@ -168,6 +186,7 @@ const schemas = [
         unit_name: "AI Playground",
         unit_type: "booth",
         description: "Hands-on AI demo area.",
+        description_delta: { ops: [{ insert: "Hands-on AI demo area.\n" }] },
         staff_user_id: 13,
         poster_url: "uploads/units/ai-playground.png",
         starts_at: "2024-05-01T10:00:00Z",
@@ -182,6 +201,10 @@ const schemas = [
       unit_name: { type: "string", example: "AI Playground" },
       unit_type: { type: "string", enum: ["booth", "activity"], example: "activity" },
       description: { type: ["string", "null"], example: "Hands-on AI demo area." },
+      description_delta: {
+        type: ["object", "string", "null"],
+        example: { ops: [{ insert: "Hands-on AI demo area.\n" }] },
+      },
       staff_user_id: { type: ["integer", "null"], example: 13 },
       poster_url: { type: ["string", "null"], example: "uploads/units/ai-playground.png" },
       starts_at: { type: ["string", "null"], format: "date-time", example: "2024-05-02T10:00:00Z" },
@@ -193,6 +216,7 @@ const schemas = [
         unit_name: "AI Playground - Day 2",
         unit_type: "activity",
         description: "Updated stage schedule.",
+        description_delta: { ops: [{ insert: "Updated stage schedule.\n" }] },
         staff_user_id: 99,
         poster_url: "uploads/units/ai-playground-day2.png",
         starts_at: "2024-05-02T10:00:00Z",

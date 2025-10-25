@@ -117,6 +117,7 @@ export default function HomePage() {
                       end_date: ex.end_date,
                       organizer_name: "",
                       description: "",
+                      status: ex.status ?? "draft",
                       isPinned: false,
                     }}
                   />

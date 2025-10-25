@@ -12,6 +12,7 @@ type Props = {
   typeText?: string;
   staffText?: string;
   description?: string;
+  descriptionHtml?: string;
   posterUrl?: string;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -24,10 +25,16 @@ export default function UnitDetailCard({
   typeText,
   staffText,
   description,
+  descriptionHtml,
   posterUrl,
   onEdit,
   onDelete,
 }: Props) {
+  const hasDescriptionHtml =
+    typeof descriptionHtml === "string" && descriptionHtml.trim().length > 0;
+  const hasDescriptionText =
+    typeof description === "string" && description.trim().length > 0;
+
   return (
     <section className={styles.card}>
       <div className={styles.header}>
@@ -68,9 +75,14 @@ export default function UnitDetailCard({
         </div>
       </div>
 
-      {description && description.trim().length > 0 && (
+      {hasDescriptionHtml ? (
+        <div
+          className={styles.description}
+          dangerouslySetInnerHTML={{ __html: descriptionHtml ?? "" }}
+        />
+      ) : hasDescriptionText ? (
         <p className={styles.description}>{description}</p>
-      )}
+      ) : null}
 
       <div className={styles.footer}>
         <DetailActions

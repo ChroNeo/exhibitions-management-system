@@ -19,7 +19,7 @@ export interface ExhibitionApi {
   exhibition_id: number;
   title: string;
   description?: string | null;
-  description_delta?: string | null;
+  description_delta?: string | Record<string, unknown> | null;
   start_date: string;
   end_date: string;
   location?: string | null;

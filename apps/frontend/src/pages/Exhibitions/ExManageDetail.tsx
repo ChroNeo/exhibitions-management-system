@@ -20,7 +20,7 @@ import { toFileUrl } from "../../utils/url";
 import NotFound from "../../components/NotFound";
 import { useAuthStatus } from "../../hook/useAuthStatus";
 import UnitManageList from "../Units/UnitManageList";
-import { extractPlainTextDescription } from "../../utils/text";
+import { ensureQuillDeltaString, extractPlainTextDescription } from "../../utils/text";
 
 const DEFAULT_CREATED_BY = 1;
 const DEFAULT_STATUS = "draft";
@@ -96,7 +96,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         location: api.location ?? "",
         organizer_name: api.organizer_name ?? "",
         description: api.description ?? "",
-        description_delta: api.description_delta ?? "",
+        description_delta: ensureQuillDeltaString(api.description_delta) ?? "",
         status: api.status ?? DEFAULT_STATUS,
         file: undefined,
       },

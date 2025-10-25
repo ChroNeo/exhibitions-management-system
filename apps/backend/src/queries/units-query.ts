@@ -9,6 +9,7 @@ type UnitRow = {
       unit_name: string;
       unit_type: string;
       description: string | null;
+      description_delta: string | null;
       poster_url: string | null;
       starts_at: string;
       ends_at: string;
@@ -65,13 +66,14 @@ export async function getUnitsById(
 export async function addUnit(payload: AddUnitPayload): Promise<any> {
       const result = await safeQuery<ResultSetHeader>(
             `INSERT INTO units
-                  (exhibition_id, unit_name, unit_type, description, poster_url, starts_at, ends_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                  (exhibition_id, unit_name, unit_type, description, description_delta, poster_url, starts_at, ends_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                   payload.exhibition_id,
                   payload.unit_name,
                   payload.unit_type,
                   payload.description ?? null,
+                  payload.description_delta ?? null,
                   payload.poster_url ?? null,
                   payload.starts_at ?? null,
                   payload.ends_at ?? null,
@@ -86,6 +88,7 @@ export async function addUnit(payload: AddUnitPayload): Promise<any> {
               u.unit_name,
               u.unit_type,
               u.description,
+              u.description_delta,
               u.poster_url,
               u.starts_at,
               u.ends_at
@@ -133,6 +136,9 @@ export async function updateUnit(
       if (changes.description !== undefined) {
             push("description", changes.description);
       }
+      if (changes.description_delta !== undefined) {
+            push("description_delta", changes.description_delta);
+      }
       if (changes.poster_url !== undefined) {
             push("poster_url", changes.poster_url);
       }
@@ -164,6 +170,7 @@ export async function updateUnit(
               u.unit_name,
               u.unit_type,
               u.description,
+              u.description_delta,
               u.poster_url,
               u.starts_at,
               u.ends_at

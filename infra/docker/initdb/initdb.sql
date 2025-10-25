@@ -1,9 +1,9 @@
--- phpMyAdmin SQL Dump
+﻿-- phpMyAdmin SQL Dump
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Oct 24, 2025 at 07:51 PM
+-- Generation Time: Oct 25, 2025 at 07:22 AM
 -- Server version: 8.4.6
 -- PHP Version: 8.2.29
 
@@ -73,7 +73,7 @@ CREATE TABLE `exhibitions` (
   `exhibition_code` varchar(20) NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` mediumtext,
-  `description_delta` mediumtext,
+  `description_delta` json DEFAULT NULL,
   `start_date` datetime NOT NULL,
   `end_date` datetime NOT NULL,
   `location` varchar(255) DEFAULT NULL,
@@ -91,15 +91,15 @@ CREATE TABLE `exhibitions` (
 -- Dumping data for table `exhibitions`
 --
 
-INSERT INTO `exhibitions` (`exhibition_id`, `exhibition_code`, `title`, `description`, `start_date`, `end_date`, `location`, `organizer_name`, `picture_path`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`, `archived_at`) VALUES
-(1, 'EX202501', 'Smart Tech Expo 2025', 'งานแสดงเทคโนโลยีและนวัตกรรม\nงานแสดงเทคโนโลยีและนวัตกรรม\n\n\nงานแสดงเทคโนโลยีและนวัตกรรม\n\n\nงานแสดงเทคโนโลยีและนวัตกรรมงานแสดงเทคโนโลยีและนวัตกรรมงานแสดงเทคโนโลยีและนวัตกรรม\n\nงานแสดงเทคโนโลยีและนวัตกรรมงานแสดงเทคโนโลยีและนวัตกรรม\n\n\nงานแสดงเทคโนโลยีและนวัตกรรมอ', '2025-10-30 22:00:00', '2025-11-04 07:00:00', 'Bangkok Convention Center', 'John Doe', 'uploads/exhibitions/EXP1761332723861.png', 'published', 1, NULL, '2025-09-15 15:06:36', '2025-10-24 19:06:57', NULL),
-(3, 'EX202503', 'Green Future Week', 'งานสิ่งแวดล้อมและพลังงานสะอาด', '2025-10-05 02:00:00', '2025-10-09 11:00:00', 'Khon Kaen Hall', 'Mai Organizer', 'uploads/exhibitions/EXP1758869541507.png', 'ended', 1, NULL, '2025-09-15 15:06:36', '2025-10-24 18:54:55', NULL),
-(5, 'EX202401', 'Modern Art Showcase 2011', 'A curated selection of contemporary pieces from emerging artists.', '2024-08-30 02:00:00', '2024-09-13 10:00:00', 'Gallery Hall A', 'City Arts Council', 'uploads/exhibitions/EXP1758868393393.png', 'ended', 42, NULL, '2025-09-25 13:07:39', '2025-10-24 18:59:55', NULL),
-(8, 'EX202404', 'Modern Art Showcase 2024', 'A curated selection of contemporary pieces.', '2024-08-31 20:00:00', '2024-09-15 04:00:00', 'Gallery Hall A', 'City Arts Council', 'uploads/exhibitions/EXP1758868400309.png', 'draft', 42, NULL, '2025-09-25 13:35:02', '2025-09-26 06:33:20', NULL),
-(12, 'EX202505', 're', 'test', '2025-09-25 09:05:00', '2025-09-26 09:05:00', 'test', 'test', 'uploads/exhibitions/EXP1758868407111.png', 'draft', 1, NULL, '2025-09-25 23:05:55', '2025-09-26 06:33:27', NULL),
-(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ “Smart Tech Expo 2025” ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ “อนาคตของการอยู่อาศัย” และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', 'uploads/exhibitions/EXP1758868430956.png', 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL),
-(15, 'EX202507', 'test', 'test', '2025-10-02 11:57:00', '2025-10-22 11:57:00', 'test', 'test', 'uploads/exhibitions/EXP1759433238838.jpg', 'draft', 1, NULL, '2025-10-02 19:27:19', '2025-10-09 07:22:22', NULL),
-(16, 'EX202508', 'test', 'asdf', '2025-10-21 11:57:00', '2025-10-21 11:57:00', 'test', 'asdf', NULL, 'ended', 1, NULL, '2025-10-24 18:57:43', '2025-10-24 18:59:55', NULL);
+INSERT INTO `exhibitions` (`exhibition_id`, `exhibition_code`, `title`, `description`, `description_delta`, `start_date`, `end_date`, `location`, `organizer_name`, `picture_path`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`, `archived_at`) VALUES
+(1, 'EX202501', 'Smart Tech Expo 2025', '<p> <strong>งานแสดงเทคโนโลยีและนวัตกรรม</strong></p><ol><li>asdfa</li><li>asdfsdfsf</li><li>asdfdfs</li><li>asdf</li><li>sadf</li><li>asdf</li></ol><p><strong> </strong> <strong>งานแสดงเทคโนโลยีและนวัตกรรม งานแสดงเทคโนโลยีและนวัตกรรม </strong>งานแสดงเทคโนโลยีและนวัตกรรมงานแสดงเทคโนโลยีและนวัตกรรมงานแสดงเทคโนโลยีและนวัตกรรม งานแสดงเทคโนโลยีและนวัตกรรมงานแสดงเทคโนโลยีและนวัตกรรม งานแสดงเทคโนโลยีและ</p>', NULL, '2025-10-25 23:00:00', '2025-10-30 08:00:00', 'Bangkok Convention Center', 'John Doe', 'uploads/exhibitions/EXP1761332723861.png', 'published', 1, NULL, '2025-09-15 15:06:36', '2025-10-25 07:08:21', NULL),
+(3, 'EX202503', 'Green Future Week', 'งานสิ่งแวดล้อมและพลังงานสะอาด', NULL, '2025-10-05 02:00:00', '2025-10-09 11:00:00', 'Khon Kaen Hall', 'Mai Organizer', 'uploads/exhibitions/EXP1758869541507.png', 'ended', 1, NULL, '2025-09-15 15:06:36', '2025-10-24 18:54:55', NULL),
+(5, 'EX202401', 'Modern Art Showcase 2011', 'A curated selection of contemporary pieces from emerging artists.', NULL, '2024-08-30 02:00:00', '2024-09-13 10:00:00', 'Gallery Hall A', 'City Arts Council', 'uploads/exhibitions/EXP1758868393393.png', 'ended', 42, NULL, '2025-09-25 13:07:39', '2025-10-24 18:59:55', NULL),
+(8, 'EX202404', 'Modern Art Showcase 2024', 'A curated selection of contemporary pieces.', NULL, '2024-08-31 20:00:00', '2024-09-15 04:00:00', 'Gallery Hall A', 'City Arts Council', 'uploads/exhibitions/EXP1758868400309.png', 'draft', 42, NULL, '2025-09-25 13:35:02', '2025-09-26 06:33:20', NULL),
+(12, 'EX202505', 're', 'test', NULL, '2025-09-25 09:05:00', '2025-09-26 09:05:00', 'test', 'test', 'uploads/exhibitions/EXP1758868407111.png', 'draft', 1, NULL, '2025-09-25 23:05:55', '2025-09-26 06:33:27', NULL),
+(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ “Smart Tech Expo 2025” ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ “อนาคตของการอยู่อาศัย” และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', NULL, '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', 'uploads/exhibitions/EXP1758868430956.png', 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL),
+(15, 'EX202507', 'test', 'test', NULL, '2025-10-31 04:57:00', '2025-11-08 04:57:00', 'test', 'test', 'uploads/exhibitions/EXP1759433238838.jpg', 'published', 1, NULL, '2025-10-02 19:27:19', '2025-10-25 07:16:11', NULL),
+(16, 'EX202508', 'test', '<p>this is the test <strong>wow this is the bold wow za 007 </strong></p>', NULL, '2025-10-21 04:57:00', '2025-10-21 04:57:00', 'test', 'asdf', NULL, 'ended', 1, NULL, '2025-10-24 18:57:43', '2025-10-24 20:49:32', NULL);
 
 --
 -- Triggers `exhibitions`
@@ -261,7 +261,8 @@ CREATE TABLE `units` (
   `unit_code` varchar(30) DEFAULT NULL,
   `exhibition_id` int NOT NULL,
   `unit_name` varchar(255) NOT NULL,
-  `description` text,
+  `description` mediumtext,
+  `description_delta` json DEFAULT NULL,
   `unit_type` enum('activity','booth') NOT NULL DEFAULT 'booth',
   `poster_url` varchar(500) DEFAULT NULL,
   `starts_at` datetime DEFAULT NULL,
@@ -272,20 +273,20 @@ CREATE TABLE `units` (
 -- Dumping data for table `units`
 --
 
-INSERT INTO `units` (`unit_id`, `unit_code`, `exhibition_id`, `unit_name`, `description`, `unit_type`, `poster_url`, `starts_at`, `ends_at`) VALUES
-(1, 'EX20250101', 1, 'Robotics Lab Demo2', 'Hands-on robotics challenge', 'booth', 'uploads/units/EXP1759848361494.jpg', '2024-04-30 20:00:00', '2024-05-01 04:00:00'),
-(2, 'EX20250102', 1, 'Robot Show', 'โชว์บนเวทีใหญ่', 'activity', 'uploads/units/EXP1759849066017.webp', '2025-11-02 07:00:00', '2025-11-02 08:00:00'),
-(3, 'EX20250103', 1, 'IoT Corner', 'ของเล่น IoT', 'booth', 'uploads/units/EXP1759849287066.png', '2025-11-01 03:00:00', '2025-11-05 10:00:00'),
-(4, 'EX20250104', 1, 'Cloud 101 Talk', 'แนะนำพื้นฐานคลาวด์', 'activity', NULL, '2025-11-03 11:00:00', '2025-11-03 12:00:00'),
-(5, 'EX20250105', 1, 'AR/VR Demo', 'ลองของจริง', 'booth', 'uploads/units/EXP1759848371446.jpg', '2025-11-01 02:30:00', '2025-11-05 10:30:00'),
-(6, 'EX20250106', 1, 'Security Workshop', 'เวิร์กช็อปความปลอดภัย', 'activity', NULL, '2025-11-04 13:00:00', '2025-11-04 15:00:00'),
-(7, 'EX20250107', 1, 'Startup Pitch', 'พิตช์บนเวที', 'activity', NULL, '2025-11-05 10:00:00', '2025-11-05 12:00:00'),
-(8, 'EX20250108', 1, 'Hardware Lab', 'ทดลองบอร์ด ESP32', 'booth', NULL, '2025-11-02 09:00:00', '2025-11-05 18:00:00'),
-(12, 'EX20250109', 1, 'Robotics Lab Demo', 'Hands-on robotics challenge', 'booth', 'uploads/units/EXP1760008335192.png', '2024-05-01 03:00:00', '2024-05-01 11:00:00'),
-(15, 'EX20250110', 1, 'dfdfkdj', 'รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด', 'booth', 'uploads/units/EXP1760260365114.png', '2025-10-12 10:12:00', '2025-10-13 11:14:00'),
-(16, 'EX20250701', 15, 'units test', 'test', 'booth', 'uploads/units/EXP1761072122823.png', '2025-10-21 18:41:00', '2025-10-22 18:41:00'),
-(17, 'EX20250301', 3, 'ทดสอบเพิ่มกิจกรรม', 'resrasl;dfka;sdlfkasdf', 'activity', 'uploads/units/EXP1761072295328.png', '2025-10-19 22:44:00', '2025-10-22 22:44:00'),
-(18, 'EX20250302', 3, 'test', 'test', 'activity', 'uploads/units/EXP1761072379903.png', '2025-10-20 18:46:00', '2025-10-29 18:46:00');
+INSERT INTO `units` (`unit_id`, `unit_code`, `exhibition_id`, `unit_name`, `description`, `description_delta`, `unit_type`, `poster_url`, `starts_at`, `ends_at`) VALUES
+(1, 'EX20250101', 1, 'Robotics Lab Demo2', '<p><strong>s dlrow eht</strong></p>', '{\"ops\": [{\"insert\": \"s dlrow eht\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1759848361494.jpg', '2024-04-30 06:00:00', '2024-04-30 14:00:00'),
+(2, 'EX20250102', 1, 'Robot Show', 'โชว์บนเวทีใหญ่', NULL, 'activity', 'uploads/units/EXP1759849066017.webp', '2025-11-02 07:00:00', '2025-11-02 08:00:00'),
+(3, 'EX20250103', 1, 'IoT Corner', 'ของเล่น IoT', NULL, 'booth', 'uploads/units/EXP1759849287066.png', '2025-11-01 03:00:00', '2025-11-05 10:00:00'),
+(4, 'EX20250104', 1, 'Cloud 101 Talk', 'แนะนำพื้นฐานคลาวด์', NULL, 'activity', NULL, '2025-11-03 11:00:00', '2025-11-03 12:00:00'),
+(5, 'EX20250105', 1, 'AR/VR Demo', 'ลองของจริง', NULL, 'booth', 'uploads/units/EXP1759848371446.jpg', '2025-11-01 02:30:00', '2025-11-05 10:30:00'),
+(6, 'EX20250106', 1, 'Security Workshop', 'เวิร์กช็อปความปลอดภัย', NULL, 'activity', NULL, '2025-11-04 13:00:00', '2025-11-04 15:00:00'),
+(7, 'EX20250107', 1, 'Startup Pitch', 'พิตช์บนเวที', NULL, 'activity', NULL, '2025-11-05 10:00:00', '2025-11-05 12:00:00'),
+(8, 'EX20250108', 1, 'Hardware Lab', 'ทดลองบอร์ด ESP32', NULL, 'booth', NULL, '2025-11-02 09:00:00', '2025-11-05 18:00:00'),
+(12, 'EX20250109', 1, 'Robotics Lab Demo', '<p>Hands-on robotics challenge this is the bold<strong> what happpend so that is it lkjklkj</strong></p>', '{\"ops\": [{\"insert\": \"Hands-on robotics challenge this is the bold\"}, {\"insert\": \" what happpend so that is it lkjklkj\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1760008335192.png', '2024-04-30 06:00:00', '2024-04-30 14:00:00'),
+(15, 'EX20250110', 1, 'dfdfkdj', '<ol><li><strong>รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx</strong></li></ol>', '{\"ops\": [{\"insert\": \"รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\", \"attributes\": {\"list\": \"ordered\"}}]}', 'booth', 'uploads/units/EXP1760260365114.png', '2025-10-11 06:12:00', '2025-10-12 07:14:00'),
+(16, 'EX20250701', 15, 'units test', '<p><strong><em>test</em></strong></p>', '{\"ops\": [{\"insert\": \"test\", \"attributes\": {\"bold\": true, \"italic\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1761072122823.png', '2025-10-21 04:41:00', '2025-10-22 04:41:00'),
+(17, 'EX20250301', 3, 'ทดสอบเพิ่มกิจกรรม', 'resrasl;dfka;sdlfkasdf', NULL, 'activity', 'uploads/units/EXP1761072295328.png', '2025-10-19 22:44:00', '2025-10-22 22:44:00'),
+(18, 'EX20250302', 3, 'test', 'test', NULL, 'activity', 'uploads/units/EXP1761072379903.png', '2025-10-20 18:46:00', '2025-10-29 18:46:00');
 
 --
 -- Triggers `units`
@@ -404,7 +405,6 @@ CREATE TABLE `v_exhibitions` (
 ,`exhibition_code` varchar(20)
 ,`title` varchar(255)
 ,`description` mediumtext
-,`description_delta` mediumtext
 ,`start_date` datetime
 ,`end_date` datetime
 ,`location` varchar(255)
@@ -672,7 +672,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_certi
 --
 DROP TABLE IF EXISTS `v_exhibitions`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhibitions`  AS SELECT `e`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `title`, `e`.`description` AS `description`, `e`.`description_delta` AS `description_delta`, `e`.`start_date` AS `start_date`, `e`.`end_date` AS `end_date`, `e`.`location` AS `location`, `e`.`organizer_name` AS `organizer_name`, `e`.`picture_path` AS `picture_path`, `e`.`status` AS `status`, `e`.`created_at` AS `created_at`, `e`.`updated_at` AS `updated_at`, `e`.`archived_at` AS `archived_at` FROM `exhibitions` AS `e` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhibitions`  AS SELECT `e`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `title`, `e`.`description` AS `description`, `e`.`start_date` AS `start_date`, `e`.`end_date` AS `end_date`, `e`.`location` AS `location`, `e`.`organizer_name` AS `organizer_name`, `e`.`picture_path` AS `picture_path`, `e`.`status` AS `status`, `e`.`created_at` AS `created_at`, `e`.`updated_at` AS `updated_at`, `e`.`archived_at` AS `archived_at` FROM `exhibitions` AS `e` ;
 
 -- --------------------------------------------------------
 

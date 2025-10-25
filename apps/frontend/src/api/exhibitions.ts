@@ -2,7 +2,7 @@
 import type { Exhibition, ExhibitionApi } from "../types/exhibition";
 import { fmtDateRangeTH } from "../utils/date";
 import { toFileUrl } from "../utils/url";
-import { extractPlainTextDescription } from "../utils/text";
+import { ensureQuillDeltaString, extractPlainTextDescription } from "../utils/text";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
@@ -32,16 +32,18 @@ export type ExhibitionUpdatePayload = {
 };
 
 function mapToExhibition(x: ExhibitionApi): Exhibition {
+  const rawDelta = x.description_delta ?? undefined;
+  const descriptionDelta = ensureQuillDeltaString(rawDelta);
   return {
     id: String(x.exhibition_id),
     title: x.title,
     status: x.status ?? "draft",
     description: extractPlainTextDescription({
       html: x.description ?? "",
-      delta: x.description_delta ?? "",
+      delta: rawDelta,
     }),
     descriptionHtml: x.description ?? "",
-    descriptionDelta: x.description_delta ?? "",
+    descriptionDelta,
     location: x.location ?? "",
     coverUrl: toFileUrl(x.picture_path),      // เพื่อรองรับ field ที่ backend ส่งมาเพิ่มในอนาคต
     dateText: fmtDateRangeTH(x.start_date, x.end_date),

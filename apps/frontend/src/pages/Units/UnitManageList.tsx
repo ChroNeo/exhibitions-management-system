@@ -160,7 +160,6 @@ export default function UnitManageList({
                       : undefined
                   }
                   onEdit={shouldShowActions ? handleEdit : undefined}
-                  exhibition={exhibition}
                 />
               ))}
             </div>

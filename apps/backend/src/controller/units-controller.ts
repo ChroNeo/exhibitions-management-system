@@ -6,6 +6,32 @@ import { addUnit, deleteUnit, getUnitsByExhibitionId, getUnitsById, updateUnit }
 import { collectMultipartFields } from "../services/file-upload.js";
 import { UNIT_TYPES, type AddUnitPayload, type UnitType, type UpdateUnitPayload } from "../models/unit_model.js";
 
+
+function parseJsonDelta(value: unknown, fieldName: string): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed.length) return null;
+    try {
+      JSON.parse(trimmed);
+    } catch {
+      throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+    }
+    return trimmed;
+  }
+
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+    }
+  }
+
+  throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
+}
 export default async function unitsController(fastify: FastifyInstance) {
   await fastify.register(
     async (fastify) => {
@@ -273,6 +299,11 @@ function buildCreatePayload(exhibitionIdParam: string, source: unknown): AddUnit
     payload.description = description || null;
   }
 
+  const descriptionDelta = parseJsonDelta(fields.description_delta, "description_delta");
+  if (descriptionDelta !== undefined) {
+    payload.description_delta = descriptionDelta;
+  }
+
   const staffUserIdRaw = getString("staff_user_id");
   if (staffUserIdRaw !== undefined) {
     if (!staffUserIdRaw) {
@@ -374,6 +405,25 @@ function buildUpdatePayload(source: unknown): UpdateUnitPayload {
     } else {
       const value = typeof raw === "string" ? raw : String(raw);
       payload.description = value ? value : null;
+    }
+    touched++;
+  }
+
+  if (hasField("description_delta")) {
+    const parsed = parseJsonDelta(fields.description_delta, "description_delta");
+    if (parsed !== undefined) {
+      payload.description_delta = parsed;
+      touched++;
+    }
+  }
+
+  if (hasField("description_delta")) {
+    const raw = fields["description_delta"];
+    if (raw === null || raw === undefined) {
+      payload.description_delta = null;
+    } else {
+      const value = typeof raw === "string" ? raw : String(raw);
+      payload.description_delta = value ? value : null;
     }
     touched++;
   }
