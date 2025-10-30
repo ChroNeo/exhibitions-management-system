@@ -47,6 +47,7 @@ export async function getUnitsById(
         u.unit_name,
         u.unit_type,
         u.description,
+        u.description_delta,
         u.poster_url,
         u.starts_at,
         u.ends_at

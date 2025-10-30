@@ -1,11 +1,12 @@
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MutableRefObject, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import Quill from "quill";
+import type Quill from "quill";
 
 import styles from "../exhibition/form/ExManageForm.module.css";
 import FormButtons from "../Detail/FormButtons";
 import { ensureQuillDeltaString } from "../../utils/text";
+import { initializeRichTextEditor } from "../../utils/quill";
 
 export type UnitFormValues = {
   name: string;
@@ -59,16 +60,17 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
     suppressQuillEventRef.current = true;
     try {
-      if (payload.description_delta) {
+      if (payload.description) {
+        const htmlDelta = quill.clipboard.convert(payload.description);
+        quill.setContents(htmlDelta);
+      } else if (payload.description_delta) {
         try {
           const parsed = JSON.parse(payload.description_delta);
           quill.setContents(parsed);
         } catch (error) {
           console.warn("Failed to parse unit description delta", error);
-          quill.clipboard.dangerouslyPasteHTML(payload.description ?? "");
+          quill.setText("");
         }
-      } else if (payload.description) {
-        quill.clipboard.dangerouslyPasteHTML(payload.description);
       } else {
         quill.setText("");
       }
@@ -100,32 +102,8 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     const container = quillContainerRef.current;
     if (!container || quillRef.current) return;
 
-    container.innerHTML = "";
-    container.removeAttribute("class");
-    container.removeAttribute("style");
-    container.removeAttribute("tabindex");
-    container.removeAttribute("data-gramm");
-    container.removeAttribute("contenteditable");
-    container.removeAttribute("role");
-
-    const wrapper = container.parentElement;
-    if (wrapper) {
-      wrapper.querySelectorAll(".ql-toolbar").forEach((node) => {
-        if (node instanceof HTMLElement) node.remove();
-      });
-    }
-
-    const toolbarOptions = [
-      [{ header: [1, 2, 3, false] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link"],
-      ["clean"],
-    ];
-
-    const quill = new Quill(container, {
-      theme: "snow",
-      modules: { toolbar: toolbarOptions },
+    const { quill, cleanup } = initializeRichTextEditor({
+      container,
       placeholder: "รายละเอียดกิจกรรม",
     });
 
@@ -171,18 +149,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     return () => {
       quill.off("text-change", handleTextChange);
       quillRef.current = null;
-      if (wrapper) {
-        wrapper.querySelectorAll(".ql-toolbar").forEach((node) => {
-          if (node instanceof HTMLElement) node.remove();
-        });
-      }
-      container.innerHTML = "";
-      container.removeAttribute("class");
-      container.removeAttribute("style");
-      container.removeAttribute("tabindex");
-      container.removeAttribute("data-gramm");
-      container.removeAttribute("contenteditable");
-      container.removeAttribute("role");
+      cleanup();
     };
   }, [applyEditorValue]);
 
