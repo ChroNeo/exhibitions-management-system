@@ -1,5 +1,10 @@
 ﻿import type { FastifyInstance } from "fastify";
 
+const quillDeltaSchema = {
+  type: "object",
+  additionalProperties: true,
+};
+
 const schemas = [
   {
     $id: "Exhibition",
@@ -10,7 +15,7 @@ const schemas = [
       title: { type: "string", example: "Tech Innovation Expo" },
       description: { type: ["string", "null"], example: "Annual technology showcase." },
       description_delta: {
-        type: ["object", "string", "null"],
+        anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Annual technology showcase.\n" }] },
       },
       start_date: { type: "string", format: "date-time", example: "2024-05-01T09:00:00Z" },
@@ -49,7 +54,7 @@ const schemas = [
       unit_type: { type: "string", enum: ["booth", "activity"], example: "booth" },
       description: { type: ["string", "null"], example: "Interactive demos of AI gadgets." },
       description_delta: {
-        type: ["object", "string", "null"],
+        anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Interactive demos of AI gadgets.\n" }] },
       },
       staff_user_id: { type: ["integer", "null"], example: 13 },
@@ -98,7 +103,7 @@ const schemas = [
       title: { type: "string", example: "Tech Innovation Expo" },
       description: { type: ["string", "null"], example: "Annual technology showcase." },
       description_delta: {
-        type: ["object", "string", "null"],
+        anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Annual technology showcase.\n" }] },
       },
       start_date: { type: "string", format: "date-time", example: "2024-05-01T09:00:00Z" },
@@ -135,7 +140,7 @@ const schemas = [
       title: { type: "string", example: "Tech Innovation Expo - Day 2" },
       description: { type: ["string", "null"], example: "Updated description" },
       description_delta: {
-        type: ["object", "string", "null"],
+        anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Updated description\n" }] },
       },
       start_date: { type: "string", format: "date-time", example: "2024-05-02T09:00:00Z" },
@@ -172,7 +177,7 @@ const schemas = [
       unit_type: { type: "string", enum: ["booth", "activity"], example: "booth" },
       description: { type: ["string", "null"], example: "Hands-on AI demo area." },
       description_delta: {
-        type: ["object", "string", "null"],
+        anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Hands-on AI demo area.\n" }] },
       },
       staff_user_id: { type: ["integer", "null"], example: 13 },
@@ -202,7 +207,7 @@ const schemas = [
       unit_type: { type: "string", enum: ["booth", "activity"], example: "activity" },
       description: { type: ["string", "null"], example: "Hands-on AI demo area." },
       description_delta: {
-        type: ["object", "string", "null"],
+        anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Hands-on AI demo area.\n" }] },
       },
       staff_user_id: { type: ["integer", "null"], example: 13 },

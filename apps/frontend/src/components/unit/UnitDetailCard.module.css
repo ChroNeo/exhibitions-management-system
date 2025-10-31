@@ -71,6 +71,7 @@
   line-height: 1.7;
   color: #111827;
   white-space: pre-wrap;
+  tab-size: 4;
 }
 
 .footer {

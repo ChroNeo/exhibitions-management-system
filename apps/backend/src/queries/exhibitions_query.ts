@@ -8,11 +8,32 @@ import { EXHIBITION_STATUSES } from "../models/exhibition_model.js";
 import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
 
+const EXHIBITION_SELECT_BASE = `
+  SELECT
+    v.exhibition_id,
+    v.exhibition_code,
+    v.title,
+    v.description,
+    e.description_delta,
+    v.start_date,
+    v.end_date,
+    v.location,
+    v.organizer_name,
+    v.picture_path,
+    v.status,
+    e.created_by,
+    e.updated_by,
+    v.created_at,
+    v.updated_at,
+    v.archived_at
+  FROM v_exhibitions v
+  LEFT JOIN exhibitions e ON e.exhibition_id = v.exhibition_id
+`;
+
 export async function getExhibitionsList(): Promise<any[]> {
   const rows = await safeQuery(`
-    SELECT *
-    FROM v_exhibitions
-    ORDER BY exhibition_code DESC 
+    ${EXHIBITION_SELECT_BASE}
+    ORDER BY v.exhibition_code DESC
   `);
   return rows;
 }
@@ -22,7 +43,11 @@ export async function getExhibitionById(id: string | number): Promise<any> {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
   }
   const rows = await safeQuery(
-    `SELECT * FROM v_exhibitions WHERE exhibition_id = ?`,
+    `
+      ${EXHIBITION_SELECT_BASE}
+      WHERE v.exhibition_id = ?
+      LIMIT 1
+    `,
     [id]
   );
   if (!rows.length) {
@@ -55,9 +80,12 @@ export async function addExhibitions(payload: AddExhibitionPayload): Promise<any
     ]
   );
 
-  // คืน exhibition ที่เพิ่มไป โดยดึงจาก view v_exhibitions
   const [newExhibition] = await safeQuery<any[]>(
-    `SELECT * FROM v_exhibitions WHERE exhibition_id = ?`,
+    `
+      ${EXHIBITION_SELECT_BASE}
+      WHERE v.exhibition_id = ?
+      LIMIT 1
+    `,
     [result.insertId]
   );
 
@@ -163,7 +191,11 @@ export async function updateExhibition(
   }
 
   const [updated] = await safeQuery<any[]>(
-    `SELECT * FROM v_exhibitions WHERE exhibition_id = ?`,
+    `
+      ${EXHIBITION_SELECT_BASE}
+      WHERE v.exhibition_id = ?
+      LIMIT 1
+    `,
     [id]
   );
 

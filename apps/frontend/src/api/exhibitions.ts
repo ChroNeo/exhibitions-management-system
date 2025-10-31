@@ -62,10 +62,13 @@ export async function fetchExhibitions(): Promise<Exhibition[]> {
   return data.map(mapToExhibition);
 }
 
-export async function fetchExhibitionById(id: string | number) {
+export async function fetchExhibitionById(id: string | number): Promise<Exhibition> {
   const res = await fetch(`${BASE}/exhibitions/${id}`);
   if (!res.ok) throw new Error("ไม่พบข้อมูลนิทรรศการ");
-  return res.json();
+  const json = await res.json();
+  const data: ExhibitionApi | undefined = Array.isArray(json) ? json[0] : json;
+  if (!data) throw new Error("ไม่พบข้อมูลนิทรรศการ");
+  return mapToExhibition(data);
 }
 
 export async function createExhibition(payload: ExhibitionCreatePayload): Promise<Exhibition> {

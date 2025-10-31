@@ -327,6 +327,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
               )}
               <UnitForm
                 mode="create"
+                exhibitionId={exhibitionId}
                 onSubmit={handleCreateSubmit}
                 isSubmitting={isSubmitting}
               />
@@ -347,6 +348,8 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
                   <UnitForm
                     key={unitId}
                     mode="edit"
+                    exhibitionId={exhibitionId}
+                    unitId={unitId}
                     initialValues={initialFormValues}
                     initialPosterName={initialPosterName}
                     onSubmit={handleEditSubmit}

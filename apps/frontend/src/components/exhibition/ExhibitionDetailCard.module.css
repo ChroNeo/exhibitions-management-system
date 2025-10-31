@@ -54,6 +54,9 @@
   margin-top: 8px;
   color: #333;
   line-height: 1.6;
+  /* Keep tabs/newlines from Quill HTML */
+  white-space: pre-wrap;
+  tab-size: 4;
 }
 .actions {
   display: flex;
