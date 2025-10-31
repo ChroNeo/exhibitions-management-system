@@ -111,7 +111,7 @@ export default function ExhibitionDetailCard({
 
       {registerLink && (
         <div className={styles.registerWrap}>
-          <Link to={registerLink} className="btn success">
+          <Link to={registerLink} className={styles.registerBtn}>
             ลงทะเบียน
           </Link>
         </div>

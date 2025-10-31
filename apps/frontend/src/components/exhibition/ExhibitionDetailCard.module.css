@@ -96,3 +96,34 @@
     height: auto;
   }
 }
+.card {
+  position: relative;
+  background: #fff;
+  border: 2px solid #de6424;
+  border-radius: 14px;
+  padding: 18px;
+  margin: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.registerWrap {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+}
+
+.registerBtn {
+  background: #224177;
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+  text-decoration: none;
+}
+.registerBtn:hover {
+  filter: brightness(1.1);
+}
