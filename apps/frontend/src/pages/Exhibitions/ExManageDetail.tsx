@@ -6,7 +6,7 @@ import { useDeleteExhibition } from "../../hook/useDeleteExhibition";
 import { useExhibition } from "../../hook/useExhibition";
 import { useCreateExhibition } from "../../hook/useCreateExhibition";
 import { useUpdateExhibition } from "../../hook/useUpdateExhibition";
-import type { ExhibitionApi } from "../../types/exhibition";
+import type { Exhibition } from "../../types/exhibition";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
 import type { ExhibitionFormValues } from "../../components/exhibition/form/ExhibitionForm";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
@@ -20,7 +20,7 @@ import { toFileUrl } from "../../utils/url";
 import NotFound from "../../components/NotFound";
 import { useAuthStatus } from "../../hook/useAuthStatus";
 import UnitManageList from "../Units/UnitManageList";
-import { ensureQuillDeltaString, extractPlainTextDescription } from "../../utils/text";
+// descriptionPlain/Html already provided by Exhibition shape
 
 const DEFAULT_CREATED_BY = 1;
 const DEFAULT_STATUS = "draft";
@@ -61,14 +61,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   }, [isLoading]);
   const { mutateAsync: createExh } = useCreateExhibition();
   const { mutateAsync: updateExh } = useUpdateExhibition();
-  const descriptionPlain = useMemo(() => {
-    if (!data) return "";
-    const api = data as unknown as ExhibitionApi;
-    return extractPlainTextDescription({
-      html: api.description,
-      delta: api.description_delta,
-    });
-  }, [data]);
+  const descriptionPlain = data?.description?.trim() || undefined;
+  const descriptionHtml = data?.descriptionHtml;
 
   const title =
     mode === "create"
@@ -82,22 +76,20 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     if (!data || mode === "create") {
       return { initialValues: undefined, initialFileName: undefined };
     }
-    const api = data as unknown as ExhibitionApi;
-    const picturePath = api.picture_path ?? "";
-    const fileName = picturePath
-      ? picturePath.split("/").pop() || picturePath
-      : undefined;
+    const ex = data as Exhibition;
+    const picturePath = ex.picture_path ?? "";
+    const fileName = picturePath ? picturePath.split("/").pop() || picturePath : undefined;
 
     return {
       initialValues: {
-        title: api.title ?? "",
-        start_date: toInputDateTime(api.start_date),
-        end_date: toInputDateTime(api.end_date),
-        location: api.location ?? "",
-        organizer_name: api.organizer_name ?? "",
-        description: api.description ?? "",
-        description_delta: ensureQuillDeltaString(api.description_delta) ?? "",
-        status: api.status ?? DEFAULT_STATUS,
+        title: ex.title ?? "",
+        start_date: toInputDateTime(ex.start_date),
+        end_date: toInputDateTime(ex.end_date),
+        location: ex.location ?? "",
+        organizer_name: ex.organizer_name ?? "",
+        description: ex.descriptionHtml ?? "",
+        description_delta: ex.descriptionDelta ?? "",
+        status: ex.status ?? DEFAULT_STATUS,
         file: undefined,
       },
       initialFileName: fileName,
@@ -256,8 +248,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     })}`}
                     location={data.location}
                     organizer={data.organizer_name}
-                    descriptionHtml={data.description ?? ""}
                     description={descriptionPlain}
+                    descriptionHtml={descriptionHtml}
                     imageUrl={toFileUrl(data.picture_path || "")}
                     status={
                       data.status
@@ -285,11 +277,13 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                   <ExhibitionForm
                     ref={formRef}
                     mode={mode}
+                    exhibitionId={id}
                     initialValues={initialValues}
                     initialFileName={initialFileName}
                     readOnly={mode === "view"}
                     onSubmit={handleSubmit}
                     footer={mode === "edit" ? null : undefined}
+                    preferDraft={mode !== "view"}
                   />
                   {mode === "edit" && (
                     <FormButtons
@@ -300,9 +294,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                 </>
               )}
             </Panel>
-            {id && mode !== "create" && (
-              <UnitManageList mode={mode} embedded />
-            )}
+            {id && mode !== "create" && <UnitManageList mode={mode} embedded />}
           </div>
         </>
       )}
@@ -310,4 +302,3 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     </div>
   );
 }
-

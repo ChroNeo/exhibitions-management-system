@@ -1,13 +1,22 @@
-﻿import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { MutableRefObject, ReactNode } from "react";
-import type Quill from "quill";
+import { useNavigate } from "react-router-dom";
+import type QuillType from "quill";
+import type Delta from "quill-delta";
+
 import styles from "./ExManageForm.module.css";
 import FormButtons from "../../Detail/FormButtons";
-import { useNavigate } from "react-router-dom";
 import { initializeRichTextEditor } from "../../../utils/quill";
+import { toDeltaObject, toDeltaString } from "../../../utils/quillDelta";
 
-const DEFAULT_STATUS = "draft";
-
+const DEFAULT_STATUS = "draft" as const;
 const STATUS_LABELS: Record<string, string> = {
   draft: "Draft",
   published: "Published",
@@ -15,240 +24,342 @@ const STATUS_LABELS: Record<string, string> = {
   ended: "Ended",
   archived: "Archived",
 };
+const EDITABLE_STATUS_VALUES = ["draft", "published", "archived"] as const;
 
-const EDITABLE_STATUS_VALUES = ["draft", "published", "archived"];
-
-type DescriptionState = Pick<ExhibitionFormValues, "description" | "description_delta">;
+type QuillSource = "user" | "api" | "silent";
+type DeltaLike = { ops: unknown[] };
+type TextChangeHandler = (
+  delta: DeltaLike,
+  oldDelta: DeltaLike,
+  source: QuillSource
+) => void;
 
 export type ExhibitionFormValues = {
   title: string;
-  start_date: string; // YYYY-MM-DDTHH:mm
-  end_date: string; // YYYY-MM-DDTHH:mm
+  start_date: string;     // datetime-local string
+  end_date: string;       // datetime-local string
   location: string;
   organizer_name: string;
-  description: string;
-  description_delta: string;
+  description?: string;   // สร้างตอน submit
+  description_delta: string; // single source of truth
   status: string;
-  file?: File | undefined;
+  file?: File;
 };
 
 type Props = {
   mode: "view" | "edit" | "create";
-  initialValues?: ExhibitionFormValues;
+  exhibitionId?: string | number;
+  initialValues?: Partial<ExhibitionFormValues> & { updated_at?: string | null };
   initialFileName?: string;
   readOnly?: boolean;
   onSubmit?: (v: ExhibitionFormValues) => Promise<void> | void;
   footer?: ReactNode;
+  preferDraft?: boolean; // ให้ draft ชนะ API ไหม (ค่าเริ่มต้น false)
+};
+
+type Draft = {
+  version: 1;
+  exhibitionId?: string | number;
+  savedAt: number;
+  form: Pick<
+    ExhibitionFormValues,
+    "title" | "start_date" | "end_date" | "location" | "organizer_name" | "status"
+  >;
+  description_delta: string;
+};
+
+const EMPTY: ExhibitionFormValues = {
+  title: "",
+  start_date: "",
+  end_date: "",
+  location: "",
+  organizer_name: "",
+  description_delta: "",
+  status: DEFAULT_STATUS,
+  file: undefined,
+};
+
+const storageKey = (exhibitionId?: string | number, mode?: Props["mode"]) =>
+  `ems:exhibition:draft:v1:${exhibitionId ?? `new-${mode ?? "create"}`}`;
+
+// helper: ISO -> datetime-local
+export const isoToLocalInput = (iso?: string) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
 };
 
 const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionForm(
   {
     mode,
+    exhibitionId,
     initialValues,
     initialFileName,
     readOnly = false,
     onSubmit,
     footer,
+    preferDraft = false,
   }: Props,
   ref
 ) {
-  const [values, setValues] = useState<ExhibitionFormValues>({
-    title: "",
-    start_date: "",
-    end_date: "",
-    location: "",
-    organizer_name: "",
-    description: "",
-    description_delta: "",
-    status: DEFAULT_STATUS,
-    file: undefined,
-  });
+  const [form, setForm] = useState<ExhibitionFormValues>({ ...EMPTY, ...initialValues });
+  const quillElRef = useRef<HTMLDivElement | null>(null);
+  const quillRef = useRef<QuillType | null>(null);
+  const [quillReady, setQuillReady] = useState(false);
+  const hydratedRef = useRef<"none" | "server" | "draft">("none");
 
-  const quillContainerRef = useRef<HTMLDivElement | null>(null);
-  const quillRef = useRef<Quill | null>(null);
-  const suppressQuillEventRef = useRef(false);
-  const pendingEditorValueRef = useRef<DescriptionState | null>(null);
+  const navigate = useNavigate();
+  const canSubmit = mode === "edit" || mode === "create";
+  const disabled = !!readOnly;
 
-  const applyEditorValue = useCallback(
-    (payload: DescriptionState) => {
-      const quill = quillRef.current;
-      if (!quill) {
-        pendingEditorValueRef.current = payload;
-        return;
-      }
+  const update = <K extends keyof ExhibitionFormValues>(k: K, v: ExhibitionFormValues[K]) =>
+    setForm((p) => ({ ...p, [k]: v }));
 
-      suppressQuillEventRef.current = true;
-      try {
-        if (payload.description) {
-          const htmlDelta = quill.clipboard.convert(payload.description);
-          quill.setContents(htmlDelta);
-        } else if (payload.description_delta) {
-          try {
-            const parsed = JSON.parse(payload.description_delta);
-            quill.setContents(parsed);
-          } catch (error) {
-            console.warn("Failed to parse description delta", error);
-            quill.setText("");
-          }
-        } else {
-          quill.setText("");
-        }
-        quill.setSelection(0, 0);
-      } finally {
-        suppressQuillEventRef.current = false;
-      }
-    },
-    []
-  );
-
+  // init quill
   useEffect(() => {
-    if (mode === "create" || !initialValues) {
-      const emptyValues: ExhibitionFormValues = {
-        title: "",
-        start_date: "",
-        end_date: "",
-        location: "",
-        organizer_name: "",
-        description: "",
-        description_delta: "",
-        status: DEFAULT_STATUS,
-        file: undefined,
-      };
-      setValues(emptyValues);
-      applyEditorValue(emptyValues);
-    } else {
-      const nextValues: ExhibitionFormValues = {
-        ...initialValues,
-        status: initialValues.status ?? DEFAULT_STATUS,
-        description: initialValues.description ?? "",
-        description_delta: initialValues.description_delta ?? "",
-        file: undefined,
-      };
-      setValues(nextValues);
-      applyEditorValue(nextValues);
-    }
-  }, [mode, initialValues, applyEditorValue]);
-
-  useEffect(() => {
-    const container = quillContainerRef.current;
-    if (!container || quillRef.current) return;
+    if (!quillElRef.current || quillRef.current) return;
 
     const { quill, cleanup } = initializeRichTextEditor({
-      container,
+      container: quillElRef.current,
       placeholder: "รายละเอียดเพิ่มเติมของนิทรรศการ",
     });
 
-    const handleTextChange = () => {
-      if (suppressQuillEventRef.current) return;
-      const html = quill.root.innerHTML;
-      const plainText = quill.getText().trim();
-
-      if (!plainText.length || html === "<p><br></p>") {
-        setValues((prev) => {
-          if (!prev.description && !prev.description_delta) return prev;
-          return { ...prev, description: "", description_delta: "" };
-        });
-        return;
-      }
-
+    const handleTextChange: TextChangeHandler = (_d, _o, source) => {
+      if (source !== "user") return;
       const deltaString = JSON.stringify(quill.getContents());
-      setValues((prev) => {
-        if (prev.description === html && prev.description_delta === deltaString) {
-          return prev;
-        }
-        return {
-          ...prev,
-          description: html,
-          description_delta: deltaString,
-        };
-      });
+      setForm((p) =>
+        p.description_delta === deltaString ? p : { ...p, description_delta: deltaString }
+      );
     };
 
     quill.on("text-change", handleTextChange);
     quillRef.current = quill;
-
-    if (pendingEditorValueRef.current) {
-      applyEditorValue(pendingEditorValueRef.current);
-      pendingEditorValueRef.current = null;
-    } else {
-      applyEditorValue({
-        description: values.description,
-        description_delta: values.description_delta,
-      });
-    }
+    setQuillReady(true);
 
     return () => {
       quill.off("text-change", handleTextChange);
       quillRef.current = null;
+      setQuillReady(false);
       cleanup();
     };
-  }, [applyEditorValue]);
+  }, []);
 
-  const disabled = !!readOnly;
-  const canSubmit = useMemo(() => mode === "edit" || mode === "create", [mode]);
-
+  // hydrate from API (server wins by default)
   useEffect(() => {
     const quill = quillRef.current;
-    if (!quill) return;
+    if (!quillReady || !quill) return;
+    if (hydratedRef.current !== "none") return;
 
-    quill.enable(!disabled);
-    const toolbarModule = quill.getModule("toolbar") as
-      | { container?: HTMLElement }
-      | undefined;
-    if (toolbarModule && toolbarModule.container instanceof HTMLElement) {
-      toolbarModule.container.style.display = disabled ? "none" : "";
+    // normalize start/end for inputs if callerยังไม่ได้แปลง
+    const normStart = form.start_date || isoToLocalInput((initialValues as any)?.start_date);
+    const normEnd = form.end_date || isoToLocalInput((initialValues as any)?.end_date);
+
+    // if server has only HTML (rare), convert once
+    if (
+      (!initialValues?.description_delta || toDeltaString(initialValues?.description_delta) === "") &&
+      initialValues?.description
+    ) {
+      const clip = quill.clipboard.convert({ html: initialValues.description });
+      quill.setContents(clip, "silent");
+      setForm((p) => ({
+        ...p,
+        ...EMPTY,
+        ...initialValues,
+        start_date: normStart,
+        end_date: normEnd,
+        description_delta: JSON.stringify(clip),
+      }));
+      hydratedRef.current = "server";
+      return;
     }
-  }, [disabled]);
+
+    // server has delta (string or object)
+    const deltaObj = toDeltaObject(initialValues?.description_delta);
+    quill.setContents(deltaObj, "silent");
+    setForm((p) => ({
+      ...p,
+      ...EMPTY,
+      ...initialValues,
+      start_date: normStart,
+      end_date: normEnd,
+      description_delta: toDeltaString(initialValues?.description_delta),
+    }));
+    hydratedRef.current = "server";
+  }, [mode, initialValues, quillReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // optional: hydrate from draft if allowed and newer
+  useEffect(() => {
+    const quill = quillRef.current;
+    if (!quillReady || !quill) return;
+
+    const allowDraft = canSubmit && preferDraft;
+    if (!allowDraft) return;
+    if (hydratedRef.current === "draft") return; // applied already
+
+    const key = storageKey(exhibitionId, mode);
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+
+    try {
+      const draft: Draft = JSON.parse(raw);
+      const sameScope = draft.version === 1 && draft.exhibitionId === exhibitionId;
+      if (!sameScope) return;
+
+      const serverUpdatedAt = initialValues?.updated_at
+        ? new Date(initialValues.updated_at).getTime()
+        : 0;
+      if (serverUpdatedAt && draft.savedAt <= serverUpdatedAt) return;
+
+      const deltaObj = toDeltaObject(draft.description_delta);
+      quill.setContents(deltaObj, "silent");
+      setForm((p) => ({
+        ...p,
+        ...EMPTY,
+        ...initialValues,
+        ...draft.form,
+        description_delta: toDeltaString(draft.description_delta),
+      }));
+      hydratedRef.current = "draft";
+    } catch {
+      /* ignore */
+    }
+  }, [exhibitionId, mode, initialValues, canSubmit, preferDraft, quillReady]);
+
+  // warn before unload if draft exists
+  useEffect(() => {
+    if (!canSubmit) return;
+    const key = storageKey(exhibitionId, mode);
+    const beforeUnload = (e: BeforeUnloadEvent) => {
+      if (localStorage.getItem(key)) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [exhibitionId, mode, canSubmit]);
+
+  // disable editor + hide toolbar when readOnly
+  useEffect(() => {
+    const quill = quillRef.current;
+    if (!quillReady || !quill) return;
+    quill.enable(!disabled);
+
+    type QuillToolbarModule = { container?: HTMLElement };
+    const toolbarModule = quill.getModule("toolbar") as QuillToolbarModule | undefined;
+    const toolbar = toolbarModule?.container;
+    if (toolbar) toolbar.style.display = disabled ? "none" : "";
+  }, [disabled, quillReady]);
+
+  // autosave draft (debounced)
+  useEffect(() => {
+    if (!canSubmit) return;
+    const quill = quillRef.current;
+    if (!quillReady || !quill) return;
+
+    const key = storageKey(exhibitionId, mode);
+    let t: number | null = null;
+
+    const saveDraft = () => {
+      const payload: Draft = {
+        version: 1,
+        exhibitionId,
+        savedAt: Date.now(),
+        form: {
+          title: form.title,
+          start_date: form.start_date,
+          end_date: form.end_date,
+          location: form.location,
+          organizer_name: form.organizer_name,
+          status: form.status,
+        },
+        description_delta: JSON.stringify(quill.getContents()),
+      };
+      localStorage.setItem(key, JSON.stringify(payload));
+    };
+
+    const onText: TextChangeHandler = (_d, _o, source) => {
+      if (source !== "user") return;
+      if (t) window.clearTimeout(t);
+      t = window.setTimeout(saveDraft, 400);
+    };
+
+    quill.on("text-change", onText);
+
+    // also save when non-editor fields change
+    if (t) window.clearTimeout(t);
+    t = window.setTimeout(saveDraft, 400);
+
+    return () => {
+      quill.off("text-change", onText);
+      if (t) window.clearTimeout(t);
+    };
+  }, [
+    form.title,
+    form.start_date,
+    form.end_date,
+    form.location,
+    form.organizer_name,
+    form.status,
+    exhibitionId,
+    mode,
+    canSubmit,
+    quillReady,
+  ]);
+
+  // remove draft helper
+  const removeDraft = useCallback(() => {
+    localStorage.removeItem(storageKey(exhibitionId, mode));
+  }, [exhibitionId, mode]);
 
   const displayedFileName = useMemo(() => {
-    if (values.file) return values.file.name;
+    if (form.file) return form.file.name;
     if (initialFileName) return initialFileName;
     return "ยังไม่ได้เลือกไฟล์";
-  }, [values.file, initialFileName]);
+  }, [form.file, initialFileName]);
 
   const statusOptions = useMemo(() => {
-    const baseValues =
-      mode === "edit" ? EDITABLE_STATUS_VALUES : [DEFAULT_STATUS];
-    const mergedValues = [...baseValues];
-
-    if (values.status && !mergedValues.includes(values.status)) {
-      mergedValues.push(values.status);
-    }
-
-    return mergedValues.map((value) => ({
-      value,
-      label: STATUS_LABELS[value] ?? value,
-    }));
-  }, [mode, values.status]);
-
-  const set = (k: keyof ExhibitionFormValues, v: unknown) =>
-    setValues((prev) => ({ ...prev, [k]: v }));
+    const base = mode === "edit" ? EDITABLE_STATUS_VALUES : [DEFAULT_STATUS];
+    const values = [...base];
+    if (form.status && !values.includes(form.status as any)) values.push(form.status as any);
+    return values.map((value) => ({ value, label: STATUS_LABELS[value] ?? value }));
+  }, [mode, form.status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit || !onSubmit) return;
-    await onSubmit(values);
+
+    const quill = quillRef.current;
+    const html = quill ? quill.root.innerHTML : "";
+    const deltaStr = quill ? JSON.stringify(quill.getContents()) : "";
+
+    const payload: ExhibitionFormValues = {
+      ...form,
+      description: html === "<p><br></p>" ? "" : html,
+      description_delta: deltaStr,
+    };
+
+    await onSubmit(payload);
+    removeDraft();
   };
 
-  // ใช้ ref เพื่อกด submit จากปุ่มยืนยัน
+  // ref for external submit
   const formRef = useRef<HTMLFormElement>(null);
-  const navigate = useNavigate();
   const setFormRef = useCallback(
     (node: HTMLFormElement | null) => {
       formRef.current = node;
       if (!ref) return;
-      if (typeof ref === "function") {
-        ref(node);
-      } else {
-        (ref as MutableRefObject<HTMLFormElement | null>).current = node;
-      }
+      if (typeof ref === "function") ref(node);
+      else (ref as MutableRefObject<HTMLFormElement | null>).current = node;
     },
     [ref]
   );
 
   return (
     <form ref={setFormRef} className={styles.formRoot} onSubmit={handleSubmit}>
-      {/* กรอบส้มครอบเฉพาะฟิลด์ */}
       <div className={styles.ex_card}>
         <div className={`${styles.ex_group} ${styles.ex_name}`}>
           <label className={styles.ex_label}>ชื่องานนิทรรศการ</label>
@@ -256,8 +367,8 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
             className={styles.ex_input}
             type="text"
             placeholder="เช่น Smart Tech Expo"
-            value={values.title}
-            onChange={(e) => set("title", e.target.value)}
+            value={form.title}
+            onChange={(e) => update("title", e.target.value)}
             disabled={disabled}
           />
         </div>
@@ -266,14 +377,12 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
           <label className={styles.ex_label}>สถานะ</label>
           <select
             className={styles.ex_input}
-            value={values.status}
-            onChange={(e) => set("status", e.target.value)}
+            value={form.status}
+            onChange={(e) => update("status", e.target.value)}
             disabled={disabled || mode === "create"}
           >
-            {statusOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
+            {statusOptions.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
         </div>
@@ -284,15 +393,15 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
             <input
               className={styles.ex_input}
               type="datetime-local"
-              value={values.start_date}
-              onChange={(e) => set("start_date", e.target.value)}
+              value={form.start_date}
+              onChange={(e) => update("start_date", e.target.value)}
               disabled={disabled}
             />
             <input
               className={styles.ex_input}
               type="datetime-local"
-              value={values.end_date}
-              onChange={(e) => set("end_date", e.target.value)}
+              value={form.end_date}
+              onChange={(e) => update("end_date", e.target.value)}
               disabled={disabled}
             />
           </div>
@@ -304,8 +413,8 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
             className={styles.ex_input}
             type="text"
             placeholder="เช่น Bangkok Convention Center"
-            value={values.location}
-            onChange={(e) => set("location", e.target.value)}
+            value={form.location}
+            onChange={(e) => update("location", e.target.value)}
             disabled={disabled}
           />
         </div>
@@ -315,12 +424,10 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
           <input
             className={styles.ex_input}
             type="file"
-            onChange={(e) => set("file", e.target.files?.[0])}
+            onChange={(e) => update("file", e.target.files?.[0])}
             disabled={disabled}
           />
-          <p className={styles.ex_fileName} aria-live="polite">
-            {displayedFileName}
-          </p>
+          <p className={styles.ex_fileName} aria-live="polite">{displayedFileName}</p>
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_organizer}`}>
@@ -329,27 +436,20 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
             className={styles.ex_input}
             type="text"
             placeholder="ชื่อหน่วยงาน/บริษัท"
-            value={values.organizer_name}
-            onChange={(e) => set("organizer_name", e.target.value)}
+            value={form.organizer_name}
+            onChange={(e) => update("organizer_name", e.target.value)}
             disabled={disabled}
           />
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_details}`}>
           <label className={styles.ex_label}>รายละเอียด</label>
-          <div
-            className={styles.ex_editor}
-            data-readonly={disabled ? "true" : "false"}
-          >
-            <div
-              ref={quillContainerRef}
-              aria-label="รายละเอียดเพิ่มเติมของนิทรรศการ"
-            />
+          <div className={styles.ex_editor} data-readonly={disabled ? "true" : "false"}>
+            <div ref={quillElRef} aria-label="รายละเอียดเพิ่มเติมของนิทรรศการ" />
           </div>
         </div>
       </div>
 
-      {/* ปุ่มอยู่นอกกรอบส้ม */}
       {canSubmit && (
         <div className={styles.ex_actions}>
           {footer !== undefined ? (
@@ -367,6 +467,3 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
 });
 
 export default ExhibitionForm;
-
-
-

@@ -417,17 +417,6 @@ function buildUpdatePayload(source: unknown): UpdateUnitPayload {
     }
   }
 
-  if (hasField("description_delta")) {
-    const raw = fields["description_delta"];
-    if (raw === null || raw === undefined) {
-      payload.description_delta = null;
-    } else {
-      const value = typeof raw === "string" ? raw : String(raw);
-      payload.description_delta = value ? value : null;
-    }
-    touched++;
-  }
-
   const setNullableString = (
     key: keyof Pick<UpdateUnitPayload, "poster_url" | "starts_at" | "ends_at">
   ) => {
