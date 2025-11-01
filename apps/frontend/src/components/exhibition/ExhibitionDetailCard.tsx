@@ -3,9 +3,12 @@ import { MdOutlineCalendarToday } from "react-icons/md";
 import { LuClock, LuBadgeCheck } from "react-icons/lu";
 import { IoLocationOutline, IoPersonOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import { toThaiDate, toThaiTimeRange } from "../../utils/dateFormat";
 
 export default function ExhibitionDetailCard({
   title,
+  startISO,
+  endISO,
   startText,
   endText,
   timeText,
@@ -20,9 +23,11 @@ export default function ExhibitionDetailCard({
   registerLink,
 }: {
   title: string;
-  startText: string;
-  endText: string;
-  timeText: string;
+  startISO?: string;
+  endISO?: string;
+  startText?: string;
+  endText?: string;
+  timeText?: string;
   location?: string;
   organizer?: string;
   description?: string;
@@ -38,6 +43,13 @@ export default function ExhibitionDetailCard({
   const hasDescriptionText =
     typeof description === "string" && description.trim().length > 0;
 
+  const dateLine =
+    startISO && endISO
+      ? `${toThaiDate(startISO)} – ${toThaiDate(endISO)}`
+      : [startText, endText].filter(Boolean).join(" – ");
+  const timeLine =
+    startISO && endISO ? toThaiTimeRange(startISO, endISO) : timeText;
+
   return (
     <section className={styles.card}>
       <div className={styles.header}>
@@ -52,14 +64,12 @@ export default function ExhibitionDetailCard({
 
           <div className={styles.row}>
             <MdOutlineCalendarToday className={styles.icon} />
-            <span>
-              {startText} – {endText}
-            </span>
+            <span>{dateLine}</span>
           </div>
 
           <div className={styles.row}>
             <LuClock className={styles.icon} />
-            <span>{timeText}</span>
+            <span>{timeLine}</span>
           </div>
 
           {status && (

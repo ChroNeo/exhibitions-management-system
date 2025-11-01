@@ -11,6 +11,7 @@ import { LuClock } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
 import type { Exhibition } from "./../../types/exhibition";
 import { toFileUrl } from "../../utils/url";
+import { toThaiDate, toThaiTimeRange } from "../../utils/dateFormat";
 
 const FALLBACK_POSTER = "https://placehold.co/1920x1080";
 
@@ -43,9 +44,23 @@ export default function ExhibitionCard({
     }
   };
 
-  const [datePart, timePart] = item.dateText
-    .split("|")
-    .map((part) => part.trim());
+  const toISO = (value?: string | number | Date | null): string | undefined => {
+    if (value === undefined || value === null) return undefined;
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) return undefined;
+    return d.toISOString();
+  };
+
+  const startISO = toISO(item.start_date);
+  const endISO = toISO(item.end_date);
+
+  const datePart = startISO && endISO
+    ? `${toThaiDate(startISO)} – ${toThaiDate(endISO)}`
+    : (item.dateText.split("|")[0]?.trim() ?? "");
+
+  const timePart = startISO && endISO
+    ? toThaiTimeRange(startISO, endISO)
+    : (item.dateText.split("|")[1]?.trim() ?? "");
   const hasActions = Boolean(onEdit || onDelete);
 
   const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {

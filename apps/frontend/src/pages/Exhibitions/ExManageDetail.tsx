@@ -64,6 +64,14 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const descriptionPlain = data?.description?.trim() || undefined;
   const descriptionHtml = data?.descriptionHtml;
 
+  // Normalize various date input types to ISO string when needed
+  const toISO = (value?: string | number | Date | null): string | undefined => {
+    if (value === undefined || value === null) return undefined;
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) return undefined;
+    return d.toISOString();
+  };
+
   const title =
     mode === "create"
       ? "เพิ่มนิทรรศการ"
@@ -83,8 +91,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     return {
       initialValues: {
         title: ex.title ?? "",
-        start_date: toInputDateTime(ex.start_date),
-        end_date: toInputDateTime(ex.end_date),
+        start_date: toInputDateTime(toISO(ex.start_date) ?? null),
+        end_date: toInputDateTime(toISO(ex.end_date) ?? null),
         location: ex.location ?? "",
         organizer_name: ex.organizer_name ?? "",
         description: ex.descriptionHtml ?? "",
@@ -230,22 +238,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                 <>
                   <ExhibitionDetailCard
                     title={data.title}
-                    startText={new Date(data.start_date).toLocaleDateString(
-                      "th-TH"
-                    )}
-                    endText={new Date(data.end_date).toLocaleDateString(
-                      "th-TH"
-                    )}
-                    timeText={`${new Date(data.start_date).toLocaleTimeString(
-                      "th-TH",
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )} - ${new Date(data.end_date).toLocaleTimeString("th-TH", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}`}
+                    startISO={toISO(data.start_date)}
+                    endISO={toISO(data.end_date)}
                     location={data.location}
                     organizer={data.organizer_name}
                     description={descriptionPlain}
