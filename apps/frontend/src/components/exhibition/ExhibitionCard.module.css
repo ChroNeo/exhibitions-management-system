@@ -1,4 +1,5 @@
 .card {
+  position: relative;
   cursor: pointer;
   background: #fff;
   border: 1px solid var(--cardBorder);
@@ -10,7 +11,6 @@
 p {
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  /* จำนวนบรรทัดสูงสุด */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -64,6 +64,13 @@ p {
 
 .titleRow {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.titleLeft {
+  display: inline-flex;
   align-items: center;
   gap: 10px;
 }
@@ -151,8 +158,54 @@ p {
   border-color: #fca5a5;
 }
 
-@media (max-width: 600px) {
+.statusDot {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid #0f172a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  background: currentColor;
+  z-index: 9999;
+  pointer-events: none;
+}
 
+.badge {
+  padding: 6px 10px;
+  height: 28px;
+  line-height: 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  border: 2px solid currentColor;
+}
+
+/* สีสถานะ */
+.dotGray {
+  background: #9ca3af;
+  color: #9ca3af;
+}
+.dotGreen {
+  background: #4ec64e;
+  color: #4ec64e;
+}
+.dotBlue {
+  background: #60a5fa;
+  color: #60a5fa;
+}
+.dotOrange {
+  background: #fb923c;
+  color: #fb923c;
+}
+.dotBrown {
+  background: #8b5e34;
+  color: #8b5e34;
+}
+
+@media (max-width: 600px) {
   .inner {
     flex-direction: column;
     gap: 20px;

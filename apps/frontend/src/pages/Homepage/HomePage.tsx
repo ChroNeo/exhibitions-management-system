@@ -207,40 +207,39 @@ export default function HomePage() {
             <h2 className={styles.sectionTitle}>รายการนิทรรศการทั้งหมด</h2>
             {isLoading && <p>กำลังโหลด...</p>}
 
-            <div className={styles.grid}>
-              {exhibitions.map((ex: any) => (
-                <Link
-                  key={ex.exhibition_id}
-                  to={`/exhibitions/${ex.exhibition_id}`}
-                  className={styles.cardLink}
-                >
-                  <div className={styles.forceVertical}>
-                    <ExhibitionCard
-                      item={{
-                        id: String(ex.exhibition_id),
-                        title: ex.title,
-                        location: ex.location,
-                        coverUrl: `${ex.picture_path}`,
-                        dateText: `${new Date(
-                          ex.start_date
-                        ).toLocaleDateString()} - ${new Date(
-                          ex.end_date
-                        ).toLocaleDateString()}`,
-                        picture_path: ex.picture_path,
-                        start_date: ex.start_date,
-                        end_date: ex.end_date,
-                        organizer_name: "",
-                        description: "",
-                        status: ex.status ?? "draft",
-                        isPinned: false,
-                      }}
-                    />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+          <div className={styles.grid}>
+            {exhibitions.map((ex) => (
+              <Link
+                key={ex.exhibition_id}
+                to={`/exhibitions/${ex.exhibition_id}`}
+                className={styles.cardLink}
+              >
+                <div className={styles.forceVertical}>
+                  <ExhibitionCard
+                    item={{
+                      id: String(ex.exhibition_id),
+                      title: ex.title,
+                      location: ex.location,
+                      coverUrl: `${ex.picture_path}`,
+                      dateText: `${new Date(
+                        ex.start_date
+                      ).toLocaleDateString()} - ${new Date(
+                        ex.end_date
+                      ).toLocaleDateString()}`,
+                      picture_path: ex.picture_path,
+                      start_date: ex.start_date,
+                      end_date: ex.end_date,
+                      organizer_name: "",
+                      description: "",
+                      status: (ex.status as "draft" | "published" | "ongoing" | "ended" | "archived") ?? "draft",
+                      isPinned: false,
+                    }}
+                  />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </main>
     </>
   );
