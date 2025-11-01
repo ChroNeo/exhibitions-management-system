@@ -11,8 +11,16 @@ import { LuClock } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
 import type { Exhibition } from "./../../types/exhibition";
 import { toFileUrl } from "../../utils/url";
+import { useAuthStatus } from "../../hook/useAuthStatus";
 
 const FALLBACK_POSTER = "https://placehold.co/1920x1080";
+
+type ExhibitionStatus =
+  | "draft"
+  | "published"
+  | "ongoing"
+  | "ended"
+  | "archived";
 
 export default function ExhibitionCard({
   item,
@@ -20,7 +28,11 @@ export default function ExhibitionCard({
   onDelete,
   onSelect,
 }: {
-  item: Exhibition;
+  item: Exhibition & {
+    status?: ExhibitionStatus | null;
+    startDate?: string | null;
+    endDate?: string | null;
+  };
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onSelect?: (id: string) => void;
@@ -43,7 +55,7 @@ export default function ExhibitionCard({
     }
   };
 
-  const [datePart, timePart] = item.dateText
+  const [datePart, timePart] = (item.dateText || "")
     .split("|")
     .map((part) => part.trim());
   const hasActions = Boolean(onEdit || onDelete);
@@ -58,6 +70,36 @@ export default function ExhibitionCard({
     onDelete?.(item.id);
   };
 
+  const isAuthenticated = useAuthStatus();
+
+  const inferredStatus: ExhibitionStatus = (() => {
+    if (item.status) return item.status;
+    const s = item.startDate ? new Date(item.startDate) : null;
+    const e = item.endDate ? new Date(item.endDate) : null;
+    if (!s || !e) return "draft";
+    const now = new Date();
+    if (now < s) return "published";
+    if (now >= s && now <= e) return "ongoing";
+    if (now > e) return "ended";
+    return "draft";
+  })();
+
+  const statusLabel: Record<ExhibitionStatus, string> = {
+    draft: "draft (ร่าง)",
+    published: "published (เผยแพร่)",
+    ongoing: "ongoing (กำลังจัด)",
+    ended: "ended (จบงาน)",
+    archived: "archived (เก็บ)",
+  };
+
+  const statusColorClass: Record<ExhibitionStatus, string> = {
+    draft: styles.dotGray,
+    published: styles.dotGreen,
+    ongoing: styles.dotBlue,
+    ended: styles.dotOrange,
+    archived: styles.dotBrown,
+  };
+
   return (
     <div
       className={styles.card}
@@ -67,6 +109,14 @@ export default function ExhibitionCard({
       onKeyDown={handleKeyDown}
       aria-label={onSelect ? `เปิดดู ${item.title}` : undefined}
     >
+      {isAuthenticated && (
+        <span
+          className={`${styles.statusDot} ${statusColorClass[inferredStatus]}`}
+          aria-label={statusLabel[inferredStatus]}
+          title={statusLabel[inferredStatus]}
+        />
+      )}
+
       <div className={styles.inner}>
         <div className={styles.media}>
           <div className={styles.cover_container}>
@@ -84,10 +134,12 @@ export default function ExhibitionCard({
 
           <div className={styles.content}>
             <div className={styles.titleRow}>
-              <h3 className={styles.title}>{item.title}</h3>
-              {item.isPinned && (
-                <span className={styles.pin} aria-label="ปักหมุด" />
-              )}
+              <div className={styles.titleLeft}>
+                <h3 className={styles.title}>{item.title}</h3>
+                {item.isPinned && (
+                  <span className={styles.pin} aria-label="ปักหมุด" />
+                )}
+              </div>
             </div>
 
             <div className={styles.metaGroup}>

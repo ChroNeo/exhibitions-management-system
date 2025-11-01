@@ -117,7 +117,7 @@ export default function HomePage() {
                       end_date: ex.end_date,
                       organizer_name: "",
                       description: "",
-                      status: ex.status ?? "draft",
+                      status: (ex.status as "draft" | "published" | "ongoing" | "ended" | "archived") ?? "draft",
                       isPinned: false,
                     }}
                   />
