@@ -1,17 +1,64 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px 60px;
+  padding: 0px 16px 60px;
   background: #fff;
+}
+
+.fullContainer {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #000; /* cinema/announcement look */
 }
 
 /* ====================== สไลด์ด้านบน ====================== */
 .hero {
   position: relative;
   overflow: hidden;
-  border-radius: 14px;
   margin-bottom: 28px;
 }
+
+/* Make hero break out of the centered container to span full viewport width */
+.fullBleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+/* Make hero tall (nearly fullscreen height) without using Fullscreen API */
+.heroTall .slideAspect {
+  height: min(88vh, 1000px);
+  aspect-ratio: auto; /* height drives size; keep full width */
+}
+
+/* Fullscreen (when the hero element enters requestFullscreen) */
+.hero:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border-radius: 0;
+}
+.hero:fullscreen .slideAspect {
+  height: 100vh;
+  aspect-ratio: auto;
+}
+
+/* Fullscreen page mode (no browser fullscreen API) */
+.heroFull {
+  border-radius: 0;
+  margin: 0;
+}
+.heroFull .slideAspect {
+  height: 100vh;
+  aspect-ratio: auto;
+}
+.heroFull .overlay { padding: 28px; }
+.heroFull .slideTitle { font-size: clamp(24px, 4vw, 48px); }
+.heroFull .slideMeta { font-size: clamp(14px, 2vw, 22px); }
+.heroFull .dots { display: none; }
+.heroFull .arrow { opacity: 1; }
 
 .slideWrapper {
   position: relative;
@@ -26,7 +73,7 @@
   flex: 0 0 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 0;
 }
 .slideAspect {
   aspect-ratio: 16/9;
@@ -51,17 +98,40 @@
   justify-content: flex-end;
   padding: 20px;
   color: #fff;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.7));
+  /* Subtle bottom gradient to improve text readability */
+  background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.45) 100%);
+}
+.fsRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.fsBtn {
+  align-self: flex-end;
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+.fsBtn:hover {
+  background: rgba(0, 0, 0, 0.5);
 }
 .slideTitle {
   font-size: 20px;
   font-weight: 800;
   margin: 0 0 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 .slideMeta {
   font-size: 14px;
   margin: 0;
   opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 /* ปุ่มเลื่อน */

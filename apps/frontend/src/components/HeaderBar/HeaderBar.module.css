@@ -1,7 +1,6 @@
 ﻿.bar {
   background: #224177;
   color: #fff;
-  border-radius: 0 0 16px 16px;
   box-shadow: var(--shadow-s);
 }
 
