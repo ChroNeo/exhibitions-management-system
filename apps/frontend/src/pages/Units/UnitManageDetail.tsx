@@ -155,7 +155,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
       unit_name: trimmedName,
       unit_type: values.type,
       staff_user_id:
-        values.staff_user_id.trim() && !Number.isNaN(staffId) ? staffId : undefined,
+        values.staff_user_id!.trim() && !Number.isNaN(staffId) ? staffId : undefined,
       starts_at: startsAt,
       ends_at: endsAt,
     };
