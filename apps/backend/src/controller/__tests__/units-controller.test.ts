@@ -58,6 +58,9 @@ describe("unitsController", () => {
         description: "Stage shows",
         description_delta: null,
         staff_user_id: 5,
+        staff_name: "Main MC",
+        staff_user_ids: [5],
+        staff_names: ["Main MC"],
         poster_url: "uploads/units/main-stage.png",
         starts_at: "2025-05-01T09:00:00Z",
         ends_at: "2025-05-01T17:00:00Z",
@@ -90,6 +93,9 @@ describe("unitsController", () => {
       description: "Demo area",
       description_delta: null,
       staff_user_id: null,
+      staff_name: null,
+      staff_user_ids: [],
+      staff_names: [],
       poster_url: null,
       starts_at: "2025-05-01T00:00:00Z",
       ends_at: "2025-05-01T00:00:00Z",
@@ -117,7 +123,7 @@ describe("unitsController", () => {
       unit_name: "Stage Show",
       unit_type: "booth",
       description: "Daily performance",
-      staff_user_id: 8,
+      staff_user_ids: [8, 9],
       poster_url: "uploads/units/stage.png",
       starts_at: "2025-05-02T10:00:00Z",
       ends_at: "2025-05-02T12:00:00Z",
@@ -127,6 +133,9 @@ describe("unitsController", () => {
       unit_id: 12,
       exhibition_id: 123,
       ...payload,
+      staff_user_id: 8,
+      staff_name: "Stage Supervisor",
+      staff_names: ["Stage Supervisor", "Assistant"],
       description_delta: JSON.stringify(payload.description_delta),
     };
     addUnitMock.mockResolvedValue(createdUnit);
@@ -149,7 +158,7 @@ describe("unitsController", () => {
           unit_type: "booth",
           description: "Daily performance",
           description_delta: JSON.stringify(payload.description_delta),
-          staff_user_id: 8,
+          staff_user_ids: [8, 9],
           poster_url: "uploads/units/stage.png",
           starts_at: "2025-05-02T10:00:00Z",
           ends_at: "2025-05-02T12:00:00Z",
@@ -172,12 +181,15 @@ describe("unitsController", () => {
       starts_at: "2025-05-03T10:00:00Z",
       ends_at: "2025-05-03T12:00:00Z",
       description_delta: "{\"ops\":[{\"insert\":\"Updated program\\n\"}]}",
+      staff_user_ids: [],
     };
     const updatedUnit = {
       unit_id: 12,
       exhibition_id: 123,
       ...updatePayload,
       staff_user_id: null,
+      staff_name: null,
+      staff_names: [],
     };
     updateUnitMock.mockResolvedValue(updatedUnit);
 
@@ -203,6 +215,7 @@ describe("unitsController", () => {
           starts_at: "2025-05-03T10:00:00Z",
           ends_at: "2025-05-03T12:00:00Z",
           description_delta: updatePayload.description_delta,
+          staff_user_ids: [],
         })
       );
       expect(response.json()).toEqual(updatedUnit);

@@ -108,11 +108,14 @@ export default function UnitManageDetail({
   const { dateText, timeText } = data
     ? buildDateTimeText(data.startsAt, data.endsAt)
     : { dateText: "-", timeText: undefined };
-  const staffText = data?.staffName
-    ? `ผู้ดูแล: ${data.staffName}`
-    : data?.staffUserId
-    ? `ผู้ดูแล ID ${data.staffUserId}`
-    : undefined;
+  const staffText =
+    data && data.staffUserIds.length
+      ? `ผู้ดูแล: ${
+          data.staffNames.length
+            ? data.staffNames.join(", ")
+            : data.staffUserIds.map(String).join(", ")
+        }`
+      : undefined;
 
   const { initialFormValues, initialPosterName } = useMemo(() => {
     if (!data || mode === "create") {
@@ -137,7 +140,7 @@ export default function UnitManageDetail({
         type: data.type,
         starts_at: toInputValue(data.startsAt),
         ends_at: toInputValue(data.endsAt),
-        staff_user_id: data.staffUserId ? String(data.staffUserId) : "",
+        staff_user_ids: data.staffUserIds ?? [],
         description: data.descriptionHtml ?? "",
         description_delta: data.descriptionDelta ?? "",
         file: undefined,
@@ -161,21 +164,23 @@ export default function UnitManageDetail({
       throw new Error("กรุณากรอกช่วงเวลาให้ครบถ้วน");
     }
 
-    const staffUserIdValue =
-      typeof values.staff_user_id === "string"
-        ? values.staff_user_id.trim()
-        : "";
-    const staffId =
-      staffUserIdValue.length > 0 ? Number(staffUserIdValue) : Number.NaN;
-
     const payload: UnitCreatePayload = {
       unit_name: trimmedName,
       unit_type: values.type,
-      staff_user_id:
-        staffUserIdValue && !Number.isNaN(staffId) ? staffId : undefined,
       starts_at: startsAt,
       ends_at: endsAt,
     };
+
+    if (values.staff_user_ids !== undefined) {
+      const cleanedStaffIds = Array.from(
+        new Set(
+          (values.staff_user_ids ?? []).map((id) => Number(id)).filter(
+            (id) => Number.isFinite(id) && id > 0
+          )
+        )
+      );
+      payload.staff_user_ids = cleanedStaffIds;
+    }
 
     const descriptionHtml = values.description.trim();
     const descriptionDelta = values.description_delta.trim();

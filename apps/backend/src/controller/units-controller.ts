@@ -32,6 +32,60 @@ function parseJsonDelta(value: unknown, fieldName: string): string | null | unde
 
   throw new AppError(`${fieldName} must be valid JSON`, 400, "VALIDATION_ERROR");
 }
+
+function parseStaffIds(value: unknown, fieldName: string): number[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return [];
+  }
+
+  let rawValues: unknown[];
+
+  if (Array.isArray(value)) {
+    rawValues = value;
+  } else if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        rawValues = parsed;
+      } else {
+        rawValues = trimmed.split(",").map((part) => part.trim()).filter(Boolean);
+      }
+    } catch {
+      rawValues = trimmed.split(",").map((part) => part.trim()).filter(Boolean);
+    }
+  } else if (typeof value === "number") {
+    rawValues = [value];
+  } else {
+    throw new AppError(`${fieldName} must be an array of integers`, 400, "VALIDATION_ERROR");
+  }
+
+  const numbers: number[] = [];
+  for (const entry of rawValues) {
+    if (entry === null || entry === undefined) {
+      continue;
+    }
+    if (typeof entry === "string" && !entry.trim()) {
+      continue;
+    }
+    const numericValue =
+      typeof entry === "number"
+        ? entry
+        : Number(typeof entry === "string" ? entry.trim() : String(entry));
+    if (!Number.isFinite(numericValue) || !Number.isInteger(numericValue) || numericValue <= 0) {
+      throw new AppError(`${fieldName} must contain positive integers`, 400, "VALIDATION_ERROR");
+    }
+    numbers.push(numericValue);
+  }
+
+  return Array.from(new Set(numbers));
+}
 export default async function unitsController(fastify: FastifyInstance) {
   await fastify.register(
     async (fastify) => {
@@ -60,6 +114,9 @@ export default async function unitsController(fastify: FastifyInstance) {
                     unit_type: "booth",
                     description: "Interactive demos of AI gadgets.",
                     staff_user_id: 13,
+                    staff_name: "คุณสมชาย",
+                    staff_user_ids: [13, 21],
+                    staff_names: ["คุณสมชาย", "คุณสายฝน"],
                     poster_url: "uploads/units/ai-playground.png",
                     starts_at: "2024-05-01T10:00:00Z",
                     ends_at: "2024-05-01T18:00:00Z",
@@ -100,6 +157,9 @@ export default async function unitsController(fastify: FastifyInstance) {
                     unit_type: "booth",
                     description: "Interactive demos of AI gadgets.",
                     staff_user_id: 13,
+                    staff_name: "คุณสมชาย",
+                    staff_user_ids: [13, 21],
+                    staff_names: ["คุณสมชาย", "คุณสายฝน"],
                     poster_url: "uploads/units/ai-playground.png",
                     starts_at: "2024-05-01T10:00:00Z",
                     ends_at: "2024-05-01T18:00:00Z",
@@ -317,6 +377,17 @@ function buildCreatePayload(exhibitionIdParam: string, source: unknown): AddUnit
     }
   }
 
+  const staffUserIdsValue = parseStaffIds(fields["staff_user_ids"], "staff_user_ids");
+  if (staffUserIdsValue !== undefined) {
+    payload.staff_user_ids = staffUserIdsValue;
+  }
+
+  if (payload.staff_user_ids !== undefined) {
+    payload.staff_user_id = payload.staff_user_ids.length ? payload.staff_user_ids[0] : null;
+  } else if (payload.staff_user_id !== undefined) {
+    payload.staff_user_ids = payload.staff_user_id === null ? [] : [payload.staff_user_id];
+  }
+
   const posterUrl = getString("poster_url");
   if (posterUrl !== undefined) {
     payload.poster_url = posterUrl || null;
@@ -436,6 +507,31 @@ function buildUpdatePayload(source: unknown): UpdateUnitPayload {
   setNullableString("poster_url");
   setNullableString("starts_at");
   setNullableString("ends_at");
+
+  if (hasField("staff_user_id")) {
+    const raw = fields["staff_user_id"];
+    if (raw === null || raw === undefined || (typeof raw === "string" && !raw.trim())) {
+      payload.staff_user_id = null;
+      payload.staff_user_ids = [];
+    } else {
+      const numeric = Number(typeof raw === "string" ? raw.trim() : raw);
+      if (!Number.isFinite(numeric) || !Number.isInteger(numeric) || numeric <= 0) {
+        throw new AppError("staff_user_id must be an integer", 400, "VALIDATION_ERROR");
+      }
+      payload.staff_user_id = numeric;
+      payload.staff_user_ids = [numeric];
+    }
+    touched++;
+  }
+
+  if (hasField("staff_user_ids")) {
+    const parsed = parseStaffIds(fields["staff_user_ids"], "staff_user_ids");
+    if (parsed !== undefined) {
+      payload.staff_user_ids = parsed;
+      payload.staff_user_id = parsed.length ? parsed[0] : null;
+    }
+    touched++;
+  }
 
   if (!touched) {
     throw new AppError("no fields to update", 400, "VALIDATION_ERROR");

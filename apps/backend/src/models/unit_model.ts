@@ -12,6 +12,7 @@ export interface AddUnitPayload {
   description?: string | null;
   description_delta?: string | null;
   staff_user_id?: number | null;  // FK → normal_users.user_id
+  staff_user_ids?: number[];
   poster_url?: string | null;
   starts_at?: string | null;      // ISO datetime string
   ends_at?: string | null;        // ISO datetime string
@@ -23,6 +24,7 @@ export type UpdateUnitPayload = Partial<{
   description: string | null;
   description_delta: string | null;
   staff_user_id: number | null;
+  staff_user_ids: number[];
   poster_url: string | null;
   starts_at: string | null;
   ends_at: string | null;

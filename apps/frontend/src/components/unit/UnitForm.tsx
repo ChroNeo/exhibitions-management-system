@@ -12,16 +12,18 @@ import { useNavigate } from "react-router-dom";
 import type QuillType from "quill";
 import Swal from "sweetalert2";
 import styles from "../exhibition/form/ExManageForm.module.css";
+import Select, { type MultiValue, type StylesConfig } from "react-select";
 import FormButtons from "../Detail/FormButtons";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
+import { useUserOptions } from "../../hook/useUserOptions";
 
 export type UnitFormValues = {
   name: string;
   type: "booth" | "activity";
   starts_at: string;
   ends_at: string;
-  staff_user_id: string | null;
+  staff_user_ids: number[];
   description?: string;
   description_delta: string;
   file?: File;
@@ -52,7 +54,7 @@ const EMPTY: UnitFormValues = {
   type: "activity",
   starts_at: "",
   ends_at: "",
-  staff_user_id: null,
+  staff_user_ids: [],
   description_delta: "",
   file: undefined,
 };
@@ -64,6 +66,8 @@ type TextChangeHandler = (
   oldDelta: DeltaLike,
   source: QuillSource
 ) => void;
+type StaffSelectOption = { value: number; label: string };
+
 
 const storageKey = (
   exId?: string | number,
@@ -71,6 +75,30 @@ const storageKey = (
   mode?: Props["mode"]
 ) =>
   `ems:unit:draft:v1:${exId ?? "no-ex"}:${unitId ?? `new-${mode ?? "create"}`}`;
+
+function normalizeStaffIds(source: unknown): number[] {
+  if (Array.isArray(source)) {
+    return Array.from(
+      new Set(
+        source
+          .map((value) => Number(value))
+          .filter((id) => Number.isFinite(id) && Number.isInteger(id) && id > 0)
+      )
+    );
+  }
+  if (typeof source === "number" && Number.isFinite(source) && source > 0) {
+    return [source];
+  }
+  if (typeof source === "string") {
+    const trimmed = source.trim();
+    if (!trimmed) return [];
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) && Number.isInteger(parsed) && parsed > 0
+      ? [parsed]
+      : [];
+  }
+  return [];
+}
 
 const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   {
@@ -85,13 +113,29 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   }: Props,
   ref
 ) {
-  const [form, setForm] = useState<UnitFormValues>({
+  const [form, setForm] = useState<UnitFormValues>(() => ({
     ...EMPTY,
     ...initialValues,
-  });
+    staff_user_ids: normalizeStaffIds(initialValues?.staff_user_ids),
+  }));
   const quillElRef = useRef<HTMLDivElement | null>(null);
   const quillRef = useRef<QuillType | null>(null);
   const [quillReady, setQuillReady] = useState(false);
+  const {
+    data: staffOptions = [],
+    isLoading: isStaffLoading,
+  } = useUserOptions("staff");
+  const staffSelectOptions = useMemo(
+    () => staffOptions.map((option) => ({ value: option.value, label: option.label })),
+    [staffOptions]
+  );
+  const selectedStaffOptions = useMemo(
+    () =>
+      staffSelectOptions.filter((option) =>
+        form.staff_user_ids?.includes(option.value)
+      ),
+    [staffSelectOptions, form.staff_user_ids]
+  );
 
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -108,6 +152,80 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   const canSubmit = mode === "edit" || mode === "create";
   const update = <K extends keyof UnitFormValues>(k: K, v: UnitFormValues[K]) =>
     setForm((p) => ({ ...p, [k]: v }));
+
+  const staffSelectStyles: StylesConfig<StaffSelectOption, true> = useMemo(
+    () => ({
+      control: (base, state) => ({
+        ...base,
+        borderRadius: 10,
+        borderColor: state.isFocused ? "#c7571f" : "#de6424",
+        boxShadow: state.isFocused ? "0 0 0 2px rgba(199, 87, 31, 0.2)" : "none",
+        minHeight: 44,
+        ":hover": {
+          borderColor: "#c7571f",
+        },
+      }),
+      multiValue: (base) => ({
+        ...base,
+        backgroundColor: "#fde8db",
+      }),
+      multiValueLabel: (base) => ({
+        ...base,
+        color: "#7f2d08",
+        fontWeight: 600,
+      }),
+      multiValueRemove: (base) => ({
+        ...base,
+        color: "#7f2d08",
+        ":hover": {
+          backgroundColor: "#fbd4b8",
+          color: "#7f2d08",
+        },
+      }),
+      valueContainer: (base) => ({
+        ...base,
+        padding: "4px 8px",
+        gap: 4,
+      }),
+      placeholder: (base) => ({
+        ...base,
+        color: "#9ca3af",
+      }),
+      option: (base, state) => ({
+        ...base,
+        fontWeight: state.isSelected ? 700 : 500,
+        backgroundColor: state.isSelected
+          ? "#fde8db"
+          : state.isFocused
+          ? "#fff3ea"
+          : base.backgroundColor,
+        color: "#1f2937",
+      }),
+      indicatorSeparator: () => ({
+        display: "none",
+      }),
+      dropdownIndicator: (base) => ({
+        ...base,
+        color: "#c7571f",
+        ":hover": {
+          color: "#c7571f",
+        },
+      }),
+      menu: (base) => ({
+        ...base,
+        zIndex: 20,
+      }),
+    }),
+    []
+  );
+
+  const handleStaffChange = useCallback(
+    (selected: MultiValue<StaffSelectOption>) => {
+      const ids = normalizeStaffIds(selected.map((option) => option.value));
+      update("staff_user_ids", ids);
+    },
+    [update]
+  );
 
   // init Quill
   useEffect(() => {
@@ -155,12 +273,13 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     ) {
       const clip = quill.clipboard.convert({ html: initialValues.description });
       quill.setContents(clip, "silent");
-      setForm((p) => ({
-        ...p,
-        ...EMPTY,
-        ...initialValues,
-        description_delta: JSON.stringify(clip),
-      }));
+    setForm((p) => ({
+      ...p,
+      ...EMPTY,
+      ...initialValues,
+      staff_user_ids: normalizeStaffIds(initialValues?.staff_user_ids),
+      description_delta: JSON.stringify(clip),
+    }));
       return;
     }
 
@@ -169,6 +288,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       ...p,
       ...EMPTY,
       ...initialValues,
+      staff_user_ids: normalizeStaffIds(initialValues?.staff_user_ids),
       description_delta: toDeltaString(initialValues?.description_delta),
     }));
   }, [mode, initialValues, quillReady]);
@@ -195,6 +315,36 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         : 0;
 
       if (draft.savedAt > serverUpdatedAt) {
+        if (
+          draft.form &&
+          !Array.isArray((draft.form as Record<string, unknown>)['staff_user_ids']) &&
+          (draft.form as Record<string, unknown>)['staff_user_id'] !== undefined
+        ) {
+          const legacy =
+            (draft.form as Record<string, unknown>)['staff_user_id'];
+          const coerced =
+            typeof legacy === "number"
+              ? [legacy]
+              : typeof legacy === "string" && legacy.trim().length
+              ? [Number(legacy)]
+              : [];
+          (draft.form as Record<string, unknown>)['staff_user_ids'] = coerced.filter(
+            (id) => Number.isFinite(id) && Number(id) > 0
+          );
+          delete (draft.form as Record<string, unknown>)['staff_user_id'];
+        }
+        if (
+          draft.form &&
+          Array.isArray(
+            (draft.form as Record<string, unknown>)['staff_user_ids']
+          )
+        ) {
+          (draft.form as Record<string, unknown>)['staff_user_ids'] = (
+            ((draft.form as Record<string, unknown>)['staff_user_ids'] as unknown[])
+          )
+            .map((id) => Number(id))
+            .filter((id) => Number.isFinite(id) && id > 0);
+        }
         const deltaObj = toDeltaObject(draft.description_delta);
         quill.setContents(deltaObj, "silent");
         setForm((p) => ({
@@ -240,7 +390,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
           type: form.type,
           starts_at: form.starts_at,
           ends_at: form.ends_at,
-          staff_user_id: form.staff_user_id ?? null,
+          staff_user_ids: normalizeStaffIds(form.staff_user_ids),
         },
         savedAt: Date.now(),
         exhibitionId,
@@ -270,7 +420,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     form.type,
     form.starts_at,
     form.ends_at,
-    form.staff_user_id,
+    form.staff_user_ids,
     exhibitionId,
     unitId,
     mode,
@@ -408,18 +558,35 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_organizer}`}>
-          <label className={styles.ex_label}>รหัสกิจกรรม (ถ้ามี)</label>
-          <input
-            className={styles.ex_input}
-            type="number"
-            min={1}
-            placeholder="กรอกรหัสกิจกรรม"
-            value={form.staff_user_id ?? ""}
-            onChange={(e) =>
-              update("staff_user_id", e.target.value ? e.target.value : null)
-            }
-            disabled={isSubmitting}
+          <label className={styles.ex_label}>
+            เลือกผู้ดูแล (เลือกได้หลายคน)
+          </label>
+          <Select
+            classNamePrefix="unitStaffSelect"
+            options={staffSelectOptions}
+            value={selectedStaffOptions}
+            isLoading={isStaffLoading}
+            isClearable
+            isMulti
+            isDisabled={isSubmitting}
+            closeMenuOnSelect={false}
+            placeholder="เลือกผู้ดูแล"
+            noOptionsMessage={() => "ไม่พบผู้ใช้"}
+            styles={staffSelectStyles}
+            onChange={handleStaffChange}
+            menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+            menuPosition="fixed"
           />
+          {isStaffLoading && (
+            <p className={styles.ex_fileName} aria-live="polite">
+              กำลังโหลดรายชื่อผู้ดูแล...
+            </p>
+          )}
+          {!isStaffLoading && staffSelectOptions.length === 0 && (
+            <p className={styles.ex_fileName} role="note">
+              ยังไม่มีผู้ใช้ที่สามารถเลือกได้
+            </p>
+          )}
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_file}`}>

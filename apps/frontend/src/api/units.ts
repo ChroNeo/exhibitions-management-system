@@ -16,6 +16,22 @@ function mapToUnit(x: UnitApi): Unit {
     delta: rawDelta,
   });
 
+  const staffUserIdsRaw = Array.isArray(x.staff_user_ids) ? x.staff_user_ids : [];
+  let staffUserIds = staffUserIdsRaw
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id) && Number.isInteger(id) && id > 0);
+  if (!staffUserIds.length && typeof x.staff_user_id === "number") {
+    staffUserIds = [x.staff_user_id];
+  }
+
+  const staffNamesRaw = Array.isArray(x.staff_names) ? x.staff_names : [];
+  let staffNames = staffNamesRaw
+    .map((name) => (typeof name === "string" ? name.trim() : ""))
+    .filter((name) => name.length > 0);
+  if (!staffNames.length && typeof x.staff_name === "string" && x.staff_name.trim()) {
+    staffNames = [x.staff_name.trim()];
+  }
+
   return {
     id: String(x.unit_id),
     exhibitionId: x.exhibition_id,
@@ -24,8 +40,8 @@ function mapToUnit(x: UnitApi): Unit {
     description: description || undefined,
     descriptionHtml: descriptionHtml || undefined,
     descriptionDelta,
-    staffUserId: x.staff_user_id ?? undefined,
-    staffName: x.staff_name ?? undefined,
+    staffUserIds,
+    staffNames,
     posterUrl: posterUrl || undefined,
     posterPath,
     startsAt: x.starts_at,
@@ -60,7 +76,7 @@ export async function createUnit(
   payload: UnitCreatePayload,
 ): Promise<Unit> {
   const id = encodeURIComponent(String(exhibitionId));
-  const { posterFile, poster_url, ...rest } = payload;
+  const { posterFile, poster_url, staff_user_ids, ...rest } = payload;
 
   if (posterFile) {
     const fd = new FormData();
@@ -73,9 +89,11 @@ export async function createUnit(
     appendString("unit_type", rest.unit_type);
     appendString("description", rest.description);
     appendString("description_delta", rest.description_delta);
-    appendString("staff_user_id", rest.staff_user_id);
     appendString("starts_at", rest.starts_at);
     appendString("ends_at", rest.ends_at);
+    if (staff_user_ids !== undefined) {
+      fd.append("staff_user_ids", JSON.stringify(staff_user_ids));
+    }
     fd.append("poster_url", posterFile);
 
     const res = await fetch(`${BASE}/exhibitions/${id}/units`, {
@@ -97,7 +115,7 @@ export async function createUnit(
 
   if (rest.description !== undefined) jsonPayload.description = rest.description;
   if (rest.description_delta !== undefined) jsonPayload.description_delta = rest.description_delta;
-  if (rest.staff_user_id !== undefined) jsonPayload.staff_user_id = rest.staff_user_id;
+  if (staff_user_ids !== undefined) jsonPayload.staff_user_ids = staff_user_ids;
   if (poster_url !== undefined) jsonPayload.poster_url = poster_url;
 
   const res = await fetch(`${BASE}/exhibitions/${id}/units`, {
@@ -118,7 +136,7 @@ export async function updateUnit(
 ): Promise<Unit> {
   const exId = encodeURIComponent(String(exhibitionId));
   const uId = encodeURIComponent(String(unitId));
-  const { posterFile, poster_url, ...rest } = payload;
+  const { posterFile, poster_url, staff_user_ids, ...rest } = payload;
 
   if (posterFile) {
     const fd = new FormData();
@@ -131,6 +149,9 @@ export async function updateUnit(
       if (value === undefined) return;
       appendString(key, value);
     });
+    if (staff_user_ids !== undefined) {
+      fd.append("staff_user_ids", JSON.stringify(staff_user_ids));
+    }
     fd.append("poster_url", posterFile);
 
     const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`, {
@@ -148,6 +169,9 @@ export async function updateUnit(
     if (value === undefined) return;
     jsonPayload[key] = value;
   });
+  if (staff_user_ids !== undefined) {
+    jsonPayload.staff_user_ids = staff_user_ids;
+  }
   if (poster_url !== undefined) {
     jsonPayload.poster_url = poster_url;
   }
