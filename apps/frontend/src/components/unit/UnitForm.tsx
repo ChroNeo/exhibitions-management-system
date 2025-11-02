@@ -10,6 +10,7 @@ import {
 import type { MutableRefObject, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import type QuillType from "quill";
+import Swal from "sweetalert2";
 import styles from "../exhibition/form/ExManageForm.module.css";
 import FormButtons from "../Detail/FormButtons";
 import { initializeRichTextEditor } from "../../utils/quill";
@@ -312,7 +313,12 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       form.ends_at &&
       new Date(form.starts_at) >= new Date(form.ends_at)
     ) {
-      alert("Start time must be before end time");
+      await Swal.fire({
+        icon: "error",
+        title: "ข้อมูลช่วงเวลาไม่ถูกต้อง",
+        text: "วันเริ่มต้นต้องมาก่อนวันสิ้นสุด",
+        confirmButtonText: "ปิด",
+      });
       return;
     }
 
@@ -406,7 +412,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
             onChange={(e) =>
               update(
                 "staff_user_id",
-                e.target.value ? Number(e.target.value) : null
+                e.target.value ? e.target.value : null
               )
             }
             disabled={isSubmitting}

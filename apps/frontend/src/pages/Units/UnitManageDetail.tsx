@@ -149,13 +149,16 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
       throw new Error("กรุณากรอกช่วงเวลาให้ครบถ้วน");
     }
 
-    const staffId = Number(values.staff_user_id);
+    const staffUserIdValue =
+      typeof values.staff_user_id === "string" ? values.staff_user_id.trim() : "";
+    const staffId =
+      staffUserIdValue.length > 0 ? Number(staffUserIdValue) : Number.NaN;
 
     const payload: UnitCreatePayload = {
       unit_name: trimmedName,
       unit_type: values.type,
       staff_user_id:
-        values.staff_user_id!.trim() && !Number.isNaN(staffId) ? staffId : undefined,
+        staffUserIdValue && !Number.isNaN(staffId) ? staffId : undefined,
       starts_at: startsAt,
       ends_at: endsAt,
     };
