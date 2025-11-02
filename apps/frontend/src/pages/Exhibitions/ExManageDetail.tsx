@@ -6,6 +6,7 @@ import { useDeleteExhibition } from "../../hook/useDeleteExhibition";
 import { useExhibition } from "../../hook/useExhibition";
 import { useCreateExhibition } from "../../hook/useCreateExhibition";
 import { useUpdateExhibition } from "../../hook/useUpdateExhibition";
+import { useAuthUser } from "../../hook/useAuthUser";
 import type { Exhibition } from "../../types/exhibition";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
 import type { ExhibitionFormValues } from "../../components/exhibition/form/ExhibitionForm";
@@ -22,7 +23,6 @@ import { useAuthStatus } from "../../hook/useAuthStatus";
 import UnitManageList from "../Units/UnitManageList";
 // descriptionPlain/Html already provided by Exhibition shape
 
-const DEFAULT_CREATED_BY = 1;
 const DEFAULT_STATUS = "draft";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -61,6 +61,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   }, [isLoading]);
   const { mutateAsync: createExh } = useCreateExhibition();
   const { mutateAsync: updateExh } = useUpdateExhibition();
+  const authUser = useAuthUser();
   const descriptionPlain = data?.description?.trim() || undefined;
   const descriptionHtml = data?.descriptionHtml;
 
@@ -165,9 +166,19 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
 
     try {
       if (mode === "create") {
+        if (!authUser?.user_id) {
+          await Swal.fire({
+            title: "ต้องเข้าสู่ระบบ",
+            text: "กรุณาเข้าสู่ระบบก่อนสร้างนิทรรศการ",
+            icon: "warning",
+            confirmButtonText: "ตกลง",
+          });
+          return;
+        }
+
         const res = await createExh({
           ...basePayload,
-          created_by: DEFAULT_CREATED_BY,
+          created_by: authUser.user_id,
           ...(file ? { file } : {}),
         });
         await Swal.fire({
