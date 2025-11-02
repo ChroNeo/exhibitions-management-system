@@ -5,6 +5,7 @@ import Panel from "../../components/Panel/Panel";
 import styles from "./RegisterPage.module.css";
 import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
+import { useRegisterForExhibition } from "../../hook/useRegisterForExhibition";
 
 type Role = "VISITOR" | "STAFF";
 
@@ -21,6 +22,7 @@ export default function RegisterPage() {
     phone: "",
     code: "",
   });
+  const { mutateAsync: registerForExhibition, isPending } = useRegisterForExhibition();
 
   const set =
     (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -33,18 +35,44 @@ export default function RegisterPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload =
-      role === "STAFF"
-        ? { ...form, role, exhibitionId }
-        : (({ code, ...rest }) => ({ ...rest, role, exhibitionId }))(form);
+    if (!exhibitionId) {
+      await Swal.fire({
+        title: "ไม่พบรหัสนิทรรศการ",
+        text: "กรุณากลับไปเลือกนิทรรศการอีกครั้ง",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
 
-    console.log("submit:", payload);
-    await Swal.fire({
-      title: "ลงทะเบียนสำเร็จ!",
-      icon: "success",
-      confirmButtonText: "ตกลง",
-    });
-    navigate(-1);
+    try {
+      await registerForExhibition({
+        exhibitionId,
+        name: form.name,
+        gender: form.gender,
+        birthDate: form.birthDate,
+        email: form.email,
+        phone: form.phone,
+        role,
+        code: form.code,
+      });
+      await Swal.fire({
+        title: "ลงทะเบียนสำเร็จ!",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+      navigate(-1);
+    } catch (error) {
+      await Swal.fire({
+        title: "ลงทะเบียนไม่สำเร็จ",
+        text:
+          error instanceof Error
+            ? error.message
+            : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
   };
 
   return (
@@ -141,6 +169,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 className={`${styles.btn} ${styles.confirm}`}
+                disabled={isPending}
               >
                 <IoMdCheckboxOutline className={styles.icon} />
                 <span>ยืนยัน</span>
