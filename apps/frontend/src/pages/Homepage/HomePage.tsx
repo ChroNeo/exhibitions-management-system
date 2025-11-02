@@ -91,15 +91,6 @@ export default function HomePage() {
     return () => clearInterval(t);
   }, [extendedSlides.length]);
 
-  // snap กลับเมื่อ index หลุด (กันจอขาว)
-  const snapTo = (target: number) => {
-    setEnableTransition(false);
-    requestAnimationFrame(() => {
-      setIndex(target);
-      requestAnimationFrame(() => setEnableTransition(true));
-    });
-  };
-
   useEffect(() => {
     if (slides.length <= 1) return;
 
