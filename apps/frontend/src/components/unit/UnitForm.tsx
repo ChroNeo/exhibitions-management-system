@@ -69,7 +69,8 @@ const storageKey = (
   exId?: string | number,
   unitId?: string | number,
   mode?: Props["mode"]
-) => `ems:unit:draft:v1:${exId ?? "no-ex"}:${unitId ?? `new-${mode ?? "create"}`}`;
+) =>
+  `ems:unit:draft:v1:${exId ?? "no-ex"}:${unitId ?? `new-${mode ?? "create"}`}`;
 
 const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   {
@@ -84,7 +85,10 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   }: Props,
   ref
 ) {
-  const [form, setForm] = useState<UnitFormValues>({ ...EMPTY, ...initialValues });
+  const [form, setForm] = useState<UnitFormValues>({
+    ...EMPTY,
+    ...initialValues,
+  });
   const quillElRef = useRef<HTMLDivElement | null>(null);
   const quillRef = useRef<QuillType | null>(null);
   const [quillReady, setQuillReady] = useState(false);
@@ -213,7 +217,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     quill.enable(!isSubmitting);
 
     type QuillToolbarModule = { container?: HTMLElement };
-    const toolbarModule = quill.getModule("toolbar") as QuillToolbarModule | undefined;
+    const toolbarModule = quill.getModule("toolbar") as
+      | QuillToolbarModule
+      | undefined;
     const toolbar = toolbarModule?.container;
     if (toolbar) toolbar.style.display = isSubmitting ? "none" : "";
   }, [isSubmitting, quillReady]);
@@ -402,18 +408,15 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_organizer}`}>
-          <label className={styles.ex_label}>รหัสผู้ดูแล (ถ้ามี)</label>
+          <label className={styles.ex_label}>รหัสกิจกรรม (ถ้ามี)</label>
           <input
             className={styles.ex_input}
             type="number"
             min={1}
-            placeholder="กรอกรหัสผู้ดูแล"
+            placeholder="กรอกรหัสกิจกรรม"
             value={form.staff_user_id ?? ""}
             onChange={(e) =>
-              update(
-                "staff_user_id",
-                e.target.value ? e.target.value : null
-              )
+              update("staff_user_id", e.target.value ? e.target.value : null)
             }
             disabled={isSubmitting}
           />
@@ -438,7 +441,10 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
         <div className={`${styles.ex_group} ${styles.ex_details}`}>
           <label className={styles.ex_label}>รายละเอียด</label>
-          <div className={styles.ex_editor} data-readonly={isSubmitting ? "true" : "false"}>
+          <div
+            className={styles.ex_editor}
+            data-readonly={isSubmitting ? "true" : "false"}
+          >
             <div ref={quillElRef} aria-label="รายละเอียดกิจกรรม" />
           </div>
         </div>
