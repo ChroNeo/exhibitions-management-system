@@ -87,7 +87,9 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     }
     const ex = data as Exhibition;
     const picturePath = ex.picture_path ?? "";
-    const fileName = picturePath ? picturePath.split("/").pop() || picturePath : undefined;
+    const fileName = picturePath
+      ? picturePath.split("/").pop() || picturePath
+      : undefined;
 
     return {
       initialValues: {
@@ -114,6 +116,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
+      confirmButtonColor: "#ef4444",
       cancelButtonText: "ยกเลิก",
       reverseButtons: true,
       focusCancel: true,

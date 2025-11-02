@@ -1,4 +1,4 @@
-﻿import {  useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import styles from "./ExManagePage.module.css";
@@ -20,7 +20,7 @@ export default function ExhibitionPage() {
   const items: Exhibition[] = useMemo(() => data ?? [], [data]);
   const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } =
     useDeleteExhibition();
-  
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return items;
@@ -49,6 +49,7 @@ export default function ExhibitionPage() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
+      confirmButtonColor: "#ef4444",
       cancelButtonText: "ยกเลิก",
       reverseButtons: true,
       focusCancel: true,

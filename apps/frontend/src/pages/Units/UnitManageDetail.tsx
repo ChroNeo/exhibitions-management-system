@@ -36,7 +36,10 @@ function toDate(value: string | number | Date): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function buildDateTimeText(start: string | number | Date, end: string | number | Date) {
+function buildDateTimeText(
+  start: string | number | Date,
+  end: string | number | Date
+) {
   const startDate = toDate(start);
   const endDate = toDate(end);
 
@@ -55,8 +58,12 @@ function buildDateTimeText(start: string | number | Date, end: string | number |
     minute: "2-digit",
   });
 
-  const dateText = `วันที่ ${dateFmt.format(startDate)} – ${dateFmt.format(endDate)}`;
-  const timeText = `เวลา ${timeFmt.format(startDate)} – ${timeFmt.format(endDate)} น.`;
+  const dateText = `วันที่ ${dateFmt.format(startDate)} – ${dateFmt.format(
+    endDate
+  )}`;
+  const timeText = `เวลา ${timeFmt.format(startDate)} – ${timeFmt.format(
+    endDate
+  )} น.`;
 
   return { dateText, timeText } as const;
 }
@@ -67,7 +74,9 @@ function toInputValue(value: string | number | Date) {
   return toInputDateTime(date.toISOString());
 }
 
-export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProps) {
+export default function UnitManageDetail({
+  mode = "view",
+}: UnitManageDetailProps) {
   const { exhibitionId, unitId } = useParams<{
     exhibitionId: string;
     unitId?: string;
@@ -113,7 +122,8 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
     const posterSource = data.posterPath ?? data.posterUrl ?? "";
     let posterName: string | undefined;
     if (posterSource) {
-      const rawName = posterSource.split("/").pop()?.split("?")[0] ?? posterSource;
+      const rawName =
+        posterSource.split("/").pop()?.split("?")[0] ?? posterSource;
       try {
         posterName = decodeURIComponent(rawName);
       } catch {
@@ -138,7 +148,9 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
 
   const buildPayload = (values: UnitFormValues): UnitCreatePayload => {
     const trimmedName = values.name.trim();
-    const startsAt = values.starts_at ? toApiDateTime(values.starts_at) : undefined;
+    const startsAt = values.starts_at
+      ? toApiDateTime(values.starts_at)
+      : undefined;
     const endsAt = values.ends_at ? toApiDateTime(values.ends_at) : undefined;
 
     if (!trimmedName) {
@@ -150,7 +162,9 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
     }
 
     const staffUserIdValue =
-      typeof values.staff_user_id === "string" ? values.staff_user_id.trim() : "";
+      typeof values.staff_user_id === "string"
+        ? values.staff_user_id.trim()
+        : "";
     const staffId =
       staffUserIdValue.length > 0 ? Number(staffUserIdValue) : Number.NaN;
 
@@ -195,7 +209,8 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
         replace: true,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "ไม่สามารถบันทึกกิจกรรมได้";
+      const message =
+        error instanceof Error ? error.message : "ไม่สามารถบันทึกกิจกรรมได้";
       setFormError(message);
       await Swal.fire({
         title: "เพิ่มกิจกรรมไม่สำเร็จ",
@@ -222,7 +237,8 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
         replace: true,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "ไม่สามารถบันทึกกิจกรรมได้";
+      const message =
+        error instanceof Error ? error.message : "ไม่สามารถบันทึกกิจกรรมได้";
       setFormError(message);
       await Swal.fire({
         title: "บันทึกไม่สำเร็จ",
@@ -264,6 +280,7 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
+      confirmButtonColor: "#ef4444",
       cancelButtonText: "ยกเลิก",
       focusCancel: true,
       reverseButtons: true,
@@ -281,7 +298,9 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
       navigate(`/exhibitions/${exhibitionId}`, { replace: true });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "ไม่สามารถลบกิจกรรมได้ กรุณาลองใหม่";
+        error instanceof Error
+          ? error.message
+          : "ไม่สามารถลบกิจกรรมได้ กรุณาลองใหม่";
       setFormError(message);
       await Swal.fire({
         title: "ลบกิจกรรมไม่สำเร็จ",
@@ -298,7 +317,10 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
 
   return (
     <div>
-      <HeaderBar active="exhibition_unit" onLoginClick={() => navigate("/login")} />
+      <HeaderBar
+        active="exhibition_unit"
+        onLoginClick={() => navigate("/login")}
+      />
       <div className="container">
         <Panel title={title} onBack={handleBack}>
           {isViewMode && isLoading && <div>กำลังโหลดกิจกรรม...</div>}
@@ -324,7 +346,10 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
           {isCreateMode && (
             <>
               {formError && (
-                <div style={{ color: "#b91c1c", marginBottom: "12px" }} role="alert">
+                <div
+                  style={{ color: "#b91c1c", marginBottom: "12px" }}
+                  role="alert"
+                >
                   {formError}
                 </div>
               )}
@@ -344,7 +369,10 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
               {!isLoading && !isError && data && initialFormValues && (
                 <>
                   {formError && (
-                    <div style={{ color: "#b91c1c", marginBottom: "12px" }} role="alert">
+                    <div
+                      style={{ color: "#b91c1c", marginBottom: "12px" }}
+                      role="alert"
+                    >
                       {formError}
                     </div>
                   )}
@@ -367,4 +395,3 @@ export default function UnitManageDetail({ mode = "view" }: UnitManageDetailProp
     </div>
   );
 }
-

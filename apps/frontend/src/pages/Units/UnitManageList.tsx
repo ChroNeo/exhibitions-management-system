@@ -102,6 +102,7 @@ export default function UnitManageList({
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
+      confirmButtonColor: "#ef4444",
       cancelButtonText: "ยกเลิก",
       reverseButtons: true,
       focusCancel: true,
@@ -183,7 +184,10 @@ export default function UnitManageList({
 
   return (
     <div>
-      <HeaderBar active="exhibition_unit" onLoginClick={() => navigate("/login")} />
+      <HeaderBar
+        active="exhibition_unit"
+        onLoginClick={() => navigate("/login")}
+      />
       <div className="container">{panel}</div>
     </div>
   );
