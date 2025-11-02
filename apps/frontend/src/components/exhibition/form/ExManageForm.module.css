@@ -25,16 +25,19 @@
 
 .ex_input {
   width: 100%;
-  border: 1px solid #e3e6ea;
-  background: #f5f7f9;
-  border-radius: 12px;
+  border: 1.3px solid #de6424;
+  background: #ffffff;
+  border-radius: 10px;
   padding: 10px 12px;
   outline: none;
   font-size: 14px;
+  box-shadow: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ex_input:focus {
   border-color: #c7571f;
+  box-shadow: 0 0 0 2px rgba(199, 87, 31, 0.2);
   background: #fff;
 }
 
@@ -73,9 +76,9 @@
 }
 
 .ex_editor :global(.ql-toolbar.ql-snow) {
-  border: 1px solid #e3e6ea;
+  border: 1.3px solid #de6424;
   border-radius: 12px 12px 0 0;
-  background: #f9fafb;
+  background: #fff;
   padding: 6px 8px;
 }
 
@@ -84,10 +87,10 @@
 }
 
 .ex_editor :global(.ql-container.ql-snow) {
-  border: 1px solid #e3e6ea;
+  border: 1.3px solid #de6424;
   border-top: none;
   border-radius: 0 0 12px 12px;
-  background: #f5f7f9;
+  background: #fff;
   min-height: 200px;
 }
 
@@ -102,11 +105,13 @@
 }
 
 .ex_editor :global(.ql-container.ql-snow.ql-disabled) {
-  background: #f5f7f9;
+  border-color: #c7571f;
+  box-shadow: 0 0 0 2px rgba(199, 87, 31, 0.2);
 }
 
 .ex_editor :global(.ql-container.ql-snow.ql-disabled .ql-editor) {
-  background: #f5f7f9;
+  border-color: #c7571f;
+  box-shadow: 0 0 0 2px rgba(199, 87, 31, 0.2);
 }
 
 .ex_editor :global(.ql-container.ql-snow:focus-within) {

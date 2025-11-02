@@ -36,7 +36,7 @@
   max-width: 320px;
   height: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  /* border-radius: 12px; */
   overflow: hidden;
   border: 1px solid #eef2f7;
   background: #f8fafc;
