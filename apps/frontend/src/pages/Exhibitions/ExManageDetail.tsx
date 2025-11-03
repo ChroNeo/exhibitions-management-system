@@ -302,7 +302,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                 </>
               )}
             </Panel>
-            {id && mode !== "create" && <UnitManageList mode={mode} embedded />}
+            {id && mode !== "create" && mode != "edit" && <UnitManageList mode={mode} embedded />}
           </div>
         </>
       )}
