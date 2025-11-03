@@ -1,6 +1,12 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type {
+  FastifyBaseLogger,
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+} from "fastify";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { unlink } from "node:fs/promises";
 import { AppError } from "../errors.js";
 import { addUnit, deleteUnit, getUnitsByExhibitionId, getUnitsById, updateUnit } from "../queries/units-query.js";
 import { collectMultipartFields } from "../services/file-upload.js";
@@ -250,11 +256,22 @@ export default async function unitsController(fastify: FastifyInstance) {
             throw req.validationError;
           }
 
+          const { ex_id, id } = req.params;
+          const [existingUnit] = await getUnitsById(ex_id, id);
+          const previousPdfPath = existingUnit?.detail_pdf_url ?? null;
+          const previousPosterPath = existingUnit?.poster_url ?? null;
+
           const payload = req.isMultipart()
             ? await parseMultipartUpdatePayload(req)
             : buildUpdatePayload(req.body);
 
           const unit = await updateUnit(req.params.ex_id, req.params.id, payload);
+          if (previousPdfPath && previousPdfPath !== unit.detail_pdf_url) {
+            await removeUploadedFile(previousPdfPath, req.log);
+          }
+          if (previousPosterPath && previousPosterPath !== unit.poster_url) {
+            await removeUploadedFile(previousPosterPath, req.log);
+          }
           reply.code(200);
           return unit;
         }
@@ -283,7 +300,13 @@ export default async function unitsController(fastify: FastifyInstance) {
           },
         },
         async (req: FastifyRequest<{ Params: { ex_id: string; id: string } }>, reply: FastifyReply) => {
-          await deleteUnit(req.params.ex_id, req.params.id);
+          const { ex_id, id } = req.params;
+          const [existingUnit] = await getUnitsById(ex_id, id);
+          await deleteUnit(ex_id, id);
+          await Promise.all([
+            removeUploadedFile(existingUnit?.poster_url ?? null, req.log),
+            removeUploadedFile(existingUnit?.detail_pdf_url ?? null, req.log),
+          ]);
           reply.code(204);
         }
       );
@@ -294,7 +317,30 @@ export default async function unitsController(fastify: FastifyInstance) {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const unitsDir = path.resolve(__dirname, "../../uploads/units");
+const uploadsRoot = path.resolve(__dirname, "../../uploads");
+const unitsDir = path.join(uploadsRoot, "units");
+
+async function removeUploadedFile(publicPath: string | null | undefined, log: FastifyBaseLogger): Promise<void> {
+  if (!publicPath) return;
+  const normalized = publicPath.replace(/\\/g, "/").split("?")[0];
+  if (!normalized.startsWith("uploads/")) {
+    return;
+  }
+  const relative = normalized.slice("uploads/".length);
+  const absolute = path.resolve(uploadsRoot, relative);
+  if (!absolute.startsWith(uploadsRoot)) {
+    log.warn({ path: normalized }, "Skip removing uploaded file outside uploads directory");
+    return;
+  }
+  try {
+    await unlink(absolute);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException | undefined)?.code;
+    if (code !== "ENOENT") {
+      log.error({ err: error, path: normalized }, "Failed to remove uploaded file");
+    }
+  }
+}
 
 async function parseMultipartPayload(
   req: FastifyRequest<{ Params: { ex_id: string } }>

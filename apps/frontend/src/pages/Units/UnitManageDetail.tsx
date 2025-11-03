@@ -161,6 +161,7 @@ export default function UnitManageDetail({
         description_delta: data.descriptionDelta ?? "",
         file: undefined,
         detailPdfFile: undefined,
+        detailPdfRemoved: false,
       } satisfies UnitFormValues,
       initialPosterName: posterName,
       initialDetailPdfName: detailPdfName,
@@ -200,8 +201,8 @@ export default function UnitManageDetail({
       payload.staff_user_ids = cleanedStaffIds;
     }
 
-    const descriptionHtml = values.description.trim();
-    const descriptionDelta = values.description_delta.trim();
+    const descriptionHtml = (values.description ?? "").trim();
+    const descriptionDelta = (values.description_delta ?? "").trim();
     if (descriptionDelta.length) {
       payload.description_delta = descriptionDelta;
       payload.description = descriptionHtml || undefined;
@@ -214,6 +215,9 @@ export default function UnitManageDetail({
     }
     if (values.detailPdfFile) {
       payload.detailPdfFile = values.detailPdfFile;
+    }
+    if (values.detailPdfRemoved && !values.detailPdfFile) {
+      payload.detail_pdf_url = "";
     }
 
     return payload;

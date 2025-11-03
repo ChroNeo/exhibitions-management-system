@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { MutableRefObject, ReactNode } from "react";
+import type { MutableRefObject, ReactNode, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type QuillType from "quill";
 import Swal from "sweetalert2";
@@ -17,6 +17,7 @@ import FormButtons from "../Detail/FormButtons";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
 import { useUserOptions } from "../../hook/useUserOptions";
+import { FaRegFilePdf } from "react-icons/fa6";
 
 export type UnitFormValues = {
   name: string;
@@ -28,6 +29,7 @@ export type UnitFormValues = {
   description_delta: string;
   file?: File;
   detailPdfFile?: File;
+  detailPdfRemoved: boolean;
 };
 
 type Draft = {
@@ -60,6 +62,7 @@ const EMPTY: UnitFormValues = {
   description_delta: "",
   file: undefined,
   detailPdfFile: undefined,
+  detailPdfRemoved: false,
 };
 
 type QuillSource = "user" | "api" | "silent";
@@ -125,6 +128,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   const quillElRef = useRef<HTMLDivElement | null>(null);
   const quillRef = useRef<QuillType | null>(null);
   const [quillReady, setQuillReady] = useState(false);
+  const detailPdfInputRef = useRef<HTMLInputElement | null>(null);
   const {
     data: staffOptions = [],
     isLoading: isStaffLoading,
@@ -156,6 +160,34 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   const canSubmit = mode === "edit" || mode === "create";
   const update = <K extends keyof UnitFormValues>(k: K, v: UnitFormValues[K]) =>
     setForm((p) => ({ ...p, [k]: v }));
+  const hasInitialDetailPdf = Boolean(initialDetailPdfName);
+
+  const handleDetailPdfChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      setForm((prev) => ({
+        ...prev,
+        detailPdfFile: file,
+        detailPdfRemoved: file ? false : prev.detailPdfRemoved,
+      }));
+    },
+    []
+  );
+
+  const handleDetailPdfRemove = useCallback(() => {
+    setForm((prev) => ({
+      ...prev,
+      detailPdfFile: undefined,
+      detailPdfRemoved: prev.detailPdfFile
+        ? false
+        : hasInitialDetailPdf
+          ? true
+          : false,
+    }));
+    if (detailPdfInputRef.current) {
+      detailPdfInputRef.current.value = "";
+    }
+  }, [hasInitialDetailPdf]);
 
   const staffSelectStyles: StylesConfig<StaffSelectOption, true> = useMemo(
     () => ({
@@ -464,11 +496,11 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     return "ยังไม่ได้เลือกไฟล์";
   }, [form.file, initialPosterName]);
 
-  const displayedDetailPdfName = useMemo(() => {
+  const detailPdfBadgeName = useMemo(() => {
     if (form.detailPdfFile) return form.detailPdfFile.name;
-    if (initialDetailPdfName) return initialDetailPdfName;
-    return "ยังไม่ได้เลือกไฟล์";
-  }, [form.detailPdfFile, initialDetailPdfName]);
+    if (!form.detailPdfRemoved && initialDetailPdfName) return initialDetailPdfName;
+    return undefined;
+  }, [form.detailPdfFile, form.detailPdfRemoved, initialDetailPdfName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -625,12 +657,31 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
             className={styles.ex_input}
             type="file"
             accept="application/pdf"
-            onChange={(e) => update("detailPdfFile", e.target.files?.[0])}
+            ref={detailPdfInputRef}
+            onChange={handleDetailPdfChange}
             disabled={isSubmitting}
           />
-          <p className={styles.ex_fileName} aria-live="polite">
-            {displayedDetailPdfName}
-          </p>
+          {detailPdfBadgeName ? (
+            <div className={styles.ex_fileBadge} aria-live="polite">
+              <FaRegFilePdf className={styles.ex_fileBadgeIcon} aria-hidden="true" />
+              <span className={styles.ex_fileBadgeName}>{detailPdfBadgeName}</span>
+              {canSubmit ? (
+                <button
+                  type="button"
+                  className={styles.ex_fileBadgeRemove}
+                  onClick={handleDetailPdfRemove}
+                  disabled={isSubmitting}
+                  aria-label="ลบไฟล์รายละเอียด"
+                >
+                  &times;
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <p className={styles.ex_fileName} aria-live="polite">
+              ยังไม่ได้เลือกไฟล์
+            </p>
+          )}
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_details}`}>

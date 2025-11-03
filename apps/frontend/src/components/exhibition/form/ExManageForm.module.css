@@ -61,6 +61,61 @@
   color: #5b5e64;
 }
 
+.ex_fileBadge {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #d9d9d9;
+  color: #1f2937;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 14px;
+  max-width: 100%;
+}
+
+.ex_fileBadgeIcon {
+  font-size: 18px;
+  color: #c7571f;
+  flex-shrink: 0;
+}
+
+.ex_fileBadgeName {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ex_fileBadgeRemove {
+  border: none;
+  background: transparent;
+  color: #1f2937;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ex_fileBadgeRemove:hover:not(:disabled) {
+  background: rgba(31, 41, 55, 0.12);
+}
+
+.ex_fileBadgeRemove:focus-visible {
+  outline: 2px solid #c7571f;
+  outline-offset: 2px;
+}
+
+.ex_fileBadgeRemove:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 /* ปุ่มอยู่นอกกรอบส้ม */
 .ex_actions {
   display: flex;

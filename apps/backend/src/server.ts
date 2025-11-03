@@ -35,8 +35,8 @@ await app.register(cors, {
 await app.register(multipart, {
   limits: {
     fields: 20,
-    fileSize: 5 * 1024 * 1024,
-    files: 1,
+    fileSize: 20 * 1024 * 1024,
+    files: 5,
   },
 });
 app.register(fastifyStatic, {
