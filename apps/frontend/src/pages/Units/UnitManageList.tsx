@@ -89,6 +89,16 @@ export default function UnitManageList({
 
   const handleSelect = (unitId: string) => {
     if (!exhibitionId) return;
+    const selectedUnit = unitList?.find((unit) => unit.id === unitId);
+    const pdfUrl = selectedUnit?.detailPdfUrl;
+
+    if (pdfUrl) {
+      if (typeof window !== "undefined") {
+        window.open(pdfUrl, "_blank", "noopener,noreferrer");
+      }
+      return;
+    }
+
     navigate(`/exhibitions/${exhibitionId}/unit/${unitId}`);
   };
 
@@ -192,3 +202,5 @@ export default function UnitManageList({
     </div>
   );
 }
+
+

@@ -62,6 +62,7 @@ describe("unitsController", () => {
         staff_user_ids: [5],
         staff_names: ["Main MC"],
         poster_url: "uploads/units/main-stage.png",
+        detail_pdf_url: null,
         starts_at: "2025-05-01T09:00:00Z",
         ends_at: "2025-05-01T17:00:00Z",
       },
@@ -97,6 +98,7 @@ describe("unitsController", () => {
       staff_user_ids: [],
       staff_names: [],
       poster_url: null,
+      detail_pdf_url: null,
       starts_at: "2025-05-01T00:00:00Z",
       ends_at: "2025-05-01T00:00:00Z",
     };
@@ -125,6 +127,7 @@ describe("unitsController", () => {
       description: "Daily performance",
       staff_user_ids: [8, 9],
       poster_url: "uploads/units/stage.png",
+      detail_pdf_url: "uploads/units/EXP_PDF999.pdf",
       starts_at: "2025-05-02T10:00:00Z",
       ends_at: "2025-05-02T12:00:00Z",
       description_delta: { ops: [{ insert: "Daily performance\n" }] },
@@ -137,6 +140,7 @@ describe("unitsController", () => {
       staff_name: "Stage Supervisor",
       staff_names: ["Stage Supervisor", "Assistant"],
       description_delta: JSON.stringify(payload.description_delta),
+      detail_pdf_url: "uploads/units/EXP_PDF999.pdf",
     };
     addUnitMock.mockResolvedValue(createdUnit);
 
@@ -160,6 +164,7 @@ describe("unitsController", () => {
           description_delta: JSON.stringify(payload.description_delta),
           staff_user_ids: [8, 9],
           poster_url: "uploads/units/stage.png",
+          detail_pdf_url: "uploads/units/EXP_PDF999.pdf",
           starts_at: "2025-05-02T10:00:00Z",
           ends_at: "2025-05-02T12:00:00Z",
         })
@@ -178,6 +183,7 @@ describe("unitsController", () => {
       unit_type: "activity",
       description: "Updated program",
       poster_url: "uploads/units/updated.png",
+      detail_pdf_url: null,
       starts_at: "2025-05-03T10:00:00Z",
       ends_at: "2025-05-03T12:00:00Z",
       description_delta: "{\"ops\":[{\"insert\":\"Updated program\\n\"}]}",
@@ -190,6 +196,7 @@ describe("unitsController", () => {
       staff_user_id: null,
       staff_name: null,
       staff_names: [],
+      detail_pdf_url: null,
     };
     updateUnitMock.mockResolvedValue(updatedUnit);
 
@@ -212,6 +219,7 @@ describe("unitsController", () => {
           unit_type: "activity",
           description: "Updated program",
           poster_url: "uploads/units/updated.png",
+          detail_pdf_url: null,
           starts_at: "2025-05-03T10:00:00Z",
           ends_at: "2025-05-03T12:00:00Z",
           description_delta: updatePayload.description_delta,

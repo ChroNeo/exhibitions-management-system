@@ -34,5 +34,10 @@ export default ({ mode }: { mode: string }) => {
       },
       hmr: hmrOptions,
     },
+    test: {
+      environment: 'jsdom',
+      setupFiles: './src/test/setup.ts',
+      restoreMocks: true,
+    },
   })
 }

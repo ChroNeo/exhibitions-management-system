@@ -27,6 +27,7 @@ export type UnitFormValues = {
   description?: string;
   description_delta: string;
   file?: File;
+  detailPdfFile?: File;
 };
 
 type Draft = {
@@ -47,6 +48,7 @@ type Props = {
   footer?: ReactNode;
   isSubmitting?: boolean;
   initialPosterName?: string;
+  initialDetailPdfName?: string;
 };
 
 const EMPTY: UnitFormValues = {
@@ -57,6 +59,7 @@ const EMPTY: UnitFormValues = {
   staff_user_ids: [],
   description_delta: "",
   file: undefined,
+  detailPdfFile: undefined,
 };
 
 type QuillSource = "user" | "api" | "silent";
@@ -110,6 +113,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     footer,
     isSubmitting = false,
     initialPosterName,
+    initialDetailPdfName,
   }: Props,
   ref
 ) {
@@ -273,13 +277,13 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     ) {
       const clip = quill.clipboard.convert({ html: initialValues.description });
       quill.setContents(clip, "silent");
-    setForm((p) => ({
-      ...p,
-      ...EMPTY,
-      ...initialValues,
-      staff_user_ids: normalizeStaffIds(initialValues?.staff_user_ids),
-      description_delta: JSON.stringify(clip),
-    }));
+      setForm((p) => ({
+        ...p,
+        ...EMPTY,
+        ...initialValues,
+        staff_user_ids: normalizeStaffIds(initialValues?.staff_user_ids),
+        description_delta: JSON.stringify(clip),
+      }));
       return;
     }
 
@@ -460,6 +464,12 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     return "ยังไม่ได้เลือกไฟล์";
   }, [form.file, initialPosterName]);
 
+  const displayedDetailPdfName = useMemo(() => {
+    if (form.detailPdfFile) return form.detailPdfFile.name;
+    if (initialDetailPdfName) return initialDetailPdfName;
+    return "ยังไม่ได้เลือกไฟล์";
+  }, [form.detailPdfFile, initialDetailPdfName]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit || !onSubmit || isSubmitting) return;
@@ -603,6 +613,23 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
           />
           <p className={styles.ex_fileName} aria-live="polite">
             {displayedPosterName}
+          </p>
+        </div>
+
+        <div className={`${styles.ex_group} ${styles.ex_file}`}>
+          <label className={styles.ex_label} htmlFor="unit-detail-pdf-input">
+            อัปโหลดไฟล์รายละเอียด (PDF)
+          </label>
+          <input
+            id="unit-detail-pdf-input"
+            className={styles.ex_input}
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => update("detailPdfFile", e.target.files?.[0])}
+            disabled={isSubmitting}
+          />
+          <p className={styles.ex_fileName} aria-live="polite">
+            {displayedDetailPdfName}
           </p>
         </div>
 

@@ -308,12 +308,23 @@ async function parseMultipartPayload(
           fallbackName: "poster",
         },
       },
+      detail_pdf_url: {
+        save: {
+          targetDir: unitsDir,
+          publicPrefix: "uploads/units",
+          fallbackName: "detail",
+        },
+      },
     },
   });
 
   const savedPosterPath = files.poster_url?.publicPath;
   if (savedPosterPath) {
     fields.poster_url = savedPosterPath;
+  }
+  const savedPdfPath = files.detail_pdf_url?.publicPath;
+  if (savedPdfPath) {
+    fields.detail_pdf_url = savedPdfPath;
   }
 
   return buildCreatePayload(req.params.ex_id, fields);
@@ -393,6 +404,11 @@ function buildCreatePayload(exhibitionIdParam: string, source: unknown): AddUnit
     payload.poster_url = posterUrl || null;
   }
 
+  const detailPdfUrl = getString("detail_pdf_url");
+  if (detailPdfUrl !== undefined) {
+    payload.detail_pdf_url = detailPdfUrl || null;
+  }
+
   const startsAt = getString("starts_at");
   if (startsAt !== undefined) {
     payload.starts_at = startsAt || null;
@@ -420,12 +436,23 @@ async function parseMultipartUpdatePayload(
           fallbackName: "poster",
         },
       },
+      detail_pdf_url: {
+        save: {
+          targetDir: unitsDir,
+          publicPrefix: "uploads/units",
+          fallbackName: "detail",
+        },
+      },
     },
   });
 
   const savedPosterPath = files.poster_url?.publicPath;
   if (savedPosterPath) {
     fields.poster_url = savedPosterPath;
+  }
+  const savedPdfPath = files.detail_pdf_url?.publicPath;
+  if (savedPdfPath) {
+    fields.detail_pdf_url = savedPdfPath;
   }
 
   return buildUpdatePayload(fields);
@@ -489,7 +516,7 @@ function buildUpdatePayload(source: unknown): UpdateUnitPayload {
   }
 
   const setNullableString = (
-    key: keyof Pick<UpdateUnitPayload, "poster_url" | "starts_at" | "ends_at">
+    key: keyof Pick<UpdateUnitPayload, "poster_url" | "detail_pdf_url" | "starts_at" | "ends_at">
   ) => {
     if (!hasField(key)) {
       return;
@@ -505,6 +532,7 @@ function buildUpdatePayload(source: unknown): UpdateUnitPayload {
   };
 
   setNullableString("poster_url");
+  setNullableString("detail_pdf_url");
   setNullableString("starts_at");
   setNullableString("ends_at");
 

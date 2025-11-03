@@ -11,6 +11,7 @@ type UnitRowBase = {
   description: string | null;
   description_delta: string | null;
   poster_url: string | null;
+  detail_pdf_url: string | null;
   starts_at: string | null;
   ends_at: string | null;
 };
@@ -36,6 +37,7 @@ const UNIT_FIELDS = `
     u.description,
     u.description_delta,
     u.poster_url,
+    u.detail_pdf_url,
     u.starts_at,
     u.ends_at
   `;
@@ -165,8 +167,8 @@ export async function getUnitsById(
 export async function addUnit(payload: AddUnitPayload): Promise<UnitRowWithStaff> {
   const result = await safeQuery<ResultSetHeader>(
     `INSERT INTO units
-      (exhibition_id, unit_name, unit_type, description, description_delta, poster_url, starts_at, ends_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      (exhibition_id, unit_name, unit_type, description, description_delta, poster_url, detail_pdf_url, starts_at, ends_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       payload.exhibition_id,
       payload.unit_name,
@@ -174,6 +176,7 @@ export async function addUnit(payload: AddUnitPayload): Promise<UnitRowWithStaff
       payload.description ?? null,
       payload.description_delta ?? null,
       payload.poster_url ?? null,
+      payload.detail_pdf_url ?? null,
       payload.starts_at ?? null,
       payload.ends_at ?? null,
     ]
@@ -237,6 +240,7 @@ export async function updateUnit(
   if (scalarChanges.description !== undefined) push("description", scalarChanges.description);
   if (scalarChanges.description_delta !== undefined) push("description_delta", scalarChanges.description_delta);
   if (scalarChanges.poster_url !== undefined) push("poster_url", scalarChanges.poster_url);
+  if (scalarChanges.detail_pdf_url !== undefined) push("detail_pdf_url", scalarChanges.detail_pdf_url);
   if (scalarChanges.starts_at !== undefined) push("starts_at", scalarChanges.starts_at);
   if (scalarChanges.ends_at !== undefined) push("ends_at", scalarChanges.ends_at);
 

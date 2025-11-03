@@ -10,6 +10,8 @@ export type Unit = {
   staffNames: string[];
   posterUrl?: string;
   posterPath?: string;
+  detailPdfUrl?: string;
+  detailPdfPath?: string;
   startsAt: string | number | Date;
   endsAt: string | number | Date;
 };
@@ -26,6 +28,7 @@ export interface UnitApi {
   staff_user_ids?: number[] | null;
   staff_names?: string[] | null;
   poster_url?: string | null;
+  detail_pdf_url?: string | null;
   starts_at: string;
   ends_at: string;
 }
@@ -37,7 +40,9 @@ export type UnitCreatePayload = {
   description_delta?: string;
   staff_user_ids?: number[];
   poster_url?: string;
+  detail_pdf_url?: string;
   posterFile?: File;
+  detailPdfFile?: File;
   starts_at: string;
   ends_at: string;
 };

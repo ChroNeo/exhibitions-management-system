@@ -117,9 +117,13 @@ export default function UnitManageDetail({
         }`
       : undefined;
 
-  const { initialFormValues, initialPosterName } = useMemo(() => {
+  const { initialFormValues, initialPosterName, initialDetailPdfName } = useMemo(() => {
     if (!data || mode === "create") {
-      return { initialFormValues: undefined, initialPosterName: undefined };
+      return {
+        initialFormValues: undefined,
+        initialPosterName: undefined,
+        initialDetailPdfName: undefined,
+      };
     }
 
     const posterSource = data.posterPath ?? data.posterUrl ?? "";
@@ -134,6 +138,18 @@ export default function UnitManageDetail({
       }
     }
 
+    const detailPdfSource = data.detailPdfPath ?? data.detailPdfUrl ?? "";
+    let detailPdfName: string | undefined;
+    if (detailPdfSource) {
+      const rawName =
+        detailPdfSource.split("/").pop()?.split("?")[0] ?? detailPdfSource;
+      try {
+        detailPdfName = decodeURIComponent(rawName);
+      } catch {
+        detailPdfName = rawName;
+      }
+    }
+
     return {
       initialFormValues: {
         name: data.name,
@@ -144,8 +160,10 @@ export default function UnitManageDetail({
         description: data.descriptionHtml ?? "",
         description_delta: data.descriptionDelta ?? "",
         file: undefined,
+        detailPdfFile: undefined,
       } satisfies UnitFormValues,
       initialPosterName: posterName,
+      initialDetailPdfName: detailPdfName,
     };
   }, [data, mode]);
 
@@ -193,6 +211,9 @@ export default function UnitManageDetail({
 
     if (values.file) {
       payload.posterFile = values.file;
+    }
+    if (values.detailPdfFile) {
+      payload.detailPdfFile = values.detailPdfFile;
     }
 
     return payload;
@@ -388,6 +409,7 @@ export default function UnitManageDetail({
                     unitId={unitId}
                     initialValues={initialFormValues}
                     initialPosterName={initialPosterName}
+                    initialDetailPdfName={initialDetailPdfName}
                     onSubmit={handleEditSubmit}
                     isSubmitting={isSubmitting}
                   />
