@@ -164,8 +164,6 @@
     min-height: auto;
   }
 
-
-
   .metaRow {
     font-size: 11px;
     gap: 4px;
@@ -223,4 +221,20 @@
   .metaRow {
     font-size: 10px;
   }
+}
+
+.textLink {
+  color: #5a7dd8;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.textLink:hover {
+  opacity: 0.8;
+}
+
+.footer {
+  margin-top: 12px;
 }

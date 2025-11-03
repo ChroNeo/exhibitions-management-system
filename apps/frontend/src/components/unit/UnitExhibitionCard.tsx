@@ -1,18 +1,12 @@
 import type { KeyboardEvent, MouseEvent } from "react";
 import styles from "./UnitExhibitionCard.module.css";
 import { Edit2, Trash2 } from "lucide-react";
-import type { IconType } from "react-icons";
-import { MdOutlineCalendarToday } from "react-icons/md";
-import { LuLayers, LuClock } from "react-icons/lu";
-import { IoLocationOutline } from "react-icons/io5";
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 
 export type UnitCardItem = {
   id: string;
   title: string;
-  dateText?: string;
-  typeLabel?: string;
-  location?: string;
   description?: string;
   posterUrl?: string;
 };
@@ -24,21 +18,13 @@ type Props = {
   onDelete?: (id: string) => void;
 };
 
-type MetaItem = {
-  Icon: IconType;
-  text: string;
-};
-
 export default function UnitExhibitionCard({
   item,
   onSelect,
   onEdit,
   onDelete,
 }: Props) {
-  const handleClick = () => {
-    onSelect?.(item.id);
-  };
-
+  const handleClick = () => onSelect?.(item.id);
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!onSelect) return;
     if (event.key === "Enter" || event.key === " ") {
@@ -46,7 +32,6 @@ export default function UnitExhibitionCard({
       onSelect(item.id);
     }
   };
-
   const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     onEdit?.(item.id);
@@ -60,25 +45,6 @@ export default function UnitExhibitionCard({
     const trimmed = item.title.trim();
     return trimmed ? trimmed.charAt(0).toUpperCase() : "#";
   }, [item.title]);
-
-  const metaItems: MetaItem[] = [];
-
-  const appendMetaItem = (text: string | undefined, Icon: IconType) => {
-    if (!text) return;
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    metaItems.push({ Icon, text: trimmed });
-  };
-  if (item.dateText) {
-    const [datePart, timePart] = item.dateText
-      .split(/\r?\n|\|/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    appendMetaItem(datePart, MdOutlineCalendarToday);
-    appendMetaItem(timePart, LuClock);
-  }
-  appendMetaItem(item.typeLabel, LuLayers);
-  appendMetaItem(item.location, IoLocationOutline);
 
   const hasActions = Boolean(onEdit || onDelete);
 
@@ -112,23 +78,15 @@ export default function UnitExhibitionCard({
         <div className={styles.contentInner}>
           <h3 className={styles.title}>{item.title}</h3>
 
-          {metaItems.length > 0 && (
-            <div className={styles.meta}>
-              {metaItems.map(({ Icon, text }, index) => (
-                <div
-                  key={`${item.id}-meta-${index}`}
-                  className={styles.metaRow}
-                >
-                  <Icon className={styles.metaIcon} />
-                  <span>{text}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
           {item.description && (
             <p className={styles.desc}>{item.description}</p>
           )}
+        </div>
+
+        <div className={styles.footer}>
+          <Link to={`/units/${item.id}`} className={styles.textLink}>
+            รายละเอียดกิจกรรม &gt;
+          </Link>
         </div>
 
         {hasActions && (
