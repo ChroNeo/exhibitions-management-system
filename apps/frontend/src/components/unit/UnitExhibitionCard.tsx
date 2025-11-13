@@ -1,8 +1,9 @@
 import type { KeyboardEvent, MouseEvent } from "react";
 import styles from "./UnitExhibitionCard.module.css";
-import { Edit2, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
 
 export type UnitCardItem = {
   id: string;
@@ -93,22 +94,22 @@ export default function UnitExhibitionCard({
           <div className={styles.actions}>
             {onEdit && (
               <button
-                className={styles.actionBtn}
+                className={`${styles.actionBtn} ${styles.edit}`}
                 onClick={handleEditClick}
                 title="แก้ไข"
                 type="button"
               >
-                <Edit2 size={16} /> แก้ไข
+                 <FaEdit className={styles.icon} /> แก้ไข
               </button>
             )}
             {onDelete && (
               <button
-                className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                className={`${styles.actionBtn} ${styles.delete}`}
                 onClick={handleDeleteClick}
                 title="ลบ"
                 type="button"
               >
-                <Trash2 size={16} /> ลบ
+                 <FiTrash2 className={styles.icon} /> ลบ
               </button>
             )}
           </div>

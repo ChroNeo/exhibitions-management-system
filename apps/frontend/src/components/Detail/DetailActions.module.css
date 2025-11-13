@@ -1,47 +1,70 @@
 .actions {
   display: flex;
   justify-content: center;
-  gap: 14px; /* ลดช่องว่าง */
+  gap: 14px;
+  /* ลดช่องว่าง */
   margin: 16px 0 6px;
 }
 
 .btn {
-  min-width: 140px; /* เล็กลงจาก 180 */
-  height: 44px; /* เล็กลงจาก 56 */
+  min-width: 140px;
+  /* เล็กลงจาก 180 */
+  height: 44px;
+  /* เล็กลงจาก 56 */
   padding: 0 16px;
   border-radius: 14px;
-  font-size: 18px; /* ลดขนาดฟอนต์ */
+  font-size: 18px;
+  /* ลดขนาดฟอนต์ */
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* ลดช่องว่าง icon-text */
+  gap: 8px;
+  /* ลดช่องว่าง icon-text */
   border: 2px solid transparent;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* เงาเบาลง */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* เงาเบาลง */
 }
 
 .icon {
-  width: 20px; /* เล็กลงจาก 28 */
+  width: 20px;
+  /* เล็กลงจาก 28 */
   height: 20px;
 }
 
 /* ปุ่มแก้ไข – เขียว */
 .edit {
-  background: #7dfb7d;
-  color: #0f172a;
-  border-color: #579457;
+  transition: all 0.2s ease;
+  background: var(--edit-info);
+  color: var(--edit-info-text);
+  box-shadow: 0 4px 6px var(--btn-shadow);
 }
+
 .edit:hover {
-  filter: brightness(0.96);
+  transform: translateY(-2px);
+  background-color: var(--edit-info-hover);
+  box-shadow: 0 6px 12px var(--btn-shadow-hover);
+}
+
+.edit:active {
+  background-color: var(--edit-info-active);
 }
 
 /* ปุ่มลบ – แดงอ่อน */
 .delete {
-  background: #fff;
-  color: #ef4444;
-  border-color: #fecaca;
+  transition: all 0.2s ease;
+  background: var(--delete-primary);
+  box-shadow: 0 4px 6px var(--btn-shadow);
+  color: var(--delete-text);
 }
+
 .delete:hover {
-  background: #fff1f2;
+  transform: translateY(-2px);
+  background: var(--delete-primary-hover);
+  box-shadow: 0 6px 12px var(--btn-shadow-hover);
+}
+
+.delete:active {
+  background: var(--delete-primary-active);
 }

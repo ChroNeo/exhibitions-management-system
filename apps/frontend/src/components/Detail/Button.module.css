@@ -21,20 +21,33 @@
 
 /* ปุ่มยืนยัน (เขียว) */
 .confirm {
-  background: #7dfb7d;
-  color: #0f172a;
-  border-color: #579457;
+  transition: all 0.2s ease;
+  background: var(--submit-success);
+  color: var(--submit-text);
+  box-shadow: 0 2px 4px var(--btn-shadow);
 }
+
 .confirm:hover {
-  filter: brightness(0.96);
+  transform: translateY(-2px);
+  background: var(--submit-success-hover);
+  box-shadow: 0 6px 12px var(--btn-shadow-hover);
+}
+
+.confirm:active {
+  background: var(--submit-success-active);
 }
 
 /* ปุ่มยกเลิก (แดง) */
 .cancel {
-  background: #fff;
-  color: #ef4444;
-  border-color: #fecaca;
+  transition: all 0.2s ease;
+  background: var(--cancel-outline);
+  color: var(--cancel-outline-text);
+  border: 2px solid var(--cancel-outline-border);
+  box-shadow: 0 2px 4px var(--btn-shadow);
 }
+
 .cancel:hover {
-  background: #fff1f2;
+  transform: translateY(-2px);
+  background: var(--cancel-outline-hover);
+  box-shadow: 0 6px 12px var(--btn-shadow-hover);
 }

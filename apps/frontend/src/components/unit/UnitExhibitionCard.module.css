@@ -115,12 +115,6 @@
   word-break: break-word;
 }
 
-.actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
 .actionBtn {
   display: inline-flex;
   align-items: center;
@@ -138,19 +132,43 @@
   justify-content: center;
 }
 
-.actionBtn:hover {
-  background: #f8fafc;
-  border-color: #cbd5f5;
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.actionBtnDanger {
-  border-color: #fecaca;
-  color: #b91c1c;
+.edit {
+  transition: all 0.2s ease;
+  background: var(--edit-info);
+  color: var(--edit-info-text);
+  box-shadow: 0 4px 6px var(--btn-shadow);
 }
 
-.actionBtnDanger:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
+.edit:hover {
+  background-color: var(--edit-info-hover);
+  box-shadow: 0 6px 12px var(--btn-shadow-hover);
+}
+
+.edit:active {
+  background-color: var(--edit-info-active);
+}
+
+/* ปุ่มลบ – แดงอ่อน */
+.delete {
+  transition: all 0.2s ease;
+  background: var(--delete-primary);
+  box-shadow: 0 4px 6px var(--btn-shadow);
+  color: var(--delete-text);
+}
+
+.delete:hover {
+  background: var(--delete-primary-hover);
+  box-shadow: 0 6px 12px var(--btn-shadow-hover);
+}
+
+.delete:active {
+  background: var(--delete-primary-active);
 }
 
 @media (max-width: 640px) {

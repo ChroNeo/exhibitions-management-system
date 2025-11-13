@@ -87,7 +87,7 @@ export default function HomePage() {
     if (extendedSlides.length <= 1) return;
     const t = setInterval(() => {
       setIndex((i) => (i >= extendedSlides.length - 1 ? 1 : i + 1));
-    }, 4000);
+    }, 10000);
     return () => clearInterval(t);
   }, [extendedSlides.length]);
 
@@ -135,9 +135,9 @@ export default function HomePage() {
                   animLock.current = false; // ปลดล็อกเมื่อแอนิเมตจบ
                 }}
               >
-                {extendedSlides.map((slide: any, i: number) => (
+                {extendedSlides.map((slide: { image: string; title: string; start_date: string; end_date: string; location: string }, i: number) => (
                   <div
-                    key={`${slide.ref_id ?? i}`}
+                    key={i}
                     className={styles.slide}
                     role="group"
                     aria-label={slide.title}
@@ -213,7 +213,7 @@ export default function HomePage() {
 
             {slides.length > 1 && (
               <div className={styles.dots}>
-                {slides.map((_: any, i: number) => {
+                {slides.map((_: { image: string; title: string; start_date: string; end_date: string; location: string }, i: number) => {
                   const active =
                     (index - 1 + slides.length) % slides.length === i;
                   return (
