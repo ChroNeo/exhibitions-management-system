@@ -1,7 +1,6 @@
 ﻿import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import styles from "./DetailActions.module.css";
-
 export default function DetailActions({
   show,
   onEdit,

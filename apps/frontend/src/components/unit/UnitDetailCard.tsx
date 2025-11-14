@@ -2,7 +2,7 @@ import { MdOutlineCalendarToday } from "react-icons/md";
 import { LuClock } from "react-icons/lu";
 import { FiUser } from "react-icons/fi";
 import { BsTag } from "react-icons/bs";
-import DetailActions from "../Detail/DetailActions";
+import DetailActions from "../DetailButton/DetailActions";
 import styles from "./UnitDetailCard.module.css";
 
 type Props = {

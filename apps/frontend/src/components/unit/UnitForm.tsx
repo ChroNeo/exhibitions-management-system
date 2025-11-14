@@ -13,7 +13,7 @@ import type QuillType from "quill";
 import Swal from "sweetalert2";
 import styles from "../exhibition/form/ExManageForm.module.css";
 import Select, { type MultiValue, type StylesConfig } from "react-select";
-import FormButtons from "../Detail/FormButtons";
+import FormButtons from "../DetailButton/FormButtons";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
 import { useUserOptions } from "../../hook/useUserOptions";

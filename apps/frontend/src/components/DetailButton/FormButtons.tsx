@@ -1,7 +1,6 @@
 ﻿import { FaEdit } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 import styles from "./Button.module.css";
-
 type Props = {
   onConfirm: () => void;
   onCancel: () => void;

@@ -9,10 +9,9 @@
 import type { MutableRefObject, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import type QuillType from "quill";
-import type Delta from "quill-delta";
 
 import styles from "./ExManageForm.module.css";
-import FormButtons from "../../Detail/FormButtons";
+import FormButtons from "../../DetailButton/FormButtons";
 import { initializeRichTextEditor } from "../../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../../utils/quillDelta";
 
@@ -83,7 +82,7 @@ const storageKey = (exhibitionId?: string | number, mode?: Props["mode"]) =>
   `ems:exhibition:draft:v1:${exhibitionId ?? `new-${mode ?? "create"}`}`;
 
 // helper: ISO -> datetime-local
-export const isoToLocalInput = (iso?: string) => {
+const isoToLocalInput = (iso?: string) => {
   if (!iso) return "";
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -154,8 +153,8 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
     if (hydratedRef.current !== "none") return;
 
     // normalize start/end for inputs if callerยังไม่ได้แปลง
-    const normStart = form.start_date || isoToLocalInput((initialValues as any)?.start_date);
-    const normEnd = form.end_date || isoToLocalInput((initialValues as any)?.end_date);
+    const normStart = form.start_date || isoToLocalInput(initialValues?.start_date);
+    const normEnd = form.end_date || isoToLocalInput(initialValues?.end_date);
 
     // if server has only HTML (rare), convert once
     if (
@@ -323,8 +322,8 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
 
   const statusOptions = useMemo(() => {
     const base = mode === "edit" ? EDITABLE_STATUS_VALUES : [DEFAULT_STATUS];
-    const values = [...base];
-    if (form.status && !values.includes(form.status as any)) values.push(form.status as any);
+    const values = [...base] as string[];
+    if (form.status && !values.includes(form.status)) values.push(form.status);
     return values.map((value) => ({ value, label: STATUS_LABELS[value] ?? value }));
   }, [mode, form.status]);
 
@@ -390,6 +389,7 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(function ExhibitionFor
         <div className={`${styles.ex_group} ${styles.ex_date}`}>
           <label className={styles.ex_label}>ช่วงเวลา</label>
           <div className={styles.ex_dates}>
+            
             <input
               className={styles.ex_input}
               type="datetime-local"
