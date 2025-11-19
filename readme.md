@@ -12,6 +12,7 @@
 - `FRONTEND_PORT`, `BACKEND_PORT`, `PMA_PORT`, `DB_PORT`
 - ข้อมูล MySQL (`MYSQL_ROOT_PASSWORD`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`)
 - `VITE_API_URL` ที่ frontend ใช้เรียก backend
+- ค่าเชื่อมต่อ LINE Official (`LINE_CHANNEL_SECRET`, `LINE_CHANNEL_ACCESS_TOKEN`) หากต้องการเปิดใช้งาน Line Webhook
 
 ## การเริ่มต้นครั้งแรก
 ```bash

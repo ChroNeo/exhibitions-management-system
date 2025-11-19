@@ -14,6 +14,8 @@ import authController from "./controller/auth-controller.js";
 import userController from "./controller/user-controller.js";
 import heroController from "./controller/hero-controller.js";
 import registrationsController from "./controller/registrations-controller.js";
+import fastifyRawBody from "fastify-raw-body";
+import lineController from "./controller/line-controller.js";
 dotenv.config();
 
 const app = Fastify({
@@ -26,6 +28,12 @@ const app = Fastify({
 });
 
 registerSchemas(app);
+await app.register(fastifyRawBody, {
+  field: "rawBody",
+  global: false,
+  encoding: "utf8",
+  runFirst: true,
+});
 
 await app.register(cors, {
   origin: true,
@@ -131,6 +139,9 @@ app.register(authController, { prefix: "/api/v1/auth" });
 app.register(userController, { prefix: "/api/v1/users" });
 app.register(heroController, { prefix: "/api/v1/feature" });
 app.register(registrationsController, { prefix: "/api/v1/registrations" });
+app.register(lineController, { prefix: "/line" });
+
+app.listen({ port: 3000, host: "0.0.0.0" });
 
 const port = Number(process.env.PORT || 3001);
 app.listen({ port, host: "0.0.0.0" }).then(() => {

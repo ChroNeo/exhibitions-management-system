@@ -11,7 +11,7 @@ import type { MutableRefObject, ReactNode, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type QuillType from "quill";
 import Swal from "sweetalert2";
-import styles from "../exhibition/form/ExManageForm.module.css";
+import styles from "../exhibition/detail_form/ExManageForm.module.css";
 import Select, { type MultiValue, type StylesConfig } from "react-select";
 import FormButtons from "../DetailButton/FormButtons";
 import { initializeRichTextEditor } from "../../utils/quill";

@@ -33,6 +33,7 @@ export default ({ mode }: { mode: string }) => {
         interval: watchInterval,
       },
       hmr: hmrOptions,
+      allowedHosts: ['.ngrok-free.app']
     },
     test: {
       environment: 'jsdom',
