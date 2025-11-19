@@ -18,6 +18,7 @@ import {
   getLineConfig,
   replyToLineMessage,
   verifyLineSignature,
+  type LineMessage,
   type LineConfig,
 } from "../services/line.js";
 
@@ -43,7 +44,7 @@ type LineWebhookPayload = {
 };
 
 const HELP_TEXT =
-  'พิมพ์ "list" หรือ "ดูงาน" เพื่อดูกิจกรรมที่กำลังเปิดอยู่\nพิมพ์รหัสงาน เช่น EX202501 เพื่อดูรายละเอียด\nพิมพ์ "help" เพื่อดูคำสั่งนี้อีกครั้ง';
+  'พิมพ์ "list" หรือ "ดูงาน" เพื่อดูกิจกรรมที่กำลังเปิดอยู่\nพิมพ์รหัสงาน เช่น EX202501 เพื่อดูรายละเอียด\nพิมพ์ "profile" เพื่อเปิดหน้าโปรไฟล์ LIFF\nพิมพ์ "help" เพื่อดูคำสั่งนี้อีกครั้ง';
 
 const dateFormatter = new Intl.DateTimeFormat("th-TH", {
   dateStyle: "medium",
@@ -150,7 +151,15 @@ async function processLineEvent(
   }
 
   if (event.type === "message" && event.message?.type === "text" && event.replyToken) {
-    const responses = await buildMessageResponse(event.message.text ?? "");
+    const messageText = event.message.text ?? "";
+    const normalized = messageText.trim().toLowerCase();
+
+    if (isProfileCommand(normalized)) {
+      await sendProfileLiff(event.replyToken, config, log);
+      return;
+    }
+
+    const responses = await buildMessageResponse(messageText);
     await sendLineTexts(event.replyToken, responses, config, log);
     return;
   }
@@ -181,6 +190,51 @@ async function sendLineTexts(
     );
   } catch (err) {
     log.error({ err }, "failed to reply to LINE message");
+  }
+}
+
+async function sendProfileLiff(
+  replyToken: string,
+  config: LineConfig,
+  log: FastifyBaseLogger
+): Promise<void> {
+  const profileUrl = getProfileLiffUrl();
+  if (!profileUrl) {
+    await sendLineTexts(
+      replyToken,
+      [
+        "ยังไม่ได้ตั้งค่า URL สำหรับโปรไฟล์ LIFF",
+        'กรุณาตั้งค่า environment variable LINE_PROFILE_LIFF_URL (ชี้ไปที่ /profile.html)',
+      ],
+      config,
+      log
+    );
+    return;
+  }
+
+  const messages: LineMessage[] = [
+    { type: "text", text: "กดปุ่มด้านล่างเพื่อดูโปรไฟล์ของคุณ 👤" },
+    {
+      type: "template",
+      altText: "View Profile",
+      template: {
+        type: "buttons",
+        text: "คลิกเพื่อดูข้อมูลโปรไฟล์",
+        actions: [
+          {
+            type: "uri",
+            label: "📋 View Profile",
+            uri: profileUrl,
+          },
+        ],
+      },
+    },
+  ];
+
+  try {
+    await replyToLineMessage(replyToken, messages, config);
+  } catch (err) {
+    log.error({ err }, "failed to reply with LIFF profile template");
   }
 }
 
@@ -231,6 +285,14 @@ function isHelpCommand(normalized: string): boolean {
   );
 }
 
+function isProfileCommand(normalized: string): boolean {
+  return (
+    normalized === "profile" ||
+    normalized.includes("profile") ||
+    normalized.includes("โปรไฟล์")
+  );
+}
+
 function isListCommand(normalized: string): boolean {
   if (
     normalized.startsWith("list") ||
@@ -248,6 +310,18 @@ function isListCommand(normalized: string): boolean {
 function extractExhibitionCode(input: string): string | null {
   const match = input.toUpperCase().match(/\bEX\d{6}\b/);
   return match ? match[0] : null;
+}
+
+function getProfileLiffUrl(): string | null {
+  const value =
+    process.env.LINE_PROFILE_LIFF_URL ??
+    process.env.LIFF_PROFILE_URL ??
+    process.env.FRONTEND_PROFILE_LIFF_URL??
+    "https://liff.line.me/2008498720-weKz53ER";
+  if (!value) {
+    return null;
+  }
+  return value.trim();
 }
 
 function formatUpcomingExhibitions(rows: LineExhibitionSummaryRow[]): string {

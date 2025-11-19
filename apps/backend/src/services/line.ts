@@ -8,10 +8,40 @@ export type LineConfig = {
   channelSecret: string;
 };
 
-export type LineMessage = {
-  type: "text";
-  text: string;
-};
+type LineTemplateAction =
+  | {
+      type: "uri";
+      label: string;
+      uri: string;
+    }
+  | {
+      type: "message";
+      label: string;
+      text: string;
+    };
+
+type LineTemplate =
+  | {
+      type: "buttons";
+      text: string;
+      actions: LineTemplateAction[];
+    }
+  | {
+      type: "confirm";
+      text: string;
+      actions: LineTemplateAction[];
+    };
+
+export type LineMessage =
+  | {
+      type: "text";
+      text: string;
+    }
+  | {
+      type: "template";
+      altText: string;
+      template: LineTemplate;
+    };
 
 export type LineProfile = {
   userId: string;

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LINE LIFF Profile Tester</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter", system-ui, -apple-system, Segoe UI, sans-serif;
+        background: #f6f7fb;
+        color: #0f172a;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 720px;
+        width: 100%;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 24px;
+      }
+      .muted {
+        color: #475569;
+        margin: 0 0 16px;
+      }
+      .status {
+        background: #0f172a;
+        color: #f8fafc;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 16px 0;
+      }
+      button {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #2563eb;
+        color: #fff;
+        transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.2s ease;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      }
+      button.secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+        box-shadow: none;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        background: #1d4ed8;
+      }
+      button.secondary:hover {
+        background: #cbd5e1;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+      .profile {
+        display: grid;
+        grid-template-columns: 96px 1fr;
+        gap: 16px;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        margin: 16px 0;
+      }
+      .profile img {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: #cbd5e1;
+      }
+      .profile .name {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 4px;
+      }
+      .profile .user-id {
+        font-family: "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Monaco,
+          Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        color: #475569;
+        word-break: break-all;
+      }
+      .tokens {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 12px;
+        border-radius: 10px;
+        font-family: "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Monaco,
+          Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 13px;
+        line-height: 1.4;
+        overflow-x: auto;
+      }
+      .log {
+        margin-top: 16px;
+        border-radius: 10px;
+        border: 1px dashed #cbd5e1;
+        background: #f8fafc;
+        padding: 12px;
+        max-height: 240px;
+        overflow: auto;
+        font-family: "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Monaco,
+          Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+      }
+      .pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #e2e8f0;
+        color: #0f172a;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .note {
+        padding: 12px;
+        border-radius: 10px;
+        background: #fffbea;
+        border: 1px solid #fcd34d;
+        color: #854d0e;
+        font-size: 14px;
+        margin-top: 12px;
+      }
+      code {
+        font-family: "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Monaco,
+          Consolas, "Liberation Mono", "Courier New", monospace;
+        background: #e2e8f0;
+        color: #0f172a;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      a {
+        color: #2563eb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>LINE LIFF Profile Tester</h1>
+      <p class="muted">
+        Load this page from your public domain (e.g. <code>https://your-domain.com/profile.html</code>)
+        to validate LIFF login and profile scopes. You can also override the LIFF ID with
+        <code>?liffId=YOUR_LIFF_ID</code>.
+      </p>
+
+      <div class="status" id="status">Waiting to start…</div>
+
+      <div class="controls">
+        <button id="initButton">Init LIFF</button>
+        <button id="loginButton">Login with LINE</button>
+        <button id="logoutButton" class="secondary">Logout</button>
+        <button id="refreshButton" class="secondary">Refresh profile</button>
+      </div>
+
+      <div class="note" id="liffHint">
+        Set your LIFF ID in the script below (or pass <code>?liffId=</code> in the URL) and press
+        <strong>Init LIFF</strong>. The page will guide you if login is required.
+      </div>
+
+      <div class="profile" id="profilePanel" hidden>
+        <img id="picture" alt="Profile picture" />
+        <div>
+          <p class="name" id="displayName">-</p>
+          <p class="user-id" id="userId">-</p>
+          <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap">
+            <span class="pill" id="envInfo">Device</span>
+            <span class="pill" id="langInfo">Language</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tokens" id="tokenBox" hidden></div>
+
+      <div class="log" id="log"></div>
+    </div>
+
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+      (function () {
+        const defaultLiffId = "2008498720-weKz53ER";
+        const params = new URLSearchParams(window.location.search);
+        const liffId = params.get("liffId") || defaultLiffId;
+
+        const statusEl = document.getElementById("status");
+        const logEl = document.getElementById("log");
+        const profilePanel = document.getElementById("profilePanel");
+        const pictureEl = document.getElementById("picture");
+        const displayNameEl = document.getElementById("displayName");
+        const userIdEl = document.getElementById("userId");
+        const tokenBox = document.getElementById("tokenBox");
+        const envInfo = document.getElementById("envInfo");
+        const langInfo = document.getElementById("langInfo");
+        const liffHint = document.getElementById("liffHint");
+
+        const initButton = document.getElementById("initButton");
+        const loginButton = document.getElementById("loginButton");
+        const logoutButton = document.getElementById("logoutButton");
+        const refreshButton = document.getElementById("refreshButton");
+
+        const hasLiffId = Boolean(liffId && !liffId.includes("PUT_YOUR_LIFF_ID_HERE"));
+        updateHint(hasLiffId ? "Ready to initialize." : "Waiting for a valid LIFF ID.");
+
+        initButton.addEventListener("click", () => safeRun(initLiff));
+        loginButton.addEventListener("click", () =>
+          safeRun(async () => {
+            if (!liff.isLoggedIn()) {
+              status("Redirecting to LINE login…");
+              liff.login({ redirectUri: window.location.href });
+            } else {
+              status("Already logged in.");
+            }
+          })
+        );
+        logoutButton.addEventListener("click", () =>
+          safeRun(async () => {
+            if (liff.isLoggedIn()) {
+              liff.logout();
+              status("Logged out. Reloading…");
+              window.location.reload();
+            } else {
+              status("Not logged in yet.");
+            }
+          })
+        );
+        refreshButton.addEventListener("click", () => safeRun(loadProfile));
+
+        if (hasLiffId) {
+          // Auto start to reduce clicks on mobile if the LIFF ID is set.
+          safeRun(initLiff);
+        }
+
+        function status(message) {
+          const time = new Date().toLocaleTimeString();
+          statusEl.textContent = message;
+          log(`[${time}] ${message}`);
+        }
+
+        function log(message, type = "info") {
+          const line = document.createElement("div");
+          line.textContent = message;
+          line.style.color = type === "error" ? "#dc2626" : "#0f172a";
+          logEl.appendChild(line);
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function updateHint(message) {
+          liffHint.textContent = message;
+        }
+
+        async function safeRun(fn) {
+          try {
+            await fn();
+          } catch (err) {
+            const msg = err?.message || String(err);
+            status(`Error: ${msg}`);
+            log(msg, "error");
+          }
+        }
+
+        async function initLiff() {
+          if (!hasLiffId) {
+            status("Please set your LIFF ID in profile.html or pass ?liffId=");
+            return;
+          }
+
+          status("Initializing LIFF…");
+          await liff.init({ liffId });
+          status("LIFF ready.");
+          updateHint(`Using LIFF ID: ${liffId}`);
+
+          envInfo.textContent = `Env: ${liff.isInClient() ? "LINE App" : "Browser"}`;
+          langInfo.textContent = `Lang: ${liff.getLanguage()}`;
+
+          if (!liff.isLoggedIn()) {
+            status("Not logged in. Tap Login with LINE.");
+            return;
+          }
+
+          await loadProfile();
+        }
+
+        async function loadProfile() {
+          status("Fetching profile…");
+          const profile = await liff.getProfile();
+          applyProfile(profile);
+          renderTokens();
+          status("Profile loaded.");
+        }
+
+        function applyProfile(profile) {
+          displayNameEl.textContent = profile.displayName || "-";
+          userIdEl.textContent = profile.userId || "-";
+          if (profile.pictureUrl) {
+            pictureEl.src = profile.pictureUrl;
+            pictureEl.hidden = false;
+          } else {
+            pictureEl.hidden = true;
+          }
+          profilePanel.hidden = false;
+        }
+
+        function renderTokens() {
+          const idToken = liff.getIDToken();
+          const decoded = liff.getDecodedIDToken?.();
+          if (!idToken && !decoded) {
+            tokenBox.hidden = true;
+            return;
+          }
+
+          const lines = [];
+          if (idToken) {
+            lines.push("ID Token:", idToken);
+            lines.push("");
+          }
+          if (decoded) {
+            lines.push("Decoded Token:");
+            lines.push(JSON.stringify(decoded, null, 2));
+          }
+
+          tokenBox.textContent = lines.join("\n");
+          tokenBox.hidden = false;
+        }
+      })();
+    </script>
+  </body>
+</html>
