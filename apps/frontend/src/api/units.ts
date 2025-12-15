@@ -1,6 +1,7 @@
 import type { Unit, UnitApi, UnitCreatePayload, UnitUpdatePayload } from "../types/units";
 import { toFileUrl } from "../utils/url";
 import { ensureQuillDeltaString, extractPlainTextDescription } from "../utils/text";
+import { fetchWithNgrokBypass } from "../utils/fetch";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
@@ -55,7 +56,7 @@ function mapToUnit(x: UnitApi): Unit {
 
 export async function fetchUnits(exhibitionId: string | number): Promise<Unit[]> {
       const id = encodeURIComponent(String(exhibitionId));
-      const res = await fetch(`${BASE}/exhibitions/${id}/units`);
+      const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${id}/units`);
       if (!res.ok) throw new Error("ดึงรายการกิจกรรมไม่สำเร็จ");
       const data = await res.json();
       return data.map(mapToUnit);
@@ -67,7 +68,7 @@ export async function fetchUnit(
 ): Promise<Unit> {
   const exId = encodeURIComponent(String(exhibitionId));
   const uId = encodeURIComponent(String(unitId));
-  const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`);
+  const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${exId}/units/${uId}`);
   if (!res.ok) throw new Error("ไม่พบข้อมูลกิจกรรม");
   const json = await res.json();
   const data: UnitApi | undefined = Array.isArray(json) ? json[0] : json;
@@ -109,7 +110,7 @@ export async function createUnit(
       appendString("detail_pdf_url", detail_pdf_url);
     }
 
-    const res = await fetch(`${BASE}/exhibitions/${id}/units`, {
+    const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${id}/units`, {
       method: "POST",
       body: fd,
     });
@@ -132,7 +133,7 @@ export async function createUnit(
   if (poster_url !== undefined) jsonPayload.poster_url = poster_url;
   if (detail_pdf_url !== undefined) jsonPayload.detail_pdf_url = detail_pdf_url;
 
-  const res = await fetch(`${BASE}/exhibitions/${id}/units`, {
+  const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${id}/units`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(jsonPayload),
@@ -177,7 +178,7 @@ export async function updateUnit(
       appendString("detail_pdf_url", detail_pdf_url);
     }
 
-    const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`, {
+    const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${exId}/units/${uId}`, {
       method: "PUT",
       body: fd,
     });
@@ -202,7 +203,7 @@ export async function updateUnit(
     jsonPayload.detail_pdf_url = detail_pdf_url;
   }
 
-  const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`, {
+  const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${exId}/units/${uId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(jsonPayload),
@@ -216,7 +217,7 @@ export async function updateUnit(
 export async function deleteUnit(exhibitionId: string | number, unitId: string | number): Promise<void> {
   const exId = encodeURIComponent(String(exhibitionId));
   const uId = encodeURIComponent(String(unitId));
-  const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`, {
+  const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${exId}/units/${uId}`, {
     method: "DELETE",
   });
 

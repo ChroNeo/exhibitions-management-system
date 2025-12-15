@@ -1,3 +1,5 @@
+import { fetchWithNgrokBypass } from "../utils/fetch";
+
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
 export type RegistrationRole = "visitor" | "staff";
@@ -32,7 +34,7 @@ export type RegistrationResponse = {
 export async function registerForExhibition(
   payload: RegistrationPayload
 ): Promise<RegistrationResponse> {
-  const response = await fetch(`${BASE}/registrations`, {
+  const response = await fetchWithNgrokBypass(`${BASE}/registrations`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
