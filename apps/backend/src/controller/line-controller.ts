@@ -44,7 +44,7 @@ type LineWebhookPayload = {
 };
 
 const HELP_TEXT =
-  'พิมพ์ "list" หรือ "ดูงาน" เพื่อดูกิจกรรมที่กำลังเปิดอยู่\nพิมพ์รหัสงาน เช่น EX202501 เพื่อดูรายละเอียด\nพิมพ์ "profile" เพื่อเปิดหน้าโปรไฟล์ LIFF\nพิมพ์ "help" เพื่อดูคำสั่งนี้อีกครั้ง';
+  'พิมพ์ "list" หรือ "ดูงาน" เพื่อดูกิจกรรมที่กำลังเปิดอยู่\nพิมพ์รหัสงาน เช่น EX202501 เพื่อดูรายละเอียด\nพิมพ์ "ticket" หรือ "บัตร" เพื่อดู QR Code บัตรของคุณ\nพิมพ์ "profile" เพื่อเปิดหน้าโปรไฟล์ LIFF\nพิมพ์ "help" เพื่อดูคำสั่งนี้อีกครั้ง';
 
 const dateFormatter = new Intl.DateTimeFormat("th-TH", {
   dateStyle: "medium",
@@ -159,6 +159,11 @@ async function processLineEvent(
       return;
     }
 
+    if (isTicketCommand(normalized)) {
+      await sendTicketLiff(event.replyToken, config, log);
+      return;
+    }
+
     const responses = await buildMessageResponse(messageText);
     await sendLineTexts(event.replyToken, responses, config, log);
     return;
@@ -238,6 +243,51 @@ async function sendProfileLiff(
   }
 }
 
+async function sendTicketLiff(
+  replyToken: string,
+  config: LineConfig,
+  log: FastifyBaseLogger
+): Promise<void> {
+  const ticketUrl = getTicketLiffUrl();
+  if (!ticketUrl) {
+    await sendLineTexts(
+      replyToken,
+      [
+        "ยังไม่ได้ตั้งค่า URL สำหรับบัตร LIFF",
+        'กรุณาตั้งค่า environment variable LINE_TICKET_LIFF_URL',
+      ],
+      config,
+      log
+    );
+    return;
+  }
+
+  const messages: LineMessage[] = [
+    { type: "text", text: "กดปุ่มด้านล่างเพื่อดูบัตร QR Code ของคุณ 🎫" },
+    {
+      type: "template",
+      altText: "View Ticket",
+      template: {
+        type: "buttons",
+        text: "คลิกเพื่อเปิดบัตร QR Code",
+        actions: [
+          {
+            type: "uri",
+            label: "🎫 View My Ticket",
+            uri: ticketUrl,
+          },
+        ],
+      },
+    },
+  ];
+
+  try {
+    await replyToLineMessage(replyToken, messages, config);
+  } catch (err) {
+    log.error({ err }, "failed to reply with LIFF ticket template");
+  }
+}
+
 async function buildMessageResponse(input: string): Promise<string[]> {
   const trimmed = input.trim();
   if (!trimmed) {
@@ -293,6 +343,18 @@ function isProfileCommand(normalized: string): boolean {
   );
 }
 
+function isTicketCommand(normalized: string): boolean {
+  return (
+    normalized === "ticket" ||
+    normalized === "tickets" ||
+    normalized.includes("ticket") ||
+    normalized === "บัตร" ||
+    normalized.includes("บัตร") ||
+    normalized === "qr" ||
+    normalized.includes("qr code")
+  );
+}
+
 function isListCommand(normalized: string): boolean {
   if (
     normalized.startsWith("list") ||
@@ -318,6 +380,18 @@ function getProfileLiffUrl(): string | null {
     process.env.LIFF_PROFILE_URL ??
     process.env.FRONTEND_PROFILE_LIFF_URL??
     "https://liff.line.me/2008498720-weKz53ER";
+  if (!value) {
+    return null;
+  }
+  return value.trim();
+}
+
+function getTicketLiffUrl(): string | null {
+  const value =
+    process.env.LINE_TICKET_LIFF_URL ??
+    process.env.LIFF_TICKET_URL ??
+    process.env.FRONTEND_TICKET_LIFF_URL ??
+    "https://liff.line.me/2008498720-IgQ8sUzW";
   if (!value) {
     return null;
   }

@@ -6,6 +6,7 @@ import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
 import HomePage from "./pages/Homepage/HomePage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
+import TicketPage from "./pages/Ticket/TicketPage";
 
 export default function App() {
   return (
@@ -40,7 +41,7 @@ export default function App() {
       />
       <Route path="/exhibitions/:id/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
-
+      <Route path="/ticket" element={<TicketPage />} />
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
