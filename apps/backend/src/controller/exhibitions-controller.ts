@@ -270,7 +270,7 @@ function normaliseCreatePayload(fields: Record<string, string>): AddExhibitionPa
   return {
     title: fields.title ?? "",
     description: fields.description || undefined,
-    description_delta: parseJsonField(fields.description_delta, "description_delta"),
+    description_delta: parseJsonField(fields.description_delta, "description_delta") ?? undefined,
     start_date: fields.start_date ?? "",
     end_date: fields.end_date ?? "",
     location: fields.location || undefined,

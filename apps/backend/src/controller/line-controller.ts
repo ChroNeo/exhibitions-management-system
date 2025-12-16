@@ -35,7 +35,7 @@ type LineEvent = {
   };
   message?: {
     type?: string;
-    text?: string;
+    text?: string ;
   };
 };
 

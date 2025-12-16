@@ -16,6 +16,7 @@ import heroController from "./controller/hero-controller.js";
 import registrationsController from "./controller/registrations-controller.js";
 import fastifyRawBody from "fastify-raw-body";
 import lineController from "./controller/line-controller.js";
+import ticketController from "./controller/ticket-controller.js";
 dotenv.config();
 
 const app = Fastify({
@@ -71,6 +72,10 @@ await app.register(swagger, {
       {
         name: "Registrations",
         description: "Register visitors and staff to exhibitions.",
+      },
+      {
+        name: "Tickets",
+        description: "Manage exhibition tickets and redemption.",
       },
     ],
   },
@@ -140,6 +145,7 @@ app.register(userController, { prefix: "/api/v1/users" });
 app.register(heroController, { prefix: "/api/v1/feature" });
 app.register(registrationsController, { prefix: "/api/v1/registrations" });
 app.register(lineController, { prefix: "/line" });
+app.register(ticketController, { prefix: "/api/v1/ticket" });
 
 app.listen({ port: 3000, host: "0.0.0.0" });
 

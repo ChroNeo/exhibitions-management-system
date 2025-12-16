@@ -355,6 +355,118 @@ const schemas = [
       },
     ],
   },
+  {
+    $id: "Ticket",
+    type: "object",
+    properties: {
+      ticket_id: { type: "integer", example: 1 },
+      exhibition_id: { type: "integer", example: 1 },
+      user_id: { type: "integer", example: 13 },
+      ticket_code: { type: "string", example: "TKT-EX202501-00001" },
+      ticket_type: { type: "string", enum: ["visitor", "staff", "vip"], example: "visitor" },
+      issued_at: { type: "string", format: "date-time", example: "2025-10-20T14:30:00Z" },
+      is_used: { type: "boolean", example: false },
+      used_at: { type: ["string", "null"], format: "date-time", example: null },
+    },
+    required: ["ticket_id", "exhibition_id", "user_id", "ticket_code", "ticket_type", "issued_at", "is_used"],
+    examples: [
+      {
+        ticket_id: 1,
+        exhibition_id: 1,
+        user_id: 13,
+        ticket_code: "TKT-EX202501-00001",
+        ticket_type: "visitor",
+        issued_at: "2025-10-20T14:30:00Z",
+        is_used: false,
+        used_at: null,
+      },
+    ],
+  },
+  {
+    $id: "TicketWithDetails",
+    type: "object",
+    properties: {
+      ticket_id: { type: "integer", example: 1 },
+      ticket_code: { type: "string", example: "TKT-EX202501-00001" },
+      ticket_type: { type: "string", enum: ["visitor", "staff", "vip"], example: "visitor" },
+      exhibition_id: { type: "integer", example: 1 },
+      exhibition_code: { type: "string", example: "EX202501" },
+      exhibition_title: { type: "string", example: "Smart Tech Expo 2025" },
+      user_id: { type: "integer", example: 13 },
+      user_name: { type: "string", example: "สมชาย ใจดี" },
+      issued_at: { type: "string", format: "date-time", example: "2025-10-20T14:30:00Z" },
+      is_used: { type: "boolean", example: false },
+      used_at: { type: ["string", "null"], format: "date-time", example: null },
+    },
+    required: [
+      "ticket_id",
+      "ticket_code",
+      "ticket_type",
+      "exhibition_id",
+      "exhibition_code",
+      "exhibition_title",
+      "user_id",
+      "user_name",
+      "issued_at",
+      "is_used",
+    ],
+    examples: [
+      {
+        ticket_id: 1,
+        ticket_code: "TKT-EX202501-00001",
+        ticket_type: "visitor",
+        exhibition_id: 1,
+        exhibition_code: "EX202501",
+        exhibition_title: "Smart Tech Expo 2025",
+        user_id: 13,
+        user_name: "สมชาย ใจดี",
+        issued_at: "2025-10-20T14:30:00Z",
+        is_used: false,
+        used_at: null,
+      },
+    ],
+  },
+  {
+    $id: "CreateTicketInput",
+    type: "object",
+    required: ["exhibition_id", "user_id", "ticket_type"],
+    properties: {
+      exhibition_id: { type: "integer", minimum: 1, example: 1 },
+      user_id: { type: "integer", minimum: 1, example: 13 },
+      ticket_type: { type: "string", enum: ["visitor", "staff", "vip"], example: "visitor" },
+    },
+    additionalProperties: false,
+    examples: [
+      {
+        exhibition_id: 1,
+        user_id: 13,
+        ticket_type: "visitor",
+      },
+    ],
+  },
+  {
+    $id: "QrTokenResponse",
+    type: "object",
+    required: ["qr_token", "expires_in"],
+    properties: {
+      qr_token: {
+        type: "string",
+        description: "JWT token containing user registration data for QR code display",
+        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEzLCJleHMiOlsxLDJdLCJpYXQiOjE3MDMxMDAwMDAsImV4cCI6MTcwMzEwMDMwMH0.signature",
+      },
+      expires_in: {
+        type: "integer",
+        description: "Token expiration time in seconds (300 = 5 minutes)",
+        example: 300,
+      },
+    },
+    examples: [
+      {
+        qr_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEzLCJleHMiOlsxLDJdLCJpYXQiOjE3MDMxMDAwMDAsImV4cCI6MTcwMzEwMDMwMH0.signature",
+        expires_in: 300,
+      },
+    ],
+  },
 ];
 
 export const registerSchemas = (app: FastifyInstance) => {
