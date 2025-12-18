@@ -3,7 +3,8 @@ import {
   upsertLineUserProfile,
   markLineUserUnfollowed,
 } from "../../queries/line-query.js";
-import { fetchLineProfile, type LineConfig } from "../line.js";
+import { fetchLineProfile } from "./client.js";
+import type { LineConfig } from "./types.js";
 import { handleFollowEvent } from "./handlers/follow-handler.js";
 import { handleMessageCommand } from "./handlers/command-handler.js";
 

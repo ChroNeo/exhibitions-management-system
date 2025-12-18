@@ -4,10 +4,8 @@ import type {
   FastifyRequest,
 } from "fastify";
 import { AppError } from "../errors.js";
-import {
-  getLineConfig,
-  verifyLineSignature,
-} from "../services/line.js";
+import { getLineConfig } from "../services/line/config.js";
+import { verifyLineSignature } from "../services/line/security.js";
 import { dispatchLineEvent, type LineEvent } from "../services/line/dispatcher.js";
 
 type RawBodyRequest = FastifyRequest & {

@@ -3,11 +3,8 @@ import {
   findExhibitionForLine,
   getUpcomingExhibitionsForLine,
 } from "../../../queries/line-query.js";
-import {
-  replyToLineMessage,
-  type LineConfig,
-  type LineMessage,
-} from "../../line.js";
+import { replyToLineMessage } from "../../line/client.js";
+import type { LineConfig, LineMessage } from "../../line/types.js";
 import {
   HELP_TEXT,
   formatExhibitionDetail,

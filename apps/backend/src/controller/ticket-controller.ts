@@ -11,7 +11,7 @@ import {
   getUserRegistrationsByLineId,
   type CreateTicketPayload,
 } from "../queries/ticket-query.js";
-import { verifyLiffIdToken } from "../services/line.js";
+import { verifyLiffIdToken } from "../services/line/security.js";
 
 type CreateTicketBody = {
   exhibition_id: number;

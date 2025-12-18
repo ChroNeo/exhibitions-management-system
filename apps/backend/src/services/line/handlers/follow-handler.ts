@@ -1,5 +1,6 @@
 import type { FastifyBaseLogger } from "fastify";
-import { replyToLineMessage, type LineConfig } from "../../line.js";
+import { replyToLineMessage } from "../../line/client.js";
+import type { LineConfig } from "../../line/types.js";
 import { HELP_TEXT } from "../utils/message-formatter.js";
 
 
