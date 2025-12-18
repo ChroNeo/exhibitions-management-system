@@ -7,6 +7,9 @@ import {
 } from "../queries/ticket-query.js";
 import { verifyLiffIdToken } from "../services/line/security.js";
 
+type GetQrTokenQuery = {
+  exhibition_id: string;
+};
 export default async function ticketController(fastify: FastifyInstance) {
   fastify.get("/", {
     schema: {
@@ -55,8 +58,14 @@ export default async function ticketController(fastify: FastifyInstance) {
     {
       schema: {
         tags: ["Tickets"],
-        summary: "Generate a signed JWT token for QR code display",
-        description: "Returns a JWT token containing user registration data. Requires LINE LIFF ID token in Authorization header.",
+        summary: "Generate QR token for a specific exhibition",
+        querystring: {
+          type: "object",
+          required: ["exhibition_id"],
+          properties: {
+            exhibition_id: { type: "string", pattern: "^[0-9]+$" }
+          }
+        },
         headers: {
           type: "object",
           properties: {
@@ -70,7 +79,7 @@ export default async function ticketController(fastify: FastifyInstance) {
         },
       },
     },
-    async (req: FastifyRequest, reply: FastifyReply) => {
+    async (req: FastifyRequest<{ Querystring: GetQrTokenQuery }>, reply: FastifyReply) => {
       try {
         // Step 1: Get the Authorization header
         const authHeader = req.headers.authorization;
@@ -103,20 +112,24 @@ export default async function ticketController(fastify: FastifyInstance) {
         // Step 4: Query database for user and their registrations
         const userData = await getUserRegistrationsByLineId(lineUserId);
         if (!userData) {
-          return reply.code(404).send({
-            message: "User not found. Please register for an exhibition first.",
+          return reply.code(404).send({ message: "User not found" });
+        }
+        // เช็คว่า User มีสิทธิ์ใน exhibition_id ที่ส่งมาไหม?
+        const targetExhibitionId = Number(req.query.exhibition_id);
+        const hasTicket = userData.exhibitions.includes(targetExhibitionId);
+        if (!hasTicket) {
+          return reply.code(403).send({
+            message: "คุณไม่มีบัตรสำหรับเข้างานนี้ (Access Denied)"
           });
         }
-
         // Step 5: Generate QR JWT token
         const jwtSecret = process.env.JWT_SECRET;
-        if (!jwtSecret) {
-          throw new AppError("JWT_SECRET is not configured", 500, "CONFIG_ERROR");
-        }
+        if (!jwtSecret) throw new AppError("JWT_SECRET missing", 500, "CONFIG_ERROR");
 
         const qrTokenPayload = {
           uid: userData.user_id,
-          exs: userData.exhibitions,
+          eid: targetExhibitionId,
+          type: "access"
         };
 
         const expiresIn = 300; // 5 minutes in seconds
