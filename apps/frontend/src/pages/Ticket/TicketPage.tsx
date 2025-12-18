@@ -7,7 +7,7 @@ import './TicketPage.css';
 // Configuration - matches config.js from public folder
 const LIFF_CONFIG = {
   liffId: '2008498720-IgQ8sUzW',
-  apiUrl: import.meta.env.VITE_API_BASE || 'https://28dbf038a9c8.ngrok-free.app',
+  apiUrl: import.meta.env.VITE_API_BASE || 'https://28dbf038a9c8.ngrok-free.app', // เปลี่ยน URL ตามจริง
 };
 
 interface QRTokenResponse {
@@ -25,6 +25,13 @@ type PageState =
 export default function TicketPage() {
   const [state, setState] = useState<PageState>({ status: 'initializing' });
 
+  // ฟังก์ชันสำหรับกลับไปหน้ารายการ (Wallet)
+  const goBackToWallet = () => {
+    // สมมติว่าหน้า Wallet อยู่ที่ route "/" หรือ "/tickets"
+    window.location.href = '/tickets'; 
+    // หรือถ้าใช้ react-router-dom: navigate('/tickets')
+  };
+
   const fetchQRCode = useCallback(async () => {
     setState({ status: 'loading' });
 
@@ -34,12 +41,21 @@ export default function TicketPage() {
         throw new Error('Failed to get ID token');
       }
 
-      console.log('Fetching QR code from API...');
-      console.log('API URL:', LIFF_CONFIG.apiUrl);
+      // ✅ 1. ดึง exhibition_id จาก URL Query String
+      const params = new URLSearchParams(window.location.search);
+      const exhibitionId = params.get('exhibition_id');
 
+      if (!exhibitionId) {
+        throw new Error('No exhibition selected. Please select an exhibition from the list.');
+      }
+
+      console.log(`Fetching QR code for Exhibition ID: ${exhibitionId}...`);
+
+      // ✅ 2. ยิง API เส้นใหม่ /qr-token พร้อมส่ง params
       const response = await axios.get<QRTokenResponse>(
-        `${LIFF_CONFIG.apiUrl}/ticket/my-qr`,
+        `${LIFF_CONFIG.apiUrl}/tickets/qr-token`, // แก้ path ให้ตรงกับ Controller (api/v1 หรือ tickets)
         {
+          params: { exhibition_id: exhibitionId }, // ส่ง ID ไปบอก Backend
           headers: {
             Authorization: `Bearer ${idToken}`,
             'ngrok-skip-browser-warning': 'true',
@@ -51,7 +67,6 @@ export default function TicketPage() {
       const expiresAt = new Date(Date.now() + expires_in * 1000);
 
       console.log('QR code received successfully');
-      console.log('Expires in:', expires_in, 'seconds');
 
       setState({
         status: 'success',
@@ -60,19 +75,22 @@ export default function TicketPage() {
         expiresIn: expires_in,
       });
 
-      // Auto-refresh when token expires
+      // Auto-refresh logic
       setTimeout(() => {
+        // เช็คว่ายังอยู่หน้าเดิมไหมก่อน refresh
         fetchQRCode();
       }, expires_in * 1000);
+
     } catch (error) {
       console.error('Failed to fetch QR code:', error);
       let errorMessage = 'Failed to generate QR code';
 
       if (axios.isAxiosError(error)) {
         if (error.response) {
-          errorMessage = error.response.data?.message || error.response.data?.error || errorMessage;
+            // รับ message จาก Backend เช่น "Access Denied"
+            errorMessage = error.response.data?.message || errorMessage; 
         } else if (error.request) {
-          errorMessage = 'Cannot reach the server. Please check your connection.';
+            errorMessage = 'Cannot reach server.';
         }
       } else if (error instanceof Error) {
         errorMessage = error.message;
@@ -85,25 +103,20 @@ export default function TicketPage() {
   const initializeLiff = useCallback(async () => {
     try {
       console.log('Initializing LIFF...');
-
       await liff.init({ liffId: LIFF_CONFIG.liffId });
-      console.log('LIFF initialized successfully');
-
+      
       if (!liff.isLoggedIn()) {
-        console.log('User not logged in, redirecting to login...');
         setState({ status: 'not_logged_in' });
-        // Auto-login
         liff.login({ redirectUri: window.location.href });
         return;
       }
 
-      // User is logged in, fetch QR code immediately
       await fetchQRCode();
     } catch (error) {
-      console.error('LIFF initialization error:', error);
+      console.error('LIFF init error:', error);
       setState({
         status: 'error',
-        message: error instanceof Error ? error.message : 'Failed to initialize LIFF',
+        message: error instanceof Error ? error.message : 'LIFF Init Failed',
       });
     }
   }, [fetchQRCode]);
@@ -112,37 +125,32 @@ export default function TicketPage() {
     initializeLiff();
   }, [initializeLiff]);
 
-  const handleRefresh = () => {
-    fetchQRCode();
-  };
-
   return (
     <div className="ticket-page">
       <div className="ticket-container">
         <header className="ticket-header">
-          <h1>🎫 My Ticket</h1>
-          <p className="subtitle">Exhibition Entry QR Code</p>
+           {/* ✅ 3. เพิ่มปุ่ม Back เล็กๆ ด้านบน */}
+          <button className="back-link" onClick={goBackToWallet}>&lt; Back</button>
+          <h1>🎫 E-Ticket</h1>
+          <p className="subtitle">Please show this QR at the entrance</p>
         </header>
 
         <div className="ticket-content">
           {state.status === 'initializing' && (
             <div className="status-message">
               <div className="spinner"></div>
-              <p>Initializing...</p>
+              <p>Loading...</p>
             </div>
           )}
 
           {state.status === 'not_logged_in' && (
-            <div className="status-message">
-              <div className="spinner"></div>
-              <p>Redirecting to LINE login...</p>
-            </div>
+             <div className="status-message">Loading login...</div>
           )}
 
           {state.status === 'loading' && (
             <div className="status-message">
               <div className="spinner"></div>
-              <p>Generating your QR code...</p>
+              <p>Generatng Secure QR...</p>
             </div>
           )}
 
@@ -151,7 +159,7 @@ export default function TicketPage() {
               <div className="qr-wrapper">
                 <QRCodeSVG
                   value={state.qrToken}
-                  size={280}
+                  size={260}
                   level="H"
                   includeMargin={true}
                   className="qr-code"
@@ -162,35 +170,16 @@ export default function TicketPage() {
                 <div className="info-card success">
                   <span className="icon">✓</span>
                   <div className="info-text">
-                    <strong>QR Code Active</strong>
-                    <p>Show this to staff at the entrance</p>
+                    <strong>Ready to Scan</strong>
+                    <p>Valid for single entry</p>
                   </div>
                 </div>
 
                 <div className="expiry-info">
-                  <div className="expiry-label">Valid until:</div>
-                  <div className="expiry-time">
-                    {state.expiresAt.toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit',
-                    })}
-                  </div>
                   <div className="expiry-countdown">
-                    Expires in {state.expiresIn} seconds
+                    Expires in {state.expiresIn}s
                   </div>
-                </div>
-
-                <button onClick={handleRefresh} className="refresh-btn">
-                  🔄 Refresh QR Code
-                </button>
-
-                <div className="info-card info">
-                  <span className="icon">ℹ️</span>
-                  <div className="info-text">
-                    <strong>Note:</strong>
-                    <p>This QR code automatically refreshes every 5 minutes for security.</p>
-                  </div>
+                  <p className="refresh-hint">Auto-refreshes every 5 mins</p>
                 </div>
               </div>
             </div>
@@ -198,29 +187,22 @@ export default function TicketPage() {
 
           {state.status === 'error' && (
             <div className="error-display">
-              <div className="error-icon">⚠️</div>
-              <h2>Unable to Generate QR Code</h2>
+              <div className="error-icon">🚫</div>
+              <h3>Access Denied</h3>
               <p className="error-message">{state.message}</p>
-
-              <div className="error-suggestions">
-                <h3>Possible solutions:</h3>
-                <ul>
-                  <li>Make sure you're registered for at least one exhibition</li>
-                  <li>Check your internet connection</li>
-                  <li>Try refreshing the page</li>
-                </ul>
+              
+              <div className="action-buttons">
+                <button onClick={fetchQRCode} className="retry-btn">
+                  Try Again
+                </button>
+                {/* ปุ่มกลับหน้ารายการ กรณีเข้าผิดงาน */}
+                <button onClick={goBackToWallet} className="secondary-btn">
+                  Back to My Tickets
+                </button>
               </div>
-
-              <button onClick={handleRefresh} className="retry-btn">
-                🔄 Try Again
-              </button>
             </div>
           )}
         </div>
-
-        <footer className="ticket-footer">
-          <p className="footer-text">Powered by EMS</p>
-        </footer>
       </div>
     </div>
   );
