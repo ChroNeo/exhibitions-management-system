@@ -7,32 +7,6 @@ import {
 } from "../queries/ticket-query.js";
 import { verifyLiffIdToken } from "../services/line/security.js";
 
-type CreateTicketBody = {
-  exhibition_id: number;
-  user_id: number;
-  ticket_type: "visitor" | "staff" | "vip";
-};
-
-type UseTicketParams = {
-  ticketId: string;
-};
-
-type GetTicketParams = {
-  ticketId: string;
-};
-
-type GetTicketByCodeQuery = {
-  code: string;
-};
-
-type GetTicketsByExhibitionQuery = {
-  exhibition_id?: string;
-};
-
-type GetTicketsByUserQuery = {
-  user_id?: string;
-};
-
 export default async function ticketController(fastify: FastifyInstance) {
   fastify.get("/", {
     schema: {
@@ -74,7 +48,7 @@ export default async function ticketController(fastify: FastifyInstance) {
       }
     }
   );
-  
+
   // Generate QR token for authenticated user
   fastify.get(
     "/qr-token",
