@@ -2,14 +2,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import jwt from "jsonwebtoken";
 import { AppError } from "../errors.js";
 import {
-  createTicket,
-  getTicketById,
-  getTicketsByExhibition,
-  getTicketsByUser,
-  useTicket,
-  getTicketByCode,
   getUserRegistrationsByLineId,
-  type CreateTicketPayload,
+  getUserTickets,
 } from "../queries/ticket-query.js";
 import { verifyLiffIdToken } from "../services/line/security.js";
 
@@ -40,9 +34,50 @@ type GetTicketsByUserQuery = {
 };
 
 export default async function ticketController(fastify: FastifyInstance) {
+  fastify.get("/", {
+    schema: {
+      tags: ["Tickets"],
+      summary: "Get all registered exhibitions for the user",
+      headers: {
+        type: "object",
+        required: ["Authorization"],
+        properties: {
+          Authorization: { type: "string", description: "LIFF ID Token" }
+        }
+      }
+    }
+  },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) throw new AppError("Missing Auth", 401, "MISSING_AUTH");
+
+        // 1. Verify LIFF Token
+        const token = authHeader.split(" ")[1];
+        const verifiedToken = await verifyLiffIdToken(token);
+
+        // 2. หา User ID ใน DB เรา (ใช้ function เดิมช่วยหา)
+        const userData = await getUserRegistrationsByLineId(verifiedToken.sub);
+
+        if (!userData) {
+          return [];
+        }
+
+        // 3. ดึงรายการตั๋วแบบละเอียด
+        const tickets = await getUserTickets(userData.user_id);
+
+        return tickets;
+      } catch (error) {
+        if (error instanceof AppError) return reply.code(error.status).send(error);
+        req.log.error(error);
+        return reply.code(500).send({ message: "Internal Server Error" });
+      }
+    }
+  );
+  
   // Generate QR token for authenticated user
   fastify.get(
-    "/my-qr",
+    "/qr-token",
     {
       schema: {
         tags: ["Tickets"],
@@ -58,22 +93,6 @@ export default async function ticketController(fastify: FastifyInstance) {
             },
           },
           required: ["Authorization"],
-        },
-        response: {
-          200: { $ref: "QrTokenResponse#" },
-          401: {
-            type: "object",
-            properties: {
-              message: { type: "string" },
-              code: { type: "string" },
-            },
-          },
-          404: {
-            type: "object",
-            properties: {
-              message: { type: "string" },
-            },
-          },
         },
       },
     },
@@ -144,250 +163,6 @@ export default async function ticketController(fastify: FastifyInstance) {
           });
         }
         req.log.error({ err: error }, "failed to generate QR token");
-        return reply.code(500).send({ message: "internal server error" });
-      }
-    }
-  );
-
-  // Create a new ticket
-  fastify.post(
-    "/",
-    {
-      schema: {
-        tags: ["Tickets"],
-        summary: "Create a new ticket for an exhibition",
-        body: { $ref: "CreateTicketInput#" },
-        response: {
-          201: { $ref: "Ticket#" },
-        },
-      },
-    },
-    async (req: FastifyRequest<{ Body: CreateTicketBody }>, reply: FastifyReply) => {
-      try {
-        const { exhibition_id, user_id, ticket_type } = req.body;
-
-        if (!exhibition_id || !user_id || !ticket_type) {
-          throw new AppError("missing required fields", 400, "VALIDATION_ERROR");
-        }
-
-        if (!Number.isInteger(exhibition_id) || exhibition_id <= 0) {
-          throw new AppError("invalid exhibition_id", 400, "VALIDATION_ERROR");
-        }
-
-        if (!Number.isInteger(user_id) || user_id <= 0) {
-          throw new AppError("invalid user_id", 400, "VALIDATION_ERROR");
-        }
-
-        if (!["visitor", "staff", "vip"].includes(ticket_type)) {
-          throw new AppError("invalid ticket_type", 400, "VALIDATION_ERROR");
-        }
-
-        const payload: CreateTicketPayload = {
-          exhibition_id,
-          user_id,
-          ticket_type,
-        };
-
-        const ticket = await createTicket(payload);
-        reply.code(201);
-        return ticket;
-      } catch (error) {
-        if (error instanceof AppError) {
-          return reply.code(error.status).send({
-            message: error.message,
-            code: error.code,
-          });
-        }
-        req.log.error({ err: error }, "failed to create ticket");
-        return reply.code(500).send({ message: "internal server error" });
-      }
-    }
-  );
-
-  // Get ticket by ID
-  fastify.get(
-    "/:ticketId",
-    {
-      schema: {
-        tags: ["Tickets"],
-        summary: "Get ticket details by ID",
-        params: {
-          type: "object",
-          properties: {
-            ticketId: { type: "string", pattern: "^[0-9]+$" },
-          },
-          required: ["ticketId"],
-        },
-        response: {
-          200: { $ref: "TicketWithDetails#" },
-          404: {
-            type: "object",
-            properties: {
-              message: { type: "string" },
-            },
-          },
-        },
-      },
-    },
-    async (req: FastifyRequest<{ Params: GetTicketParams }>, reply: FastifyReply) => {
-      try {
-        const ticketId = Number(req.params.ticketId);
-
-        if (!Number.isInteger(ticketId) || ticketId <= 0) {
-          throw new AppError("invalid ticket_id", 400, "VALIDATION_ERROR");
-        }
-
-        const ticket = await getTicketById(ticketId);
-
-        if (!ticket) {
-          return reply.code(404).send({ message: "ticket not found" });
-        }
-
-        return ticket;
-      } catch (error) {
-        if (error instanceof AppError) {
-          return reply.code(error.status).send({
-            message: error.message,
-            code: error.code,
-          });
-        }
-        req.log.error({ err: error }, "failed to get ticket");
-        return reply.code(500).send({ message: "internal server error" });
-      }
-    }
-  );
-
-  // Get tickets by exhibition or user
-  fastify.get(
-    "/",
-    {
-      schema: {
-        tags: ["Tickets"],
-        summary: "Get tickets by exhibition ID or user ID",
-        querystring: {
-          type: "object",
-          properties: {
-            exhibition_id: { type: "string", pattern: "^[0-9]+$" },
-            user_id: { type: "string", pattern: "^[0-9]+$" },
-            code: { type: "string" },
-          },
-        },
-        response: {
-          200: {
-            oneOf: [
-              { type: "array", items: { $ref: "TicketWithDetails#" } },
-              { $ref: "TicketWithDetails#" },
-            ],
-          },
-        },
-      },
-    },
-    async (
-      req: FastifyRequest<{
-        Querystring: GetTicketsByExhibitionQuery & GetTicketsByUserQuery & GetTicketByCodeQuery;
-      }>,
-      reply: FastifyReply
-    ) => {
-      try {
-        const { exhibition_id, user_id, code } = req.query;
-
-        // Get ticket by code
-        if (code) {
-          const ticket = await getTicketByCode(code);
-          if (!ticket) {
-            return reply.code(404).send({ message: "ticket not found" });
-          }
-          return ticket;
-        }
-
-        // Get tickets by exhibition
-        if (exhibition_id) {
-          const exhibitionIdNum = Number(exhibition_id);
-          if (!Number.isInteger(exhibitionIdNum) || exhibitionIdNum <= 0) {
-            throw new AppError("invalid exhibition_id", 400, "VALIDATION_ERROR");
-          }
-          const tickets = await getTicketsByExhibition(exhibitionIdNum);
-          return tickets;
-        }
-
-        // Get tickets by user
-        if (user_id) {
-          const userIdNum = Number(user_id);
-          if (!Number.isInteger(userIdNum) || userIdNum <= 0) {
-            throw new AppError("invalid user_id", 400, "VALIDATION_ERROR");
-          }
-          const tickets = await getTicketsByUser(userIdNum);
-          return tickets;
-        }
-
-        throw new AppError("exhibition_id, user_id, or code is required", 400, "VALIDATION_ERROR");
-      } catch (error) {
-        if (error instanceof AppError) {
-          return reply.code(error.status).send({
-            message: error.message,
-            code: error.code,
-          });
-        }
-        req.log.error({ err: error }, "failed to get tickets");
-        return reply.code(500).send({ message: "internal server error" });
-      }
-    }
-  );
-
-  // Use/redeem a ticket
-  fastify.patch(
-    "/:ticketId/use",
-    {
-      schema: {
-        tags: ["Tickets"],
-        summary: "Mark a ticket as used/redeemed",
-        params: {
-          type: "object",
-          properties: {
-            ticketId: { type: "string", pattern: "^[0-9]+$" },
-          },
-          required: ["ticketId"],
-        },
-        response: {
-          200: { $ref: "Ticket#" },
-          400: {
-            type: "object",
-            properties: {
-              message: { type: "string" },
-            },
-          },
-          404: {
-            type: "object",
-            properties: {
-              message: { type: "string" },
-            },
-          },
-        },
-      },
-    },
-    async (req: FastifyRequest<{ Params: UseTicketParams }>, reply: FastifyReply) => {
-      try {
-        const ticketId = Number(req.params.ticketId);
-
-        if (!Number.isInteger(ticketId) || ticketId <= 0) {
-          throw new AppError("invalid ticket_id", 400, "VALIDATION_ERROR");
-        }
-
-        const ticket = await useTicket(ticketId);
-
-        if (!ticket) {
-          return reply.code(404).send({ message: "ticket not found or already used" });
-        }
-
-        return ticket;
-      } catch (error) {
-        if (error instanceof AppError) {
-          return reply.code(error.status).send({
-            message: error.message,
-            code: error.code,
-          });
-        }
-        req.log.error({ err: error }, "failed to use ticket");
         return reply.code(500).send({ message: "internal server error" });
       }
     }
