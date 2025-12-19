@@ -1,11 +1,10 @@
 import type { UserOption } from "../types/users";
-import { fetchWithNgrokBypass } from "../utils/fetch";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
 export async function fetchUserOptions(role?: "staff" | "user"): Promise<UserOption[]> {
   const params = role ? `?role=${encodeURIComponent(role)}` : "";
-  const res = await fetchWithNgrokBypass(`${BASE}/users${params}`);
+  const res = await fetch(`${BASE}/users${params}`);
   if (!res.ok) {
     throw new Error("ไม่สามารถโหลดรายชื่อผู้ใช้ได้");
   }

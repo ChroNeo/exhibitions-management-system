@@ -1,5 +1,3 @@
-import { fetchWithNgrokBypass } from "../utils/fetch";
-
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
 export type SignInPayload = {
@@ -22,7 +20,7 @@ export type SignInResponse = {
 export async function signIn(
   payload: SignInPayload
 ): Promise<SignInResponse> {
-  const response = await fetchWithNgrokBypass(`${BASE}/auth/signin`, {
+  const response = await fetch(`${BASE}/auth/signin`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

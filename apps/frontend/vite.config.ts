@@ -33,12 +33,7 @@ export default ({ mode }: { mode: string }) => {
         interval: watchInterval,
       },
       hmr: hmrOptions,
-      allowedHosts: ['.ngrok-free.app']
-    },
-    test: {
-      environment: 'jsdom',
-      setupFiles: './src/test/setup.ts',
-      restoreMocks: true,
+      allowedHosts: ['app.chroneo.dev']
     },
   })
 }

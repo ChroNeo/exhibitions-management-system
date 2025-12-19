@@ -3,7 +3,6 @@ import type { Exhibition, ExhibitionApi } from "../types/exhibition";
 import { fmtDateRangeTH } from "../utils/date";
 import { toFileUrl } from "../utils/url";
 import { ensureQuillDeltaString, extractPlainTextDescription } from "../utils/text";
-import { fetchWithNgrokBypass } from "../utils/fetch";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
@@ -57,14 +56,14 @@ function mapToExhibition(x: ExhibitionApi): Exhibition {
 }
 
 export async function fetchExhibitions(): Promise<Exhibition[]> {
-  const res = await fetchWithNgrokBypass(`${BASE}/exhibitions`);
+  const res = await fetch(`${BASE}/exhibitions`);
   if (!res.ok) throw new Error("ดึงรายการนิทรรศการไม่สำเร็จ");
   const data = await res.json();
   return data.map(mapToExhibition);
 }
 
 export async function fetchExhibitionById(id: string | number): Promise<Exhibition> {
-  const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${id}`);
+  const res = await fetch(`${BASE}/exhibitions/${id}`);
   if (!res.ok) throw new Error("ไม่พบข้อมูลนิทรรศการ");
   const json = await res.json();
   const data: ExhibitionApi | undefined = Array.isArray(json) ? json[0] : json;
@@ -94,7 +93,7 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
     appendString("created_by", String(rest.created_by));
     fd.append("picture_path", file);
 
-    const res = await fetchWithNgrokBypass(endpoint, {
+    const res = await fetch(endpoint, {
       method: "POST",
       body: fd,
     });
@@ -119,7 +118,7 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
   }
   if (rest.status !== undefined) jsonPayload.status = rest.status;
 
-  const res = await fetchWithNgrokBypass(endpoint, {
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(jsonPayload),
@@ -131,7 +130,7 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
 }
 
 export async function deleteExhibition(id: string): Promise<void> {
-  const res = await fetchWithNgrokBypass(`${BASE}/exhibitions/${id}`, {
+  const res = await fetch(`${BASE}/exhibitions/${id}`, {
     method: "DELETE",
   });
 
@@ -161,7 +160,7 @@ export async function updateExhibitionApi(
     appendString("status", rest.status);
     fd.append("picture_path", file);
 
-    const res = await fetchWithNgrokBypass(endpoint, {
+    const res = await fetch(endpoint, {
       method: "PUT",
       body: fd,
     });
@@ -187,7 +186,7 @@ export async function updateExhibitionApi(
     throw new Error("ไม่มีข้อมูลสำหรับอัปเดต");
   }
 
-  const res = await fetchWithNgrokBypass(endpoint, {
+  const res = await fetch(endpoint, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(jsonPayload),

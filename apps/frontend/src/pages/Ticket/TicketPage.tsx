@@ -1,132 +1,25 @@
-import { useEffect, useState, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import liff from "@line/liff";
-import axios from "axios";
 import "./TicketPage.css";
 import { useNavigate } from "react-router-dom";
-
-// Configuration - matches config.js from public folder
-const LIFF_CONFIG = {
-  liffId: "2008498720-IgQ8sUzW",
-  apiUrl:
-    import.meta.env.VITE_API_BASE || "https://28dbf038a9c8.ngrok-free.app", // เปลี่ยน URL ตามจริง
-};
-
-interface QRTokenResponse {
-  qr_token: string;
-  expires_in: number;
-}
-
-type PageState =
-  | { status: "initializing" }
-  | { status: "not_logged_in" }
-  | { status: "loading" }
-  | { status: "success"; qrToken: string; expiresAt: Date; expiresIn: number }
-  | { status: "error"; message: string };
+import { useTickets } from "../../hook/useTickets";
 
 export default function TicketPage() {
-  const [state, setState] = useState<PageState>({ status: "initializing" });
   const navigate = useNavigate();
-  // ฟังก์ชันสำหรับกลับไปหน้ารายการ (Wallet)
+
+  // Get exhibition_id from URL query string
+  const params = new URLSearchParams(window.location.search);
+  const exhibitionId = params.get("exhibition_id");
+
+  // Use the custom hook
+  const { state, refetch } = useTickets({
+    exhibitionId,
+    autoRefresh: true
+  });
+
+  // Function to go back to Wallet
   const goBackToWallet = () => {
-    // สมมติว่าหน้า Wallet อยู่ที่ route "/" หรือ "/tickets"
     navigate("/ticket");
-    // หรือถ้าใช้ react-router-dom: navigate('/tickets')
   };
-
-  const fetchQRCode = useCallback(async () => {
-    setState({ status: "loading" });
-
-    try {
-      const idToken = liff.getIDToken();
-      if (!idToken) {
-        throw new Error("Failed to get ID token");
-      }
-
-      // ✅ 1. ดึง exhibition_id จาก URL Query String
-      const params = new URLSearchParams(window.location.search);
-      const exhibitionId = params.get("exhibition_id");
-
-      if (!exhibitionId) {
-        throw new Error(
-          "No exhibition selected. Please select an exhibition from the list."
-        );
-      }
-
-      console.log(`Fetching QR code for Exhibition ID: ${exhibitionId}...`);
-
-      // ✅ 2. ยิง API เส้นใหม่ /qr-token พร้อมส่ง params
-      const response = await axios.get<QRTokenResponse>(
-        `${LIFF_CONFIG.apiUrl}/ticket/qr-token`, // แก้ path ให้ตรงกับ Controller (api/v1 หรือ tickets)
-        {
-          params: { exhibition_id: exhibitionId }, // ส่ง ID ไปบอก Backend
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
-
-      const { qr_token, expires_in } = response.data;
-      const expiresAt = new Date(Date.now() + expires_in * 1000);
-
-      console.log("QR code received successfully");
-
-      setState({
-        status: "success",
-        qrToken: qr_token,
-        expiresAt,
-        expiresIn: expires_in,
-      });
-
-      // Auto-refresh logic
-      setTimeout(() => {
-        // เช็คว่ายังอยู่หน้าเดิมไหมก่อน refresh
-        fetchQRCode();
-      }, expires_in * 1000);
-    } catch (error) {
-      console.error("Failed to fetch QR code:", error);
-      let errorMessage = "Failed to generate QR code";
-
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // รับ message จาก Backend เช่น "Access Denied"
-          errorMessage = error.response.data?.message || errorMessage;
-        } else if (error.request) {
-          errorMessage = "Cannot reach server.";
-        }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      setState({ status: "error", message: errorMessage });
-    }
-  }, []);
-
-  const initializeLiff = useCallback(async () => {
-    try {
-      console.log("Initializing LIFF...");
-      await liff.init({ liffId: LIFF_CONFIG.liffId });
-
-      if (!liff.isLoggedIn()) {
-        setState({ status: "not_logged_in" });
-        liff.login({ redirectUri: window.location.href });
-        return;
-      }
-
-      await fetchQRCode();
-    } catch (error) {
-      console.error("LIFF init error:", error);
-      setState({
-        status: "error",
-        message: error instanceof Error ? error.message : "LIFF Init Failed",
-      });
-    }
-  }, [fetchQRCode]);
-
-  useEffect(() => {
-    initializeLiff();
-  }, [initializeLiff]);
 
   return (
     <div className="ticket-page">
@@ -166,7 +59,6 @@ export default function TicketPage() {
                   value={state.qrToken}
                   size={260}
                   level="H"
-                  includeMargin={true}
                   className="qr-code"
                 />
               </div>
@@ -197,7 +89,7 @@ export default function TicketPage() {
               <p className="error-message">{state.message}</p>
 
               <div className="action-buttons">
-                <button onClick={fetchQRCode} className="retry-btn">
+                <button onClick={refetch} className="retry-btn">
                   Try Again
                 </button>
                 {/* ปุ่มกลับหน้ารายการ กรณีเข้าผิดงาน */}
