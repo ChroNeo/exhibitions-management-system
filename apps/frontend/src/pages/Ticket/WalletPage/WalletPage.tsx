@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 const LIFF_CONFIG = {
   liffId: "2008498720-IgQ8sUzW", // ใส่ LIFF ID ของคุณ
   apiUrl:
-    import.meta.env.VITE_API_BASE || "https://28dbf038a9c8.ngrok-free.app",
+    import.meta.env.VITE_BASE 
 };
 
 // Type ให้ตรงกับที่ Backend ส่งมา (จาก getUserTickets ใน query file)
@@ -55,7 +55,7 @@ export default function WalletPage() {
         // ยิง API ดึงรายการตั๋ว
         console.log("Fetching tickets...");
         const response = await axios.get<Ticket[]>(
-          `${LIFF_CONFIG.apiUrl}/tickets/`,
+          `${LIFF_CONFIG.apiUrl}/api/v1/ticket/`,
           {
             headers: {
               Authorization: `Bearer ${idToken}`,

@@ -30,11 +30,6 @@ export async function handleMessageCommand(
     return;
   }
 
-  if (isTicketCommand(normalized)) {
-    await sendTicketLiff(replyToken, config, log);
-    return;
-  }
-
   if (isHelpCommand(normalized)) {
     await sendLineTexts(replyToken, [HELP_TEXT], config, log);
     return;
@@ -158,50 +153,6 @@ async function sendProfileLiff(
   }
 }
 
-async function sendTicketLiff(
-  replyToken: string,
-  config: LineConfig,
-  log: FastifyBaseLogger
-): Promise<void> {
-  const ticketUrl = getTicketLiffUrl();
-  if (!ticketUrl) {
-    await sendLineTexts(
-      replyToken,
-      [
-        "ยังไม่ได้ตั้งค่า URL สำหรับบัตร LIFF",
-        'กรุณาตั้งค่า environment variable LINE_TICKET_LIFF_URL',
-      ],
-      config,
-      log
-    );
-    return;
-  }
-
-  const messages: LineMessage[] = [
-    { type: "text", text: "กดปุ่มด้านล่างเพื่อดูบัตร QR Code ของคุณ 🎫" },
-    {
-      type: "template",
-      altText: "View Ticket",
-      template: {
-        type: "buttons",
-        text: "คลิกเพื่อเปิดบัตร QR Code",
-        actions: [
-          {
-            type: "uri",
-            label: "🎫 View My Ticket",
-            uri: ticketUrl,
-          },
-        ],
-      },
-    },
-  ];
-
-  try {
-    await replyToLineMessage(replyToken, messages, config);
-  } catch (err) {
-    log.error({ err }, "failed to reply with LIFF ticket template");
-  }
-}
 
 function isHelpCommand(normalized: string): boolean {
   return (
@@ -218,18 +169,6 @@ function isProfileCommand(normalized: string): boolean {
     normalized === "profile" ||
     normalized.includes("profile") ||
     normalized.includes("โปรไฟล์")
-  );
-}
-
-function isTicketCommand(normalized: string): boolean {
-  return (
-    normalized === "ticket" ||
-    normalized === "tickets" ||
-    normalized.includes("ticket") ||
-    normalized === "บัตร" ||
-    normalized.includes("บัตร") ||
-    normalized === "qr" ||
-    normalized.includes("qr code")
   );
 }
 
