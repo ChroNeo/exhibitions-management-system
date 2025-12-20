@@ -4,6 +4,7 @@ import { AppError } from "../errors.js";
 import {
   getUserRegistrationsByLineId,
   getUserTickets,
+  verifyAndCheckIn,
 } from "../queries/ticket-query.js";
 import { verifyLiffIdToken } from "../services/line/security.js";
 
@@ -154,4 +155,78 @@ export default async function ticketController(fastify: FastifyInstance) {
       }
     }
   );
+
+  fastify.post(
+    "/verify",
+    {
+      schema: {
+        tags: ["Tickets"],
+        summary: "Staff verify ticket and record check-in",
+        body: {
+          type: "object",
+          required: ["token", "unit_id"],
+          properties: {
+            token: { type: "string", description: "QR JWT Token of Visitor" },
+            unit_id: { type: "integer", description: "ID of the Booth/Unit" }
+          }
+        }
+      }
+    },
+    async (req: FastifyRequest<{ Body: { token: string; unit_id: number } }>, reply) => {
+      try {
+        const { token, unit_id } = req.body;
+        const secret = process.env.JWT_SECRET || "super_secret_key"; // ใช้ key เดียวกับตอน Gen
+
+        // ---------------------------------------------------------
+        // 🧪 TEST MODE: Hardcode Staff ID
+        // สมมติว่าคนยิง API นี้คือ Staff ID = 3 (Charlie Kim)
+        // หรือ ID = 15 (สมชาย ใจดี) ที่มีสิทธิ์ใน unit_staffs ตาม Data ที่คุณให้มา
+        // ---------------------------------------------------------
+        const currentStaffId = 21;
+        console.log(`[TEST] Performing check-in by Staff ID: ${currentStaffId}`);
+
+        // 1. Verify Visitor Token
+        let payload: any;
+        try {
+          payload = jwt.verify(token, secret);
+        } catch (err) {
+          return reply.code(400).send({
+            success: false,
+            message: "❌ QR Code ไม่ถูกต้องหรือหมดอายุ"
+          });
+        }
+
+        const { uid: visitorId, eid: exhibitionId } = payload;
+
+        // 2. Execute Logic (Check Permission -> Validate -> Insert)
+        const result = await verifyAndCheckIn(
+          currentStaffId,
+          visitorId,
+          exhibitionId,
+          unit_id
+        );
+
+        // ถ้าสแกนซ้ำ (Success=false) ส่ง 409 Conflict หรือ 200 ก็ได้แล้วแต่ Design Frontend
+        // แต่ปกติ 409 จะสื่อความหมายดีกว่าว่า "ซ้ำนะ"
+        if (!result.success) {
+          return reply.code(409).send(result);
+        }
+
+        return result;
+
+      } catch (error) {
+        if (error instanceof AppError) {
+          // กรณี Staff ไม่มีสิทธิ์ (403) หรือ User ไม่ได้ลงทะเบียน (404)
+          return reply.code(error.status).send({
+            success: false,
+            message: error.message,
+            code: error.code
+          });
+        }
+        req.log.error(error);
+        return reply.code(500).send({ success: false, message: "Internal Server Error" });
+      }
+    }
+  );
 }
+
