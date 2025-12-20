@@ -203,7 +203,6 @@ export default async function ticketController(fastify: FastifyInstance) {
           currentStaffId,
           visitorId,
           exhibitionId,
-          unit_id
         );
 
         // ถ้าสแกนซ้ำ (Success=false) ส่ง 409 Conflict หรือ 200 ก็ได้แล้วแต่ Design Frontend

@@ -98,35 +98,35 @@ export async function getUserTickets(userId: number): Promise<UserTicketRow[]> {
   return rows;
 }
 export async function verifyAndCheckIn(
-  staffUserId: number,    // ID ของ Staff ที่ถือเครื่องสแกน
-  visitorUserId: number,  // ID ของ User ที่มาเข้างาน
-  exhibitionId: number,   // ID งาน (จาก QR)
-  unitId: number          // ID จุดที่สแกน (เช่น บูธ A)
+  staffUserId: number,    // รับแค่ Staff ID
+  visitorUserId: number,  // Visitor ID
+  exhibitionId: number    // Exhibition ID (จาก QR)
 ): Promise<CheckInResult> {
 
-  // 1. 👮 Check Staff Permission: Staff คนนี้มีสิทธิ์คุม Unit นี้ไหม?
-  // (เช็คจากตาราง unit_staffs)
-  const staffPerm = await safeQuery<any[]>(
-    `SELECT * FROM unit_staffs WHERE unit_id = ? AND staff_user_id = ?`,
-    [unitId, staffUserId]
+  // 1. 🔍 Auto-Detect Unit: หาว่า Staff คนนี้คุม Unit ไหน?
+  const staffAssignment = await safeQuery<any[]>(
+    `SELECT unit_id FROM unit_staffs WHERE staff_user_id = ? LIMIT 1`,
+    [staffUserId]
   );
 
-  if (staffPerm.length === 0) {
-    throw new AppError("คุณไม่มีสิทธิ์ตรวจสอบจุดนี้ (Staff Permission Denied)", 403, "FORBIDDEN_STAFF");
+  if (staffAssignment.length === 0) {
+    throw new AppError("คุณยังไม่ได้ถูกมอบหมายให้ประจำจุดสแกนใดๆ (No Unit Assigned)", 403, "NO_UNIT_ASSIGNED");
   }
 
+  const unitId = staffAssignment[0].unit_id; // ✅ ได้ Unit ID แล้ว!
+
   // 2. 🎫 Check Unit Validity: Unit นี้อยู่ในงาน Exhibition เดียวกับตั๋วไหม?
-  // (กัน Staff เอาเครื่องสแกนงาน A ไปสแกนตั๋วงาน B)
   const unitCheck = await safeQuery<any[]>(
     `SELECT exhibition_id FROM units WHERE unit_id = ?`,
     [unitId]
   );
 
   if (unitCheck.length === 0 || unitCheck[0].exhibition_id !== exhibitionId) {
-    throw new AppError("จุดสแกนนี้ไม่ได้อยู่ในงานนิทรรศการที่ระบุ (Invalid Unit for this Ticket)", 400, "INVALID_UNIT");
+    // กรณี Staff อยู่บูธของ "งาน A" แต่ Visitor เอา QR "งาน B" มาสแกน
+    throw new AppError("ตั๋วใบนี้สำหรับงานอื่น ไม่ใช่งานที่คุณประจำอยู่", 400, "WRONG_EXHIBITION");
   }
 
-  // 3. 👤 Check Visitor Registration: User ลงทะเบียนงานนี้จริงไหม?
+  // 3. 👤 Check Visitor Registration: Visitor ลงทะเบียนมาไหม?
   const visitor = await safeQuery<any[]>(
     `SELECT u.full_name, u.picture_url
      FROM registrations r
@@ -136,10 +136,10 @@ export async function verifyAndCheckIn(
   );
 
   if (visitor.length === 0) {
-    throw new AppError("ไม่พบข้อมูลการลงทะเบียน (User Not Registered)", 404, "USER_NOT_FOUND");
+    throw new AppError("ไม่พบข้อมูลการลงทะเบียน", 404, "USER_NOT_FOUND");
   }
 
-  // 4. ⚠️ Check Duplicate: เคยสแกนจุดนี้ไปหรือยัง?
+  // 4. ⚠️ Check Duplicate: เคยสแกนที่ Unit นี้หรือยัง?
   const duplicateCheck = await safeQuery<any[]>(
     `SELECT checkin_at FROM units_checkins 
      WHERE user_id = ? AND unit_id = ?`,
@@ -149,7 +149,7 @@ export async function verifyAndCheckIn(
   if (duplicateCheck.length > 0) {
     return {
       success: false,
-      message: `⚠️ บัตรนี้ถูกสแกนที่จุดนี้ไปแล้วเมื่อ ${new Date(duplicateCheck[0].checkin_at).toLocaleTimeString('th-TH')}`,
+      message: `⚠️ สแกนซ้ำ! เช็คอินไปแล้วเมื่อ ${new Date(duplicateCheck[0].checkin_at).toLocaleTimeString('th-TH')}`,
       visitor: {
         full_name: visitor[0].full_name,
         picture_url: visitor[0].picture_url,
@@ -158,7 +158,7 @@ export async function verifyAndCheckIn(
     };
   }
 
-  // 5. ✅ Record Check-in: บันทึกลง DB
+  // 5. ✅ Record Check-in
   await safeQuery(
     `INSERT INTO units_checkins (exhibition_id, user_id, unit_id, checkin_at)
      VALUES (?, ?, ?, NOW())`,
@@ -167,7 +167,7 @@ export async function verifyAndCheckIn(
 
   return {
     success: true,
-    message: "✅ เช็คอินสำเร็จ (Check-in Success)",
+    message: "✅ เช็คอินสำเร็จ",
     visitor: {
       full_name: visitor[0].full_name,
       picture_url: visitor[0].picture_url,
