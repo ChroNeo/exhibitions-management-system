@@ -1,18 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import liff from '@line/liff';
 import axios from 'axios';
+import { fetchQRToken } from '../api/tickets';
 
 // Configuration
 const LIFF_CONFIG = {
   liffId: '2008498720-IgQ8sUzW',
-  apiUrl: import.meta.env.VITE_API_BASE 
+  apiUrl: import.meta.env.VITE_API_BASE
 };
-
-// Interface
-interface QRTokenResponse {
-  qr_token: string;
-  expires_in: number;
-}
 
 export type TicketState =
   | { status: 'initializing' }
@@ -35,11 +30,6 @@ export function useTickets(options: UseTicketsOptions = {}) {
     setState({ status: 'loading' });
 
     try {
-      const idToken = liff.getIDToken();
-      if (!idToken) {
-        throw new Error('Failed to get ID token');
-      }
-
       if (!exhibitionId) {
         throw new Error(
           'No exhibition selected. Please select an exhibition from the list.'
@@ -48,18 +38,7 @@ export function useTickets(options: UseTicketsOptions = {}) {
 
       console.log(`Fetching QR code for Exhibition ID: ${exhibitionId}...`);
 
-      const response = await axios.get<QRTokenResponse>(
-        `${LIFF_CONFIG.apiUrl}/ticket/qr-token`,
-        {
-          params: { exhibition_id: exhibitionId },
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            'ngrok-skip-browser-warning': 'true',
-          },
-        }
-      );
-
-      const { qr_token, expires_in } = response.data;
+      const { qr_token, expires_in } = await fetchQRToken(exhibitionId);
       const expiresAt = new Date(Date.now() + expires_in * 1000);
 
       console.log('QR code received successfully');
