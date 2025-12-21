@@ -164,17 +164,16 @@ export default async function ticketController(fastify: FastifyInstance) {
         summary: "Staff verify ticket and record check-in",
         body: {
           type: "object",
-          required: ["token", "unit_id"],
+          required: ["token", ],
           properties: {
             token: { type: "string", description: "QR JWT Token of Visitor" },
-            unit_id: { type: "integer", description: "ID of the Booth/Unit" }
           }
         }
       }
     },
-    async (req: FastifyRequest<{ Body: { token: string; unit_id: number } }>, reply) => {
+    async (req: FastifyRequest<{ Body: { token: string} }>, reply) => {
       try {
-        const { token, unit_id } = req.body;
+        const { token} = req.body;
         const secret = process.env.JWT_SECRET || "super_secret_key"; // ใช้ key เดียวกับตอน Gen
 
         // ---------------------------------------------------------

@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@blackbox-vision/react-qr-reader": "^5.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@line/liff": "^2.27.3",
