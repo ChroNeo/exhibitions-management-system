@@ -12,8 +12,11 @@ export default function StaffScanPage() {
     await verifyTicket(token);
   };
 
-  const onScan = (result: any) => {
-    if (result?.text) handleVerify(result.text);
+  const onScan = (result?: { getText(): string } | null) => {
+    if (result) {
+      const text = result.getText();
+      if (text) handleVerify(text);
+    }
   };
 
   const handleReset = () => {
