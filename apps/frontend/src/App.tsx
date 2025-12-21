@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import WalletPage from "./pages/Ticket/WalletPage/WalletPage";
 import TicketPage from "./pages/Ticket/TicketPage";
 import StaffScanPage from "./pages/ScanPage/StaffScanPage";
+import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
 
 export default function App() {
   return (
@@ -45,7 +46,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/wallet" element={<WalletPage />} />
       <Route path="/wallet/ticket" element={<TicketPage />} />
-      <Route path="/scan" element={<StaffScanPage/>} />
+      <Route path="/scan" element={<VerifyTicketPage/>} />
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

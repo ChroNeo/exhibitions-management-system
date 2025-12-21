@@ -5,7 +5,7 @@ import './StaffScanPage.css';
 
 export default function StaffScanPage() {
   const [isCameraOpen, setIsCameraOpen] = useState(true);
-  const { verifyTicket, reset, isLoading, result, error } = useVerifyTicket();
+  const { verifyTicket, reset, isLoading, result, error } = useVerifyTicket({ enableLiff: false });
 
   const handleVerify = async (token: string) => {
     setIsCameraOpen(false);
