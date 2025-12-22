@@ -8,7 +8,6 @@ import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import WalletPage from "./pages/Ticket/WalletPage/WalletPage";
 import TicketPage from "./pages/Ticket/TicketPage";
-import StaffScanPage from "./pages/ScanPage/StaffScanPage";
 import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
 
 export default function App() {

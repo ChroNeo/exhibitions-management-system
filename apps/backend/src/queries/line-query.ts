@@ -132,6 +132,26 @@ export async function findExhibitionForLine(
   return rows.length ? rows[0] : null;
 }
 
+export async function findUserByLineId(lineUserId: string): Promise<{ userId: number; role: string } | null> {
+  const rows = await safeQuery<{ user_id: number; role: string }[]>(
+    `
+      SELECT user_id, role
+      FROM normal_users
+      WHERE line_user_id = ?
+      LIMIT 1
+    `,
+    [lineUserId]
+  );
+
+  if (rows.length) {
+    return {
+      userId: rows[0].user_id,
+      role: rows[0].role
+    };
+  }
+  return null;
+}
+
 function buildUsername(displayName: string): string | null {
   const collapsed = displayName
     .normalize("NFKD")

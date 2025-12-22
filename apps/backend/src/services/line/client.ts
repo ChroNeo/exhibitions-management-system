@@ -65,3 +65,52 @@ export async function replyToLineMessage(
     );
   }
 }
+
+export async function linkRichMenuToUser(
+  userId: string,
+  richMenuId: string,
+  config?: LineConfig
+): Promise<void> {
+  const { channelAccessToken } = config ?? getLineConfig();
+  // API Endpoint: POST /v2/bot/user/{userId}/richmenu/{richMenuId}
+  const response = await fetch(`${LINE_API_BASE}/user/${encodeURIComponent(userId)}/richmenu/${richMenuId}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${channelAccessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new AppError(
+      `Failed to link rich menu: ${response.status}`,
+      502,
+      "LINE_API_ERROR",
+      errorBody
+    );
+  }
+}
+
+export async function unlinkRichMenuFromUser(
+  userId: string,
+  config?: LineConfig
+): Promise<void> {
+  const { channelAccessToken } = config ?? getLineConfig();
+  // API Endpoint: DELETE /v2/bot/user/{userId}/richmenu
+  const response = await fetch(`${LINE_API_BASE}/user/${encodeURIComponent(userId)}/richmenu`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${channelAccessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new AppError(
+      `Failed to unlink rich menu: ${response.status}`,
+      502,
+      "LINE_API_ERROR",
+      errorBody
+    );
+  }
+}

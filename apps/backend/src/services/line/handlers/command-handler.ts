@@ -1,9 +1,10 @@
 import type { FastifyBaseLogger } from "fastify";
 import {
   findExhibitionForLine,
+  findUserByLineId,
   getUpcomingExhibitionsForLine,
 } from "../../../queries/line-query.js";
-import { replyToLineMessage } from "../../line/client.js";
+import { linkRichMenuToUser, replyToLineMessage, unlinkRichMenuFromUser } from "../../line/client.js";
 import type { LineConfig, LineMessage } from "../../line/types.js";
 import {
   HELP_TEXT,
@@ -11,8 +12,13 @@ import {
   formatUpcomingExhibitions,
 } from "../utils/message-formatter.js";
 
+const RICH_MENU_IDS = {
+  STAFF: "richmenu-89c0938cdb1b6ca00dc2f86fc67f2b66",  // ใส่ ID เมนู Staff
+  MEMBER: "richmenu-xxxxxxxxxxxxxxxxxxxxxxxxxxxx", // ใส่ ID เมนู Member (ถ้ามี)
+};
 export async function handleMessageCommand(
   replyToken: string,
+  userId: string,
   messageText: string,
   config: LineConfig,
   log: FastifyBaseLogger
@@ -24,6 +30,31 @@ export async function handleMessageCommand(
   }
 
   const normalized = trimmed.toLowerCase();
+
+  if (isStartCommand(normalized)) {
+    const user = await findUserByLineId(userId);
+    const role = user?.role || "user";
+
+    try {
+      if (role === "staff") {
+        await linkRichMenuToUser(userId, RICH_MENU_IDS.STAFF, config);
+        await sendLineTexts(replyToken, ["ยืนยันตัวตน: Staff ✅", "เปลี่ยนเมนูเรียบร้อยครับ"], config, log);
+      } else {
+        // กรณี user ทั่วไป อาจจะ unlink หรือ link menu member
+        await unlinkRichMenuFromUser(userId, config);
+        await sendLineTexts(replyToken, ["ยินดีต้อนรับครับ", HELP_TEXT], config, log);
+      }
+    } catch (err) {
+      log.error({ err }, "Failed to switch rich menu");
+      await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการเปลี่ยนเมนู"], config, log);
+    }
+    return;
+  }
+  if (normalized === "#staff_mode") {
+    await linkRichMenuToUser(userId, RICH_MENU_IDS.STAFF, config);
+    await sendLineTexts(replyToken, ["เข้าสู่โหมด Staff"], config, log);
+    return;
+  }
 
   if (isProfileCommand(normalized)) {
     await sendProfileLiff(replyToken, config, log);
@@ -57,7 +88,6 @@ export async function handleMessageCommand(
     );
     return;
   }
-
   const code = extractExhibitionCode(trimmed);
   if (code) {
     const exhibition = await findExhibitionForLine(code);
@@ -152,7 +182,15 @@ async function sendProfileLiff(
     log.error({ err }, "failed to reply with LIFF profile template");
   }
 }
-
+function isStartCommand(normalized: string): boolean {
+  return (
+    normalized === "start" ||
+    normalized === "check" ||
+    normalized === "ตรวจสอบ" ||
+    normalized === "เริ่ม" ||
+    normalized === "เมนู"
+  );
+}
 
 function isHelpCommand(normalized: string): boolean {
   return (

@@ -63,7 +63,10 @@ export async function dispatchLineEvent(
   // Handle message event
   if (event.type === "message" && event.message?.type === "text" && event.replyToken) {
     const messageText = event.message.text ?? "";
-    await handleMessageCommand(event.replyToken, messageText, config, log);
+
+    // [EDIT] แก้บรรทัดนี้: ส่ง userId เข้าไปเพิ่ม (userId มีค่าแน่นอนเพราะเช็คข้างบนแล้ว)
+    await handleMessageCommand(event.replyToken, userId, messageText, config, log);
+
     return;
   }
 
