@@ -162,9 +162,20 @@ export default async function ticketController(fastify: FastifyInstance) {
       schema: {
         tags: ["Tickets"],
         summary: "Staff verify ticket and record check-in",
+        headers: {
+          type: "object",
+          required: ["Authorization"],
+          properties: {
+            Authorization: {
+              type: "string",
+              description: "Bearer token (LINE LIFF ID token for staff)",
+              example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            },
+          },
+        },
         body: {
           type: "object",
-          required: ["token", ],
+          required: ["token"],
           properties: {
             token: { type: "string", description: "QR JWT Token of Visitor" },
           }
@@ -173,18 +184,45 @@ export default async function ticketController(fastify: FastifyInstance) {
     },
     async (req: FastifyRequest<{ Body: { token: string} }>, reply) => {
       try {
-        const { token} = req.body;
-        const secret = process.env.JWT_SECRET || "super_secret_key"; // ใช้ key เดียวกับตอน Gen
+        // Step 1: Get and verify staff authorization
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+          throw new AppError("Authorization header is required", 401, "MISSING_AUTH_HEADER");
+        }
 
-        // ---------------------------------------------------------
-        // 🧪 TEST MODE: Hardcode Staff ID
-        // สมมติว่าคนยิง API นี้คือ Staff ID = 3 (Charlie Kim)
-        // หรือ ID = 15 (สมชาย ใจดี) ที่มีสิทธิ์ใน unit_staffs ตาม Data ที่คุณให้มา
-        // ---------------------------------------------------------
-        const currentStaffId = 21;
-        console.log(`[TEST] Performing check-in by Staff ID: ${currentStaffId}`);
+        const parts = authHeader.split(" ");
+        if (parts.length !== 2 || parts[0] !== "Bearer") {
+          throw new AppError("Invalid Authorization header format. Expected: Bearer <token>", 401, "INVALID_AUTH_FORMAT");
+        }
 
-        // 1. Verify Visitor Token
+        const liffIdToken = parts[1];
+
+        // Step 2: Verify the LINE LIFF ID token for staff
+        let verifiedToken;
+        try {
+          verifiedToken = await verifyLiffIdToken(liffIdToken);
+        } catch (error) {
+          if (error instanceof AppError) {
+            throw error;
+          }
+          throw new AppError("Token verification failed", 401, "TOKEN_VERIFICATION_FAILED");
+        }
+
+        const staffLineUserId = verifiedToken.sub;
+
+        // Step 3: Get staff user_id from LINE user ID
+        const staffData = await getUserRegistrationsByLineId(staffLineUserId);
+        if (!staffData) {
+          throw new AppError("Staff not found", 404, "STAFF_NOT_FOUND");
+        }
+
+        const currentStaffId = staffData.user_id;
+
+        // Step 4: Get and verify visitor token
+        const { token } = req.body;
+        const secret = process.env.JWT_SECRET;
+        if (!secret) throw new AppError("JWT_SECRET missing", 500, "CONFIG_ERROR");
+
         let payload: any;
         try {
           payload = jwt.verify(token, secret);
@@ -197,7 +235,7 @@ export default async function ticketController(fastify: FastifyInstance) {
 
         const { uid: visitorId, eid: exhibitionId } = payload;
 
-        // 2. Execute Logic (Check Permission -> Validate -> Insert)
+        // Step 5: Execute Logic (Check Permission -> Validate -> Insert)
         const result = await verifyAndCheckIn(
           currentStaffId,
           visitorId,
