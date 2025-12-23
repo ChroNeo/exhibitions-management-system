@@ -40,9 +40,9 @@ export default function RegisterPage() {
     }
   }, [isLiffReady, getAutoFillName, form.name]);
 
-  // Check Exhibition ID
+  // Check Exhibition ID (wait for LIFF to be ready first)
   useEffect(() => {
-    if (!exhibitionId) {
+    if (isLiffReady && !exhibitionId) {
       Swal.fire({
         title: "ไม่พบรหัสนิทรรศการ",
         icon: "error",
@@ -54,7 +54,7 @@ export default function RegisterPage() {
         }
       });
     }
-  }, [exhibitionId, navigate, closeWindow]);
+  }, [isLiffReady, exhibitionId, navigate, closeWindow]);
 
   const set =
     (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>

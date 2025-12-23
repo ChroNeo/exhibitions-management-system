@@ -264,7 +264,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                         : undefined
                     }
                     registerLink={
-                      id ? `/exhibitions/${id}/register` : undefined
+                      id ? `/register?exhibition_id=${id}` : undefined
                     }
                   />
                   <DetailActions
