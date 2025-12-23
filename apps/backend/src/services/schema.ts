@@ -303,6 +303,12 @@ const schemas = [
         example: "EX20250103",
         description: "Required when role is staff.",
       },
+      line_user_id: {
+        type: "string",
+        minLength: 1,
+        example: "Ue9761b5cc006f2b8c7d0897e8b272c61",
+        description: "LINE user ID from LIFF integration.",
+      },
     },
     examples: [
       {

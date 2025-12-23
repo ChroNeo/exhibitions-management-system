@@ -12,6 +12,7 @@ export type RegistrationPayload = {
   phone?: string;
   role: RegistrationRole;
   unit_code?: string;
+  line_user_id?: string;
 };
 
 export type RegistrationResponse = {

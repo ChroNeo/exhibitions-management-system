@@ -14,6 +14,7 @@ export type RegistrationPayload = {
   phone?: string;
   role: RegistrationRole;
   unit_code?: string;
+  line_user_id?: string;
 };
 
 export type RegistrationResult = {
@@ -69,9 +70,10 @@ export async function registerForExhibition(
             birthdate,
             email,
             phone,
-            role
+            role,
+            line_user_id
           )
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
         `,
         [
           payload.full_name,
@@ -80,6 +82,7 @@ export async function registerForExhibition(
           payload.email,
           payload.phone ?? null,
           storedRole,
+          payload.line_user_id ?? null,
         ]
       );
       userId = insertUser.insertId;
@@ -95,7 +98,8 @@ export async function registerForExhibition(
               gender = ?,
               birthdate = ?,
               phone = ?,
-              role = ?
+              role = ?,
+              line_user_id = COALESCE(?, line_user_id)
           WHERE user_id = ?
         `,
         [
@@ -104,6 +108,7 @@ export async function registerForExhibition(
           payload.birthdate ?? null,
           payload.phone ?? null,
           effectiveRole,
+          payload.line_user_id ?? null,
           userId,
         ]
       );

@@ -54,6 +54,7 @@ export default async function registrationsController(fastify: FastifyInstance) 
         const email = normaliseString(body.email);
         const unitCode = normaliseString(body.unit_code);
         const phone = normaliseString(body.phone);
+        const lineUserId = normaliseString(body.line_user_id);
 
         if (!fullName || !email) {
           throw new AppError("missing required fields", 400, "VALIDATION_ERROR");
@@ -73,6 +74,7 @@ export default async function registrationsController(fastify: FastifyInstance) 
           phone,
           role,
           unit_code: unitCode,
+          line_user_id: lineUserId,
         };
 
         const result = await registerForExhibition(payload);

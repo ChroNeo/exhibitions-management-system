@@ -41,7 +41,7 @@ export default function App() {
         path="/exhibitions/:exhibitionId/unit/:unitId/edit"
         element={<UnitManageDetail mode="edit" />}
       />
-      <Route path="/exhibitions/:id/register" element={<RegisterPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/wallet" element={<WalletPage />} />
       <Route path="/wallet/ticket" element={<TicketPage />} />

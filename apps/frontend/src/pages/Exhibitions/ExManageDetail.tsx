@@ -52,7 +52,6 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         title: "กำลังโหลด",
         didOpen: () => {
           Swal.showLoading();
-          console.log("loading");
         },
       });
     } else {

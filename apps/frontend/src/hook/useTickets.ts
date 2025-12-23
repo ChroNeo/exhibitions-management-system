@@ -36,12 +36,8 @@ export function useTickets(options: UseTicketsOptions = {}) {
         );
       }
 
-      console.log(`Fetching QR code for Exhibition ID: ${exhibitionId}...`);
-
       const { qr_token, expires_in } = await fetchQRToken(exhibitionId);
       const expiresAt = new Date(Date.now() + expires_in * 1000);
-
-      console.log('QR code received successfully');
 
       setState({
         status: 'success',
@@ -77,7 +73,6 @@ export function useTickets(options: UseTicketsOptions = {}) {
 
   const initializeLiff = useCallback(async () => {
     try {
-      console.log('Initializing LIFF...');
 
       // Check if LIFF is already initialized
       if (!liff.id) {

@@ -59,7 +59,6 @@ export function useWalletData() {
       if (!idToken) throw new Error("No ID Token");
 
       // 5. Fetch API
-      console.log("Fetching tickets...");
       const response = await axios.get<Ticket[]>(
         `${LIFF_CONFIG.apiUrl}/api/v1/ticket/`,
         {

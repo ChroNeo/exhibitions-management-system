@@ -56,8 +56,6 @@ export function useVerifyTicket(options: UseVerifyTicketOptions = {}) {
     if (!enableLiff) return;
 
     try {
-      console.log('Initializing LIFF for verification...');
-
       // Check if LIFF is already initialized
       if (!liff.id) {
         await liff.init({ liffId: LIFF_CONFIG.liffId });
@@ -70,7 +68,6 @@ export function useVerifyTicket(options: UseVerifyTicketOptions = {}) {
       }
 
       setState({ status: 'idle' });
-      console.log('LIFF initialized successfully');
     } catch (error) {
       console.error('LIFF init error:', error);
       setState({

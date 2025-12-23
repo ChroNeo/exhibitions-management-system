@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
 import styles from "./RegisterPage.module.css";
@@ -10,7 +10,10 @@ import { useRegisterForExhibition } from "../../hook/useRegisterForExhibition";
 type Role = "VISITOR" | "STAFF";
 
 export default function RegisterPage() {
-  const { id: exhibitionId } = useParams();
+  const { id: exhibitionIdFromParams } = useParams();
+  const [searchParams] = useSearchParams();
+  const exhibitionIdFromQuery = searchParams.get("exhibition_id");
+  const exhibitionId = exhibitionIdFromQuery || exhibitionIdFromParams;
   const navigate = useNavigate();
 
   const [role, setRole] = useState<Role>("VISITOR");
@@ -22,10 +25,39 @@ export default function RegisterPage() {
     phone: "",
     code: "",
   });
-  const { mutateAsync: registerForExhibition, isPending } = useRegisterForExhibition();
+  const { closeWindow, getAutoFillName, isLiffReady, register, isPending } = useRegisterForExhibition({
+    enableLiff: true,
+    autoFillName: true
+  });
+
+  // Auto-fill name from LINE Profile when ready
+  useEffect(() => {
+    if (isLiffReady) {
+      const autoFillName = getAutoFillName();
+      if (autoFillName && !form.name) {
+        setForm(prev => ({ ...prev, name: autoFillName }));
+      }
+    }
+  }, [isLiffReady, getAutoFillName, form.name]);
+
+  // Check Exhibition ID
+  useEffect(() => {
+    if (!exhibitionId) {
+      Swal.fire({
+        title: "ไม่พบรหัสนิทรรศการ",
+        icon: "error",
+        confirmButtonText: "ปิด",
+      }).then(() => {
+        const closed = closeWindow();
+        if (!closed) {
+          navigate("/");
+        }
+      });
+    }
+  }, [exhibitionId, navigate, closeWindow]);
 
   const set =
-    (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((s) => ({ ...s, [k]: e.target.value }));
 
   const onChangeRole = (r: Role) => {
@@ -35,51 +67,27 @@ export default function RegisterPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!exhibitionId) {
-      await Swal.fire({
-        title: "ไม่พบรหัสนิทรรศการ",
-        text: "กรุณากลับไปเลือกนิทรรศการอีกครั้ง",
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-      return;
-    }
+    if (!exhibitionId) return;
 
-    try {
-      await registerForExhibition({
-        exhibitionId,
-        name: form.name,
-        gender: form.gender,
-        birthDate: form.birthDate,
-        email: form.email,
-        phone: form.phone,
-        role,
-        code: form.code,
-      });
-      await Swal.fire({
-        title: "ลงทะเบียนสำเร็จ!",
-        icon: "success",
-        confirmButtonText: "ตกลง",
-      });
-      navigate(-1);
-    } catch (error) {
-      await Swal.fire({
-        title: "ลงทะเบียนไม่สำเร็จ",
-        text:
-          error instanceof Error
-            ? error.message
-            : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-    }
+    await register({
+      exhibitionId,
+      name: form.name,
+      gender: form.gender,
+      birthDate: form.birthDate,
+      email: form.email,
+      phone: form.phone,
+      role,
+      code: form.code,
+    });
   };
+
+  if (!exhibitionId) return null;
 
   return (
     <>
       <HeaderBar />
       <main className={styles.container}>
-        <Panel title="ลงทะเบียน" onBack={() => navigate(-1)}>
+        <Panel title="ลงทะเบียน" onBack={() => !closeWindow() && navigate(-1)}>
           <form onSubmit={onSubmit} className={styles.card}>
             <label>ชื่อ</label>
             <input
@@ -93,12 +101,17 @@ export default function RegisterPage() {
             <div className={styles.row}>
               <div className={styles.col}>
                 <label>เพศ</label>
-                <input
+                <select
                   className={styles.textInput}
                   value={form.gender}
                   onChange={set("gender")}
-                  placeholder="ชาย / หญิง"
-                />
+                  required
+                >
+                  <option value="" disabled>เลือกเพศ</option>
+                  <option value="male">ชาย</option>
+                  <option value="female">หญิง</option>
+                  <option value="other">อื่นๆ</option>
+                </select>
               </div>
               <div className={styles.col}>
                 <label>วันเกิด</label>
@@ -177,7 +190,7 @@ export default function RegisterPage() {
 
               <button
                 type="button"
-                onClick={() => navigate(-1)}
+                onClick={() => !closeWindow() && navigate(-1)}
                 className={`${styles.btn} ${styles.cancel}`}
               >
                 ยกเลิก
