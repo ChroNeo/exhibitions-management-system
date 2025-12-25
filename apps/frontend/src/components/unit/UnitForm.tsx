@@ -7,11 +7,12 @@ import {
   useRef,
   useState,
 } from "react";
-import type { MutableRefObject, ReactNode, ChangeEvent } from "react";
+import type { ReactNode, ChangeEvent, MutableRefObject } from "react";
 import { useNavigate } from "react-router-dom";
 import type QuillType from "quill";
 import Swal from "sweetalert2";
 import styles from "../exhibition/detail_form/ExManageForm.module.css";
+import unitStyles from "./UnitForm.module.css";
 import Select, { type MultiValue, type StylesConfig } from "react-select";
 import FormButtons from "../DetailButton/FormButtons";
 import { initializeRichTextEditor } from "../../utils/quill";
@@ -28,6 +29,7 @@ export type UnitFormValues = {
   description?: string;
   description_delta: string;
   file?: File;
+  posterRemoved: boolean;
   detailPdfFile?: File;
   detailPdfRemoved: boolean;
 };
@@ -50,6 +52,7 @@ type Props = {
   footer?: ReactNode;
   isSubmitting?: boolean;
   initialPosterName?: string;
+  initialPosterUrl?: string;
   initialDetailPdfName?: string;
 };
 
@@ -61,6 +64,7 @@ const EMPTY: UnitFormValues = {
   staff_user_ids: [],
   description_delta: "",
   file: undefined,
+  posterRemoved: false,
   detailPdfFile: undefined,
   detailPdfRemoved: false,
 };
@@ -73,7 +77,7 @@ type TextChangeHandler = (
   source: QuillSource
 ) => void;
 type StaffSelectOption = { value: number; label: string };
-
+type UnitTypeOption = { value: "booth" | "activity"; label: string };
 
 const storageKey = (
   exId?: string | number,
@@ -116,6 +120,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     footer,
     isSubmitting = false,
     initialPosterName,
+    initialPosterUrl,
     initialDetailPdfName,
   }: Props,
   ref
@@ -129,12 +134,19 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   const quillRef = useRef<QuillType | null>(null);
   const [quillReady, setQuillReady] = useState(false);
   const detailPdfInputRef = useRef<HTMLInputElement | null>(null);
-  const {
-    data: staffOptions = [],
-    isLoading: isStaffLoading,
-  } = useUserOptions("staff");
+  const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
+  const { data: staffOptions = [], isLoading: isStaffLoading } =
+    useUserOptions("staff");
+  const unit_types: UnitTypeOption[] = [
+    { value: "booth", label: "บูธ" },
+    { value: "activity", label: "กิจกรรม" },
+  ];
   const staffSelectOptions = useMemo(
-    () => staffOptions.map((option) => ({ value: option.value, label: option.label })),
+    () =>
+      staffOptions.map((option) => ({
+        value: option.value,
+        label: option.label,
+      })),
     [staffOptions]
   );
   const selectedStaffOptions = useMemo(
@@ -158,9 +170,25 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   );
 
   const canSubmit = mode === "edit" || mode === "create";
-  const update = <K extends keyof UnitFormValues>(k: K, v: UnitFormValues[K]) =>
-    setForm((p) => ({ ...p, [k]: v }));
+  const update = useCallback(
+    <K extends keyof UnitFormValues>(k: K, v: UnitFormValues[K]) =>
+      setForm((p) => ({ ...p, [k]: v })),
+    []
+  );
+  const hasInitialPoster = Boolean(initialPosterUrl);
   const hasInitialDetailPdf = Boolean(initialDetailPdfName);
+  const posterInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handlePosterRemove = useCallback(() => {
+    setForm((prev) => ({
+      ...prev,
+      file: undefined,
+      posterRemoved: prev.file ? false : hasInitialPoster ? true : false,
+    }));
+    if (posterInputRef.current) {
+      posterInputRef.current.value = "";
+    }
+  }, [hasInitialPoster]);
 
   const handleDetailPdfChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -181,13 +209,69 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       detailPdfRemoved: prev.detailPdfFile
         ? false
         : hasInitialDetailPdf
-          ? true
-          : false,
+        ? true
+        : false,
     }));
     if (detailPdfInputRef.current) {
       detailPdfInputRef.current.value = "";
     }
   }, [hasInitialDetailPdf]);
+
+  const unitTypeSelectStyles: StylesConfig<UnitTypeOption, false> = useMemo(
+    () => ({
+      control: (base, state) => ({
+        ...base,
+        borderRadius: 10,
+        borderColor: state.isFocused ? "#c7571f" : "#de6424",
+        boxShadow: state.isFocused
+          ? "0 0 0 2px rgba(199, 87, 31, 0.2)"
+          : "none",
+        minHeight: 44,
+        ":hover": {
+          borderColor: "#c7571f",
+        },
+      }),
+      valueContainer: (base) => ({
+        ...base,
+        padding: "4px 8px",
+        gap: 4,
+      }),
+      placeholder: (base) => ({
+        ...base,
+        color: "#9ca3af",
+      }),
+      option: (base, state) => ({
+        ...base,
+        fontWeight: state.isSelected ? 700 : 500,
+        backgroundColor: state.isSelected
+          ? "#fde8db"
+          : state.isFocused
+          ? "#fff3ea"
+          : base.backgroundColor,
+        color: "#1f2937",
+      }),
+      indicatorSeparator: () => ({
+        display: "none",
+      }),
+      dropdownIndicator: (base) => ({
+        ...base,
+        color: "#c7571f",
+        ":hover": {
+          color: "#c7571f",
+        },
+      }),
+      menu: (base) => ({
+        ...base,
+        zIndex: 20,
+      }),
+      singleValue: (base) => ({
+        ...base,
+        color: "#1f2937",
+        fontWeight: 500,
+      }),
+    }),
+    []
+  );
 
   const staffSelectStyles: StylesConfig<StaffSelectOption, true> = useMemo(
     () => ({
@@ -195,7 +279,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         ...base,
         borderRadius: 10,
         borderColor: state.isFocused ? "#c7571f" : "#de6424",
-        boxShadow: state.isFocused ? "0 0 0 2px rgba(199, 87, 31, 0.2)" : "none",
+        boxShadow: state.isFocused
+          ? "0 0 0 2px rgba(199, 87, 31, 0.2)"
+          : "none",
         minHeight: 44,
         ":hover": {
           borderColor: "#c7571f",
@@ -353,30 +439,34 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       if (draft.savedAt > serverUpdatedAt) {
         if (
           draft.form &&
-          !Array.isArray((draft.form as Record<string, unknown>)['staff_user_ids']) &&
-          (draft.form as Record<string, unknown>)['staff_user_id'] !== undefined
+          !Array.isArray(
+            (draft.form as Record<string, unknown>)["staff_user_ids"]
+          ) &&
+          (draft.form as Record<string, unknown>)["staff_user_id"] !== undefined
         ) {
-          const legacy =
-            (draft.form as Record<string, unknown>)['staff_user_id'];
+          const legacy = (draft.form as Record<string, unknown>)[
+            "staff_user_id"
+          ];
           const coerced =
             typeof legacy === "number"
               ? [legacy]
               : typeof legacy === "string" && legacy.trim().length
               ? [Number(legacy)]
               : [];
-          (draft.form as Record<string, unknown>)['staff_user_ids'] = coerced.filter(
-            (id) => Number.isFinite(id) && Number(id) > 0
-          );
-          delete (draft.form as Record<string, unknown>)['staff_user_id'];
+          (draft.form as Record<string, unknown>)["staff_user_ids"] =
+            coerced.filter((id) => Number.isFinite(id) && Number(id) > 0);
+          delete (draft.form as Record<string, unknown>)["staff_user_id"];
         }
         if (
           draft.form &&
           Array.isArray(
-            (draft.form as Record<string, unknown>)['staff_user_ids']
+            (draft.form as Record<string, unknown>)["staff_user_ids"]
           )
         ) {
-          (draft.form as Record<string, unknown>)['staff_user_ids'] = (
-            ((draft.form as Record<string, unknown>)['staff_user_ids'] as unknown[])
+          (draft.form as Record<string, unknown>)["staff_user_ids"] = (
+            (draft.form as Record<string, unknown>)[
+              "staff_user_ids"
+            ] as unknown[]
           )
             .map((id) => Number(id))
             .filter((id) => Number.isFinite(id) && id > 0);
@@ -490,6 +580,21 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     return () => window.removeEventListener("beforeunload", beforeUnload);
   }, [exhibitionId, unitId, mode]);
 
+  // Create preview URL when file changes
+  useEffect(() => {
+    if (form.file) {
+      const objectUrl = URL.createObjectURL(form.file);
+      setPosterPreviewUrl(objectUrl);
+
+      // Cleanup: revoke the object URL when component unmounts or file changes
+      return () => URL.revokeObjectURL(objectUrl);
+    } else if (!form.posterRemoved && initialPosterUrl) {
+      setPosterPreviewUrl(initialPosterUrl);
+    } else {
+      setPosterPreviewUrl(null);
+    }
+  }, [form.file, form.posterRemoved, initialPosterUrl]);
+
   const displayedPosterName = useMemo(() => {
     if (form.file) return form.file.name;
     if (initialPosterName) return initialPosterName;
@@ -498,7 +603,8 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
   const detailPdfBadgeName = useMemo(() => {
     if (form.detailPdfFile) return form.detailPdfFile.name;
-    if (!form.detailPdfRemoved && initialDetailPdfName) return initialDetailPdfName;
+    if (!form.detailPdfRemoved && initialDetailPdfName)
+      return initialDetailPdfName;
     return undefined;
   }, [form.detailPdfFile, form.detailPdfRemoved, initialDetailPdfName]);
 
@@ -564,17 +670,25 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
         <div className={`${styles.ex_group} ${styles.ex_location}`}>
           <label className={styles.ex_label}>ประเภทกิจกรรม</label>
-          <select
-            className={styles.ex_input}
-            value={form.type}
-            onChange={(e) =>
-              update("type", e.target.value as UnitFormValues["type"])
+          <Select<UnitTypeOption>
+            classNamePrefix="unitTypeSelect"
+            options={unit_types}
+            value={unit_types.find((option) => option.value === form.type)}
+            onChange={(selectedOption) =>
+              update(
+                "type",
+                (selectedOption as UnitTypeOption)
+                  ?.value as UnitFormValues["type"]
+              )
             }
-            disabled={isSubmitting}
-          >
-            <option value="booth">บูธ</option>
-            <option value="activity">กิจกรรม</option>
-          </select>
+            isDisabled={isSubmitting}
+            placeholder="เลือกประเภทกิจกรรม"
+            styles={unitTypeSelectStyles}
+            menuPortalTarget={
+              typeof document !== "undefined" ? document.body : undefined
+            }
+            menuPosition="fixed"
+          />
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_date}`}>
@@ -616,7 +730,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
             noOptionsMessage={() => "ไม่พบผู้ใช้"}
             styles={staffSelectStyles}
             onChange={handleStaffChange}
-            menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+            menuPortalTarget={
+              typeof document !== "undefined" ? document.body : undefined
+            }
             menuPosition="fixed"
           />
           {isStaffLoading && (
@@ -632,20 +748,71 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_file}`}>
-          <label className={styles.ex_label} htmlFor="unit-poster-input">
-            อัปโหลดโปสเตอร์ (ถ้ามี)
-          </label>
+          <label className={styles.ex_label}>อัปโหลดโปสเตอร์ (ถ้ามี)</label>
           <input
             id="unit-poster-input"
-            className={styles.ex_input}
             type="file"
             accept="image/*"
+            ref={posterInputRef}
             onChange={(e) => update("file", e.target.files?.[0])}
             disabled={isSubmitting}
+            style={{ display: "none" }}
           />
-          <p className={styles.ex_fileName} aria-live="polite">
-            {displayedPosterName}
-          </p>
+          <div className={unitStyles.posterUploadContainer}>
+            <label
+              htmlFor="unit-poster-input"
+              className={unitStyles.posterUploadLabel}
+              data-submitting={isSubmitting}
+            >
+              {posterPreviewUrl ? (
+                <img
+                  src={posterPreviewUrl}
+                  alt="Poster preview"
+                  className={unitStyles.posterPreviewImage}
+                />
+              ) : (
+                <div className={unitStyles.posterPlaceholder}>
+                  <svg
+                    className={unitStyles.posterPlaceholderIcon}
+                    width="80"
+                    height="80"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                  <p className={unitStyles.posterPlaceholderText}>
+                    คลิกเพื่ออัปโหลดรูปภาพ
+                  </p>
+                </div>
+              )}
+            </label>
+            {posterPreviewUrl && canSubmit && (
+              <button
+                type="button"
+                onClick={handlePosterRemove}
+                disabled={isSubmitting}
+                className={unitStyles.posterRemoveButton}
+                aria-label="ลบโปสเตอร์"
+              >
+                &times;
+              </button>
+            )}
+          </div>
+          {displayedPosterName !== "ยังไม่ได้เลือกไฟล์" && posterPreviewUrl && (
+            <p
+              className={`${styles.ex_fileName} ${unitStyles.posterFileName}`}
+              aria-live="polite"
+            >
+              {displayedPosterName}
+            </p>
+          )}
         </div>
 
         <div className={`${styles.ex_group} ${styles.ex_file}`}>
@@ -663,8 +830,13 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
           />
           {detailPdfBadgeName ? (
             <div className={styles.ex_fileBadge} aria-live="polite">
-              <FaRegFilePdf className={styles.ex_fileBadgeIcon} aria-hidden="true" />
-              <span className={styles.ex_fileBadgeName}>{detailPdfBadgeName}</span>
+              <FaRegFilePdf
+                className={styles.ex_fileBadgeIcon}
+                aria-hidden="true"
+              />
+              <span className={styles.ex_fileBadgeName}>
+                {detailPdfBadgeName}
+              </span>
               {canSubmit ? (
                 <button
                   type="button"

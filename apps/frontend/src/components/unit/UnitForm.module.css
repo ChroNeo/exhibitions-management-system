@@ -1,0 +1,89 @@
+/* UnitForm.module.css */
+
+.posterUploadContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.posterUploadLabel {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 16 / 9;
+  border: 2px dashed #de6424;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  position: relative;
+}
+
+.posterUploadLabel:hover {
+  border-color: #c7571f;
+  background-color: #fff3ea;
+}
+
+.posterUploadLabel[data-submitting="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.posterPreviewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #fff;
+}
+
+.posterPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  padding: 20px;
+}
+
+.posterPlaceholderIcon {
+  margin-bottom: 12px;
+}
+
+.posterPlaceholderText {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.posterRemoveButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: #ef4444;
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s;
+}
+
+.posterRemoveButton:hover {
+  background-color: #dc2626;
+}
+
+.posterRemoveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.posterFileName {
+  margin-top: 8px;
+}

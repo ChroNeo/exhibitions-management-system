@@ -117,11 +117,12 @@ export default function UnitManageDetail({
         }`
       : undefined;
 
-  const { initialFormValues, initialPosterName, initialDetailPdfName } = useMemo(() => {
+  const { initialFormValues, initialPosterName, initialPosterUrl, initialDetailPdfName } = useMemo(() => {
     if (!data || mode === "create") {
       return {
         initialFormValues: undefined,
         initialPosterName: undefined,
+        initialPosterUrl: undefined,
         initialDetailPdfName: undefined,
       };
     }
@@ -162,8 +163,10 @@ export default function UnitManageDetail({
         file: undefined,
         detailPdfFile: undefined,
         detailPdfRemoved: false,
+        posterRemoved: false
       } satisfies UnitFormValues,
       initialPosterName: posterName,
+      initialPosterUrl: data.posterUrl,
       initialDetailPdfName: detailPdfName,
     };
   }, [data, mode]);
@@ -212,6 +215,9 @@ export default function UnitManageDetail({
 
     if (values.file) {
       payload.posterFile = values.file;
+    }
+    if (values.posterRemoved && !values.file) {
+      payload.poster_url = "";
     }
     if (values.detailPdfFile) {
       payload.detailPdfFile = values.detailPdfFile;
@@ -413,6 +419,7 @@ export default function UnitManageDetail({
                     unitId={unitId}
                     initialValues={initialFormValues}
                     initialPosterName={initialPosterName}
+                    initialPosterUrl={initialPosterUrl}
                     initialDetailPdfName={initialDetailPdfName}
                     onSubmit={handleEditSubmit}
                     isSubmitting={isSubmitting}
