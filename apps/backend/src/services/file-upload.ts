@@ -1,10 +1,11 @@
 import { createWriteStream } from "node:fs";
-import { mkdir } from "node:fs/promises";
+import { mkdir, unlink } from "node:fs/promises";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { Writable } from "node:stream";
 import type { MultipartFile, MultipartValue } from "@fastify/multipart";
-import type { FastifyRequest } from "fastify";
+import type { FastifyRequest, FastifyBaseLogger } from "fastify";
+import { fileURLToPath } from "node:url";
 
 export interface SaveMultipartFileOptions {
   /** Absolute directory where the file should be stored */
@@ -115,5 +116,39 @@ export async function collectMultipartFields(
 
 export function isFilePart(part: MultipartFile | MultipartValue): part is MultipartFile {
   return (part as MultipartFile).type === "file";
+}
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsRoot = path.resolve(__dirname, "../../uploads");
+
+/**
+ * Safely removes an uploaded file from the uploads directory
+ * @param publicPath - The public path of the file (e.g., "uploads/exhibitions/file.jpg")
+ * @param log - Optional Fastify logger for logging errors
+ */
+export async function removeUploadedFile(
+  publicPath: string | null | undefined,
+  log?: FastifyBaseLogger
+): Promise<void> {
+  if (!publicPath) return;
+  const normalized = publicPath.replace(/\\/g, "/").split("?")[0];
+  if (!normalized.startsWith("uploads/")) {
+    return;
+  }
+  const relative = normalized.slice("uploads/".length);
+  const absolute = path.resolve(uploadsRoot, relative);
+  if (!absolute.startsWith(uploadsRoot)) {
+    log?.warn({ path: normalized }, "Skip removing uploaded file outside uploads directory");
+    return;
+  }
+  try {
+    await unlink(absolute);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException | undefined)?.code;
+    if (code !== "ENOENT") {
+      log?.error({ err: error, path: normalized }, "Failed to remove uploaded file");
+    }
+  }
 }
 
