@@ -3,20 +3,32 @@ import type { Exhibition, ExhibitionApi } from "../types/exhibition";
 import { fmtDateRangeTH } from "../utils/date";
 import { toFileUrl } from "../utils/url";
 import { ensureQuillDeltaString, extractPlainTextDescription } from "../utils/text";
+import { loadAuth } from "../utils/authStorage";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
+
+// Helper function to get auth headers
+function getAuthHeaders(): HeadersInit {
+  const auth = loadAuth();
+  if (auth && auth.token) {
+    return {
+      Authorization: `${auth.tokenType} ${auth.token}`,
+    };
+  }
+  return {};
+}
 
 export type ExhibitionCreatePayload = {
   title: string;
   start_date: string;
   end_date: string;
   organizer_name: string;
-  created_by: number;
   description?: string;
   description_delta?: string;
   location?: string;
   status?: string;
   file?: File;
+  // created_by is now extracted from JWT token, not sent in payload
 };
 
 export type ExhibitionUpdatePayload = {
@@ -90,11 +102,12 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
     appendString("description", rest.description);
     appendString("description_delta", rest.description_delta);
     appendString("status", rest.status);
-    appendString("created_by", String(rest.created_by));
+    // created_by is extracted from JWT token on backend
     fd.append("picture_path", file);
 
     const res = await fetch(endpoint, {
       method: "POST",
+      headers: getAuthHeaders(),
       body: fd,
     });
 
@@ -108,7 +121,7 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
     start_date: rest.start_date,
     end_date: rest.end_date,
     organizer_name: rest.organizer_name,
-    created_by: rest.created_by,
+    // created_by is extracted from JWT token on backend
   };
 
   if (rest.location !== undefined) jsonPayload.location = rest.location;
@@ -120,7 +133,10 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
 
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
     body: JSON.stringify(jsonPayload),
   });
 
@@ -132,6 +148,7 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
 export async function deleteExhibition(id: string): Promise<void> {
   const res = await fetch(`${BASE}/exhibitions/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) throw new Error("ลบงานนิทรรศการไม่สำเร็จ");
@@ -162,6 +179,7 @@ export async function updateExhibitionApi(
 
     const res = await fetch(endpoint, {
       method: "PUT",
+      headers: getAuthHeaders(),
       body: fd,
     });
 
@@ -188,7 +206,10 @@ export async function updateExhibitionApi(
 
   const res = await fetch(endpoint, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
     body: JSON.stringify(jsonPayload),
   });
 
