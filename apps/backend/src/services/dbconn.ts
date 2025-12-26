@@ -12,6 +12,7 @@ export const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  dateStrings: true, // Return dates as strings instead of Date objects
 });
 
 export async function safeQuery<T = any>(
