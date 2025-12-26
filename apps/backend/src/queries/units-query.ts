@@ -1,10 +1,11 @@
 import type { ResultSetHeader } from "mysql2";
 import { AppError } from "../errors.js";
-import type { AddUnitPayload, UnitRowBase, UnitRowWithStaff, UnitStaffRow, UpdateUnitPayload } from "../models/unit_model.js";
+import type { AddUnitPayload, UnitRowBase, UnitRowWithStaff, UnitStaffRow, UpdateUnitPayload } from "../models/unit.model.js";
 import { safeQuery } from "../services/dbconn.js";
 
 const UNIT_FIELDS = `
     u.unit_id,
+    u.unit_code,
     u.exhibition_id,
     u.unit_name,
     u.unit_type,

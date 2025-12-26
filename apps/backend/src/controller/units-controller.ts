@@ -14,6 +14,7 @@ import {
 import { z } from "zod";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { CreateUnitSchema, UpdateUnitSchema, UnitSchema } from "../models/unit.model.js";
+import { requireOrganizerAuth } from "../services/auth-middleware.js";
 
 export default async function unitsController(fastify: FastifyInstance) {
   await fastify.register(
@@ -62,6 +63,7 @@ export default async function unitsController(fastify: FastifyInstance) {
       app.post(
         "/units",
         {
+          preHandler: requireOrganizerAuth,
           schema: {
             tags: ["Units"],
             summary: "Create unit",
@@ -74,16 +76,12 @@ export default async function unitsController(fastify: FastifyInstance) {
             },
           },
         },
-        async (
-          req: FastifyRequest<{
-            Params: { ex_id: string };
-            Body: unknown;
-          }>,
-          reply: FastifyReply
-        ) => {
+        async (req: FastifyRequest, reply: FastifyReply) => {
+          const { ex_id } = req.params as { ex_id: string };
+
           const payload = req.isMultipart()
-            ? await parseMultipartPayload(req)
-            : buildCreatePayload(req.params.ex_id, req.body);
+            ? await parseMultipartPayload(req as FastifyRequest<{ Params: { ex_id: string } }>)
+            : buildCreatePayload(ex_id, req.body);
 
           const unit = await addUnit(payload);
           reply.code(201);
@@ -94,6 +92,7 @@ export default async function unitsController(fastify: FastifyInstance) {
       app.put(
         "/units/:id",
         {
+          preHandler: requireOrganizerAuth,
           schema: {
             tags: ["Units"],
             summary: "Update unit",
@@ -107,23 +106,17 @@ export default async function unitsController(fastify: FastifyInstance) {
             },
           },
         },
-        async (
-          req: FastifyRequest<{
-            Params: { ex_id: string; id: string };
-            Body: unknown;
-          }>,
-          reply: FastifyReply
-        ) => {
-          const { ex_id, id } = req.params;
+        async (req: FastifyRequest, reply: FastifyReply) => {
+          const { ex_id, id } = req.params as { ex_id: string; id: string };
           const [existingUnit] = await getUnitsById(ex_id, id);
           const previousPdfPath = existingUnit?.detail_pdf_url ?? null;
           const previousPosterPath = existingUnit?.poster_url ?? null;
 
           const payload = req.isMultipart()
-            ? await parseMultipartUpdatePayload(req)
+            ? await parseMultipartUpdatePayload(req as FastifyRequest<{ Params: { ex_id: string; id: string } }>)
             : buildUpdatePayload(req.body);
 
-          const unit = await updateUnit(req.params.ex_id, req.params.id, payload);
+          const unit = await updateUnit(ex_id, id, payload);
           if (previousPdfPath && previousPdfPath !== unit.detail_pdf_url) {
             await removeUploadedFile(previousPdfPath, req.log);
           }
@@ -138,6 +131,7 @@ export default async function unitsController(fastify: FastifyInstance) {
       app.delete(
         "/units/:id",
         {
+          preHandler: requireOrganizerAuth,
           schema: {
             tags: ["Units"],
             summary: "Delete unit",
@@ -150,8 +144,8 @@ export default async function unitsController(fastify: FastifyInstance) {
             },
           },
         },
-        async (req: FastifyRequest<{ Params: { ex_id: string; id: string } }>, reply: FastifyReply) => {
-          const { ex_id, id } = req.params;
+        async (req: FastifyRequest, reply: FastifyReply) => {
+          const { ex_id, id } = req.params as { ex_id: string; id: string };
           const [existingUnit] = await getUnitsById(ex_id, id);
           await deleteUnit(ex_id, id);
           await Promise.all([
