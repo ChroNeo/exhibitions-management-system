@@ -1,13 +1,8 @@
 import type { ResultSetHeader } from "mysql2";
 import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
+import { CreateOrganizerUserInput, OrganizerLoginRow } from "../models/auth_model.js";
 
-export type OrganizerLoginRow = {
-  user_id: number;
-  username: string;
-  email: string | null;
-  role: string;
-};
 
 export async function authenticateOrganizerUser(
   username: string,
@@ -28,14 +23,6 @@ export async function authenticateOrganizerUser(
 
   return rows[0];
 }
-
-type CreateOrganizerUserInput = {
-  username: string;
-  password: string;
-  email: string | null;
-  role: "admin" | "organizer";
-};
-
 export async function createOrganizerUser(
   input: CreateOrganizerUserInput
 ): Promise<OrganizerLoginRow> {
@@ -61,6 +48,5 @@ export async function createOrganizerUser(
   if (!rows.length) {
     throw new AppError("failed to load user", 500, "DB_ERROR");
   }
-
   return rows[0];
 }

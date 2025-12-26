@@ -64,8 +64,8 @@ export async function addExhibitions(payload: AddExhibitionPayload): Promise<any
 
   const result = await safeQuery<ResultSetHeader>(
     `INSERT INTO exhibitions
-      (title, description, description_delta, start_date, end_date, location, organizer_name, picture_path, status, created_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (exhibition_code, title, description, description_delta, start_date, end_date, location, organizer_name, picture_path, status, created_by, updated_by)
+     VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
     [
       payload.title,
       payload.description || null,

@@ -31,3 +31,29 @@ export type UpdateUnitPayload = Partial<{
   starts_at: string | null;
   ends_at: string | null;
 }>;
+
+export type UnitRowBase = {
+  unit_id: number;
+  exhibition_id: number;
+  unit_name: string;
+  unit_type: string;
+  description: string | null;
+  description_delta: string | null;
+  poster_url: string | null;
+  detail_pdf_url: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+};
+
+export type UnitRowWithStaff = UnitRowBase & {
+  staff_user_id: number | null;
+  staff_name: string | null;
+  staff_user_ids: number[];
+  staff_names: string[];
+};
+
+export type UnitStaffRow = {
+  unit_id: number;
+  staff_user_id: number;
+  full_name: string | null;
+};

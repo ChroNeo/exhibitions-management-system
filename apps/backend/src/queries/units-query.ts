@@ -1,33 +1,7 @@
 import type { ResultSetHeader } from "mysql2";
 import { AppError } from "../errors.js";
-import type { AddUnitPayload, UpdateUnitPayload } from "../models/unit_model.js";
+import type { AddUnitPayload, UnitRowBase, UnitRowWithStaff, UnitStaffRow, UpdateUnitPayload } from "../models/unit_model.js";
 import { safeQuery } from "../services/dbconn.js";
-
-type UnitRowBase = {
-  unit_id: number;
-  exhibition_id: number;
-  unit_name: string;
-  unit_type: string;
-  description: string | null;
-  description_delta: string | null;
-  poster_url: string | null;
-  detail_pdf_url: string | null;
-  starts_at: string | null;
-  ends_at: string | null;
-};
-
-type UnitRowWithStaff = UnitRowBase & {
-  staff_user_id: number | null;
-  staff_name: string | null;
-  staff_user_ids: number[];
-  staff_names: string[];
-};
-
-type UnitStaffRow = {
-  unit_id: number;
-  staff_user_id: number;
-  full_name: string | null;
-};
 
 const UNIT_FIELDS = `
     u.unit_id,
