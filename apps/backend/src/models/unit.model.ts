@@ -79,7 +79,7 @@ export type UnitRowBase = {
   unit_code: string | null;
   exhibition_id: number;
   unit_name: string;
-  unit_type: string;
+  unit_type: UnitType;
   description: string | null;
   description_delta: any | null; // JSON field
   poster_url: string | null;

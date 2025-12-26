@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
 import { AppError } from "../errors.js";
 import {
   authenticateOrganizerUser,
@@ -14,7 +15,7 @@ import {
   RegisterSchema,
   SignInResponseSchema,
   UserResponseSchema,
-} from "../models/auth_model.js";
+} from "../models/auth.model.js";
 
 export default async function authController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -115,9 +116,7 @@ export default async function authController(fastify: FastifyInstance) {
         tags: ["Auth"],
         summary: "Organizer logout",
         response: {
-          204: {
-            description: "Signed out",
-          },
+          204: z.null().describe("Signed out"),
         },
       },
     },

@@ -1,7 +1,7 @@
 import type { ResultSetHeader } from "mysql2";
 import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
-import { CreateOrganizerUserInput, OrganizerLoginRow } from "../models/auth_model.js";
+import { CreateOrganizerUserInput, OrganizerLoginRow } from "../models/auth.model.js";
 
 
 export async function authenticateOrganizerUser(
