@@ -1,8 +1,20 @@
 import type { Unit, UnitApi, UnitCreatePayload, UnitUpdatePayload } from "../types/units";
 import { toFileUrl } from "../utils/url";
 import { ensureQuillDeltaString, extractPlainTextDescription } from "../utils/text";
+import { loadAuth } from "../utils/authStorage";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
+
+// Helper function to get auth headers
+function getAuthHeaders(): HeadersInit {
+  const auth = loadAuth();
+  if (auth && auth.token) {
+    return {
+      Authorization: `${auth.tokenType} ${auth.token}`,
+    };
+  }
+  return {};
+}
 
 function mapToUnit(x: UnitApi): Unit {
   const type = x.unit_type === "booth" || x.unit_type === "activity" ? x.unit_type : "activity";
@@ -111,6 +123,7 @@ export async function createUnit(
 
     const res = await fetch(`${BASE}/exhibitions/${id}/units`, {
       method: "POST",
+      headers: getAuthHeaders(),
       body: fd,
     });
 
@@ -134,7 +147,10 @@ export async function createUnit(
 
   const res = await fetch(`${BASE}/exhibitions/${id}/units`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
     body: JSON.stringify(jsonPayload),
   });
 
@@ -179,6 +195,7 @@ export async function updateUnit(
 
     const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`, {
       method: "PUT",
+      headers: getAuthHeaders(),
       body: fd,
     });
 
@@ -204,7 +221,10 @@ export async function updateUnit(
 
   const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
     body: JSON.stringify(jsonPayload),
   });
 
@@ -218,6 +238,7 @@ export async function deleteUnit(exhibitionId: string | number, unitId: string |
   const uId = encodeURIComponent(String(unitId));
   const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) throw new Error("ลบกิจกรรมไม่สำเร็จ");
