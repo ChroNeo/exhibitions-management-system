@@ -1,38 +1,25 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import { getListUsers, type UserRoleFilter } from "../queries/users-query.js";
-
-type ListUsersQuery = {
-  role?: UserRoleFilter;
-};
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
+import { getListUsers } from "../queries/users-query.js";
+import {
+  UserDropdownOptionSchema,
+  ListUsersQuerySchema,
+  type ListUsersQuery,
+} from "../models/user.model.js";
 
 export default async function userController(fastify: FastifyInstance) {
-  fastify.get(
+  const app = fastify.withTypeProvider<ZodTypeProvider>();
+
+  app.get(
     "/",
     {
       schema: {
         tags: ["Users"],
         summary: "List users for dropdown selections",
-        querystring: {
-          type: "object",
-          properties: {
-            role: {
-              type: "string",
-              enum: ["staff", "user"],
-              description: "Filter by user role",
-            },
-          },
-        },
+        querystring: ListUsersQuerySchema,
         response: {
-          200: {
-            type: "array",
-            items: { $ref: "UserDropdownOption#" },
-            example: [
-              {
-                value: 1,
-                label: "Alice Example",
-              },
-            ],
-          },
+          200: z.array(UserDropdownOptionSchema),
         },
       },
     },
@@ -40,7 +27,7 @@ export default async function userController(fastify: FastifyInstance) {
       const users = await getListUsers(req.query.role);
       return users.map((user) => ({
         value: user.user_id,
-        label: user.full_name,
+        label: user.full_name || `User ${user.user_id}`,
       }));
     }
   );
