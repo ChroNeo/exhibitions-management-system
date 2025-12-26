@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { FastifyRequest } from "fastify";
 import { AppError } from "../errors.js";
-import { UNIT_TYPES, type AddUnitPayload, type UnitType, type UpdateUnitPayload } from "../models/unit_model.js";
+import { UNIT_TYPES, type AddUnitPayload, type UnitType, type UpdateUnitPayload } from "../models/unit.model.js";
 import { collectMultipartFields } from "./file-upload.js";
 import { parseJsonField, parseStaffIds } from "../utils/validation.js";
 

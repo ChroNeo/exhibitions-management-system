@@ -3,20 +3,24 @@ import type {
   FastifyReply,
   FastifyRequest,
 } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { AppError } from "../errors.js";
 import { getLineConfig } from "../services/line/config.js";
 import { verifyLineSignature } from "../services/line/security.js";
-import { dispatchLineEvent, type LineEvent } from "../services/line/dispatcher.js";
+import { dispatchLineEvent } from "../services/line/dispatcher.js";
+import {
+  LineWebhookPayloadSchema,
+  LineWebhookResponseSchema,
+  type LineWebhookPayload,
+} from "../models/line.model.js";
 
 type RawBodyRequest = FastifyRequest & {
   rawBody?: string | Buffer;
 };
 
-type LineWebhookPayload = {
-  events?: LineEvent[];
-};
+export default async function lineController(fastify: FastifyInstance) {
+  const app = fastify.withTypeProvider<ZodTypeProvider>();
 
-export default async function lineController(app: FastifyInstance) {
   app.post(
     "/webhook",
     {
@@ -27,6 +31,10 @@ export default async function lineController(app: FastifyInstance) {
         tags: ["LINE"],
         summary: "LINE webhook endpoint",
         description: "Receives events from LINE Messaging API",
+        body: LineWebhookPayloadSchema,
+        response: {
+          200: LineWebhookResponseSchema,
+        },
         hide: true,
       },
     },

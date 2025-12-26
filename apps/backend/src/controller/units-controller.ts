@@ -11,43 +11,27 @@ import {
   parseMultipartUpdatePayload,
   buildUpdatePayload,
 } from "../services/units-payload-builder.js";
+import { z } from "zod";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { CreateUnitSchema, UpdateUnitSchema, UnitSchema } from "../models/unit.model.js";
+import { requireOrganizerAuth } from "../services/auth-middleware.js";
+
 export default async function unitsController(fastify: FastifyInstance) {
   await fastify.register(
     async (fastify) => {
-      fastify.get(
+      const app = fastify.withTypeProvider<ZodTypeProvider>();
+
+      app.get(
         "/units",
         {
           schema: {
             tags: ["Units"],
             summary: "List units by exhibition",
-            params: {
-              type: "object",
-              required: ["ex_id"],
-              properties: {
-                ex_id: { type: "integer", minimum: 1, example: 42 },
-              },
-            },
+            params: z.object({
+              ex_id: z.string().regex(/^\d+$/),
+            }),
             response: {
-              200: {
-                type: "array",
-                items: { $ref: "Unit#" },
-                example: [
-                  {
-                    unit_id: 105,
-                    exhibition_id: 42,
-                    unit_name: "AI Playground",
-                    unit_type: "booth",
-                    description: "Interactive demos of AI gadgets.",
-                    staff_user_id: 13,
-                    staff_name: "คุณสมชาย",
-                    staff_user_ids: [13, 21],
-                    staff_names: ["คุณสมชาย", "คุณสายฝน"],
-                    poster_url: "uploads/units/ai-playground.png",
-                    starts_at: "2024-05-01T10:00:00Z",
-                    ends_at: "2024-05-01T18:00:00Z",
-                  },
-                ],
-              },
+              200: z.array(UnitSchema),
             },
           },
         },
@@ -56,41 +40,18 @@ export default async function unitsController(fastify: FastifyInstance) {
         }
       );
 
-      fastify.get(
+      app.get(
         "/units/:id",
         {
           schema: {
             tags: ["Units"],
             summary: "Get unit",
-            params: {
-              type: "object",
-              required: ["ex_id", "id"],
-              properties: {
-                ex_id: { type: "integer", minimum: 1, example: 42 },
-                id: { type: "integer", minimum: 1, example: 105 },
-              },
-            },
+            params: z.object({
+              ex_id: z.string().regex(/^\d+$/),
+              id: z.string().regex(/^\d+$/),
+            }),
             response: {
-              200: {
-                type: "array",
-                items: { $ref: "Unit#" },
-                example: [
-                  {
-                    unit_id: 105,
-                    exhibition_id: 42,
-                    unit_name: "AI Playground",
-                    unit_type: "booth",
-                    description: "Interactive demos of AI gadgets.",
-                    staff_user_id: 13,
-                    staff_name: "คุณสมชาย",
-                    staff_user_ids: [13, 21],
-                    staff_names: ["คุณสมชาย", "คุณสายฝน"],
-                    poster_url: "uploads/units/ai-playground.png",
-                    starts_at: "2024-05-01T10:00:00Z",
-                    ends_at: "2024-05-01T18:00:00Z",
-                  },
-                ],
-              },
+              200: z.array(UnitSchema),
             },
           },
         },
@@ -99,41 +60,28 @@ export default async function unitsController(fastify: FastifyInstance) {
         }
       );
 
-      fastify.post(
+      app.post(
         "/units",
         {
-          attachValidation: true,
+          preHandler: requireOrganizerAuth,
           schema: {
             tags: ["Units"],
             summary: "Create unit",
-            params: {
-              type: "object",
-              required: ["ex_id"],
-              properties: {
-                ex_id: { type: "integer", minimum: 1, example: 42 },
-              },
-            },
-            body: { $ref: "CreateUnitInput#" },
+            params: z.object({
+              ex_id: z.string().regex(/^\d+$/),
+            }),
+            body: z.union([CreateUnitSchema, z.any()]),
             response: {
-              201: {
-                $ref: "Unit#",
-              },
+              201: UnitSchema,
             },
           },
         },
-        async (
-          req: FastifyRequest<{
-            Params: { ex_id: string };
-            Body: unknown;
-          }>,
-          reply: FastifyReply
-        ) => {
-          if (req.validationError && !req.isMultipart()) {
-            throw req.validationError;
-          }
+        async (req: FastifyRequest, reply: FastifyReply) => {
+          const { ex_id } = req.params as { ex_id: string };
+
           const payload = req.isMultipart()
-            ? await parseMultipartPayload(req)
-            : buildCreatePayload(req.params.ex_id, req.body);
+            ? await parseMultipartPayload(req as FastifyRequest<{ Params: { ex_id: string } }>)
+            : buildCreatePayload(ex_id, req.body);
 
           const unit = await addUnit(payload);
           reply.code(201);
@@ -141,50 +89,34 @@ export default async function unitsController(fastify: FastifyInstance) {
         }
       );
 
-      fastify.put(
+      app.put(
         "/units/:id",
         {
-          attachValidation: true,
+          preHandler: requireOrganizerAuth,
           schema: {
             tags: ["Units"],
             summary: "Update unit",
-            params: {
-              type: "object",
-              required: ["ex_id", "id"],
-              properties: {
-                ex_id: { type: "integer", minimum: 1, example: 42 },
-                id: { type: "integer", minimum: 1, example: 105 },
-              },
-            },
-            body: { $ref: "UpdateUnitInput#" },
+            params: z.object({
+              ex_id: z.string().regex(/^\d+$/),
+              id: z.string().regex(/^\d+$/),
+            }),
+            body: z.union([UpdateUnitSchema, z.any()]),
             response: {
-              200: {
-                $ref: "Unit#",
-              },
+              200: UnitSchema,
             },
           },
         },
-        async (
-          req: FastifyRequest<{
-            Params: { ex_id: string; id: string };
-            Body: unknown;
-          }>,
-          reply: FastifyReply
-        ) => {
-          if (req.validationError && !req.isMultipart()) {
-            throw req.validationError;
-          }
-
-          const { ex_id, id } = req.params;
+        async (req: FastifyRequest, reply: FastifyReply) => {
+          const { ex_id, id } = req.params as { ex_id: string; id: string };
           const [existingUnit] = await getUnitsById(ex_id, id);
           const previousPdfPath = existingUnit?.detail_pdf_url ?? null;
           const previousPosterPath = existingUnit?.poster_url ?? null;
 
           const payload = req.isMultipart()
-            ? await parseMultipartUpdatePayload(req)
+            ? await parseMultipartUpdatePayload(req as FastifyRequest<{ Params: { ex_id: string; id: string } }>)
             : buildUpdatePayload(req.body);
 
-          const unit = await updateUnit(req.params.ex_id, req.params.id, payload);
+          const unit = await updateUnit(ex_id, id, payload);
           if (previousPdfPath && previousPdfPath !== unit.detail_pdf_url) {
             await removeUploadedFile(previousPdfPath, req.log);
           }
@@ -196,37 +128,31 @@ export default async function unitsController(fastify: FastifyInstance) {
         }
       );
 
-      fastify.delete(
+      app.delete(
         "/units/:id",
         {
+          preHandler: requireOrganizerAuth,
           schema: {
             tags: ["Units"],
             summary: "Delete unit",
-            params: {
-              type: "object",
-              required: ["ex_id", "id"],
-              properties: {
-                ex_id: { type: "integer", minimum: 1, example: 42 },
-                id: { type: "integer", minimum: 1, example: 105 },
-              },
-            },
+            params: z.object({
+              ex_id: z.string().regex(/^\d+$/),
+              id: z.string().regex(/^\d+$/),
+            }),
             response: {
-              204: {
-                type: "null",
-                description: "Unit deleted",
-              },
+              204: z.null().describe("Unit deleted"),
             },
           },
         },
-        async (req: FastifyRequest<{ Params: { ex_id: string; id: string } }>, reply: FastifyReply) => {
-          const { ex_id, id } = req.params;
+        async (req: FastifyRequest, reply: FastifyReply) => {
+          const { ex_id, id } = req.params as { ex_id: string; id: string };
           const [existingUnit] = await getUnitsById(ex_id, id);
           await deleteUnit(ex_id, id);
           await Promise.all([
             removeUploadedFile(existingUnit?.poster_url ?? null, req.log),
             removeUploadedFile(existingUnit?.detail_pdf_url ?? null, req.log),
           ]);
-          reply.code(204);
+          reply.code(204).send();
         }
       );
     },

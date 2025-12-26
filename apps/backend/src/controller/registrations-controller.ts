@@ -1,80 +1,46 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { AppError } from "../errors.js";
 import {
   registerForExhibition,
   type RegistrationPayload,
-  type RegistrationRole,
 } from "../queries/registrations-query.js";
-
-type RegistrationBody = RegistrationPayload;
-
-const normaliseString = (value: string | undefined | null) => {
-  if (value === undefined || value === null) {
-    return undefined;
-  }
-  const trimmed = String(value).trim();
-  return trimmed.length ? trimmed : undefined;
-};
+import {
+  RegistrationInputSchema,
+  RegistrationResponseSchema,
+  type RegistrationInput,
+} from "../models/registration.model.js";
 
 export default async function registrationsController(fastify: FastifyInstance) {
-  fastify.post(
+  const app = fastify.withTypeProvider<ZodTypeProvider>();
+
+  app.post(
     "/",
     {
       schema: {
         tags: ["Registrations"],
         summary: "Register a visitor or staff member for an exhibition",
-        body: { $ref: "RegistrationInput#" },
+        body: RegistrationInputSchema,
         response: {
-          201: { $ref: "RegistrationResponse#" },
+          201: RegistrationResponseSchema,
         },
       },
     },
-    async (req: FastifyRequest<{ Body: RegistrationBody }>, reply: FastifyReply) => {
+    async (req: FastifyRequest<{ Body: RegistrationInput }>, reply: FastifyReply) => {
       try {
         const body = req.body;
-        const required: Array<keyof RegistrationBody> = [
-          "exhibition_id",
-          "full_name",
-          "email",
-          "role",
-        ];
 
-        for (const field of required) {
-          if (body[field] === undefined || body[field] === null) {
-            throw new AppError("missing required fields", 400, "VALIDATION_ERROR");
-          }
-        }
-
-        const exhibitionId = Number(body.exhibition_id);
-        if (!Number.isInteger(exhibitionId) || exhibitionId <= 0) {
-          throw new AppError("invalid exhibition_id", 400, "VALIDATION_ERROR");
-        }
-
-        const fullName = normaliseString(body.full_name);
-        const email = normaliseString(body.email);
-        const unitCode = normaliseString(body.unit_code);
-        const phone = normaliseString(body.phone);
-        const lineUserId = normaliseString(body.line_user_id);
-
-        if (!fullName || !email) {
-          throw new AppError("missing required fields", 400, "VALIDATION_ERROR");
-        }
-
-        const role = body.role as RegistrationRole;
-        if (role === "staff" && !unitCode) {
-          throw new AppError("unit_code required for staff", 400, "VALIDATION_ERROR");
-        }
-
+        // Zod has already validated the input, so we can directly build the payload
         const payload: RegistrationPayload = {
-          exhibition_id: exhibitionId,
-          full_name: fullName,
+          exhibition_id: body.exhibition_id,
+          full_name: body.full_name,
           gender: body.gender,
-          birthdate: normaliseString(body.birthdate),
-          email,
-          phone,
-          role,
-          unit_code: unitCode,
-          line_user_id: lineUserId,
+          birthdate: body.birthdate,
+          email: body.email,
+          phone: body.phone,
+          role: body.role,
+          unit_code: body.unit_code,
+          line_user_id: body.line_user_id,
         };
 
         const result = await registerForExhibition(payload);

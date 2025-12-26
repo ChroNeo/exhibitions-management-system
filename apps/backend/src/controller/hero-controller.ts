@@ -1,15 +1,28 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { getFeature } from "../queries/feature-query.js";
+import {
+  FeatureQuerySchema,
+  FeatureResponseSchema,
+  type FeatureQuery,
+} from "../models/feature.model.js";
 
-type FeatureRequestQuery = {
-  limit?: string;
-  status?: string;
-};
+export default async function heroController(fastify: FastifyInstance) {
+  const app = fastify.withTypeProvider<ZodTypeProvider>();
 
-export default function heroController(app: FastifyInstance) {
   app.get(
     "/",
-    async (req: FastifyRequest<{ Querystring: FeatureRequestQuery }>) => {
+    {
+      schema: {
+        tags: ["Hero"],
+        summary: "Get featured exhibitions and banners for hero section",
+        querystring: FeatureQuerySchema,
+        response: {
+          200: FeatureResponseSchema,
+        },
+      },
+    },
+    async (req: FastifyRequest<{ Querystring: FeatureQuery }>) => {
       const { limit, status } = req.query ?? {};
       return await getFeature({ limit, status });
     }

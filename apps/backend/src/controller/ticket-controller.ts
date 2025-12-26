@@ -1,4 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { AppError } from "../errors.js";
 import {
@@ -7,22 +9,28 @@ import {
   verifyAndCheckIn,
 } from "../queries/ticket-query.js";
 import { verifyLiffIdToken } from "../services/line/security.js";
+import {
+  AuthHeaderSchema,
+  UserTicketSchema,
+  GetQrTokenQuerySchema,
+  QrTokenResponseSchema,
+  VerifyTicketBodySchema,
+  CheckInResultSchema,
+  type GetQrTokenQuery,
+  type VerifyTicketBody,
+} from "../models/ticket.model.js";
 
-type GetQrTokenQuery = {
-  exhibition_id: string;
-};
 export default async function ticketController(fastify: FastifyInstance) {
-  fastify.get("/", {
+  const app = fastify.withTypeProvider<ZodTypeProvider>();
+
+  app.get("/", {
     schema: {
       tags: ["Tickets"],
       summary: "Get all registered exhibitions for the user",
-      headers: {
-        type: "object",
-        required: ["Authorization"],
-        properties: {
-          Authorization: { type: "string", description: "LIFF ID Token" }
-        }
-      }
+      headers: AuthHeaderSchema,
+      response: {
+        200: z.array(UserTicketSchema),
+      },
     }
   },
     async (req: FastifyRequest, reply: FastifyReply) => {
@@ -54,29 +62,16 @@ export default async function ticketController(fastify: FastifyInstance) {
   );
 
   // Generate QR token for authenticated user
-  fastify.get(
+  app.get(
     "/qr-token",
     {
       schema: {
         tags: ["Tickets"],
         summary: "Generate QR token for a specific exhibition",
-        querystring: {
-          type: "object",
-          required: ["exhibition_id"],
-          properties: {
-            exhibition_id: { type: "string", pattern: "^[0-9]+$" }
-          }
-        },
-        headers: {
-          type: "object",
-          properties: {
-            Authorization: {
-              type: "string",
-              description: "Bearer token (LINE LIFF ID token from liff.getIDToken())",
-              example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            },
-          },
-          required: ["Authorization"],
+        querystring: GetQrTokenQuerySchema,
+        headers: AuthHeaderSchema,
+        response: {
+          200: QrTokenResponseSchema,
         },
       },
     },
@@ -156,33 +151,21 @@ export default async function ticketController(fastify: FastifyInstance) {
     }
   );
 
-  fastify.post(
+  app.post(
     "/verify",
     {
       schema: {
         tags: ["Tickets"],
         summary: "Staff verify ticket and record check-in",
-        headers: {
-          type: "object",
-          required: ["Authorization"],
-          properties: {
-            Authorization: {
-              type: "string",
-              description: "Bearer token (LINE LIFF ID token for staff)",
-              example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            },
-          },
+        headers: AuthHeaderSchema,
+        body: VerifyTicketBodySchema,
+        response: {
+          200: CheckInResultSchema,
+          409: CheckInResultSchema,
         },
-        body: {
-          type: "object",
-          required: ["token"],
-          properties: {
-            token: { type: "string", description: "QR JWT Token of Visitor" },
-          }
-        }
       }
     },
-    async (req: FastifyRequest<{ Body: { token: string} }>, reply) => {
+    async (req: FastifyRequest<{ Body: VerifyTicketBody }>, reply) => {
       try {
         // Step 1: Get and verify staff authorization
         const authHeader = req.headers.authorization;

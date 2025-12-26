@@ -7,7 +7,7 @@ import {
   type AddExhibitionPayload,
   type UpdateExhibitionPayload,
   type ExhibitionStatus,
-} from "../models/exhibition_model.js";
+} from "../models/exhibition.model.js";
 import { collectMultipartFields } from "./file-upload.js";
 import { parseJsonField } from "../utils/validation.js";
 
@@ -49,14 +49,7 @@ export async function parseMultipartPayload(
     : buildUpdatePayload(fields);
 }
 
-export function normaliseCreatePayload(fields: Record<string, string>): AddExhibitionPayload {
-  const createdByRaw = fields.created_by;
-  const createdBy = Number(createdByRaw);
-
-  if (!Number.isInteger(createdBy)) {
-    throw new AppError("created_by must be an integer", 400, "VALIDATION_ERROR");
-  }
-
+export function normaliseCreatePayload(fields: Record<string, string>): Omit<AddExhibitionPayload, "created_by"> {
   const rawStatus = fields.status?.toLowerCase();
   const status = rawStatus as AddExhibitionPayload["status"] | undefined;
   if (status && !EXHIBITION_STATUSES.includes(status)) {
@@ -66,7 +59,7 @@ export function normaliseCreatePayload(fields: Record<string, string>): AddExhib
   const requiredFields: Array<
     keyof Omit<
       AddExhibitionPayload,
-      "description" | "description_delta" | "location" | "picture_path" | "status"
+      "description" | "description_delta" | "location" | "picture_path" | "status" | "created_by"
     >
   > = [
     "title",
@@ -93,7 +86,6 @@ export function normaliseCreatePayload(fields: Record<string, string>): AddExhib
     organizer_name: fields.organizer_name ?? "",
     picture_path: fields.picture_path || undefined,
     status,
-    created_by: createdBy,
   };
 }
 

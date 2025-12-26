@@ -180,7 +180,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
 
         const res = await createExh({
           ...basePayload,
-          created_by: authUser.user_id,
+          // created_by is now extracted from JWT token on backend
           ...(file ? { file } : {}),
         });
         await Swal.fire({
