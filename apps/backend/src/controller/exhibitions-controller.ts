@@ -5,7 +5,7 @@ import {
   updateExhibition,
   deleteExhibition,
 } from "../queries/exhibitions_query.js";
-import type { AddExhibitionPayload } from "../models/exhibition_model.js";
+import type { AddExhibitionPayload } from "../models/exhibition.model.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { FastifyInstance } from "fastify";
 import { AppError } from "../errors.js";

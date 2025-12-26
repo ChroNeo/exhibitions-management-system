@@ -7,7 +7,7 @@ import {
   type AddExhibitionPayload,
   type UpdateExhibitionPayload,
   type ExhibitionStatus,
-} from "../models/exhibition_model.js";
+} from "../models/exhibition.model.js";
 import { collectMultipartFields } from "./file-upload.js";
 import { parseJsonField } from "../utils/validation.js";
 

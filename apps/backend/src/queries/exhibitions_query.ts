@@ -3,8 +3,8 @@ import type {
   AddExhibitionPayload,
   UpdateExhibitionPayload,
   ExhibitionStatus,
-} from "../models/exhibition_model.js";
-import { EXHIBITION_STATUSES } from "../models/exhibition_model.js";
+} from "../models/exhibition.model.js";
+import { EXHIBITION_STATUSES } from "../models/exhibition.model.js";
 import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
 
