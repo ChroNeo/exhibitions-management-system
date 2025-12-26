@@ -85,8 +85,10 @@ await app.register(swagger, {
       { name: "Exhibitions", description: "Manage exhibitions lifecycle and metadata." },
       { name: "Units", description: "Manage exhibition units and activities." },
       { name: "Users", description: "Manage system users and assignments." },
+      { name: "Hero", description: "Featured exhibitions and banners for homepage." },
       { name: "Registrations", description: "Register visitors and staff to exhibitions." },
       { name: "Tickets", description: "Manage exhibition tickets and redemption." },
+      { name: "LINE", description: "LINE Messaging API webhook integration." },
     ],
   },
   // 4. สำคัญมาก! ต้องใส่บรรทัดนี้เพื่อให้ Swagger อ่าน Zod Schema ออก
@@ -146,11 +148,11 @@ app.get(
 app.register(exhibitionsController, { prefix: "/api/v1/exhibitions" });
 app.register(unitsController, { prefix: "/api/v1/exhibitions" });
 app.register(authController, { prefix: "/api/v1/auth" });
-// app.register(userController, { prefix: "/api/v1/users" });
-// app.register(heroController, { prefix: "/api/v1/feature" });
-// app.register(registrationsController, { prefix: "/api/v1/registrations" });
-// app.register(lineController, { prefix: "/line" });
-// app.register(ticketController, { prefix: "/api/v1/ticket" });
+app.register(userController, { prefix: "/api/v1/users" });
+app.register(heroController, { prefix: "/api/v1/feature" });
+app.register(registrationsController, { prefix: "/api/v1/registrations" });
+app.register(lineController, { prefix: "/line" });
+app.register(ticketController, { prefix: "/api/v1/ticket" });
 
 // Start Server
 const port = Number(process.env.PORT || 3001);
