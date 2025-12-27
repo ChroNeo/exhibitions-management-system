@@ -30,23 +30,26 @@ export const SignInResponseSchema = z.object({
   user: UserResponseSchema,
 });
 
+// Schema for database row (organizer login)
+export const OrganizerLoginRowSchema = z.object({
+  user_id: z.number(),
+  username: z.string(),
+  email: z.string().nullable(),
+  role: z.string(),
+});
+
+// Schema for creating organizer user
+export const CreateOrganizerUserInputSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+  email: z.string().nullable(),
+  role: z.enum(["admin", "organizer"]),
+});
+
 // Type exports (inferred from Zod schemas)
 export type SignInBody = z.infer<typeof SignInSchema>;
 export type RegisterBody = z.infer<typeof RegisterSchema>;
 export type SignInResponse = z.infer<typeof SignInResponseSchema>;
 export type UserResponse = z.infer<typeof UserResponseSchema>;
-
-// Legacy types for database operations
-export type OrganizerLoginRow = {
-  user_id: number;
-  username: string;
-  email: string | null;
-  role: string;
-};
-
-export type CreateOrganizerUserInput = {
-  username: string;
-  password: string;
-  email: string | null;
-  role: "admin" | "organizer";
-};
+export type OrganizerLoginRow = z.infer<typeof OrganizerLoginRowSchema>;
+export type CreateOrganizerUserInput = z.infer<typeof CreateOrganizerUserInputSchema>;
