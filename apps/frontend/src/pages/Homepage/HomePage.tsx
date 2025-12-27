@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import ExhibitionCard from "../../components/exhibition/ExhibitionCard";
@@ -66,30 +66,54 @@ export default function HomePage() {
 
   // ล็อกกันสแปมคลิก
   const animLock = useRef(false);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+
   const lock = (ms = 450) => {
     animLock.current = true;
     setTimeout(() => (animLock.current = false), ms);
   };
 
+  // Auto play with proper locking and reset capability
+  const startAutoPlay = useCallback(() => {
+    if (extendedSlides.length <= 1) return;
+
+    // Clear existing interval
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+    }
+
+    // Start new interval
+    autoPlayRef.current = setInterval(() => {
+      if (!animLock.current) {
+        lock();
+        setIndex((i) => (i >= extendedSlides.length - 1 ? 1 : i + 1));
+      }
+    }, 10000);
+  }, [extendedSlides.length]);
+
   const next = () => {
     if (animLock.current) return;
     lock();
     setIndex((i) => Math.min(i + 1, extendedSlides.length - 1));
+    startAutoPlay(); // Reset auto-play timer on manual navigation
   };
+
   const prev = () => {
     if (animLock.current) return;
     lock();
     setIndex((i) => Math.max(i - 1, 0));
+    startAutoPlay(); // Reset auto-play timer on manual navigation
   };
 
-  // Auto play (กัน index หลุดช่วง)
+  // Initialize auto play
   useEffect(() => {
-    if (extendedSlides.length <= 1) return;
-    const t = setInterval(() => {
-      setIndex((i) => (i >= extendedSlides.length - 1 ? 1 : i + 1));
-    }, 10000);
-    return () => clearInterval(t);
-  }, [extendedSlides.length]);
+    startAutoPlay();
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [startAutoPlay]);
 
   useEffect(() => {
     if (slides.length <= 1) return;

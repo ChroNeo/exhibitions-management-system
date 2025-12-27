@@ -1,39 +1,42 @@
 :root {
-    --brand: #2E4F8B;
-    --base: #224177;
-    --cardBorder: #D46518;
-    --text: #1f2937;
-    --muted: #6b7280;
-    --bg: #f8fafc;
-    --radius-xl: 16px;
-    --margin-xxs: 0.25rem;
-    --margin-xs: 0.5rem;
-    --margin-s: 0.75rem;
-    --margin-m: 1rem;
-    --margin-l: 1.25rem;
-    --margin-xl: 1.75rem;
-    --margin-xxl: 2.5rem;
+  --brand: #2E4F8B;
+  --base: #224177;
+  --cardBorder: #D46518;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --bg: #f8fafc;
+  --radius-xl: 16px;
+  --margin-xxs: 0.25rem;
+  --margin-xs: 0.5rem;
+  --margin-s: 0.75rem;
+  --margin-m: 1rem;
+  --margin-l: 1.25rem;
+  --margin-xl: 1.75rem;
+  --margin-xxl: 2.5rem;
+  --text-h1: clamp(2.5rem, 4vw + 1rem, 4.5rem);
+  --text-h2: clamp(2rem, 3vw + 1rem, 3.5rem);
+  --text-h3: clamp(1.75rem, 2vw + 1rem, 2.5rem);
+  --text-h4: clamp(1.5rem, 1.5vw + 1rem, 2rem);
+  /* shadows */
+  --shadow-s: inset 0 1px 2px #ffffff30,
+    /* top highlight */
+    0 1px 2px #00000030,
+    /* dark shadow */
+    0 2px 4px #00000015;
+  /* soft shadow */
+  --shadow-m: inset 0 1px 2px #ffffff50,
+    /* top highlight */
+    0 2px 4px #00000030,
+    /* dark shadow */
+    0 4px 8px #00000015;
+  /* soft shadow */
+  --shadow-l: inset 0 1px 2px #ffffff70,
+    /* top highlight */
+    0 4px 6px #00000030,
+    /* dark shadow */
+    0 6px 10px #00000015;
 
-    /* shadows */
-    --shadow-s: inset 0 1px 2px #ffffff30,
-        /* top highlight */
-        0 1px 2px #00000030,
-        /* dark shadow */
-        0 2px 4px #00000015;
-    /* soft shadow */
-    --shadow-m: inset 0 1px 2px #ffffff50,
-        /* top highlight */
-        0 2px 4px #00000030,
-        /* dark shadow */
-        0 4px 8px #00000015;
-    /* soft shadow */
-    --shadow-l: inset 0 1px 2px #ffffff70,
-        /* top highlight */
-        0 4px 6px #00000030,
-        /* dark shadow */
-        0 6px 10px #00000015;
-
-   /* DELETE BUTTON - Destructive, Permanent */
+  /* DELETE BUTTON - Destructive, Permanent */
   --delete-primary: #dc3545;
   --delete-primary-hover: #c82333;
   --delete-primary-active: #bd2130;
@@ -44,7 +47,7 @@
   --cancel-primary-hover: #5a6268;
   --cancel-primary-active: #545b62;
   --cancel-text: #ffffff;
-  
+
   /* Cancel Outline Variant (lighter, less prominent) */
   --cancel-outline: transparent;
   --cancel-outline-hover: #f8f9fa;
@@ -57,12 +60,12 @@
   --edit-warning-hover: #e0a800;
   --edit-warning-active: #d39e00;
   --edit-warning-text: #333333;
-  
+
   --edit-info: #17a2b8;
   --edit-info-hover: #138496;
   --edit-info-active: #117a8b;
   --edit-info-text: #ffffff;
-  
+
   --edit-neutral: #6c757d;
   --edit-neutral-hover: #5a6268;
   --edit-neutral-active: #545b62;
@@ -72,11 +75,11 @@
   --submit-success: #28a745;
   --submit-success-hover: #218838;
   --submit-success-active: #1e7e34;
-  
+
   --submit-primary: #007bff;
   --submit-primary-hover: #0056b3;
   --submit-primary-active: #004085;
-  
+
   --submit-text: #ffffff;
 
   /* BUTTON STATES */
@@ -100,7 +103,7 @@
   --cancel-primary-hover: #b5bcc7;
   --cancel-primary-active: #cbd2dc;
   --cancel-text: #1a1a1a;
-  
+
   /* Cancel Outline Variant */
   --cancel-outline: transparent;
   --cancel-outline-hover: #374151;
@@ -113,12 +116,12 @@
   --edit-warning-hover: #ffe580;
   --edit-warning-active: #fff0a3;
   --edit-warning-text: #1a1a1a;
-  
+
   --edit-info: #4dd4e8;
   --edit-info-hover: #6ee0f0;
   --edit-info-active: #8febf5;
   --edit-info-text: #1a1a1a;
-  
+
   --edit-neutral: #9ca3af;
   --edit-neutral-hover: #b5bcc7;
   --edit-neutral-active: #cbd2dc;
@@ -128,11 +131,11 @@
   --submit-success: #4ade80;
   --submit-success-hover: #6ee79a;
   --submit-success-active: #8ff0b3;
-  
+
   --submit-primary: #3b82f6;
   --submit-primary-hover: #60a5fa;
   --submit-primary-active: #93c5fd;
-  
+
   --submit-text: #ffffff;
 
   /* BUTTON STATES */
