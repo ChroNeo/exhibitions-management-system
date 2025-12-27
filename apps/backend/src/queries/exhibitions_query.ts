@@ -57,11 +57,6 @@ export async function getExhibitionById(id: string | number): Promise<any> {
 }
 
 export async function addExhibitions(payload: AddExhibitionPayload): Promise<any> {
-  // validate อย่างง่าย
-  if (!payload.title || !payload.start_date || !payload.end_date || !payload.organizer_name) {
-    throw new AppError("missing required fields", 400, "VALIDATION_ERROR");
-  }
-
   const result = await safeQuery<ResultSetHeader>(
     `INSERT INTO exhibitions
       (exhibition_code, title, description, description_delta, start_date, end_date, location, organizer_name, picture_path, status, created_by, updated_by)

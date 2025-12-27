@@ -46,33 +46,20 @@ export const CreateExhibitionSchema = ExhibitionSchema.omit({
 // Schema for Update Exhibition (all fields optional)
 export const UpdateExhibitionSchema = CreateExhibitionSchema.partial();
 
+// Schema for Add Exhibition (includes created_by and picture_path)
+export const AddExhibitionPayloadSchema = CreateExhibitionSchema.extend({
+  created_by: z.number(),
+  picture_path: z.string().optional(),
+});
+
+// Schema for Update Exhibition Payload (includes picture_path)
+export const UpdateExhibitionPayloadSchema = CreateExhibitionSchema.extend({
+  picture_path: z.string().nullable().optional(),
+}).partial();
+
 // Inferred types from Zod schemas
 export type Exhibition = z.infer<typeof ExhibitionSchema>;
 export type CreateExhibitionInput = z.infer<typeof CreateExhibitionSchema>;
 export type UpdateExhibitionInput = z.infer<typeof UpdateExhibitionSchema>;
-
-// Database operation types
-export interface AddExhibitionPayload {
-  title: string;
-  description?: string;
-  description_delta?: string;
-  start_date: string; // ISO datetime string
-  end_date: string; // ISO datetime string
-  location?: string;
-  organizer_name: string;
-  picture_path?: string;
-  status?: ExhibitionStatus;
-  created_by: number;
-}
-
-export type UpdateExhibitionPayload = Partial<{
-  title: string;
-  description: string | null;
-  description_delta: string | null;
-  start_date: string;
-  end_date: string;
-  location: string | null;
-  organizer_name: string;
-  picture_path: string | null;
-  status: ExhibitionStatus;
-}>;
+export type AddExhibitionPayload = z.infer<typeof AddExhibitionPayloadSchema>;
+export type UpdateExhibitionPayload = z.infer<typeof UpdateExhibitionPayloadSchema>;

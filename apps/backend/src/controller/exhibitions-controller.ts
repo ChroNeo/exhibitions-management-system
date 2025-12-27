@@ -16,7 +16,7 @@ import {
 } from "../services/exhibitions-payload-builder.js";
 import { z } from "zod";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { CreateExhibitionSchema, ExhibitionSchema, UpdateExhibitionSchema } from "../models/exhibition.model.js";
+import { CreateExhibitionSchema, ExhibitionSchema, UpdateExhibitionSchema, AddExhibitionPayloadSchema, UpdateExhibitionPayloadSchema } from "../models/exhibition.model.js";
 import { requireOrganizerAuth } from "../services/auth-middleware.js";
 
 export default async function exhibitionsController(fastify: FastifyInstance) {
@@ -63,10 +63,6 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
       schema: {
         tags: ["Exhibitions"],
         summary: "Create exhibition",
-        // หมายเหตุ: เนื่องจากคุณมีการ handle multipart เองด้วย parseMultipartPayload
-        // การกำหนด body ตรงนี้ Zod อาจจะ validate fail ก่อนเข้า handler ถ้า header เป็น multipart
-        // ทางที่ดีที่สุดคือระบุเป็น z.unknown() หรือ z.any() หากใช้ manual parser
-        // หรือถ้าส่งเป็น JSON ปกติ ให้ใช้ CreateExhibitionSchema
         body: z.union([CreateExhibitionSchema, z.any()]),
         response: {
           201: ExhibitionSchema,
@@ -88,13 +84,20 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
         throw new AppError("request body is required", 400, "VALIDATION_ERROR");
       }
 
-      // Add created_by from JWT token
-      const exhibitionPayload: AddExhibitionPayload = {
+      // Add created_by from JWT token and validate with Zod
+      const result = AddExhibitionPayloadSchema.safeParse({
         ...payload,
         created_by: createdBy,
-      };
-
-      const exhibition = await addExhibitions(exhibitionPayload);
+      });
+      if (!result.success) {
+        throw new AppError(
+          "Validation failed",    
+          400,                   
+          "VALIDATION_ERROR",       
+          z.treeifyError(result.error)
+        );
+      }
+      const exhibition = await addExhibitions(result.data);
       reply.code(201);
       return exhibition;
     }
@@ -126,7 +129,18 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
         ? await parseMultipartPayload(req, "update")
         : buildUpdatePayload(req.body);
 
-      const exhibition = await updateExhibition(id, payload);
+      // Validate with Zod
+      const result = UpdateExhibitionPayloadSchema.safeParse(payload);
+      if (!result.success) {
+        throw new AppError(
+          "Validation failed",
+          400,
+          "VALIDATION_ERROR",
+          z.treeifyError(result.error)
+        );
+      }
+
+      const exhibition = await updateExhibition(id, result.data);
 
       // Delete old file if a new one was uploaded
       if (previousPicturePath && previousPicturePath !== exhibition.picture_path) {

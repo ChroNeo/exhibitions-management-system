@@ -21,6 +21,7 @@ import ticketController from "./controller/ticket-controller.js";
 // --- Import Services ---
 import { safeQuery } from "./services/dbconn.js";
 import { registerSchemas } from "./services/schema.js";
+import { AppError } from "./errors.js";
 
 // --- Import Zod Provider ---
 // 1. เพิ่ม import ตรงนี้
@@ -42,6 +43,20 @@ fastify.setSerializerCompiler(serializerCompiler);
 
 // 3. แปลงร่าง instance ให้เป็น Type Provider
 const app = fastify.withTypeProvider<ZodTypeProvider>();
+
+// 4. Custom Error Handler to include AppError details
+app.setErrorHandler((error, _request, reply) => {
+  app.log.error(error);
+  if (error instanceof AppError) {
+    return reply.status(error.status).send({
+      message: error.message,
+      status: error.status,
+      code: error.code,
+      details: error.details,
+    });
+  }
+  reply.send(error);
+});
 
 // registerSchemas(app); // อันนี้ของเก่า (Json Schema) ยังใช้ร่วมกันได้
 
