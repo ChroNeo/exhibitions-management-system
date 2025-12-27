@@ -13,8 +13,9 @@ import {
 } from "../services/units-payload-builder.js";
 import { z } from "zod";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { CreateUnitSchema, UpdateUnitSchema, UnitSchema } from "../models/unit.model.js";
+import { CreateUnitSchema, UpdateUnitSchema, UnitSchema, AddUnitPayloadSchema, UpdateUnitPayloadSchema } from "../models/unit.model.js";
 import { requireOrganizerAuth } from "../services/auth-middleware.js";
+import { AppError } from "../errors.js";
 
 export default async function unitsController(fastify: FastifyInstance) {
   await fastify.register(
@@ -83,7 +84,18 @@ export default async function unitsController(fastify: FastifyInstance) {
             ? await parseMultipartPayload(req as FastifyRequest<{ Params: { ex_id: string } }>)
             : buildCreatePayload(ex_id, req.body);
 
-          const unit = await addUnit(payload);
+          // Validate with Zod
+          const result = AddUnitPayloadSchema.safeParse(payload);
+          if (!result.success) {
+            throw new AppError(
+              "Validation failed",
+              400,
+              "VALIDATION_ERROR",
+              z.treeifyError(result.error)
+            );
+          }
+
+          const unit = await addUnit(result.data);
           reply.code(201);
           return unit;
         }
@@ -116,7 +128,18 @@ export default async function unitsController(fastify: FastifyInstance) {
             ? await parseMultipartUpdatePayload(req as FastifyRequest<{ Params: { ex_id: string; id: string } }>)
             : buildUpdatePayload(req.body);
 
-          const unit = await updateUnit(ex_id, id, payload);
+          // Validate with Zod
+          const result = UpdateUnitPayloadSchema.safeParse(payload);
+          if (!result.success) {
+            throw new AppError(
+              "Validation failed",
+              400,
+              "VALIDATION_ERROR",
+              z.treeifyError(result.error)
+            );
+          }
+
+          const unit = await updateUnit(ex_id, id, result.data);
           if (previousPdfPath && previousPdfPath !== unit.detail_pdf_url) {
             await removeUploadedFile(previousPdfPath, req.log);
           }

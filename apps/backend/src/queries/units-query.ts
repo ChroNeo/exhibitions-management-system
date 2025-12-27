@@ -83,11 +83,8 @@ async function attachStaff(rows: UnitRowBase[]): Promise<UnitRowWithStaff[]> {
       const trimmed = s.full_name?.trim();
       return trimmed && trimmed.length ? trimmed : String(s.staff_user_id);
     });
-    const primary = staffList[0];
     return {
       ...row,
-      staff_user_id: primary ? primary.staff_user_id : null,
-      staff_name: names[0] ?? null,
       staff_user_ids: ids,
       staff_names: names,
     };
@@ -157,14 +154,7 @@ export async function addUnit(payload: AddUnitPayload): Promise<UnitRowWithStaff
     ]
   );
 
-  const staffIds = normaliseStaffIds(
-    payload.staff_user_ids ??
-      (payload.staff_user_id === undefined
-        ? undefined
-        : payload.staff_user_id === null
-          ? []
-          : [payload.staff_user_id])
-  );
+  const staffIds = normaliseStaffIds(payload.staff_user_ids);
 
   if (staffIds !== undefined) {
     await replaceUnitStaffs(result.insertId, staffIds);
@@ -201,7 +191,7 @@ export async function updateUnit(
     throw new AppError("no fields to update", 400, "VALIDATION_ERROR");
   }
 
-  const { staff_user_ids, staff_user_id, ...scalarChanges } = changes;
+  const { staff_user_ids, ...scalarChanges } = changes;
 
   const assignments: string[] = [];
   const params: unknown[] = [];
@@ -219,14 +209,7 @@ export async function updateUnit(
   if (scalarChanges.starts_at !== undefined) push("starts_at", scalarChanges.starts_at);
   if (scalarChanges.ends_at !== undefined) push("ends_at", scalarChanges.ends_at);
 
-  const staffIds = normaliseStaffIds(
-    staff_user_ids ??
-      (staff_user_id === undefined
-        ? undefined
-        : staff_user_id === null
-          ? []
-          : [staff_user_id])
-  );
+  const staffIds = normaliseStaffIds(staff_user_ids);
 
   if (!assignments.length && staffIds === undefined) {
     throw new AppError("no fields to update", 400, "VALIDATION_ERROR");

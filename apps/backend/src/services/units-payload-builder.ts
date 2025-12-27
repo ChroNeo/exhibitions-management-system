@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { FastifyRequest } from "fastify";
 import { AppError } from "../errors.js";
-import { UNIT_TYPES, type AddUnitPayload, type UnitType, type UpdateUnitPayload } from "../models/unit.model.js";
+import type { AddUnitPayload, UnitType, UpdateUnitPayload } from "../models/unit.model.js";
 import { collectMultipartFields } from "./file-upload.js";
 import { parseJsonField, parseStaffIds } from "../utils/validation.js";
 
@@ -64,21 +64,20 @@ export function buildCreatePayload(exhibitionIdParam: string, source: unknown): 
     return typeof value === "string" ? value : String(value);
   };
 
+  // Data transformation/normalization (Zod will validate)
+  const payload: Partial<AddUnitPayload> = {
+    exhibition_id: exhibitionId,
+  };
+
   const unitName = getString("unit_name")?.trim();
-  if (!unitName) {
-    throw new AppError("unit_name is required", 400, "VALIDATION_ERROR");
+  if (unitName !== undefined) {
+    payload.unit_name = unitName;
   }
 
   const rawUnitType = getString("unit_type")?.toLowerCase();
-  if (!rawUnitType || !UNIT_TYPES.includes(rawUnitType as UnitType)) {
-    throw new AppError("invalid unit_type", 400, "VALIDATION_ERROR");
+  if (rawUnitType !== undefined) {
+    payload.unit_type = rawUnitType as UnitType;
   }
-
-  const payload: AddUnitPayload = {
-    exhibition_id: exhibitionId,
-    unit_name: unitName,
-    unit_type: rawUnitType as UnitType,
-  };
 
   const description = getString("description");
   if (description !== undefined) {
@@ -90,28 +89,9 @@ export function buildCreatePayload(exhibitionIdParam: string, source: unknown): 
     payload.description_delta = descriptionDelta;
   }
 
-  const staffUserIdRaw = getString("staff_user_id");
-  if (staffUserIdRaw !== undefined) {
-    if (!staffUserIdRaw) {
-      payload.staff_user_id = null;
-    } else {
-      const staffUserId = Number(staffUserIdRaw);
-      if (!Number.isInteger(staffUserId)) {
-        throw new AppError("staff_user_id must be an integer", 400, "VALIDATION_ERROR");
-      }
-      payload.staff_user_id = staffUserId;
-    }
-  }
-
   const staffUserIdsValue = parseStaffIds(fields["staff_user_ids"], "staff_user_ids");
   if (staffUserIdsValue !== undefined) {
     payload.staff_user_ids = staffUserIdsValue;
-  }
-
-  if (payload.staff_user_ids !== undefined) {
-    payload.staff_user_id = payload.staff_user_ids.length ? payload.staff_user_ids[0] : null;
-  } else if (payload.staff_user_id !== undefined) {
-    payload.staff_user_ids = payload.staff_user_id === null ? [] : [payload.staff_user_id];
   }
 
   const posterUrl = getString("poster_url");
@@ -134,7 +114,7 @@ export function buildCreatePayload(exhibitionIdParam: string, source: unknown): 
     payload.ends_at = endsAt || null;
   }
 
-  return payload;
+  return payload as AddUnitPayload;
 }
 
 export async function parseMultipartUpdatePayload(
@@ -178,35 +158,21 @@ export function buildUpdatePayload(source: unknown): UpdateUnitPayload {
 
   const fields = source as Record<string, unknown>;
   const payload: UpdateUnitPayload = {};
-  let touched = 0;
 
   const hasField = (key: string) => Object.prototype.hasOwnProperty.call(fields, key);
 
+  // Data transformation/normalization (Zod will validate)
   if (hasField("unit_name")) {
     const raw = fields["unit_name"];
-    if (raw === null || raw === undefined) {
-      throw new AppError("unit_name cannot be null", 400, "VALIDATION_ERROR");
-    }
     const value = (typeof raw === "string" ? raw : String(raw)).trim();
-    if (!value) {
-      throw new AppError("unit_name is required when provided", 400, "VALIDATION_ERROR");
-    }
     payload.unit_name = value;
-    touched++;
   }
 
   if (hasField("unit_type")) {
     const raw = fields["unit_type"];
-    if (raw === null || raw === undefined) {
-      throw new AppError("unit_type cannot be null", 400, "VALIDATION_ERROR");
-    }
     const value = typeof raw === "string" ? raw : String(raw);
     const normalised = value.trim().toLowerCase();
-    if (!normalised || !UNIT_TYPES.includes(normalised as UnitType)) {
-      throw new AppError("invalid unit_type", 400, "VALIDATION_ERROR");
-    }
     payload.unit_type = normalised as UnitType;
-    touched++;
   }
 
   if (hasField("description")) {
@@ -217,14 +183,12 @@ export function buildUpdatePayload(source: unknown): UpdateUnitPayload {
       const value = typeof raw === "string" ? raw : String(raw);
       payload.description = value ? value : null;
     }
-    touched++;
   }
 
   if (hasField("description_delta")) {
     const parsed = parseJsonField(fields.description_delta, "description_delta");
     if (parsed !== undefined) {
       payload.description_delta = parsed;
-      touched++;
     }
   }
 
@@ -241,7 +205,6 @@ export function buildUpdatePayload(source: unknown): UpdateUnitPayload {
       const value = typeof raw === "string" ? raw : String(raw);
       (payload as Record<string, unknown>)[key as string] = value ? value : null;
     }
-    touched++;
   };
 
   setNullableString("poster_url");
@@ -249,33 +212,11 @@ export function buildUpdatePayload(source: unknown): UpdateUnitPayload {
   setNullableString("starts_at");
   setNullableString("ends_at");
 
-  if (hasField("staff_user_id")) {
-    const raw = fields["staff_user_id"];
-    if (raw === null || raw === undefined || (typeof raw === "string" && !raw.trim())) {
-      payload.staff_user_id = null;
-      payload.staff_user_ids = [];
-    } else {
-      const numeric = Number(typeof raw === "string" ? raw.trim() : raw);
-      if (!Number.isFinite(numeric) || !Number.isInteger(numeric) || numeric <= 0) {
-        throw new AppError("staff_user_id must be an integer", 400, "VALIDATION_ERROR");
-      }
-      payload.staff_user_id = numeric;
-      payload.staff_user_ids = [numeric];
-    }
-    touched++;
-  }
-
   if (hasField("staff_user_ids")) {
     const parsed = parseStaffIds(fields["staff_user_ids"], "staff_user_ids");
     if (parsed !== undefined) {
       payload.staff_user_ids = parsed;
-      payload.staff_user_id = parsed.length ? parsed[0] : null;
     }
-    touched++;
-  }
-
-  if (!touched) {
-    throw new AppError("no fields to update", 400, "VALIDATION_ERROR");
   }
 
   return payload;

@@ -14,8 +14,6 @@ export const UnitSchema = z.object({
   unit_type: z.enum(UNIT_TYPES),
   description: z.string().nullable(),
   description_delta: z.any().nullable(), // JSON field from database
-  staff_user_id: z.number().nullable(),
-  staff_name: z.string().nullable(),
   staff_user_ids: z.array(z.number()), // Always present, can be empty array
   staff_names: z.array(z.string()), // Always present, can be empty array
   poster_url: z.string().nullable(),
@@ -30,7 +28,6 @@ export const CreateUnitSchema = z.object({
   unit_type: z.enum(UNIT_TYPES),
   description: z.string().nullable().optional(),
   description_delta: z.string().nullable().optional(),
-  staff_user_id: z.number().nullable().optional(),
   staff_user_ids: z.array(z.number()).optional(),
   poster_url: z.string().nullable().optional(),
   detail_pdf_url: z.string().nullable().optional(),
@@ -41,62 +38,36 @@ export const CreateUnitSchema = z.object({
 // Schema for Update Unit (all fields optional)
 export const UpdateUnitSchema = CreateUnitSchema.partial();
 
+// Schema for Add Unit (includes exhibition_id)
+export const AddUnitPayloadSchema = CreateUnitSchema.extend({
+  exhibition_id: z.number(),
+});
+
+// Schema for Update Unit Payload
+export const UpdateUnitPayloadSchema = CreateUnitSchema.partial();
+
+// Schema for Unit Row Base (database row without staff info)
+export const UnitRowBaseSchema = UnitSchema.omit({
+  staff_user_ids: true,
+  staff_names: true,
+});
+
+// Schema for Unit Row with Staff (database row with staff info)
+export const UnitRowWithStaffSchema = UnitSchema;
+
+// Schema for Unit Staff Row (from unit_staffs join)
+export const UnitStaffRowSchema = z.object({
+  unit_id: z.number(),
+  staff_user_id: z.number(),
+  full_name: z.string().nullable(),
+});
+
 // Inferred types from Zod schemas
 export type Unit = z.infer<typeof UnitSchema>;
 export type CreateUnitInput = z.infer<typeof CreateUnitSchema>;
 export type UpdateUnitInput = z.infer<typeof UpdateUnitSchema>;
-
-// Database operation types
-export interface AddUnitPayload {
-  exhibition_id: number;          // FK → exhibitions.exhibition_id
-  unit_name: string;
-  unit_type: UnitType;
-  description?: string | null;
-  description_delta?: string | null;
-  staff_user_id?: number | null;  // FK → normal_users.user_id
-  staff_user_ids?: number[];
-  poster_url?: string | null;
-  detail_pdf_url?: string | null;
-  starts_at?: string | null;      // ISO datetime string
-  ends_at?: string | null;        // ISO datetime string
-}
-
-export type UpdateUnitPayload = Partial<{
-  unit_name: string;
-  unit_type: UnitType;
-  description: string | null;
-  description_delta: string | null;
-  staff_user_id: number | null;
-  staff_user_ids: number[];
-  poster_url: string | null;
-  detail_pdf_url: string | null;
-  starts_at: string | null;
-  ends_at: string | null;
-}>;
-
-export type UnitRowBase = {
-  unit_id: number;
-  unit_code: string | null;
-  exhibition_id: number;
-  unit_name: string;
-  unit_type: UnitType;
-  description: string | null;
-  description_delta: any | null; // JSON field
-  poster_url: string | null;
-  detail_pdf_url: string | null;
-  starts_at: string | null;
-  ends_at: string | null;
-};
-
-export type UnitRowWithStaff = UnitRowBase & {
-  staff_user_id: number | null;
-  staff_name: string | null;
-  staff_user_ids: number[];
-  staff_names: string[];
-};
-
-export type UnitStaffRow = {
-  unit_id: number;
-  staff_user_id: number;
-  full_name: string | null;
-};
+export type AddUnitPayload = z.infer<typeof AddUnitPayloadSchema>;
+export type UpdateUnitPayload = z.infer<typeof UpdateUnitPayloadSchema>;
+export type UnitRowBase = z.infer<typeof UnitRowBaseSchema>;
+export type UnitRowWithStaff = z.infer<typeof UnitRowWithStaffSchema>;
+export type UnitStaffRow = z.infer<typeof UnitStaffRowSchema>;
