@@ -6,13 +6,16 @@ import "./styles/globals.css";
 import "sweetalert2/dist/sweetalert2.min.css";
 import "quill/dist/quill.snow.css";
 import { BrowserRouter } from "react-router-dom";
+import { StrictMode } from "react";
 
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </StrictMode>
   </QueryClientProvider>
 );

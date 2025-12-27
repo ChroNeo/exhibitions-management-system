@@ -124,92 +124,90 @@ export default function HomePage() {
             }`}
             ref={heroRef}
           >
-            <div className={styles.slideWrapper}>
-              <div
-                className={styles.slideTrack}
-                style={{
-                  transform: `translateX(-${index * 100}%)`,
-                  transition: enableTransition ? undefined : "none",
-                }}
-                onTransitionEnd={() => {
-                  animLock.current = false; // ปลดล็อกเมื่อแอนิเมตจบ
-                }}
-              >
-                {extendedSlides.map((slide: { image: string; title: string; start_date: string; end_date: string; location: string }, i: number) => (
-                  <div
-                    key={i}
-                    className={styles.slide}
-                    role="group"
-                    aria-label={slide.title}
-                  >
-                    <div className={styles.slideAspect}>
-                      <img
-                        className={styles.slideImg}
-                        src={toFileUrl(slide.image)}
-                        alt={slide.title}
-                      />
-                    </div>
+            <div
+              className={styles.slideTrack}
+              style={{
+                transform: `translateX(-${index * 100}%)`,
+                transition: enableTransition ? undefined : "none",
+              }}
+              onTransitionEnd={() => {
+                animLock.current = false; // ปลดล็อกเมื่อแอนิเมตจบ
+              }}
+            >
+              {extendedSlides.map((slide: { image: string; title: string; start_date: string; end_date: string; location: string }, i: number) => (
+                <div
+                  key={i}
+                  className={styles.slide}
+                  role="group"
+                  aria-label={slide.title}
+                >
+                  <div className={styles.slideAspect}>
+                    <img
+                      className={styles.slideImg}
+                      src={toFileUrl(slide.image)}
+                      alt={slide.title}
+                    />
+                  </div>
 
-                    <div className={styles.overlay}>
-                      <h3 className={styles.slideTitle}>{slide.title}</h3>
-                      <p className={styles.slideMeta}>
-                        {new Date(slide.start_date).toLocaleDateString()} –{" "}
-                        {new Date(slide.end_date).toLocaleDateString()} •{" "}
-                        {slide.location}
-                      </p>
+                  <div className={styles.overlay}>
+                    <h3 className={styles.slideTitle}>{slide.title}</h3>
+                    <p className={styles.slideMeta}>
+                      {new Date(slide.start_date).toLocaleDateString()} –{" "}
+                      {new Date(slide.end_date).toLocaleDateString()} •{" "}
+                      {slide.location}
+                    </p>
 
-                      <div className={styles.fsRow}>
-                        {!isHeroFull && !isFs && (
-                          <button
-                            type="button"
-                            className={styles.fsBtn}
-                            onClick={toggleFullscreen}
-                            aria-label="แสดงเต็มจอ"
-                            title="แสดงเต็มจอ"
-                          >
-                            แสดงเต็มจอ
-                          </button>
-                        )}
-                        {isHeroFull && (
-                          <button
-                            type="button"
-                            className={styles.fsBtn}
-                            onClick={() =>
-                              navigate({
-                                pathname: location.pathname,
-                                search: "",
-                              })
-                            }
-                            title="ปิดโหมดประกาศ"
-                          >
-                            ปิดโหมดประกาศ
-                          </button>
-                        )}
-                      </div>
+                    <div className={styles.fsRow}>
+                      {!isHeroFull && !isFs && (
+                        <button
+                          type="button"
+                          className={styles.fsBtn}
+                          onClick={toggleFullscreen}
+                          aria-label="แสดงเต็มจอ"
+                          title="แสดงเต็มจอ"
+                        >
+                          แสดงเต็มจอ
+                        </button>
+                      )}
+                      {isHeroFull && (
+                        <button
+                          type="button"
+                          className={styles.fsBtn}
+                          onClick={() =>
+                            navigate({
+                              pathname: location.pathname,
+                              search: "",
+                            })
+                          }
+                          title="ปิดโหมดประกาศ"
+                        >
+                          ปิดโหมดประกาศ
+                        </button>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-
-              {slides.length > 1 && (
-                <>
-                  <button
-                    className={`${styles.arrow} ${styles.left}`}
-                    onClick={prev}
-                    aria-label="Previous slide"
-                  >
-                    ❮
-                  </button>
-                  <button
-                    className={`${styles.arrow} ${styles.right}`}
-                    onClick={next}
-                    aria-label="Next slide"
-                  >
-                    ❯
-                  </button>
-                </>
-              )}
+                </div>
+              ))}
             </div>
+
+            {slides.length > 1 && (
+              <>
+                <button
+                  className={`${styles.arrow} ${styles.left}`}
+                  onClick={prev}
+                  aria-label="Previous slide"
+                >
+                  ❮
+                </button>
+                <button
+                  className={`${styles.arrow} ${styles.right}`}
+                  onClick={next}
+                  aria-label="Next slide"
+                >
+                  ❯
+                </button>
+              </>
+            )}
 
             {slides.length > 1 && (
               <div className={styles.dots}>
