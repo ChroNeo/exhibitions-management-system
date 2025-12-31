@@ -17,3 +17,6 @@ logs
 
 # runtime uploads
 apps/backend/uploads/
+
+# backup files
+backups/

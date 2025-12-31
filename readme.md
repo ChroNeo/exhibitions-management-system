@@ -53,7 +53,38 @@ pnpm run docker:up
   ```
   หรือรัน `docker compose -f infra/docker/docker-compose.yml build backend frontend` เพื่อ rebuild image หากมีการเปลี่ยนแปลงใหญ่
 
+## การจัดการไฟล์ที่อัปโหลด (Uploads)
+
+ระบบเก็บไฟล์ที่อัปโหลดไว้ใน Docker volume (`uploads-data`) เพื่อให้ไฟล์คงอยู่แม้จะ restart container
+
+**โครงสร้างไฟล์:**
+```
+/app/uploads/                    (ใน container)
+├── exhibitions/                 (รูปนิทรรศการ)
+└── units/                       (โปสเตอร์และ PDF ของหน่วย)
+```
+
+**คำสั่งที่เป็นประโยชน์:**
+```bash
+# ดูไฟล์ที่อัปโหลดทั้งหมด
+make list-uploads
+
+# Backup ไฟล์ uploads ไว้บนเครื่อง (เก็บในโฟลเดอร์ backups/)
+make backup-uploads
+
+# ดูไฟล์ใน uploads ด้วย shell
+make shell-backend
+# จากนั้นรัน: ls -la /app/uploads
+```
+
+**หมายเหตุ:**
+- ไฟล์ uploads จะถูกเก็บไว้ใน Docker volume ชื่อ `uploads-data`
+- เมื่อ restart container ไฟล์จะยังคงอยู่
+- การรัน `make clean` จะลบ volume รวมทั้งไฟล์ uploads ด้วย (ควร backup ก่อน!)
+- Database เก็บ path ของไฟล์เป็น relative path เช่น `uploads/exhibitions/EXP1761332723861.png`
+
 ## เคล็ดลับ & Troubleshooting
 - เปลี่ยนค่าภายใน `.env` แล้วให้รัน `pnpm run docker:down` ตามด้วย `pnpm run docker:up` เพื่อให้ค่าใหม่มีผล
 - ต้องการ rebuild image หลังเพิ่ม dependency: `docker compose -f infra/docker/docker-compose.yml build backend frontend`
 - รีเซ็ตฐานข้อมูล (ข้อมูลหายหมด): `docker compose -f infra/docker/docker-compose.yml down -v`
+- Backup ไฟล์ uploads ก่อนรัน `make clean`: ใช้ `make backup-uploads`

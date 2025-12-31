@@ -4,7 +4,7 @@
 # Docker Compose variables
 DOCKER_COMPOSE = docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env
 
-.PHONY: help up down build rebuild restart logs clean status ps
+.PHONY: help up down build rebuild restart logs clean status ps backup-uploads list-uploads
 
 # Default target - show help
 help:
@@ -29,6 +29,9 @@ help:
 	@echo "  make shell-backend   Open shell in backend container"
 	@echo "  make shell-frontend  Open shell in frontend container"
 	@echo "  make shell-db        Open MySQL shell in database"
+	@echo ""
+	@echo "  make backup-uploads  Backup uploaded files to host"
+	@echo "  make list-uploads    List all uploaded files"
 	@echo ""
 	@echo "  make clean           Stop containers and remove volumes (DESTRUCTIVE)"
 	@echo "  make clean-build     Remove all images and rebuild from scratch"
@@ -103,6 +106,18 @@ shell-db:
 	@echo "Opening MySQL shell..."
 	@echo "Note: You'll be prompted for the password"
 	docker exec -it ems-mysql mysql -uappuser -p exhibition_db
+
+# Backup uploads to host
+backup-uploads:
+	@echo "Backing up uploads..."
+	@mkdir -p backups
+	@docker cp ems-backend:/app/uploads backups/uploads_$(shell date +%Y%m%d_%H%M%S) 2>/dev/null || echo "Note: No uploads directory found in container (this is normal for fresh installs)"
+	@echo "✓ Backup complete! (Check backups/ directory)"
+
+# List uploaded files
+list-uploads:
+	@echo "Uploaded files:"
+	@docker exec ems-backend find /app/uploads -type f 2>/dev/null || echo "Note: No uploads found or container not running"
 
 # Clean everything (DESTRUCTIVE - removes volumes)
 clean:
