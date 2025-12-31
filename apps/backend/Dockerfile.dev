@@ -4,20 +4,21 @@ ENV NODE_ENV=development \
     PNPM_HOME=/usr/local/share/pnpm \
     PNPM_STORE_DIR=/app/.pnpm-store
 
-WORKDIR /app/apps/backend
+WORKDIR /app
+
 RUN corepack enable && corepack prepare pnpm@9 --activate \
  && pnpm config set store-dir ${PNPM_STORE_DIR} \
  && pnpm config set node-linker pnpm
 
-# เอาไฟล์ workspace จาก root
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json /app/
-COPY apps/backend/package.json ./package.json
+# Copy workspace files
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/backend/package.json ./apps/backend/package.json
 
-# ติดตั้งรวม devDeps
-RUN cd /app && pnpm --dir apps/backend install --frozen-lockfile
+# Install dependencies
+RUN pnpm --dir apps/backend install --frozen-lockfile
 
-# คัดโค้ด
-COPY apps/backend .
+# Copy backend code
+COPY apps/backend ./apps/backend
 
 EXPOSE 3001
-CMD ["pnpm","dev"]
+CMD ["pnpm", "--dir", "apps/backend", "dev"]

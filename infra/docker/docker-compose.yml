@@ -38,15 +38,13 @@ services:
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_NAME: ${MYSQL_DATABASE}
-      CHOKIDAR_USEPOLLING: "true"
-      CHOKIDAR_INTERVAL: "300"
     ports: ["${BACKEND_PORT}:${BACKEND_PORT}"]
     depends_on:
       db: { condition: service_healthy }
     volumes:
       - ../../apps/backend:/app/apps/backend
       - backend_node_modules:/app/apps/backend/node_modules
-    command: ["sh","-c","cd /app && pnpm --dir apps/backend install --frozen-lockfile && pnpm --dir apps/backend dev"]
+    command: ["pnpm", "dev"]
 
 
   frontend:
@@ -58,18 +56,14 @@ services:
     environment:
       VITE_API_URL: ${VITE_API_URL}
       VITE_API_BASE: ${VITE_API_BASE}
-      HOST: 0.0.0.0
-      FRONTEND_PORT: ${FRONTEND_PORT}
       VITE_HMR_HOST: localhost
-      VITE_HMR_PORT: ${FRONTEND_PORT}
-      CHOKIDAR_USEPOLLING: "true"
-      CHOKIDAR_INTERVAL: "300"
-    ports: ["${FRONTEND_PORT}:${FRONTEND_PORT}"]
+      VITE_HMR_PORT: 5173
+    ports: ["5173:5173"]
     depends_on: [backend]
     volumes:
       - ../../apps/frontend:/app/apps/frontend
       - frontend_node_modules:/app/apps/frontend/node_modules
-    command: ["sh","-c","cd /app && pnpm --dir apps/frontend install --frozen-lockfile && pnpm --dir apps/frontend dev -- --host 0.0.0.0"]
+    command: ["pnpm", "dev", "--", "--host", "0.0.0.0"]
 volumes:
   db-data:
   backend_node_modules:

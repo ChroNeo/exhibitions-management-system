@@ -4,21 +4,21 @@ ENV NODE_ENV=development \
     PNPM_HOME=/usr/local/share/pnpm \
     PNPM_STORE_DIR=/app/.pnpm-store
 
-WORKDIR /app/apps/frontend
+WORKDIR /app
+
 RUN corepack enable && corepack prepare pnpm@9 --activate \
  && pnpm config set store-dir ${PNPM_STORE_DIR} \
  && pnpm config set node-linker pnpm
 
-# ดึงไฟล์ workspace จาก root ให้ pnpm มองเห็นทั้ง monorepo
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json /app/
-# ใช้ package.json ของ frontend เอง
-COPY apps/frontend/package.json ./package.json
+# Copy workspace files
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/frontend/package.json ./apps/frontend/package.json
 
-# ติดตั้งเฉพาะแพ็กเกจของแอปนี้
-RUN cd /app && pnpm --dir apps/frontend install --frozen-lockfile
+# Install dependencies
+RUN pnpm --dir apps/frontend install --frozen-lockfile
 
-# คัดซอร์สจริง
-COPY apps/frontend .
+# Copy frontend code
+COPY apps/frontend ./apps/frontend
 
 EXPOSE 5173
-CMD ["pnpm","dev","--","--host","0.0.0.0"]
+CMD ["pnpm", "--dir", "apps/frontend", "dev", "--", "--host", "0.0.0.0"]
