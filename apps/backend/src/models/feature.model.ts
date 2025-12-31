@@ -7,33 +7,15 @@ export const FeatureQuerySchema = z.object({
   status: z.string().optional(),
 });
 
-const BannerFeatureImageSchema = z.object({
-  type: z.literal("banner"),
-  image: z.string(),
-  href: z.string().nullable(),
-});
-
-const ExhibitionFeatureImageSchema = z.object({
-  type: z.literal("exhibition"),
+export const FeatureImageSchema = z.object({
   image: z.string().nullable(),
   href: z.string(),
   ref_id: z.number(),
-  title: z.string(),
-  start_date: z.string().or(z.date()),
-  end_date: z.string().or(z.date()),
-  location: z.string().nullable(),
 });
-
-export const FeatureImageSchema = z.union([
-  BannerFeatureImageSchema,
-  ExhibitionFeatureImageSchema,
-]);
 
 export const ExhibitionSummarySchema = z.object({
   exhibition_id: z.number(),
-  exhibition_code: z.string(),
   title: z.string(),
-  picture_path: z.string().nullable(),
   status: z.string().nullable(),
   start_date: z.string().or(z.date()),
   end_date: z.string().or(z.date()),

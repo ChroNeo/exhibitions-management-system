@@ -15,7 +15,7 @@ export default async function heroController(fastify: FastifyInstance) {
     {
       schema: {
         tags: ["Hero"],
-        summary: "Get featured exhibitions and banners for hero section",
+        summary: "Get featured exhibitions for hero section",
         querystring: FeatureQuerySchema,
         response: {
           200: FeatureResponseSchema,

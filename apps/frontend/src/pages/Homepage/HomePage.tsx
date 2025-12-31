@@ -11,14 +11,20 @@ export default function HomePage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const slides = useMemo(
-    () =>
-      (data?.featureImages ?? []).filter(
+  const slides = useMemo(() => {
+    const images = data?.featureImages ?? [];
+    const exData = data?.exhibitions ?? [];
+    return images
+      .map((img, idx) => ({
+        ...img,
+        ...(exData[idx] || {}),
+      }))
+      .filter(
         (slide) =>
           typeof slide.image === "string" && slide.image.trim().length > 0
-      ),
-    [data?.featureImages]
-  );
+      );
+  }, [data?.featureImages, data?.exhibitions]);
+
   const exhibitions = data?.exhibitions ?? [];
 
   // index ของ slideTrack (มีสไลด์หลอกหัว-ท้าย)

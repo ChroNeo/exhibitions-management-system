@@ -148,21 +148,6 @@ INSERT INTO `exhibition_feedback` (`feedback_id`, `exhibition_id`, `user_id`, `r
 -- --------------------------------------------------------
 
 --
--- Table structure for table `feature_banners`
---
-
-CREATE TABLE `feature_banners` (
-  `banner_id` int NOT NULL,
-  `image_path` varchar(255) NOT NULL,
-  `href` varchar(255) DEFAULT NULL,
-  `sort_order` int DEFAULT '0',
-  `is_active` tinyint(1) DEFAULT '1',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `normal_users`
 --
 
@@ -529,12 +514,6 @@ ALTER TABLE `exhibition_feedback`
   ADD KEY `fk_exhf_user` (`user_id`);
 
 --
--- Indexes for table `feature_banners`
---
-ALTER TABLE `feature_banners`
-  ADD PRIMARY KEY (`banner_id`);
-
---
 -- Indexes for table `normal_users`
 --
 ALTER TABLE `normal_users`
@@ -613,12 +592,6 @@ ALTER TABLE `exhibitions`
 --
 ALTER TABLE `exhibition_feedback`
   MODIFY `feedback_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `feature_banners`
---
-ALTER TABLE `feature_banners`
-  MODIFY `banner_id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `normal_users`

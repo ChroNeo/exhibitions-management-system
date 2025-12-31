@@ -25,15 +25,7 @@ export async function getFeature(
     .filter(Boolean);
   const status = statusList.length ? statusList.join(",") : "published,ongoing";
 
-  const bannerRows = await safeQuery<any[]>(
-    `SELECT image_path AS image, href
-     FROM feature_banners
-     WHERE is_active = 1
-     ORDER BY sort_order ASC, banner_id DESC
-     LIMIT 10`
-  );
-
-  const exhibitions = await safeQuery<any[]>(
+  const exhibitionRows = await safeQuery<any[]>(
     `WITH picked AS (
        SELECT e.exhibition_id, e.exhibition_code, e.title, e.picture_path,
               e.status, e.start_date, e.end_date, e.location
@@ -47,23 +39,20 @@ export async function getFeature(
     [status, limit]
   );
 
-  const featureImages = [
-    ...bannerRows.map((banner) => ({
-      type: "banner",
-      image: banner.image,
-      href: banner.href,
-    })),
-    ...exhibitions.map((exhibition) => ({
-      type: "exhibition",
-      image: exhibition.picture_path,
-      href: `/exhibitions/${exhibition.exhibition_id}`,
-      ref_id: exhibition.exhibition_id,
-      title: exhibition.title,
-      start_date: exhibition.start_date,
-      end_date: exhibition.end_date,
-      location: exhibition.location,
-    })),
-  ];
+  const featureImages = exhibitionRows.map((exhibition) => ({
+    image: exhibition.picture_path,
+    href: `/exhibitions/${exhibition.exhibition_id}`,
+    ref_id: exhibition.exhibition_id,
+  }));
+
+  const exhibitions = exhibitionRows.map((exhibition) => ({
+    exhibition_id: exhibition.exhibition_id,
+    title: exhibition.title,
+    status: exhibition.status,
+    start_date: exhibition.start_date,
+    end_date: exhibition.end_date,
+    location: exhibition.location,
+  }));
 
   return {
     featureImages,
