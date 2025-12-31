@@ -250,6 +250,7 @@ CREATE TABLE `units` (
   `description_delta` json DEFAULT NULL,
   `unit_type` enum('activity','booth') NOT NULL DEFAULT 'booth',
   `poster_url` varchar(500) DEFAULT NULL,
+  `detail_pdf_url` varchar(500) DEFAULT NULL,
   `starts_at` datetime DEFAULT NULL,
   `ends_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
