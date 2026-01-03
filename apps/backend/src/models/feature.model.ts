@@ -9,6 +9,7 @@ export const FeatureQuerySchema = z.object({
 
 export const FeatureImageSchema = z.object({
   image: z.string().nullable(),
+  picture_path: z.string().nullable(),
   href: z.string(),
   ref_id: z.number(),
 });
@@ -16,6 +17,7 @@ export const FeatureImageSchema = z.object({
 export const ExhibitionSummarySchema = z.object({
   exhibition_id: z.number(),
   title: z.string(),
+  picture_path: z.string().nullable(),
   status: z.string().nullable(),
   start_date: z.string().or(z.date()),
   end_date: z.string().or(z.date()),

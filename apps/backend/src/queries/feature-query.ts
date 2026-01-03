@@ -1,18 +1,9 @@
 import { safeQuery } from "../services/dbconn.js";
-
-type FeatureQueryOptions = {
-  limit?: number | string | null;
-  status?: string | null;
-};
-
-type FeatureQueryResult = {
-  featureImages: any[];
-  exhibitions: any[];
-};
+import type { FeatureQuery, FeatureResponse } from "../models/feature.model.js";
 
 export async function getFeature(
-  options: FeatureQueryOptions = {}
-): Promise<FeatureQueryResult> {
+  options: FeatureQuery = {}
+): Promise<FeatureResponse> {
   const limitRaw = options.limit ?? 6;
   const parsedLimit =
     typeof limitRaw === "string" ? Number.parseInt(limitRaw, 10) : Number(limitRaw);
@@ -41,19 +32,20 @@ export async function getFeature(
 
   const featureImages = exhibitionRows.map((exhibition) => ({
     image: exhibition.picture_path,
+    picture_path: exhibition.picture_path,
     href: `/exhibitions/${exhibition.exhibition_id}`,
     ref_id: exhibition.exhibition_id,
   }));
-
+  
   const exhibitions = exhibitionRows.map((exhibition) => ({
     exhibition_id: exhibition.exhibition_id,
     title: exhibition.title,
+    picture_path: exhibition.picture_path,
     status: exhibition.status,
     start_date: exhibition.start_date,
     end_date: exhibition.end_date,
     location: exhibition.location,
   }));
-
   return {
     featureImages,
     exhibitions,
