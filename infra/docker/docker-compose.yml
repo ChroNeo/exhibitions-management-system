@@ -40,6 +40,7 @@ services:
       DB_NAME: ${MYSQL_DATABASE}
     ports: ["${BACKEND_PORT}:${BACKEND_PORT}"]
     volumes:
+      - ../../apps/backend/src:/app/apps/backend/src
       - uploads-data:/app/uploads
     depends_on:
       db: { condition: service_healthy }
@@ -57,6 +58,8 @@ services:
       VITE_HMR_HOST: localhost
       VITE_HMR_PORT: 5173
     ports: ["5173:5173"]
+    volumes:
+      - ../../apps/frontend/src:/app/apps/frontend/src
     depends_on: [backend]
 volumes:
   db-data:
