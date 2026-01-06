@@ -3,6 +3,7 @@ import { z } from "zod";
 // Zod Schemas for Ticket Controller
 
 // Headers schema for authentication
+// Made optional to allow manual validation in route handlers with better error messages
 export const AuthHeaderSchema = z.object({
   authorization: z
     .string()
@@ -10,7 +11,8 @@ export const AuthHeaderSchema = z.object({
     .describe("Bearer token (LINE LIFF ID token)")
     .refine((val) => val.startsWith("Bearer "), {
       message: "Authorization header must start with 'Bearer '",
-    }),
+    })
+    .optional(),
 });
 
 // User Ticket Response
