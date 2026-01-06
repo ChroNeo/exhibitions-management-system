@@ -152,6 +152,38 @@ export async function findUserByLineId(lineUserId: string): Promise<{ userId: nu
   return null;
 }
 
+export type ExhibitionWithUnitsRow = {
+  exhibition_id: number;
+  exhibition_code: string;
+  exhibition_title: string;
+  unit_id: number | null;
+  unit_code: string | null;
+  unit_name: string | null;
+  unit_type: 'activity' | 'booth' | null;
+  is_checked_in: number;
+};
+
+export async function getExhibitionsWithUnitsForUser(userId: number): Promise<ExhibitionWithUnitsRow[]> {
+  const rows = await safeQuery<ExhibitionWithUnitsRow[]>(
+    `
+      SELECT
+        exhibition_id,
+        exhibition_code,
+        exhibition_title,
+        unit_id,
+        unit_code,
+        unit_name,
+        unit_type,
+        is_checked_in
+      FROM v_user_exhibition_checkin_status
+      WHERE user_id = ?
+      ORDER BY exhibition_id, unit_id
+    `,
+    [userId]
+  );
+  return rows;
+}
+
 function buildUsername(displayName: string): string | null {
   const collapsed = displayName
     .normalize("NFKD")

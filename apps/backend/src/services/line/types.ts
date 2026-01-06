@@ -36,6 +36,11 @@ export type LineMessage =
       type: "template";
       altText: string;
       template: LineTemplate;
+    }
+  | {
+      type: "flex";
+      altText: string;
+      contents: any; // Flex Message has complex nested structure
     };
 
 export type LineProfile = {

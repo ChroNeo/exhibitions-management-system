@@ -3,6 +3,7 @@ import {
   findExhibitionForLine,
   findUserByLineId,
   getUpcomingExhibitionsForLine,
+  getExhibitionsWithUnitsForUser,
 } from "../../../queries/line-query.js";
 import { linkRichMenuToUser, replyToLineMessage, unlinkRichMenuFromUser } from "../../line/client.js";
 import type { LineConfig, LineMessage } from "../../line/types.js";
@@ -34,7 +35,6 @@ export async function handleMessageCommand(
   if (isStartCommand(normalized)) {
     const user = await findUserByLineId(userId);
     const role = user?.role || "user";
-
     try {
       if (role === "staff") {
         await linkRichMenuToUser(userId, RICH_MENU_IDS.STAFF, config);
@@ -61,11 +61,15 @@ export async function handleMessageCommand(
     return;
   }
 
+  if (isCertificateCommand(normalized)) {
+    await sendCertificateMessage(replyToken, userId, config, log);
+    return;
+  }
+
   if (isHelpCommand(normalized)) {
     await sendLineTexts(replyToken, [HELP_TEXT], config, log);
     return;
   }
-
   if (isListCommand(normalized)) {
     const exhibitions = await getUpcomingExhibitionsForLine(5);
     if (!exhibitions.length) {
@@ -223,7 +227,17 @@ function isListCommand(normalized: string): boolean {
   }
   return false;
 }
-
+function isCertificateCommand(normalized: string): boolean {
+  return (
+    normalized === "certificate" ||
+    normalized === "cert" ||
+    normalized.includes("certificate") ||
+    normalized.includes("cert") ||
+    normalized === "เกียรติบัตร" ||
+    normalized.includes("เกียรติบัตร") ||
+    normalized.includes("ใบประกาศ")
+  );
+}
 function extractExhibitionCode(input: string): string | null {
   const match = input.toUpperCase().match(/\bEX\d{6}\b/);
   return match ? match[0] : null;
@@ -252,3 +266,223 @@ function getTicketLiffUrl(): string | null {
   }
   return value.trim();
 }
+async function sendCertificateMessage(
+  replyToken: string,
+  userId: string,
+  config: LineConfig,
+  log: FastifyBaseLogger
+): Promise<void> {
+  // Step 1: Find the user by LINE ID
+  const user = await findUserByLineId(userId);
+
+  if (!user) {
+    await sendLineTexts(
+      replyToken,
+      ["ไม่พบข้อมูลผู้ใช้ในระบบ", "กรุณาลงทะเบียนก่อนขอเกียรติบัตร"],
+      config,
+      log
+    );
+    return;
+  }
+
+  // Step 2: Get exhibitions and units for this user
+  const exhibitionsWithUnits = await getExhibitionsWithUnitsForUser(user.userId);
+
+  if (!exhibitionsWithUnits.length) {
+    await sendLineTexts(
+      replyToken,
+      ["คุณยังไม่ได้ลงทะเบียนเข้าร่วมงานใดๆ", "กรุณาลงทะเบียนเข้าร่วมงานก่อนขอเกียรติบัตร"],
+      config,
+      log
+    );
+    return;
+  }
+
+  // Group units by exhibition with check-in status
+  const exhibitionsMap = new Map<number, {
+    code: string;
+    title: string;
+    units: Array<{
+      id: number;
+      code: string | null;
+      name: string;
+      type: 'activity' | 'booth';
+      isCheckedIn: boolean;
+    }>;
+  }>();
+
+  for (const row of exhibitionsWithUnits) {
+    if (!exhibitionsMap.has(row.exhibition_id)) {
+      exhibitionsMap.set(row.exhibition_id, {
+        code: row.exhibition_code,
+        title: row.exhibition_title,
+        units: [],
+      });
+    }
+
+    // Add unit if it exists
+    if (row.unit_id !== null && row.unit_name !== null && row.unit_type !== null) {
+      exhibitionsMap.get(row.exhibition_id)!.units.push({
+        id: row.unit_id,
+        code: row.unit_code,
+        name: row.unit_name,
+        type: row.unit_type,
+        isCheckedIn: row.is_checked_in === 1,
+      });
+    }
+  }
+
+  // Create Flex Messages for each exhibition
+  const flexMessages: LineMessage[] = [];
+
+  for (const [exhibitionId, exhibition] of exhibitionsMap.entries()) {
+    if (exhibition.units.length === 0) continue;
+
+    const totalUnits = exhibition.units.length;
+    const checkedInCount = exhibition.units.filter(u => u.isCheckedIn).length;
+    const progress = totalUnits > 0 ? (checkedInCount / totalUnits) * 100 : 0;
+    const isCompleted = checkedInCount === totalUnits;
+
+    // Create unit list items
+    const unitItems = exhibition.units.map(unit => ({
+      type: "box" as const,
+      layout: "horizontal" as const,
+      contents: [
+        {
+          type: "text" as const,
+          text: unit.isCheckedIn ? "✅" : "⬜",
+          size: "sm" as const,
+          flex: 0,
+        },
+        {
+          type: "text" as const,
+          text: unit.name,
+          size: "sm" as const,
+          wrap: true,
+          color: unit.isCheckedIn ? "#666666" : "#AAAAAA",
+          flex: 1,
+        },
+      ],
+      spacing: "sm" as const,
+      margin: "sm" as const,
+    }));
+
+    const flexMessage: LineMessage = {
+      type: "flex",
+      altText: `สถานะการเข้าร่วม: ${exhibition.title}`,
+      contents: {
+        type: "bubble",
+        header: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "สถานะการเข้าร่วม",
+              weight: "bold",
+              size: "lg",
+              color: "#FFFFFF",
+            },
+            {
+              type: "text",
+              text: exhibition.title,
+              size: "xs",
+              color: "#FFFFFFCC",
+              margin: "sm",
+            },
+          ],
+          backgroundColor: "#27ACB2",
+          paddingAll: "20px",
+        },
+        hero: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: `${checkedInCount} / ${totalUnits}`,
+              size: "4xl",
+              weight: "bold",
+              align: "center",
+              color: isCompleted ? "#06C755" : "#27ACB2",
+            },
+            {
+              type: "text",
+              text: "กิจกรรมที่เข้าร่วม",
+              size: "xs",
+              align: "center",
+              color: "#999999",
+              margin: "sm",
+            },
+            // Progress bar
+            {
+              type: "box",
+              layout: "vertical",
+              contents: [
+                {
+                  type: "box",
+                  layout: "vertical",
+                  contents: [],
+                  width: `${progress}%`,
+                  backgroundColor: isCompleted ? "#06C755" : "#27ACB2",
+                  height: "6px",
+                },
+              ],
+              backgroundColor: "#E0E0E0",
+              height: "6px",
+              margin: "md",
+            },
+          ],
+          paddingAll: "20px",
+        },
+        body: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "รายการกิจกรรม",
+              weight: "bold",
+              size: "sm",
+              margin: "none",
+            },
+            {
+              type: "separator",
+              margin: "md",
+            },
+            ...unitItems,
+          ],
+          paddingAll: "20px",
+        },
+        footer: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "button",
+              action: {
+                type: "message",
+                label: isCompleted ? "🎓 รับเกียรติบัตร" : "ดูรายชื่อกิจกรรมทั้งหมด",
+                text: isCompleted ? `ขอเกียรติบัตร ${exhibition.code}` : `list`,
+              },
+              style: isCompleted ? "primary" : "secondary",
+              color: isCompleted ? "#06C755" : "#27ACB2",
+            },
+          ],
+          paddingAll: "20px",
+        },
+      },
+    };
+
+    flexMessages.push(flexMessage);
+  }
+
+  // Send all Flex Messages
+  try {
+    await replyToLineMessage(replyToken, flexMessages, config);
+  } catch (err) {
+    log.error({ err }, "Failed to send certificate flex message");
+    await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการแสดงสถานะ"], config, log);
+  }
+}
+
