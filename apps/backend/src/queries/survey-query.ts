@@ -1,6 +1,7 @@
 import { AppError } from "../errors.js";
-import { safeQuery } from "../services/dbconn.js";
-import type { Question, QuestionWithSet } from "../models/survey.model.js";
+import { safeQuery, pool } from "../services/dbconn.js";
+import type { Question, QuestionWithSet, QuestionSetWithQuestions } from "../models/survey.model.js";
+import type { ResultSetHeader } from "mysql2";
 
 /**
  * Get questions for an exhibition by exhibition ID
@@ -73,4 +74,153 @@ export async function getQuestionsBySetId(
   );
 
   return rows as Question[];
+}
+
+/**
+ * Get master questions by type (EXHIBITION or UNIT)
+ * Returns questions from the master question set
+ */
+export async function getMasterQuestions(
+  type: "EXHIBITION" | "UNIT"
+): Promise<Question[]> {
+  const masterSetId = type === "EXHIBITION" ? 1 : 2;
+
+  const rows = await safeQuery(
+    `
+    SELECT
+      question_id,
+      set_id,
+      topic
+    FROM questions
+    WHERE set_id = ?
+    ORDER BY question_id
+    `,
+    [masterSetId]
+  );
+
+  return rows as Question[];
+}
+
+/**
+ * Create question set for an exhibition with custom questions
+ * Creates a new question_set, inserts custom questions, and links to exhibition
+ */
+export async function createQuestionSetForExhibition(
+  exhibitionId: number,
+  type: "EXHIBITION" | "UNIT",
+  questionTopics: string[]
+): Promise<QuestionSetWithQuestions> {
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Step 1: Validate exhibition exists and get info
+    const [exhibitionRows] = await connection.query<any[]>(
+      `SELECT exhibition_id, exhibition_code, exhibition_set_id, unit_set_id
+       FROM exhibitions WHERE exhibition_id = ?`,
+      [exhibitionId]
+    );
+
+    if (!exhibitionRows.length) {
+      throw new AppError("Exhibition not found", 404, "NOT_FOUND");
+    }
+
+    const exhibition = exhibitionRows[0];
+
+    // Step 2: Check for duplicate
+    const columnToCheck = type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
+    if (exhibition[columnToCheck] !== null) {
+      throw new AppError(
+        `Exhibition already has a ${type} question set`,
+        409,
+        "DUPLICATE"
+      );
+    }
+
+    // Step 3: Validate questions array
+    if (!questionTopics || questionTopics.length === 0) {
+      throw new AppError(
+        "At least one question is required",
+        400,
+        "VALIDATION_ERROR"
+      );
+    }
+
+    // Step 4: Create new question set
+    const newSetName = `Questions for Exhibition ${exhibition.exhibition_code} (${type})`;
+    const [insertResult] = await connection.query<ResultSetHeader>(
+      `INSERT INTO question_sets (name, is_master, type) VALUES (?, 0, ?)`,
+      [newSetName, type]
+    );
+    const newSetId = insertResult.insertId;
+
+    // Step 5: Insert custom questions (bulk INSERT)
+    const values = questionTopics.map(() => "(?, ?)").join(", ");
+    const params: any[] = [];
+    questionTopics.forEach((topic: string) => {
+      params.push(newSetId, topic);
+    });
+    await connection.query<ResultSetHeader>(
+      `INSERT INTO questions (set_id, topic) VALUES ${values}`,
+      params
+    );
+
+    // Step 7: Update exhibition foreign key
+    const columnToUpdate = type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
+    await connection.query(
+      `UPDATE exhibitions SET ${columnToUpdate} = ? WHERE exhibition_id = ?`,
+      [newSetId, exhibitionId]
+    );
+
+    // Commit transaction
+    await connection.commit();
+
+    // Step 8: Retrieve complete result
+    const [resultRows] = await connection.query<any[]>(
+      `SELECT
+        qs.set_id,
+        qs.name,
+        qs.is_master,
+        qs.type,
+        q.question_id,
+        q.set_id as q_set_id,
+        q.topic
+       FROM question_sets qs
+       LEFT JOIN questions q ON q.set_id = qs.set_id
+       WHERE qs.set_id = ?
+       ORDER BY q.question_id`,
+      [newSetId]
+    );
+
+    if (!resultRows.length) {
+      throw new AppError(
+        "Failed to retrieve created question set",
+        500,
+        "DB_ERROR"
+      );
+    }
+
+    // Transform to nested structure
+    const questionSet: QuestionSetWithQuestions = {
+      set_id: resultRows[0].set_id,
+      name: resultRows[0].name,
+      is_master: resultRows[0].is_master,
+      type: resultRows[0].type,
+      questions: resultRows
+        .filter((row: any) => row.question_id !== null)
+        .map((row: any) => ({
+          question_id: row.question_id,
+          set_id: row.q_set_id,
+          topic: row.topic,
+        })),
+    };
+
+    return questionSet;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }

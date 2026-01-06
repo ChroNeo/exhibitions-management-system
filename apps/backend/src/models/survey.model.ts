@@ -26,7 +26,13 @@ export const QuestionWithSetSchema = QuestionSchema.extend({
   is_master: z.number(),
 });
 
+// Zod Schema for Question Set with Questions
+export const QuestionSetWithQuestionsSchema = QuestionSetSchema.extend({
+  questions: z.array(QuestionSchema),
+});
+
 // Inferred types from Zod schemas
 export type Question = z.infer<typeof QuestionSchema>;
 export type QuestionSet = z.infer<typeof QuestionSetSchema>;
 export type QuestionWithSet = z.infer<typeof QuestionWithSetSchema>;
+export type QuestionSetWithQuestions = z.infer<typeof QuestionSetWithQuestionsSchema>;
