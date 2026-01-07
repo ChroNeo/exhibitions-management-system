@@ -26,7 +26,7 @@
   position: relative;
   background: #1f3d72;
   color: white;
-  padding: 32px 24px;
+  padding: 40px 24px 32px;
   text-align: center;
 }
 
@@ -370,9 +370,8 @@
 
 .back-link {
   position: absolute;
+  top: 16px;
   left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
   background: none;
   border: none;
   padding: 6px;
@@ -383,6 +382,10 @@
   align-items: center;
   justify-content: center;
   opacity: 0.9;
+}
+
+.back-link:active {
+  opacity: 0.6;
 }
 
 .secondary-btn {

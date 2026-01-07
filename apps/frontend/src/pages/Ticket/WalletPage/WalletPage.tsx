@@ -42,11 +42,10 @@ export default function WalletPage() {
             <img src={userProfile.pictureUrl} alt="User" className="avatar" />
           )}
           <div>
-            <span className="greeting">Hello,</span>
             <h2 className="username">{userProfile?.displayName || "Guest"}</h2>
           </div>
         </div>
-        <div className="wallet-title">'งานที่ลงทะเบียน' ({tickets.length})</div>
+        <div className="wallet-title">งานที่ลงทะเบียน ({tickets.length})</div>
       </header>
 
       {/* ... (Render List เหมือนเดิม) ... */}

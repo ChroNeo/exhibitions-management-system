@@ -34,7 +34,6 @@ export default function TicketPage() {
           <button className="back-link" onClick={goBackToWallet}>
             <IoArrowBack />
           </button>
-
           <h1 className="ticket-title">{exhibitionTitle || "E-Ticket"}</h1>
           <p className="subtitle">Please show this QR code to the staff</p>
         </header>

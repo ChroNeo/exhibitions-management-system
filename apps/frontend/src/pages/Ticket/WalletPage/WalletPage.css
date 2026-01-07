@@ -172,8 +172,8 @@
 }
 .info-icon {
   font-size: 16px;
-  color: #0072ff; /* โทนเดียวกับปุ่ม */
-  margin-top: -1px; /* จูน baseline ให้ตรงตัวอักษร */
+  color: #1f3d72;
+  margin-top: -1px;
 }
 
 @keyframes spin {
