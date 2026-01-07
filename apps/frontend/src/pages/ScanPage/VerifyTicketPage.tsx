@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import { QrReader } from '@blackbox-vision/react-qr-reader';
-import { useVerifyTicket } from '../../hook/useVerifyTicket';
-import './StaffScanPage.css';
+import { useState, useRef } from "react";
+import { QrReader } from "@blackbox-vision/react-qr-reader";
+import { useVerifyTicket } from "../../hook/useVerifyTicket";
+import "./StaffScanPage.css";
 
 export default function VerifyTicketPage() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -27,7 +27,7 @@ export default function VerifyTicketPage() {
     if (result) {
       const text = result.getText();
       if (text && !isProcessingRef.current) {
-        console.log('QR Code scanned:', text.substring(0, 20) + '...');
+        console.log("QR Code scanned:", text.substring(0, 20) + "...");
         isProcessingRef.current = true;
         setIsScanning(true);
         handleVerify(text);
@@ -56,7 +56,7 @@ export default function VerifyTicketPage() {
 
       <div className="scan-container">
         {/* Initializing State */}
-        {state.status === 'initializing' && (
+        {state.status === "initializing" && (
           <div className="loading-spinner">
             <div className="spinner"></div>
             <p>Initializing LIFF...</p>
@@ -64,14 +64,14 @@ export default function VerifyTicketPage() {
         )}
 
         {/* Not Logged In State */}
-        {state.status === 'not_logged_in' && (
+        {state.status === "not_logged_in" && (
           <div className="loading-spinner">
             <p>Redirecting to login...</p>
           </div>
         )}
 
         {/* Idle State - Ready to Scan */}
-        {state.status === 'idle' && !isCameraOpen && (
+        {state.status === "idle" && !isCameraOpen && (
           <div className="result-card">
             <div className="status-icon">📷</div>
             <h2>Ready to Scan</h2>
@@ -83,7 +83,7 @@ export default function VerifyTicketPage() {
         )}
 
         {/* Error Display */}
-        {state.status === 'error' && (
+        {state.status === "error" && (
           <div className="result-card fail">
             <div className="status-icon">❌</div>
             <h2>Connection Error</h2>
@@ -95,10 +95,14 @@ export default function VerifyTicketPage() {
         )}
 
         {/* Scan Result Display */}
-        {state.status === 'success' && state.result && (
-          <div className={`result-card ${state.result.success ? 'success' : 'fail'}`}>
+        {state.status === "success" && state.result && (
+          <div
+            className={`result-card ${
+              state.result.success ? "success" : "fail"
+            }`}
+          >
             <div className="status-icon">
-              {state.result.success ? '✅' : '⚠️'}
+              {state.result.success ? "✅" : "⚠️"}
             </div>
             <h2>{state.result.message}</h2>
 
@@ -116,11 +120,14 @@ export default function VerifyTicketPage() {
                     <strong>Name:</strong> {state.result.visitor.full_name}
                   </p>
                   <p className="checkin-time">
-                    <strong>Check-in Time:</strong>{' '}
-                    {new Date(state.result.visitor.checkin_at).toLocaleString('th-TH', {
-                      dateStyle: 'medium',
-                      timeStyle: 'medium'
-                    })}
+                    <strong>Check-in Time:</strong>{" "}
+                    {new Date(state.result.visitor.checkin_at).toLocaleString(
+                      "th-TH",
+                      {
+                        dateStyle: "medium",
+                        timeStyle: "medium",
+                      }
+                    )}
                   </p>
                 </div>
               </div>
@@ -133,13 +140,13 @@ export default function VerifyTicketPage() {
             )}
 
             <button className="next-btn" onClick={handleReset}>
-              {state.result.success ? 'Scan Next' : 'Try Again'}
+              {state.result.success ? "Scan Next" : "Try Again"}
             </button>
           </div>
         )}
 
         {/* Loading State */}
-        {state.status === 'loading' && (
+        {state.status === "loading" && (
           <div className="loading-spinner">
             <div className="spinner"></div>
             <p>Verifying ticket...</p>
@@ -147,31 +154,31 @@ export default function VerifyTicketPage() {
         )}
 
         {/* Camera */}
-        {state.status === 'idle' && isCameraOpen && !isScanning && (
+        {state.status === "idle" && isCameraOpen && !isScanning && (
           <div className="camera-wrapper">
             <QrReader
               onResult={onScan}
               constraints={{
-                facingMode: 'environment',
-                aspectRatio: 1
+                facingMode: "environment",
+                aspectRatio: 1,
               }}
               videoId="video"
               scanDelay={100}
               containerStyle={{
-                width: '100%',
-                height: '100%'
+                width: "100%",
+                height: "100%",
               }}
               videoStyle={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
               }}
             />
           </div>
         )}
 
         {/* Scanning Overlay - shown when processing */}
-        {state.status === 'idle' && isCameraOpen && isScanning && (
+        {state.status === "idle" && isCameraOpen && isScanning && (
           <div className="camera-wrapper">
             <div className="scanning-overlay">
               <div className="spinner"></div>

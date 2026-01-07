@@ -35,7 +35,7 @@ export default function TicketPage() {
             <IoArrowBack />
           </button>
           <h1 className="ticket-title">{exhibitionTitle || "E-Ticket"}</h1>
-          <p className="subtitle">Please show this QR code to the staff</p>
+          <p className="subtitle">โปรดแสดงคิวอาร์โค้ดนี้ให้เจ้าหน้าที่</p>
         </header>
 
         <div className="ticket-content">
@@ -72,16 +72,16 @@ export default function TicketPage() {
                 <div className="info-card success">
                   <span className="icon">✓</span>
                   <div className="info-text">
-                    <strong>Ready to Scan</strong>
-                    <p>Valid for single entry</p>
+                    <strong>พร้อมสำหรับการสแกน</strong>
+                    <p>ใช้ได้สำหรับการเข้าครั้งเดียว</p>
                   </div>
                 </div>
 
                 <div className="expiry-info">
                   <div className="expiry-countdown">
-                    Expires in {state.expiresIn}s
+                    หมดอายุใน {state.expiresIn}วินาที
                   </div>
-                  <p className="refresh-hint">Auto-refreshes every 5 mins</p>
+                  <p className="refresh-hint">รีเฟรชอัตโนมัติทุก 5 นาที</p>
                 </div>
               </div>
             </div>
