@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { MdEdit, MdDelete, MdCheck } from "react-icons/md";
 import { useMasterQuestions } from "../../hook/useMasterQuestions";
 import { useCreateQuestionSet } from "../../hook/useCreateQuestionSet";
+import { useSurveyQuestions } from "../../hook/useSurveyQuestions";
 import type { QuestionType } from "../../types/survey";
 import styles from "./CreateSurvey.module.css";
 
@@ -17,21 +18,34 @@ interface CustomQuestion {
 export default function CreateSurveyPage() {
   const { exhibition_id } = useParams<{ exhibition_id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [selectedType, setSelectedType] = useState<QuestionType | null>(null);
+  const isEditMode = searchParams.get("edit") === "true";
+  const editType = searchParams.get("type") as QuestionType | null;
+
+  const [selectedType, setSelectedType] = useState<QuestionType | null>(editType || null);
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
   const [excludedMasterIds, setExcludedMasterIds] = useState<number[]>([]);
 
   const { data: masterQuestions, isLoading: isLoadingMaster } =
     useMasterQuestions(selectedType!, { enabled: !!selectedType });
 
+  const { data: existingQuestions, isLoading: isLoadingExisting } =
+    useSurveyQuestions(
+      {
+        exhibition_id: exhibition_id!,
+        type: selectedType!,
+      },
+      { enabled: isEditMode && !!selectedType }
+    );
+
   const { mutateAsync: createQuestionSet, isPending: isCreating } =
     useCreateQuestionSet();
 
   useEffect(() => {
-    if (isLoadingMaster) {
+    if (isLoadingMaster || isLoadingExisting) {
       Swal.fire({
-        title: "Loading master questions...",
+        title: isEditMode ? "Loading existing questions..." : "Loading master questions...",
         didOpen: () => {
           Swal.showLoading();
         },
@@ -39,7 +53,23 @@ export default function CreateSurveyPage() {
     } else {
       Swal.close();
     }
-  }, [isLoadingMaster]);
+  }, [isLoadingMaster, isLoadingExisting, isEditMode]);
+
+  // Populate form with existing questions in edit mode
+  useEffect(() => {
+    if (isEditMode && existingQuestions && existingQuestions.length > 0) {
+      // Convert existing questions to custom questions format
+      const existingCustomQuestions: CustomQuestion[] = existingQuestions.map(
+        (q) => ({
+          id: `existing-${q.question_id}`,
+          topic: q.topic,
+          isEditing: false,
+          originalMasterId: q.is_master ? q.question_id : undefined,
+        })
+      );
+      setCustomQuestions(existingCustomQuestions);
+    }
+  }, [isEditMode, existingQuestions]);
 
   const handleTypeSelect = (type: QuestionType) => {
     setSelectedType(type);
@@ -170,7 +200,7 @@ export default function CreateSurveyPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Create Survey</h1>
+      <h1>{isEditMode ? "Edit Survey" : "Create Survey"}</h1>
       <p>Exhibition ID: {exhibition_id}</p>
 
       <div className={styles.section}>
@@ -181,6 +211,7 @@ export default function CreateSurveyPage() {
             className={`${styles.typeButton} ${
               selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
             }`}
+            disabled={isEditMode}
           >
             Exhibition Survey
           </button>
@@ -189,6 +220,7 @@ export default function CreateSurveyPage() {
             className={`${styles.typeButton} ${
               selectedType === "UNIT" ? styles.typeButtonActive : ""
             }`}
+            disabled={isEditMode}
           >
             Unit Survey
           </button>
@@ -427,7 +459,13 @@ export default function CreateSurveyPage() {
               disabled={isCreating}
               className={styles.createButton}
             >
-              {isCreating ? "Creating..." : "Create Survey"}
+              {isCreating
+                ? isEditMode
+                  ? "Updating..."
+                  : "Creating..."
+                : isEditMode
+                ? "Update Survey"
+                : "Create Survey"}
             </button>
             <button
               onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
