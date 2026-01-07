@@ -14,8 +14,13 @@ export interface QuestionSet {
   created_at: string;
 }
 
-export interface QuestionWithSet extends Question {
-  question_sets: QuestionSet;
+export interface QuestionWithSet {
+  question_id: number;
+  set_id: number;
+  topic: string;
+  set_name: string;
+  set_type: QuestionType;
+  is_master: number;
 }
 
 export interface QuestionSetWithQuestions extends QuestionSet {
