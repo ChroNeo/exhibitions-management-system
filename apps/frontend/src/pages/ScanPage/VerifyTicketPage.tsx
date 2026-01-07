@@ -1,30 +1,50 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { QrReader } from '@blackbox-vision/react-qr-reader';
 import { useVerifyTicket } from '../../hook/useVerifyTicket';
 import './StaffScanPage.css';
 
 export default function VerifyTicketPage() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const isProcessingRef = useRef(false);
   const { state, verifyTicket, reset } = useVerifyTicket({ enableLiff: true });
 
   const handleVerify = async (token: string) => {
     setIsCameraOpen(false);
-    await verifyTicket(token);
+    setIsScanning(false);
+
+    try {
+      await verifyTicket(token);
+    } finally {
+      isProcessingRef.current = false;
+    }
   };
 
   const onScan = (result?: { getText(): string } | null) => {
+    // Prevent scanning if already processing or camera is closed
+    if (!isCameraOpen || isScanning || isProcessingRef.current) return;
+
     if (result) {
       const text = result.getText();
-      if (text) handleVerify(text);
+      if (text && !isProcessingRef.current) {
+        console.log('QR Code scanned:', text.substring(0, 20) + '...');
+        isProcessingRef.current = true;
+        setIsScanning(true);
+        handleVerify(text);
+      }
     }
   };
 
   const handleReset = () => {
     reset();
+    isProcessingRef.current = false;
+    setIsScanning(false);
     setIsCameraOpen(true);
   };
 
   const handleStartScanning = () => {
+    isProcessingRef.current = false;
+    setIsScanning(false);
     setIsCameraOpen(true);
   };
 
@@ -127,7 +147,7 @@ export default function VerifyTicketPage() {
         )}
 
         {/* Camera */}
-        {state.status === 'idle' && isCameraOpen && (
+        {state.status === 'idle' && isCameraOpen && !isScanning && (
           <div className="camera-wrapper">
             <QrReader
               onResult={onScan}
@@ -136,7 +156,7 @@ export default function VerifyTicketPage() {
                 aspectRatio: 1
               }}
               videoId="video"
-              scanDelay={300}
+              scanDelay={100}
               containerStyle={{
                 width: '100%',
                 height: '100%'
@@ -147,6 +167,16 @@ export default function VerifyTicketPage() {
                 objectFit: 'cover'
               }}
             />
+          </div>
+        )}
+
+        {/* Scanning Overlay - shown when processing */}
+        {state.status === 'idle' && isCameraOpen && isScanning && (
+          <div className="camera-wrapper">
+            <div className="scanning-overlay">
+              <div className="spinner"></div>
+              <p>QR Code Detected! Verifying...</p>
+            </div>
           </div>
         )}
       </div>
