@@ -9,6 +9,9 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import WalletPage from "./pages/Ticket/WalletPage/WalletPage";
 import TicketPage from "./pages/Ticket/TicketPage";
 import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
+import ExhibitionSurveyPage from "./pages/Survey/ExhibitionSurveyPage";
+import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
+import CreateSurveyPage from "./pages/Survey/CreateSurveyPage";
 
 export default function App() {
   return (
@@ -46,6 +49,12 @@ export default function App() {
       <Route path="/wallet" element={<WalletPage />} />
       <Route path="/wallet/ticket" element={<TicketPage />} />
       <Route path="/scan" element={<VerifyTicketPage/>} />
+
+      {/* Survey Routes */}
+      <Route path="/survey/create/:exhibition_id" element={<CreateSurveyPage />} />
+      <Route path="/survey/exhibitions/:ex_id" element={<ExhibitionSurveyPage />} />
+      <Route path="/survey/units/:unit_id" element={<UnitSurveyPage />} />
+
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
