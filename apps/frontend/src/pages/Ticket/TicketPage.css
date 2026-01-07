@@ -23,15 +23,15 @@
 
 /* Header */
 .ticket-header {
-  position: relative;
   background: #1f3d72;
   color: white;
-  padding: 40px 24px 32px;
+  padding: 44px 24px 32px;
   text-align: center;
+  position: relative;
 }
 
 .ticket-header h1 {
-  margin: 0;
+  margin: 14px 0 0;
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -363,21 +363,16 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-.ticket-header {
-  position: relative;
-  /* เพื่อให้ปุ่ม Back อ้างอิงตำแหน่งได้ */
-}
-
 .back-link {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: 12px;
+  left: 12px;
   background: none;
   border: none;
   padding: 6px;
   cursor: pointer;
   color: #ffffff;
-  font-size: 24px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
