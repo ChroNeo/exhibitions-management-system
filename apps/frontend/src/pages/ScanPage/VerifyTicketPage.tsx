@@ -10,9 +10,10 @@ export default function VerifyTicketPage() {
   const { state, verifyTicket, reset } = useVerifyTicket({ enableLiff: true });
 
   const handleVerify = async (token: string) => {
+    setIsCameraOpen(false);
+    setIsScanning(false);
+
     try {
-      setIsCameraOpen(false);
-      setIsScanning(false);
       await verifyTicket(token);
     } finally {
       isProcessingRef.current = false;
@@ -25,7 +26,8 @@ export default function VerifyTicketPage() {
 
     if (result) {
       const text = result.getText();
-      if (text) {
+      if (text && !isProcessingRef.current) {
+        console.log('QR Code scanned:', text.substring(0, 20) + '...');
         isProcessingRef.current = true;
         setIsScanning(true);
         handleVerify(text);
@@ -145,7 +147,7 @@ export default function VerifyTicketPage() {
         )}
 
         {/* Camera */}
-        {state.status === 'idle' && isCameraOpen && (
+        {state.status === 'idle' && isCameraOpen && !isScanning && (
           <div className="camera-wrapper">
             <QrReader
               onResult={onScan}
@@ -165,12 +167,16 @@ export default function VerifyTicketPage() {
                 objectFit: 'cover'
               }}
             />
-            {isScanning && (
-              <div className="scanning-overlay">
-                <div className="spinner"></div>
-                <p>QR Code Detected! Verifying...</p>
-              </div>
-            )}
+          </div>
+        )}
+
+        {/* Scanning Overlay - shown when processing */}
+        {state.status === 'idle' && isCameraOpen && isScanning && (
+          <div className="camera-wrapper">
+            <div className="scanning-overlay">
+              <div className="spinner"></div>
+              <p>QR Code Detected! Verifying...</p>
+            </div>
           </div>
         )}
       </div>
