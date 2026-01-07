@@ -55,6 +55,18 @@ export function useTickets(options: UseTicketsOptions = {}) {
       }
     } catch (error) {
       console.error('Failed to fetch QR code:', error);
+
+      // Handle 401 Unauthorized - token expired, logout and redirect to login
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setState({ status: 'not_logged_in' });
+        // Logout first to clear the expired token, then login again
+        if (liff.isLoggedIn()) {
+          liff.logout();
+        }
+        liff.login({ redirectUri: window.location.href });
+        return;
+      }
+
       let errorMessage = 'Failed to generate QR code';
 
       if (axios.isAxiosError(error)) {
