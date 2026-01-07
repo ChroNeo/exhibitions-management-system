@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { MdEdit, MdDelete, MdCheck } from "react-icons/md";
 import { useMasterQuestions } from "../../hook/useMasterQuestions";
 import { useCreateQuestionSet } from "../../hook/useCreateQuestionSet";
 import type { QuestionType } from "../../types/survey";
+import styles from "./CreateSurvey.module.css";
 
 interface CustomQuestion {
   id: string;
   topic: string;
   isEditing: boolean;
+  originalMasterId?: number;
 }
 
 export default function CreateSurveyPage() {
@@ -17,13 +20,13 @@ export default function CreateSurveyPage() {
 
   const [selectedType, setSelectedType] = useState<QuestionType | null>(null);
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
+  const [excludedMasterIds, setExcludedMasterIds] = useState<number[]>([]);
 
-  const { data: masterQuestions, isLoading: isLoadingMaster } = useMasterQuestions(
-    selectedType!,
-    { enabled: !!selectedType }
-  );
+  const { data: masterQuestions, isLoading: isLoadingMaster } =
+    useMasterQuestions(selectedType!, { enabled: !!selectedType });
 
-  const { mutateAsync: createQuestionSet, isPending: isCreating } = useCreateQuestionSet();
+  const { mutateAsync: createQuestionSet, isPending: isCreating } =
+    useCreateQuestionSet();
 
   useEffect(() => {
     if (isLoadingMaster) {
@@ -41,6 +44,7 @@ export default function CreateSurveyPage() {
   const handleTypeSelect = (type: QuestionType) => {
     setSelectedType(type);
     setCustomQuestions([]);
+    setExcludedMasterIds([]);
   };
 
   const handleAddNewQuestion = () => {
@@ -78,6 +82,28 @@ export default function CreateSurveyPage() {
     setCustomQuestions(customQuestions.filter((q) => q.id !== id));
   };
 
+  const handleEditQuestion = (id: string) => {
+    setCustomQuestions(
+      customQuestions.map((q) => (q.id === id ? { ...q, isEditing: true } : q))
+    );
+  };
+
+  const handleEditMasterQuestion = (masterId: number, topic: string) => {
+    // Mark master question as excluded and create editable custom version
+    setExcludedMasterIds([...excludedMasterIds, masterId]);
+    const newQuestion: CustomQuestion = {
+      id: `master-${masterId}-${Date.now()}`,
+      topic: topic,
+      isEditing: true,
+      originalMasterId: masterId,
+    };
+    setCustomQuestions([...customQuestions, newQuestion]);
+  };
+
+  const handleDeleteMasterQuestion = (masterId: number) => {
+    setExcludedMasterIds([...excludedMasterIds, masterId]);
+  };
+
   const handleSubmit = async () => {
     if (!selectedType) {
       Swal.fire({
@@ -105,7 +131,9 @@ export default function CreateSurveyPage() {
     }
 
     const allQuestions = [
-      ...(masterQuestions || []).map((q) => ({ topic: q.topic })),
+      ...(masterQuestions || [])
+        .filter((q) => !excludedMasterIds.includes(q.question_id))
+        .map((q) => ({ topic: q.topic })),
       ...customQuestions.map((q) => ({ topic: q.topic })),
     ];
 
@@ -141,28 +169,26 @@ export default function CreateSurveyPage() {
   };
 
   return (
-    <div style={styles.container}>
+    <div className={styles.container}>
       <h1>Create Survey</h1>
       <p>Exhibition ID: {exhibition_id}</p>
 
-      <div style={styles.section}>
+      <div className={styles.section}>
         <h2>Select Survey Type</h2>
-        <div style={styles.buttonGroup}>
+        <div className={styles.buttonGroup}>
           <button
             onClick={() => handleTypeSelect("EXHIBITION")}
-            style={{
-              ...styles.typeButton,
-              ...(selectedType === "EXHIBITION" ? styles.typeButtonActive : {}),
-            }}
+            className={`${styles.typeButton} ${
+              selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
+            }`}
           >
             Exhibition Survey
           </button>
           <button
             onClick={() => handleTypeSelect("UNIT")}
-            style={{
-              ...styles.typeButton,
-              ...(selectedType === "UNIT" ? styles.typeButtonActive : {}),
-            }}
+            className={`${styles.typeButton} ${
+              selectedType === "UNIT" ? styles.typeButtonActive : ""
+            }`}
           >
             Unit Survey
           </button>
@@ -171,74 +197,242 @@ export default function CreateSurveyPage() {
 
       {selectedType && (
         <>
-          <div style={styles.section}>
-            <button onClick={handleAddNewQuestion} style={styles.addButton}>
-              Add Question
-            </button>
-          </div>
-
-          <div style={styles.section}>
+          <div className={styles.section}>
             <h2>Questions</h2>
+            <div>
+              {masterQuestions?.map((masterQuestion) => {
+                // Check if this master question is being edited
+                const editedVersion = customQuestions.find(
+                  (q) => q.originalMasterId === masterQuestion.question_id
+                );
 
-            {masterQuestions?.map((question) => (
-              <div key={question.question_id} style={styles.questionItem}>
-                <input
-                  type="text"
-                  value={question.topic}
-                  disabled
-                  placeholder="Topic"
-                  style={styles.inputDisabled}
-                />
-                <input
-                  type="text"
-                  disabled
-                  placeholder="Answer"
-                  style={styles.inputDisabled}
-                />
-              </div>
-            ))}
+                // If being edited, show the custom version
+                if (editedVersion) {
+                  const questionIndex =
+                    masterQuestions?.findIndex(
+                      (q) => q.question_id === editedVersion.originalMasterId
+                    ) ?? 0;
 
-            {customQuestions.map((question) => (
-              <div key={question.id} style={styles.questionItem}>
-                <input
-                  type="text"
-                  value={question.topic}
-                  onChange={(e) => handleUpdateQuestionTopic(question.id, e.target.value)}
-                  disabled={!question.isEditing}
-                  placeholder="Topic"
-                  style={question.isEditing ? styles.input : styles.inputDisabled}
-                />
-                <input
-                  type="text"
-                  disabled
-                  placeholder="Answer"
-                  style={styles.inputDisabled}
-                />
-                <div style={styles.buttonGroup}>
-                  {question.isEditing && (
-                    <button
-                      onClick={() => handleConfirmQuestion(question.id)}
-                      style={styles.okButton}
-                    >
-                      OK
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDeleteQuestion(question.id)}
-                    style={styles.deleteButton}
+                  return (
+                    <div key={editedVersion.id} className={styles.questionItem}>
+                      <div className={styles.inputGroup}>
+                        {editedVersion.isEditing ? (
+                          <input
+                            type="text"
+                            value={editedVersion.topic}
+                            onChange={(e) =>
+                              handleUpdateQuestionTopic(
+                                editedVersion.id,
+                                e.target.value
+                              )
+                            }
+                            placeholder="Topic"
+                            className={styles.input}
+                          />
+                        ) : (
+                          <h2 className={styles.topicHeading}>
+                            {questionIndex + 1}. {editedVersion.topic}
+                          </h2>
+                        )}
+                        <div className={styles.ratingContainer}>
+                          {[1, 2, 3, 4, 5].map((rating) => (
+                            <label
+                              key={rating}
+                              className={styles.ratingOption}
+                            >
+                              <input
+                                type="radio"
+                                name={`question-${editedVersion.id}`}
+                                value={rating}
+                                disabled
+                                className={styles.radioInput}
+                              />
+                              <span className={styles.ratingLabel}>{rating}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className={styles.buttonGroup}>
+                          {editedVersion.isEditing ? (
+                            <button
+                              onClick={() =>
+                                handleConfirmQuestion(editedVersion.id)
+                              }
+                              className={styles.iconButtonOk}
+                            >
+                              <MdCheck size={20} />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleEditQuestion(editedVersion.id)
+                              }
+                              className={styles.iconButton}
+                            >
+                              <MdEdit size={20} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() =>
+                              handleDeleteQuestion(editedVersion.id)
+                            }
+                            className={styles.iconButtonDelete}
+                          >
+                            <MdDelete size={20} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // If deleted, don't show anything
+                if (excludedMasterIds.includes(masterQuestion.question_id)) {
+                  return null;
+                }
+
+                // Otherwise show the master question
+                return (
+                  <div
+                    key={masterQuestion.question_id}
+                    className={styles.questionItem}
                   >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+                    <div className={styles.inputGroup}>
+                      <h2 className={styles.topicHeading}>
+                        {(masterQuestions?.findIndex(
+                          (q) => q.question_id === masterQuestion.question_id
+                        ) ?? -1) + 1}
+                        . {masterQuestion.topic}
+                      </h2>
+                      <div className={styles.ratingContainer}>
+                        {[1, 2, 3, 4, 5].map((rating) => (
+                          <label key={rating} className={styles.ratingOption}>
+                            <input
+                              type="radio"
+                              name={`question-${masterQuestion.question_id}`}
+                              value={rating}
+                              disabled
+                              className={styles.radioInput}
+                            />
+                            <span className={styles.ratingLabel}>{rating}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className={styles.buttonGroup}>
+                        <button
+                          onClick={() =>
+                            handleEditMasterQuestion(
+                              masterQuestion.question_id,
+                              masterQuestion.topic
+                            )
+                          }
+                          className={styles.iconButton}
+                        >
+                          <MdEdit size={20} />
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDeleteMasterQuestion(
+                              masterQuestion.question_id
+                            )
+                          }
+                          className={styles.iconButtonDelete}
+                        >
+                          <MdDelete size={20} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {customQuestions
+                .filter((q) => !q.originalMasterId)
+                .map((question, index) => {
+                  const totalMasterQuestions = masterQuestions?.length || 0;
+                  const questionNumber = totalMasterQuestions + index + 1;
+
+                  return (
+                    <div key={question.id} className={styles.questionItem}>
+                      <div className={styles.inputGroup}>
+                        {question.isEditing ? (
+                          <input
+                            type="text"
+                            value={question.topic}
+                            onChange={(e) =>
+                              handleUpdateQuestionTopic(
+                                question.id,
+                                e.target.value
+                              )
+                            }
+                            placeholder="Topic"
+                            className={styles.input}
+                          />
+                        ) : (
+                          <h2 className={styles.topicHeading}>
+                            {questionNumber}. {question.topic}
+                          </h2>
+                        )}
+                        <div className={styles.ratingContainer}>
+                          {[1, 2, 3, 4, 5].map((rating) => (
+                            <label key={rating} className={styles.ratingOption}>
+                              <input
+                                type="radio"
+                                name={`question-${question.id}`}
+                                value={rating}
+                                disabled
+                                className={styles.radioInput}
+                              />
+                              <span className={styles.ratingLabel}>{rating}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className={styles.buttonGroup}>
+                          {question.isEditing ? (
+                            <button
+                              onClick={() => handleConfirmQuestion(question.id)}
+                              className={styles.iconButtonOk}
+                            >
+                              <MdCheck size={20} />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleEditQuestion(question.id)}
+                              className={styles.iconButton}
+                            >
+                              <MdEdit size={20} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            className={styles.iconButtonDelete}
+                          >
+                            <MdDelete size={20} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+            <div className={styles.section}>
+              <button onClick={handleAddNewQuestion} className={styles.addButton}>
+                Add Question
+              </button>
+            </div>
           </div>
 
-          <div style={styles.submitSection}>
-            <button onClick={handleSubmit} disabled={isCreating} style={styles.createButton}>
+          <div className={styles.submitSection}>
+            <button
+              onClick={handleSubmit}
+              disabled={isCreating}
+              className={styles.createButton}
+            >
               {isCreating ? "Creating..." : "Create Survey"}
             </button>
-            <button onClick={() => navigate(`/exhibitions/${exhibition_id}`)} style={styles.cancelButton}>
+            <button
+              onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
+              className={styles.cancelButton}
+            >
               Cancel
             </button>
           </div>
@@ -247,100 +441,3 @@ export default function CreateSurveyPage() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    padding: "20px",
-    maxWidth: "800px",
-    margin: "0 auto",
-  },
-  section: {
-    marginBottom: "30px",
-  },
-  buttonGroup: {
-    display: "flex",
-    gap: "10px",
-  },
-  typeButton: {
-    padding: "10px 20px",
-    backgroundColor: "#ddd",
-    color: "black",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  typeButtonActive: {
-    backgroundColor: "#4CAF50",
-    color: "white",
-  },
-  addButton: {
-    padding: "10px 20px",
-    backgroundColor: "#2196F3",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  questionItem: {
-    marginBottom: "15px",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "10px",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-    fontSize: "14px",
-  },
-  inputDisabled: {
-    width: "100%",
-    padding: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-    backgroundColor: "#f5f5f5",
-    color: "#666",
-    cursor: "not-allowed",
-    fontSize: "14px",
-  },
-  okButton: {
-    padding: "10px 20px",
-    backgroundColor: "#4CAF50",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  deleteButton: {
-    padding: "10px 20px",
-    backgroundColor: "#f44336",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  submitSection: {
-    marginTop: "30px",
-    display: "flex",
-    gap: "10px",
-  },
-  createButton: {
-    padding: "12px 30px",
-    backgroundColor: "#4CAF50",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "16px",
-  },
-  cancelButton: {
-    padding: "12px 30px",
-    backgroundColor: "#9E9E9E",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "16px",
-  },
-};
