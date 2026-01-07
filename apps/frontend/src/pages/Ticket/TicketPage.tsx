@@ -1,10 +1,16 @@
 import { QRCodeSVG } from "qrcode.react";
 import "./TicketPage.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTickets } from "../../hook/useTickets";
+import { IoArrowBack } from "react-icons/io5";
+interface LocationState {
+  title?: string;
+}
 
 export default function TicketPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const exhibitionTitle = (location.state as LocationState)?.title;
 
   // Get exhibition_id from URL query string
   const params = new URLSearchParams(window.location.search);
@@ -13,7 +19,7 @@ export default function TicketPage() {
   // Use the custom hook
   const { state, refetch } = useTickets({
     exhibitionId,
-    autoRefresh: true
+    autoRefresh: true,
   });
 
   // Function to go back to Wallet
@@ -25,12 +31,12 @@ export default function TicketPage() {
     <div className="ticket-page">
       <div className="ticket-container">
         <header className="ticket-header">
-          {/* ✅ 3. เพิ่มปุ่ม Back เล็กๆ ด้านบน */}
           <button className="back-link" onClick={goBackToWallet}>
-            &lt; Back
+            <IoArrowBack />
           </button>
-          <h1>🎫 E-Ticket</h1>
-          <p className="subtitle">Please show this QR at the entrance</p>
+
+          <h1 className="ticket-title">{exhibitionTitle || "E-Ticket"}</h1>
+          <p className="subtitle">Please show this QR code to the staff</p>
         </header>
 
         <div className="ticket-content">
