@@ -24,7 +24,7 @@ export default function TicketPage() {
 
   // Function to go back to Wallet
   const goBackToWallet = () => {
-    navigate("/ticket");
+    navigate("/wallet");
   };
 
   return (
