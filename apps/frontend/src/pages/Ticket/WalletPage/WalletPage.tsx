@@ -2,22 +2,25 @@ import "./WalletPage.css";
 import { useNavigate } from "react-router-dom";
 import { useWalletData } from "../../../hook/ีuseWalletData";
 import { toThaiDate } from "../../../utils/dateFormat";
+import { IoLocationOutline } from "react-icons/io5";
+import { MdOutlineCalendarToday } from "react-icons/md";
 const LIFF_CONFIG = {
-  apiUrl:
-    import.meta.env.VITE_BASE 
+  apiUrl: import.meta.env.VITE_BASE,
 };
 export default function WalletPage() {
   const navigate = useNavigate();
   const { tickets, userProfile, loading, error, refetch } = useWalletData();
   // ฟังก์ชันเมื่อกดเลือกตั๋ว
-  const handleSelectTicket = (exhibitionId: number) => {
-    navigate(`/wallet/ticket?exhibition_id=${exhibitionId}`);
+  const handleSelectTicket = (exhibitionId: number, title: string) => {
+    navigate(`/wallet/ticket?exhibition_id=${exhibitionId}`, {
+      state: { title },
+    });
   };
   if (loading) {
     return (
       <div className="loading-screen">
         <div className="spinner"></div>
-        <p>กำลังโหลดกระเป๋าตังค์...</p>
+        <p>กำลังโหลดงานที่ลงทะเบียน...</p>
       </div>
     );
   }
@@ -43,7 +46,7 @@ export default function WalletPage() {
             <h2 className="username">{userProfile?.displayName || "Guest"}</h2>
           </div>
         </div>
-        <div className="wallet-title">My Tickets ({tickets.length})</div>
+        <div className="wallet-title">'งานที่ลงทะเบียน' ({tickets.length})</div>
       </header>
 
       {/* ... (Render List เหมือนเดิม) ... */}
@@ -58,7 +61,9 @@ export default function WalletPage() {
             <div
               key={ticket.registration_id}
               className="ticket-card"
-              onClick={() => handleSelectTicket(ticket.exhibition_id)}
+              onClick={() =>
+                handleSelectTicket(ticket.exhibition_id, ticket.title)
+              }
             >
               {/* รูปปกงาน */}
               <div className="card-image">
@@ -78,8 +83,14 @@ export default function WalletPage() {
               <div className="card-content">
                 <h3 className="event-title">{ticket.title}</h3>
                 <div className="event-info">
-                  <p>📅 {toThaiDate(ticket.start_date)}</p>
-                  <p>📍 {ticket.location || "TBA"}</p>
+                  <p>
+                    <MdOutlineCalendarToday className="info-icon" />
+                    {toThaiDate(ticket.start_date)}
+                  </p>
+                  <p>
+                    <IoLocationOutline className="info-icon" />
+                    {ticket.location || "TBA"}
+                  </p>
                 </div>
                 <button className="view-qr-btn">Show QR Code &gt;</button>
               </div>
