@@ -31,8 +31,36 @@ export const QuestionSetWithQuestionsSchema = QuestionSetSchema.extend({
   questions: z.array(QuestionSchema),
 });
 
+// Zod Schema for Survey Submission Request
+export const DoSurveyBodySchema = z.object({
+  exhibition_id: z.number().int().positive(),
+  unit_id: z.number().int().positive().optional(), // null/undefined = exhibition survey
+  comment: z.string().max(1000).optional(),
+  answers: z.array(z.object({
+    question_id: z.number().int().positive(),
+    score: z.number().int().min(1).max(5),
+  })).min(1, "At least one answer is required"),
+});
+
+// Zod Schema for Survey Submission Response
+export const SurveySubmissionResponseSchema = z.object({
+  submission_id: z.number(),
+  exhibition_id: z.number(),
+  unit_id: z.number().nullable(),
+  user_id: z.number(),
+  comment: z.string().nullable(),
+  created_at: z.string(),
+  answers: z.array(z.object({
+    answer_id: z.number(),
+    question_id: z.number(),
+    score: z.number(),
+  })),
+});
+
 // Inferred types from Zod schemas
 export type Question = z.infer<typeof QuestionSchema>;
 export type QuestionSet = z.infer<typeof QuestionSetSchema>;
 export type QuestionWithSet = z.infer<typeof QuestionWithSetSchema>;
 export type QuestionSetWithQuestions = z.infer<typeof QuestionSetWithQuestionsSchema>;
+export type DoSurveyBody = z.infer<typeof DoSurveyBodySchema>;
+export type SurveySubmissionResponse = z.infer<typeof SurveySubmissionResponseSchema>;

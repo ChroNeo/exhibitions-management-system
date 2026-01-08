@@ -1,18 +1,26 @@
-import { FastifyInstance, FastifyRequest } from "fastify";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
   QuestionWithSetSchema,
   QuestionSetWithQuestionsSchema,
-  QUESTION_SET_TYPES
+  QUESTION_SET_TYPES,
+  DoSurveyBodySchema,
+  SurveySubmissionResponseSchema,
+  type DoSurveyBody
 } from "../models/survey.model.js";
 import {
   getQuestionsByExhibitionId,
   getMasterQuestions,
   createQuestionSetForExhibition,
-  updateQuestionSet
+  updateQuestionSet,
+  submitSurvey
 } from "../queries/survey-query.js";
 import { requireOrganizerAuth } from "../services/auth-middleware.js";
+import { AuthHeaderSchema } from "../models/ticket.model.js";
+import { verifyLiffIdToken } from "../services/line/security.js";
+import { getUserRegistrationsByLineId } from "../queries/ticket-query.js";
+import { AppError } from "../errors.js";
 
 export default async function surveyController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -138,6 +146,62 @@ export default async function surveyController(fastify: FastifyInstance) {
 
       reply.code(200);
       return questionSet;
+    }
+  );
+
+  app.post(
+    "/submit",
+    {
+      schema: {
+        tags: ["Survey"],
+        summary: "Submit survey responses for exhibition or unit",
+        description: "Submit survey answers using LINE LIFF authentication. Validates user registration and prevents duplicate submissions.",
+        headers: AuthHeaderSchema,
+        body: DoSurveyBodySchema,
+        response: {
+          201: SurveySubmissionResponseSchema,
+        },
+      },
+    },
+    async (req: FastifyRequest<{ Body: DoSurveyBody }>, reply: FastifyReply) => {
+      try {
+        // Step 1: Get and verify LINE LIFF ID token
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+          throw new AppError("Missing Auth", 401, "MISSING_AUTH");
+        }
+
+        const token = authHeader.split(" ")[1];
+        const verifiedToken = await verifyLiffIdToken(token);
+
+        // Step 2: Get user_id from LINE user ID
+        const userData = await getUserRegistrationsByLineId(verifiedToken.sub);
+        if (!userData) {
+          throw new AppError("User not found", 404, "USER_NOT_FOUND");
+        }
+
+        // Step 3: Submit the survey
+        const { exhibition_id, unit_id, comment, answers } = req.body;
+        const result = await submitSurvey(
+          userData.user_id,
+          exhibition_id,
+          unit_id,
+          comment,
+          answers
+        );
+
+        reply.code(201);
+        return result;
+      } catch (error) {
+        if (error instanceof AppError) {
+          return reply.code(error.status).send({
+            message: error.message,
+            code: error.code,
+          });
+        }
+        req.log.error(error, "failed to submit survey");
+        return reply.code(500).send({ message: "internal server error" });
+      }
     }
   );
 }

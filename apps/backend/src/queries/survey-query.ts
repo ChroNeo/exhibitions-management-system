@@ -1,6 +1,6 @@
 import { AppError } from "../errors.js";
 import { safeQuery, pool } from "../services/dbconn.js";
-import type { Question, QuestionWithSet, QuestionSetWithQuestions } from "../models/survey.model.js";
+import type { Question, QuestionWithSet, QuestionSetWithQuestions, SurveySubmissionResponse } from "../models/survey.model.js";
 import type { ResultSetHeader } from "mysql2";
 
 /**
@@ -358,6 +358,146 @@ export async function createQuestionSetForExhibition(
     };
 
     return questionSet;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+/**
+ * Submit a survey response for an exhibition or unit
+ * Creates a survey submission with answers
+ */
+export async function submitSurvey(
+  userId: number,
+  exhibitionId: number,
+  unitId: number | undefined,
+  comment: string | undefined,
+  answers: Array<{ question_id: number; score: number }>
+): Promise<SurveySubmissionResponse> {
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Step 1: Validate user is registered for the exhibition
+    const [registrationRows] = await connection.query<any[]>(
+      `SELECT * FROM registrations WHERE user_id = ? AND exhibition_id = ?`,
+      [userId, exhibitionId]
+    );
+
+    if (!registrationRows.length) {
+      throw new AppError(
+        "User not registered for this exhibition",
+        403,
+        "NOT_REGISTERED"
+      );
+    }
+
+    // Step 2: Check for duplicate submission
+    let duplicateCheckQuery: string;
+    let duplicateCheckParams: any[];
+
+    if (unitId === undefined) {
+      // Exhibition survey
+      duplicateCheckQuery = `
+        SELECT * FROM survey_submissions
+        WHERE user_id = ? AND exhibition_id = ? AND unit_id IS NULL
+      `;
+      duplicateCheckParams = [userId, exhibitionId];
+    } else {
+      // Unit survey
+      duplicateCheckQuery = `
+        SELECT * FROM survey_submissions
+        WHERE user_id = ? AND exhibition_id = ? AND unit_id = ?
+      `;
+      duplicateCheckParams = [userId, exhibitionId, unitId];
+    }
+
+    const [existingSubmissions] = await connection.query<any[]>(
+      duplicateCheckQuery,
+      duplicateCheckParams
+    );
+
+    if (existingSubmissions.length > 0) {
+      throw new AppError(
+        "Survey already submitted",
+        409,
+        "DUPLICATE_SUBMISSION"
+      );
+    }
+
+    // Step 3: Insert survey submission
+    const [insertResult] = await connection.query<ResultSetHeader>(
+      `INSERT INTO survey_submissions (exhibition_id, unit_id, user_id, comment)
+       VALUES (?, ?, ?, ?)`,
+      [exhibitionId, unitId ?? null, userId, comment ?? null]
+    );
+    const submissionId = insertResult.insertId;
+
+    // Step 4: Bulk insert answers
+    if (answers.length > 0) {
+      const values = answers.map(() => "(?, ?, ?)").join(", ");
+      const params: any[] = [];
+      answers.forEach((answer) => {
+        params.push(submissionId, answer.question_id, answer.score);
+      });
+
+      await connection.query<ResultSetHeader>(
+        `INSERT INTO survey_answers (submission_id, question_id, score) VALUES ${values}`,
+        params
+      );
+    }
+
+    // Commit transaction
+    await connection.commit();
+
+    // Step 5: Retrieve complete submission with answers
+    const [submissionRows] = await connection.query<any[]>(
+      `SELECT
+        s.submission_id,
+        s.exhibition_id,
+        s.unit_id,
+        s.user_id,
+        s.comment,
+        s.created_at
+       FROM survey_submissions s
+       WHERE s.submission_id = ?`,
+      [submissionId]
+    );
+
+    const [answerRows] = await connection.query<any[]>(
+      `SELECT answer_id, question_id, score
+       FROM survey_answers
+       WHERE submission_id = ?
+       ORDER BY answer_id`,
+      [submissionId]
+    );
+
+    if (!submissionRows.length) {
+      throw new AppError(
+        "Failed to retrieve submission",
+        500,
+        "DB_ERROR"
+      );
+    }
+
+    const submission = submissionRows[0];
+
+    return {
+      submission_id: submission.submission_id,
+      exhibition_id: submission.exhibition_id,
+      unit_id: submission.unit_id,
+      user_id: submission.user_id,
+      comment: submission.comment,
+      created_at: submission.created_at.toISOString(),
+      answers: answerRows.map((row: any) => ({
+        answer_id: row.answer_id,
+        question_id: row.question_id,
+        score: row.score,
+      })),
+    };
   } catch (error) {
     await connection.rollback();
     throw error;
