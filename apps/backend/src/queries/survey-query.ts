@@ -128,6 +128,121 @@ export async function getMasterQuestions(
 }
 
 /**
+ * Update questions in an existing question set
+ * Replaces all questions in the set with new ones
+ */
+export async function updateQuestionSet(
+  exhibitionId: number,
+  type: "EXHIBITION" | "UNIT",
+  questionTopics: string[]
+): Promise<QuestionSetWithQuestions> {
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Step 1: Validate exhibition exists and get the set_id
+    const columnToCheck = type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
+    const [exhibitionRows] = await connection.query<any[]>(
+      `SELECT exhibition_id, exhibition_code, ${columnToCheck} as set_id
+       FROM exhibitions WHERE exhibition_id = ?`,
+      [exhibitionId]
+    );
+
+    if (!exhibitionRows.length) {
+      throw new AppError("Exhibition not found", 404, "NOT_FOUND");
+    }
+
+    const exhibition = exhibitionRows[0];
+    const setId = exhibition.set_id;
+
+    if (!setId) {
+      throw new AppError(
+        `No ${type} question set found for this exhibition`,
+        404,
+        "NOT_FOUND"
+      );
+    }
+
+    // Step 2: Validate questions array
+    if (!questionTopics || questionTopics.length === 0) {
+      throw new AppError(
+        "At least one question is required",
+        400,
+        "VALIDATION_ERROR"
+      );
+    }
+
+    // Step 3: Delete all existing questions from this set
+    await connection.query(
+      `DELETE FROM questions WHERE set_id = ?`,
+      [setId]
+    );
+
+    // Step 4: Insert new questions
+    const values = questionTopics.map(() => "(?, ?)").join(", ");
+    const params: any[] = [];
+    questionTopics.forEach((topic: string) => {
+      params.push(setId, topic);
+    });
+    await connection.query<ResultSetHeader>(
+      `INSERT INTO questions (set_id, topic) VALUES ${values}`,
+      params
+    );
+
+    // Commit transaction
+    await connection.commit();
+
+    // Step 5: Retrieve complete result
+    const [resultRows] = await connection.query<any[]>(
+      `SELECT
+        qs.set_id,
+        qs.name,
+        qs.is_master,
+        qs.type,
+        q.question_id,
+        q.set_id as q_set_id,
+        q.topic
+       FROM question_sets qs
+       LEFT JOIN questions q ON q.set_id = qs.set_id
+       WHERE qs.set_id = ?
+       ORDER BY q.question_id`,
+      [setId]
+    );
+
+    if (!resultRows.length) {
+      throw new AppError(
+        "Failed to retrieve updated question set",
+        500,
+        "DB_ERROR"
+      );
+    }
+
+    // Transform to nested structure
+    const questionSet: QuestionSetWithQuestions = {
+      set_id: resultRows[0].set_id,
+      name: resultRows[0].name,
+      is_master: resultRows[0].is_master,
+      type: resultRows[0].type,
+      questions: resultRows
+        .filter((row: any) => row.question_id !== null)
+        .map((row: any) => ({
+          question_id: row.question_id,
+          set_id: row.q_set_id,
+          topic: row.topic,
+        })),
+    };
+
+    return questionSet;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+/**
  * Create question set for an exhibition with custom questions
  * Creates a new question_set, inserts custom questions, and links to exhibition
  */
