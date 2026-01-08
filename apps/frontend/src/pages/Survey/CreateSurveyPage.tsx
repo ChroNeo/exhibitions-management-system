@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import { MdEdit, MdDelete, MdCheck } from "react-icons/md";
 import { useMasterQuestions } from "../../hook/useMasterQuestions";
 import { useCreateQuestionSet } from "../../hook/useCreateQuestionSet";
 import { useUpdateQuestionSet } from "../../hook/useUpdateQuestionSet";
 import { useSurveyQuestions } from "../../hook/useSurveyQuestions";
 import type { QuestionType } from "../../types/survey";
+import { QuestionItem, LoadingOverlay } from "./components";
 import styles from "./CreateSurvey.module.css";
 
 interface CustomQuestion {
@@ -33,9 +33,11 @@ export default function CreateSurveyPage() {
   const { data: masterQuestionSets, isLoading: isLoadingMaster } =
     useMasterQuestions(selectedType!, { enabled: !!selectedType });
 
-  // Get the selected master set
-  const selectedMasterSet = masterQuestionSets?.find(set => set.set_id === selectedSetId);
-  const masterQuestions = selectedMasterSet?.questions || [];
+  // Get the selected master set - memoized to prevent re-renders
+  const masterQuestions = useMemo(() => {
+    const selectedMasterSet = masterQuestionSets?.find(set => set.set_id === selectedSetId);
+    return selectedMasterSet?.questions || [];
+  }, [masterQuestionSets, selectedSetId]);
 
   const { data: existingQuestions, isLoading: isLoadingExisting } =
     useSurveyQuestions(
@@ -52,18 +54,7 @@ export default function CreateSurveyPage() {
   const { mutateAsync: updateQuestionSet, isPending: isUpdating } =
     useUpdateQuestionSet();
 
-  useEffect(() => {
-    if (isLoadingMaster || isLoadingExisting) {
-      Swal.fire({
-        title: isEditMode ? "Loading existing questions..." : "Loading master questions...",
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-    } else {
-      Swal.close();
-    }
-  }, [isLoadingMaster, isLoadingExisting, isEditMode]);
+  const isLoading = isLoadingMaster || isLoadingExisting;
 
   // Populate form with existing questions in edit mode
   useEffect(() => {
@@ -105,53 +96,53 @@ export default function CreateSurveyPage() {
     setCustomQuestions([...customQuestions, newQuestion]);
   };
 
-  const handleUpdateQuestionTopic = (id: string, topic: string) => {
-    setCustomQuestions(
-      customQuestions.map((q) => (q.id === id ? { ...q, topic } : q))
+  const handleUpdateQuestionTopic = useCallback((id: string, topic: string) => {
+    setCustomQuestions((prev) =>
+      prev.map((q) => (q.id === id ? { ...q, topic } : q))
     );
-  };
+  }, []);
 
-  const handleConfirmQuestion = (id: string) => {
-    const question = customQuestions.find((q) => q.id === id);
-    if (!question?.topic.trim()) {
-      Swal.fire({
-        icon: "warning",
-        title: "Please enter a question topic",
-        timer: 2000,
-      });
-      return;
-    }
+  const handleConfirmQuestion = useCallback((id: string) => {
+    setCustomQuestions((prev) => {
+      const question = prev.find((q) => q.id === id);
+      if (!question?.topic.trim()) {
+        Swal.fire({
+          icon: "warning",
+          title: "Please enter a question topic",
+          timer: 2000,
+        });
+        return prev;
+      }
 
-    setCustomQuestions(
-      customQuestions.map((q) => (q.id === id ? { ...q, isEditing: false } : q))
+      return prev.map((q) => (q.id === id ? { ...q, isEditing: false } : q));
+    });
+  }, []);
+
+  const handleDeleteQuestion = useCallback((id: string) => {
+    setCustomQuestions((prev) => prev.filter((q) => q.id !== id));
+  }, []);
+
+  const handleEditQuestion = useCallback((id: string) => {
+    setCustomQuestions((prev) =>
+      prev.map((q) => (q.id === id ? { ...q, isEditing: true } : q))
     );
-  };
+  }, []);
 
-  const handleDeleteQuestion = (id: string) => {
-    setCustomQuestions(customQuestions.filter((q) => q.id !== id));
-  };
-
-  const handleEditQuestion = (id: string) => {
-    setCustomQuestions(
-      customQuestions.map((q) => (q.id === id ? { ...q, isEditing: true } : q))
-    );
-  };
-
-  const handleEditMasterQuestion = (masterId: number, topic: string) => {
+  const handleEditMasterQuestion = useCallback((masterId: number, topic: string) => {
     // Mark master question as excluded and create editable custom version
-    setExcludedMasterIds([...excludedMasterIds, masterId]);
+    setExcludedMasterIds((prev) => [...prev, masterId]);
     const newQuestion: CustomQuestion = {
       id: `master-${masterId}-${Date.now()}`,
       topic: topic,
       isEditing: true,
       originalMasterId: masterId,
     };
-    setCustomQuestions([...customQuestions, newQuestion]);
-  };
+    setCustomQuestions((prev) => [...prev, newQuestion]);
+  }, []);
 
-  const handleDeleteMasterQuestion = (masterId: number) => {
-    setExcludedMasterIds([...excludedMasterIds, masterId]);
-  };
+  const handleDeleteMasterQuestion = useCallback((masterId: number) => {
+    setExcludedMasterIds((prev) => [...prev, masterId]);
+  }, []);
 
   const handleSubmit = async () => {
     if (!selectedType) {
@@ -170,6 +161,15 @@ export default function CreateSurveyPage() {
       return;
     }
 
+    const exhibitionIdNum = parseInt(exhibition_id, 10);
+    if (isNaN(exhibitionIdNum)) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Exhibition ID",
+      });
+      return;
+    }
+
     const hasEditingQuestions = customQuestions.some((q) => q.isEditing);
     if (hasEditingQuestions) {
       Swal.fire({
@@ -179,16 +179,7 @@ export default function CreateSurveyPage() {
       return;
     }
 
-    const allQuestions = isEditMode && hasLoadedExisting
-      ? customQuestions.map((q) => ({ topic: q.topic }))
-      : [
-          ...(masterQuestions || [])
-            .filter((q) => !excludedMasterIds.includes(q.question_id))
-            .map((q) => ({ topic: q.topic })),
-          ...customQuestions.map((q) => ({ topic: q.topic })),
-        ];
-
-    if (allQuestions.length === 0) {
+    if (allQuestionsList.length === 0) {
       Swal.fire({
         icon: "warning",
         title: "Please add at least one question",
@@ -199,9 +190,9 @@ export default function CreateSurveyPage() {
     try {
       if (isEditMode) {
         await updateQuestionSet({
-          exhibition_id: parseInt(exhibition_id),
+          exhibition_id: exhibitionIdNum,
           type: selectedType,
-          questions: allQuestions,
+          questions: allQuestionsList,
         });
 
         await Swal.fire({
@@ -211,9 +202,9 @@ export default function CreateSurveyPage() {
         });
       } else {
         await createQuestionSet({
-          exhibition_id: parseInt(exhibition_id),
+          exhibition_id: exhibitionIdNum,
           type: selectedType,
-          questions: allQuestions,
+          questions: allQuestionsList,
         });
 
         await Swal.fire({
@@ -233,10 +224,31 @@ export default function CreateSurveyPage() {
     }
   };
 
+  // Memoized computed values
+  const visibleMasterQuestions = useMemo(() => {
+    if (!masterQuestions) return [];
+    return masterQuestions.filter((q) => !excludedMasterIds.includes(q.question_id));
+  }, [masterQuestions, excludedMasterIds]);
+
+  const allQuestionsList = useMemo(() => {
+    if (isEditMode && hasLoadedExisting) {
+      return customQuestions.map((q) => ({ topic: q.topic }));
+    }
+    return [
+      ...visibleMasterQuestions.map((q) => ({ topic: q.topic })),
+      ...customQuestions.map((q) => ({ topic: q.topic })),
+    ];
+  }, [isEditMode, hasLoadedExisting, customQuestions, visibleMasterQuestions]);
+
   const surveyTypeLabel = selectedType === "EXHIBITION" ? "แบบสอบถามนิทรรศการ" : "แบบสอบถามบูธ";
 
   return (
     <div className={styles.container}>
+      {isLoading && (
+        <LoadingOverlay
+          message={isEditMode ? "Loading existing questions..." : "Loading master questions..."}
+        />
+      )}
       <h1>
         {isEditMode ? "แก้ไข" : "สร้าง"}
         {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
@@ -316,221 +328,86 @@ export default function CreateSurveyPage() {
           {selectedSetId && (
             <div className={styles.section}>
               <h2>Questions</h2>
-            <div>
-              {/* Show master questions only if not in edit mode OR if in edit mode but hasn't loaded existing questions from DB */}
-              {(!isEditMode || !hasLoadedExisting) && masterQuestions?.map((masterQuestion) => {
-                // Check if this master question is being edited
-                const editedVersion = customQuestions.find(
-                  (q) => q.originalMasterId === masterQuestion.question_id
-                );
+              <div>
+                {/* Show master questions only if not in edit mode OR if in edit mode but hasn't loaded existing questions from DB */}
+                {(!isEditMode || !hasLoadedExisting) &&
+                  masterQuestions?.map((masterQuestion, index) => {
+                    // Check if this master question is being edited
+                    const editedVersion = customQuestions.find(
+                      (q) => q.originalMasterId === masterQuestion.question_id
+                    );
 
-                // If being edited, show the custom version
-                if (editedVersion) {
-                  const questionIndex =
-                    masterQuestions?.findIndex(
-                      (q) => q.question_id === editedVersion.originalMasterId
-                    ) ?? 0;
-
-                  return (
-                    <div key={editedVersion.id} className={styles.questionItem}>
-                      <div className={styles.inputGroup}>
-                        {editedVersion.isEditing ? (
-                          <input
-                            type="text"
-                            value={editedVersion.topic}
-                            onChange={(e) =>
-                              handleUpdateQuestionTopic(
-                                editedVersion.id,
-                                e.target.value
-                              )
-                            }
-                            placeholder="Topic"
-                            className={styles.input}
-                          />
-                        ) : (
-                          <h2 className={styles.topicHeading}>
-                            {questionIndex + 1}. {editedVersion.topic}
-                          </h2>
-                        )}
-                        <div className={styles.ratingContainer}>
-                          {[1, 2, 3, 4, 5].map((rating) => (
-                            <label
-                              key={rating}
-                              className={styles.ratingOption}
-                            >
-                              <input
-                                type="radio"
-                                name={`question-${editedVersion.id}`}
-                                value={rating}
-                                disabled
-                                className={styles.radioInput}
-                              />
-                              <span className={styles.ratingLabel}>{rating}</span>
-                            </label>
-                          ))}
-                        </div>
-                        <div className={styles.buttonGroup}>
-                          {editedVersion.isEditing ? (
-                            <button
-                              onClick={() =>
-                                handleConfirmQuestion(editedVersion.id)
-                              }
-                              className={styles.iconButtonOk}
-                            >
-                              <MdCheck size={20} />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                handleEditQuestion(editedVersion.id)
-                              }
-                              className={styles.iconButton}
-                            >
-                              <MdEdit size={20} />
-                            </button>
-                          )}
-                          <button
-                            onClick={() =>
-                              handleDeleteQuestion(editedVersion.id)
-                            }
-                            className={styles.iconButtonDelete}
-                          >
-                            <MdDelete size={20} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                // If deleted, don't show anything
-                if (excludedMasterIds.includes(masterQuestion.question_id)) {
-                  return null;
-                }
-
-                // Otherwise show the master question
-                return (
-                  <div
-                    key={masterQuestion.question_id}
-                    className={styles.questionItem}
-                  >
-                    <div className={styles.inputGroup}>
-                      <h2 className={styles.topicHeading}>
-                        {(masterQuestions?.findIndex(
-                          (q) => q.question_id === masterQuestion.question_id
-                        ) ?? -1) + 1}
-                        . {masterQuestion.topic}
-                      </h2>
-                      <div className={styles.ratingContainer}>
-                        {[1, 2, 3, 4, 5].map((rating) => (
-                          <label key={rating} className={styles.ratingOption}>
-                            <input
-                              type="radio"
-                              name={`question-${masterQuestion.question_id}`}
-                              value={rating}
-                              disabled
-                              className={styles.radioInput}
-                            />
-                            <span className={styles.ratingLabel}>{rating}</span>
-                          </label>
-                        ))}
-                      </div>
-                      <div className={styles.buttonGroup}>
-                        <button
-                          onClick={() =>
-                            handleEditMasterQuestion(
-                              masterQuestion.question_id,
-                              masterQuestion.topic
-                            )
+                    // If being edited, show the custom version
+                    if (editedVersion) {
+                      return (
+                        <QuestionItem
+                          key={editedVersion.id}
+                          id={editedVersion.id}
+                          topic={editedVersion.topic}
+                          questionNumber={index + 1}
+                          isEditing={editedVersion.isEditing}
+                          onUpdateTopic={(value) =>
+                            handleUpdateQuestionTopic(editedVersion.id, value)
                           }
-                          className={styles.iconButton}
-                        >
-                          <MdEdit size={20} />
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDeleteMasterQuestion(
-                              masterQuestion.question_id
-                            )
-                          }
-                          className={styles.iconButtonDelete}
-                        >
-                          <MdDelete size={20} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                          onConfirm={() => handleConfirmQuestion(editedVersion.id)}
+                          onEdit={() => handleEditQuestion(editedVersion.id)}
+                          onDelete={() => handleDeleteQuestion(editedVersion.id)}
+                        />
+                      );
+                    }
 
-              {customQuestions
-                .filter((q) => hasLoadedExisting || !q.originalMasterId)
-                .map((question, index) => {
-                  const totalMasterQuestions = hasLoadedExisting ? 0 : (masterQuestions?.length || 0);
-                  const questionNumber = totalMasterQuestions + index + 1;
+                    // If deleted, don't show anything
+                    if (excludedMasterIds.includes(masterQuestion.question_id)) {
+                      return null;
+                    }
 
-                  return (
-                    <div key={question.id} className={styles.questionItem}>
-                      <div className={styles.inputGroup}>
-                        {question.isEditing ? (
-                          <input
-                            type="text"
-                            value={question.topic}
-                            onChange={(e) =>
-                              handleUpdateQuestionTopic(
-                                question.id,
-                                e.target.value
-                              )
-                            }
-                            placeholder="Topic"
-                            className={styles.input}
-                          />
-                        ) : (
-                          <h2 className={styles.topicHeading}>
-                            {questionNumber}. {question.topic}
-                          </h2>
-                        )}
-                        <div className={styles.ratingContainer}>
-                          {[1, 2, 3, 4, 5].map((rating) => (
-                            <label key={rating} className={styles.ratingOption}>
-                              <input
-                                type="radio"
-                                name={`question-${question.id}`}
-                                value={rating}
-                                disabled
-                                className={styles.radioInput}
-                              />
-                              <span className={styles.ratingLabel}>{rating}</span>
-                            </label>
-                          ))}
-                        </div>
-                        <div className={styles.buttonGroup}>
-                          {question.isEditing ? (
-                            <button
-                              onClick={() => handleConfirmQuestion(question.id)}
-                              className={styles.iconButtonOk}
-                            >
-                              <MdCheck size={20} />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleEditQuestion(question.id)}
-                              className={styles.iconButton}
-                            >
-                              <MdEdit size={20} />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleDeleteQuestion(question.id)}
-                            className={styles.iconButtonDelete}
-                          >
-                            <MdDelete size={20} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                    // Otherwise show the master question
+                    return (
+                      <QuestionItem
+                        key={masterQuestion.question_id}
+                        id={masterQuestion.question_id}
+                        topic={masterQuestion.topic}
+                        questionNumber={index + 1}
+                        isEditing={false}
+                        onUpdateTopic={() => {}}
+                        onConfirm={() => {}}
+                        onEdit={() =>
+                          handleEditMasterQuestion(
+                            masterQuestion.question_id,
+                            masterQuestion.topic
+                          )
+                        }
+                        onDelete={() =>
+                          handleDeleteMasterQuestion(masterQuestion.question_id)
+                        }
+                      />
+                    );
+                  })}
+
+                {customQuestions
+                  .filter((q) => hasLoadedExisting || !q.originalMasterId)
+                  .map((question, index) => {
+                    const totalMasterQuestions = hasLoadedExisting
+                      ? 0
+                      : masterQuestions?.length || 0;
+                    const questionNumber = totalMasterQuestions + index + 1;
+
+                    return (
+                      <QuestionItem
+                        key={question.id}
+                        id={question.id}
+                        topic={question.topic}
+                        questionNumber={questionNumber}
+                        isEditing={question.isEditing}
+                        onUpdateTopic={(value) =>
+                          handleUpdateQuestionTopic(question.id, value)
+                        }
+                        onConfirm={() => handleConfirmQuestion(question.id)}
+                        onEdit={() => handleEditQuestion(question.id)}
+                        onDelete={() => handleDeleteQuestion(question.id)}
+                      />
+                    );
+                  })}
             </div>
             <div className={styles.section}>
               <button onClick={handleAddNewQuestion} className={styles.addButton}>
