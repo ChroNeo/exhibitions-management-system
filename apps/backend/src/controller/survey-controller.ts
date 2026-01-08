@@ -4,7 +4,6 @@ import { z } from "zod";
 import {
   QuestionWithSetSchema,
   QuestionSetWithQuestionsSchema,
-  QuestionSchema,
   QUESTION_SET_TYPES
 } from "../models/survey.model.js";
 import {
@@ -43,13 +42,13 @@ export default async function surveyController(fastify: FastifyInstance) {
     {
       schema: {
         tags: ["Survey"],
-        summary: "Get master questions by type",
-        description: "Returns master questions (template) for EXHIBITION or UNIT type",
+        summary: "Get master question sets by type",
+        description: "Returns all master question sets with their questions for EXHIBITION or UNIT type",
         querystring: z.object({
           type: z.enum(QUESTION_SET_TYPES),
         }),
         response: {
-          200: z.array(QuestionSchema),
+          200: z.array(QuestionSetWithQuestionsSchema),
         },
       },
     },

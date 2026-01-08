@@ -78,27 +78,53 @@ export async function getQuestionsBySetId(
 
 /**
  * Get master questions by type (EXHIBITION or UNIT)
- * Returns questions from the master question set
+ * Returns all master question sets with their questions for the specified type
  */
 export async function getMasterQuestions(
   type: "EXHIBITION" | "UNIT"
-): Promise<Question[]> {
-  const masterSetId = type === "EXHIBITION" ? 1 : 2;
-
+): Promise<QuestionSetWithQuestions[]> {
   const rows = await safeQuery(
     `
     SELECT
-      question_id,
-      set_id,
-      topic
-    FROM questions
-    WHERE set_id = ?
-    ORDER BY question_id
+      qs.set_id,
+      qs.name,
+      qs.is_master,
+      qs.type,
+      q.question_id,
+      q.topic
+    FROM question_sets qs
+    LEFT JOIN questions q ON q.set_id = qs.set_id
+    WHERE qs.is_master = 1 AND qs.type = ?
+    ORDER BY qs.set_id, q.question_id
     `,
-    [masterSetId]
+    [type]
   );
 
-  return rows as Question[];
+  // Group questions by set
+  const setsMap = new Map<number, QuestionSetWithQuestions>();
+
+  for (const row of rows as any[]) {
+    if (!setsMap.has(row.set_id)) {
+      setsMap.set(row.set_id, {
+        set_id: row.set_id,
+        name: row.name,
+        is_master: row.is_master,
+        type: row.type,
+        questions: []
+      });
+    }
+
+    // Add question if it exists
+    if (row.question_id) {
+      setsMap.get(row.set_id)!.questions.push({
+        question_id: row.question_id,
+        set_id: row.set_id,
+        topic: row.topic
+      });
+    }
+  }
+
+  return Array.from(setsMap.values());
 }
 
 /**
