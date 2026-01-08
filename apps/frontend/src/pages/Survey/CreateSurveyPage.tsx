@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { MdEdit, MdDelete, MdCheck } from "react-icons/md";
 import { useMasterQuestions } from "../../hook/useMasterQuestions";
 import { useCreateQuestionSet } from "../../hook/useCreateQuestionSet";
+import { useUpdateQuestionSet } from "../../hook/useUpdateQuestionSet";
 import { useSurveyQuestions } from "../../hook/useSurveyQuestions";
 import type { QuestionType } from "../../types/survey";
 import styles from "./CreateSurvey.module.css";
@@ -21,14 +22,20 @@ export default function CreateSurveyPage() {
   const [searchParams] = useSearchParams();
 
   const isEditMode = searchParams.get("edit") === "true";
-  const editType = searchParams.get("type") as QuestionType | null;
+  const typeFromQuery = searchParams.get("type") as QuestionType | null;
 
-  const [selectedType, setSelectedType] = useState<QuestionType | null>(editType || null);
+  const [selectedType, setSelectedType] = useState<QuestionType | null>(typeFromQuery || null);
+  const [selectedSetId, setSelectedSetId] = useState<number | null>(null);
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
   const [excludedMasterIds, setExcludedMasterIds] = useState<number[]>([]);
+  const [hasLoadedExisting, setHasLoadedExisting] = useState(false);
 
-  const { data: masterQuestions, isLoading: isLoadingMaster } =
+  const { data: masterQuestionSets, isLoading: isLoadingMaster } =
     useMasterQuestions(selectedType!, { enabled: !!selectedType });
+
+  // Get the selected master set
+  const selectedMasterSet = masterQuestionSets?.find(set => set.set_id === selectedSetId);
+  const masterQuestions = selectedMasterSet?.questions || [];
 
   const { data: existingQuestions, isLoading: isLoadingExisting } =
     useSurveyQuestions(
@@ -41,6 +48,9 @@ export default function CreateSurveyPage() {
 
   const { mutateAsync: createQuestionSet, isPending: isCreating } =
     useCreateQuestionSet();
+
+  const { mutateAsync: updateQuestionSet, isPending: isUpdating } =
+    useUpdateQuestionSet();
 
   useEffect(() => {
     if (isLoadingMaster || isLoadingExisting) {
@@ -68,14 +78,23 @@ export default function CreateSurveyPage() {
         })
       );
       setCustomQuestions(existingCustomQuestions);
+      setHasLoadedExisting(true);
     }
   }, [isEditMode, existingQuestions]);
 
   const handleTypeSelect = (type: QuestionType) => {
     setSelectedType(type);
+    setSelectedSetId(null);
     setCustomQuestions([]);
     setExcludedMasterIds([]);
   };
+
+  // Auto-select first set when master sets are loaded
+  useEffect(() => {
+    if (masterQuestionSets && masterQuestionSets.length > 0 && !selectedSetId) {
+      setSelectedSetId(masterQuestionSets[0].set_id);
+    }
+  }, [masterQuestionSets, selectedSetId]);
 
   const handleAddNewQuestion = () => {
     const newQuestion: CustomQuestion = {
@@ -160,12 +179,14 @@ export default function CreateSurveyPage() {
       return;
     }
 
-    const allQuestions = [
-      ...(masterQuestions || [])
-        .filter((q) => !excludedMasterIds.includes(q.question_id))
-        .map((q) => ({ topic: q.topic })),
-      ...customQuestions.map((q) => ({ topic: q.topic })),
-    ];
+    const allQuestions = isEditMode && hasLoadedExisting
+      ? customQuestions.map((q) => ({ topic: q.topic }))
+      : [
+          ...(masterQuestions || [])
+            .filter((q) => !excludedMasterIds.includes(q.question_id))
+            .map((q) => ({ topic: q.topic })),
+          ...customQuestions.map((q) => ({ topic: q.topic })),
+        ];
 
     if (allQuestions.length === 0) {
       Swal.fire({
@@ -176,63 +197,128 @@ export default function CreateSurveyPage() {
     }
 
     try {
-      await createQuestionSet({
-        exhibition_id: parseInt(exhibition_id),
-        type: selectedType,
-        questions: allQuestions,
-      });
+      if (isEditMode) {
+        await updateQuestionSet({
+          exhibition_id: parseInt(exhibition_id),
+          type: selectedType,
+          questions: allQuestions,
+        });
 
-      await Swal.fire({
-        icon: "success",
-        title: "Survey created successfully!",
-        timer: 2000,
-      });
+        await Swal.fire({
+          icon: "success",
+          title: "Survey updated successfully!",
+          timer: 2000,
+        });
+      } else {
+        await createQuestionSet({
+          exhibition_id: parseInt(exhibition_id),
+          type: selectedType,
+          questions: allQuestions,
+        });
+
+        await Swal.fire({
+          icon: "success",
+          title: "Survey created successfully!",
+          timer: 2000,
+        });
+      }
 
       navigate(`/exhibitions/${exhibition_id}`);
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "Failed to create survey",
+        title: isEditMode ? "Failed to update survey" : "Failed to create survey",
         text: error instanceof Error ? error.message : "Unknown error",
       });
     }
   };
 
+  const surveyTypeLabel = selectedType === "EXHIBITION" ? "แบบสอบถามนิทรรศการ" : "แบบสอบถามบูธ";
+
   return (
     <div className={styles.container}>
-      <h1>{isEditMode ? "Edit Survey" : "Create Survey"}</h1>
+      <h1>
+        {isEditMode ? "แก้ไข" : "สร้าง"}
+        {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
+      </h1>
       <p>Exhibition ID: {exhibition_id}</p>
 
-      <div className={styles.section}>
-        <h2>Select Survey Type</h2>
-        <div className={styles.buttonGroup}>
-          <button
-            onClick={() => handleTypeSelect("EXHIBITION")}
-            className={`${styles.typeButton} ${
-              selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
-            }`}
-            disabled={isEditMode}
-          >
-            Exhibition Survey
-          </button>
-          <button
-            onClick={() => handleTypeSelect("UNIT")}
-            className={`${styles.typeButton} ${
-              selectedType === "UNIT" ? styles.typeButtonActive : ""
-            }`}
-            disabled={isEditMode}
-          >
-            Unit Survey
-          </button>
+      {!typeFromQuery && (
+        <div className={styles.section}>
+          <h2>Select Survey Type</h2>
+          <div className={styles.buttonGroup}>
+            <button
+              onClick={() => handleTypeSelect("EXHIBITION")}
+              className={`${styles.typeButton} ${
+                selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
+              }`}
+              disabled={isEditMode}
+            >
+              Exhibition Survey
+            </button>
+            <button
+              onClick={() => handleTypeSelect("UNIT")}
+              className={`${styles.typeButton} ${
+                selectedType === "UNIT" ? styles.typeButtonActive : ""
+              }`}
+              disabled={isEditMode}
+            >
+              Unit Survey
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {selectedType && (
         <>
           <div className={styles.section}>
-            <h2>Questions</h2>
+            <h2>Select Template</h2>
+            <select
+              value={selectedSetId || ""}
+              onChange={async (e) => {
+                const newSetId = Number(e.target.value);
+
+                if (isEditMode) {
+                  // Warn user in edit mode that this will replace existing questions
+                  const result = await Swal.fire({
+                    title: "เปลี่ยน Template?",
+                    text: "การเปลี่ยน template จะแทนที่คำถามทั้งหมดที่คุณแก้ไขแล้ว คุณแน่ใจหรือไม่?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "ใช่, เปลี่ยนเลย",
+                    cancelButtonText: "ยกเลิก",
+                    confirmButtonColor: "#ef4444",
+                  });
+
+                  if (result.isConfirmed) {
+                    setSelectedSetId(newSetId);
+                    setCustomQuestions([]);
+                    setExcludedMasterIds([]);
+                    setHasLoadedExisting(false);
+                  }
+                } else {
+                  setSelectedSetId(newSetId);
+                }
+              }}
+              className={styles.dropdown}
+            >
+              <option value="" disabled>
+                Select a question template
+              </option>
+              {masterQuestionSets?.map((set) => (
+                <option key={set.set_id} value={set.set_id}>
+                  {set.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedSetId && (
+            <div className={styles.section}>
+              <h2>Questions</h2>
             <div>
-              {masterQuestions?.map((masterQuestion) => {
+              {/* Show master questions only if not in edit mode OR if in edit mode but hasn't loaded existing questions from DB */}
+              {(!isEditMode || !hasLoadedExisting) && masterQuestions?.map((masterQuestion) => {
                 // Check if this master question is being edited
                 const editedVersion = customQuestions.find(
                   (q) => q.originalMasterId === masterQuestion.question_id
@@ -378,9 +464,9 @@ export default function CreateSurveyPage() {
               })}
 
               {customQuestions
-                .filter((q) => !q.originalMasterId)
+                .filter((q) => hasLoadedExisting || !q.originalMasterId)
                 .map((question, index) => {
-                  const totalMasterQuestions = masterQuestions?.length || 0;
+                  const totalMasterQuestions = hasLoadedExisting ? 0 : (masterQuestions?.length || 0);
                   const questionNumber = totalMasterQuestions + index + 1;
 
                   return (
@@ -452,14 +538,16 @@ export default function CreateSurveyPage() {
               </button>
             </div>
           </div>
+          )}
 
-          <div className={styles.submitSection}>
+          {selectedSetId && (
+            <div className={styles.submitSection}>
             <button
               onClick={handleSubmit}
-              disabled={isCreating}
+              disabled={isCreating || isUpdating}
               className={styles.createButton}
             >
-              {isCreating
+              {isCreating || isUpdating
                 ? isEditMode
                   ? "Updating..."
                   : "Creating..."
@@ -474,6 +562,7 @@ export default function CreateSurveyPage() {
               Cancel
             </button>
           </div>
+          )}
         </>
       )}
     </div>

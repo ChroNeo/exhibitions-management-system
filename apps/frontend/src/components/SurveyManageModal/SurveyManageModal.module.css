@@ -1,0 +1,98 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  padding: var(--margin-xl);
+  max-width: 500px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+}
+
+.title {
+  font-size: var(--text-h3);
+  font-weight: 600;
+  margin: 0 0 var(--margin-l) 0;
+  text-align: center;
+  color: var(--text);
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin-m);
+  margin-bottom: var(--margin-l);
+}
+
+.surveyButton {
+  background: var(--bg);
+  border: 2px solid var(--cardBorder);
+  border-radius: 12px;
+  padding: var(--margin-m);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.surveyButton:hover {
+  border-color: var(--submit-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-m);
+}
+
+.buttonContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin-xxs);
+}
+
+.buttonTitle {
+  font-size: var(--text-h5);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.buttonSubtitle {
+  font-size: var(--text-body);
+  color: var(--muted);
+}
+
+.badge {
+  background: var(--submit-success);
+  color: white;
+  padding: var(--margin-xxs) var(--margin-s);
+  border-radius: 20px;
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.closeButton {
+  width: 100%;
+  padding: var(--margin-s);
+  background: var(--cancel-primary);
+  color: var(--cancel-text);
+  border: none;
+  border-radius: 8px;
+  font-size: var(--text-h5);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: var(--cancel-primary-hover);
+}

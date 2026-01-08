@@ -201,3 +201,21 @@
   color: var(--text);
   font-weight: 500;
 }
+
+.dropdown {
+  width: 100%;
+  padding: var(--margin-s);
+  border: 1px solid var(--muted);
+  border-radius: 4px;
+  font-size: 16px;
+  color: var(--text);
+  background-color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-s);
+}
+
+.dropdown:disabled {
+  background-color: var(--bg);
+  color: var(--muted);
+  cursor: not-allowed;
+}

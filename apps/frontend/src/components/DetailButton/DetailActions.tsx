@@ -1,14 +1,16 @@
-﻿import { FaEdit } from "react-icons/fa";
+﻿import { FaEdit, FaClipboardList } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import styles from "./DetailActions.module.css";
 export default function DetailActions({
   show,
   onEdit,
   onDelete,
+  onManageSurveys,
 }: {
   show?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
+  onManageSurveys?: () => void;
 }) {
   if (!show) return null;
 
@@ -23,6 +25,17 @@ export default function DetailActions({
         <FaEdit className={styles.icon} />
         <span>แก้ไข</span>
       </button>
+
+      {onManageSurveys && (
+        <button
+          type="button"
+          className={`${styles.btn} ${styles.survey}`}
+          onClick={onManageSurveys}
+        >
+          <FaClipboardList className={styles.icon} />
+          <span>จัดการแบบสอบถาม</span>
+        </button>
+      )}
 
       <button
         type="button"

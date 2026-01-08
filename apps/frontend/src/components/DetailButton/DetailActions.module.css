@@ -68,3 +68,21 @@
 .delete:active {
   background: var(--delete-primary-active);
 }
+
+/* ปุ่มจัดการแบบสอบถาม – น้ำเงิน */
+.survey {
+  transition: all 0.2s ease;
+  background: var(--submit-primary);
+  box-shadow: 0 4px 6px var(--btn-shadow);
+  color: var(--submit-text);
+}
+
+.survey:hover {
+  transform: translateY(-2px);
+  background: var(--submit-primary-hover);
+  box-shadow: 0 6px 12px var(--btn-shadow-hover);
+}
+
+.survey:active {
+  background: var(--submit-primary-active);
+}
