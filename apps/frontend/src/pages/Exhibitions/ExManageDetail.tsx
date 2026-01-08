@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Swal from "sweetalert2";
@@ -21,6 +21,7 @@ import { toFileUrl } from "../../utils/url";
 import NotFound from "../../components/NotFound";
 import { useAuthStatus } from "../../hook/useAuthStatus";
 import UnitManageList from "../Units/UnitManageList";
+import SurveyManageModal from "../../components/SurveyManageModal/SurveyManageModal";
 // descriptionPlain/Html already provided by Exhibition shape
 
 const DEFAULT_STATUS = "draft";
@@ -39,6 +40,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
+  const [showSurveyModal, setShowSurveyModal] = useState(false);
 
   // hooks
   const { mutateAsync: deleteExhibitionAsync } = useDeleteExhibition();
@@ -277,6 +279,11 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                         : undefined
                     }
                     onDelete={hasAuthToken ? handleDelete : undefined}
+                    onManageSurveys={
+                      hasAuthToken
+                        ? () => setShowSurveyModal(true)
+                        : undefined
+                    }
                   />
                 </>
               ) : (
@@ -306,6 +313,12 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         </>
       )}
       {isError && <NotFound />}
+      {showSurveyModal && id && (
+        <SurveyManageModal
+          exhibitionId={id}
+          onClose={() => setShowSurveyModal(false)}
+        />
+      )}
     </div>
   );
 }

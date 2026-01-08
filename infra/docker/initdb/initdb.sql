@@ -338,29 +338,30 @@ CREATE TABLE `units` (
   `poster_url` varchar(500) DEFAULT NULL,
   `detail_pdf_url` varchar(500) DEFAULT NULL,
   `starts_at` datetime DEFAULT NULL,
-  `ends_at` datetime DEFAULT NULL
+  `ends_at` datetime DEFAULT NULL,
+  `additional_question_set_id` int DEFAULT NULL COMMENT 'Optional: Additional questions specific to this unit (staff-created)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `units`
 --
 
-INSERT INTO `units` (`unit_id`, `unit_code`, `exhibition_id`, `unit_name`, `description`, `description_delta`, `unit_type`, `poster_url`, `detail_pdf_url`, `starts_at`, `ends_at`) VALUES
-(1, 'EX20250101', 1, 'Robotics Lab Demo2', '<p><strong>s dlrow eht</strong></p>', '{\"ops\": [{\"insert\": \"s dlrow eht\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1759848361494.jpg', NULL, '2024-04-30 06:00:00', '2024-04-30 14:00:00'),
-(2, 'EX20250102', 1, 'Robot Show', 'โชว์บนเวทีใหญ่', NULL, 'activity', 'uploads/units/EXP1759849066017.webp', NULL, '2025-11-02 07:00:00', '2025-11-02 08:00:00'),
-(3, 'EX20250103', 1, 'IoT Corner', 'ของเล่น IoT', NULL, 'booth', 'uploads/units/EXP1759849287066.png', NULL, '2025-11-01 03:00:00', '2025-11-05 10:00:00'),
-(4, 'EX20250104', 1, 'Cloud 101 Talk', 'แนะนำพื้นฐานคลาวด์', NULL, 'activity', NULL, NULL, '2025-11-03 11:00:00', '2025-11-03 12:00:00'),
-(5, 'EX20260101', 99, 'Robot AI Booth', NULL, NULL, 'booth', NULL, NULL, NULL, NULL),
-(6, 'EX20260102', 99, 'Smart Farm Booth', NULL, NULL, 'booth', NULL, NULL, NULL, NULL),
-(7, 'EX20250107', 1, 'Startup Pitch', 'พิตช์บนเวที', NULL, 'activity', NULL, NULL, '2025-11-05 10:00:00', '2025-11-05 12:00:00'),
-(8, 'EX20250108', 1, 'Hardware Lab', 'ทดลองบอร์ด ESP32', NULL, 'booth', NULL, NULL, '2025-11-02 09:00:00', '2025-11-05 18:00:00'),
-(12, 'EX20250109', 1, 'Robotics Lab Demo', '<p>Hands-on robotics challenge this is the bold<strong> what happpend so that is it lkjklkj</strong></p>', '{\"ops\": [{\"insert\": \"Hands-on robotics challenge this is the bold\"}, {\"insert\": \" what happpend so that is it lkjklkj\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1760008335192.png', NULL, '2024-04-30 06:00:00', '2024-04-30 14:00:00'),
-(15, 'EX20250110', 1, 'dfdfkdj', '<ol><li><strong>รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx</strong></li></ol>', '{\"ops\": [{\"insert\": \"รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\", \"attributes\": {\"list\": \"ordered\"}}]}', 'booth', 'uploads/units/EXP1760260365114.png', NULL, '2025-10-11 06:12:00', '2025-10-12 07:14:00'),
-(16, 'EX20250701', 15, 'units test', '<p><strong><em>test</em></strong></p>', '{\"ops\": [{\"insert\": \"test\", \"attributes\": {\"bold\": true, \"italic\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1761072122823.png', NULL, '2025-10-21 04:41:00', '2025-10-22 04:41:00'),
-(17, 'EX20250301', 3, 'ทดสอบเพิ่มกิจกรรม', 'resrasl;dfka;sdlfkasdf', NULL, 'activity', 'uploads/units/EXP1761072295328.png', NULL, '2025-10-19 22:44:00', '2025-10-22 22:44:00'),
-(18, 'EX20250302', 3, 'test', 'test', NULL, 'activity', 'uploads/units/EXP1761072379903.png', NULL, '2025-10-20 18:46:00', '2025-10-29 18:46:00'),
-(19, 'EX20250901', 17, 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', 'activity', 'uploads/units/EXP1767176856956.png', NULL, '2025-12-11 20:00:00', '2025-12-31 20:00:00'),
-(20, 'EX20250902', 17, 'tes2', '<p>testa</p>', '{\"ops\": [{\"insert\": \"testa\\n\"}]}', 'booth', 'uploads/units/EXP1767418200023.png', NULL, '2025-12-30 05:29:00', '2026-01-22 05:29:00');
+INSERT INTO `units` (`unit_id`, `unit_code`, `exhibition_id`, `unit_name`, `description`, `description_delta`, `unit_type`, `poster_url`, `detail_pdf_url`, `starts_at`, `ends_at`, `additional_question_set_id`) VALUES
+(1, 'EX20250101', 1, 'Robotics Lab Demo2', '<p><strong>s dlrow eht</strong></p>', '{\"ops\": [{\"insert\": \"s dlrow eht\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1759848361494.jpg', NULL, '2024-04-30 06:00:00', '2024-04-30 14:00:00', NULL),
+(2, 'EX20250102', 1, 'Robot Show', 'โชว์บนเวทีใหญ่', NULL, 'activity', 'uploads/units/EXP1759849066017.webp', NULL, '2025-11-02 07:00:00', '2025-11-02 08:00:00', NULL),
+(3, 'EX20250103', 1, 'IoT Corner', 'ของเล่น IoT', NULL, 'booth', 'uploads/units/EXP1759849287066.png', NULL, '2025-11-01 03:00:00', '2025-11-05 10:00:00', NULL),
+(4, 'EX20250104', 1, 'Cloud 101 Talk', 'แนะนำพื้นฐานคลาวด์', NULL, 'activity', NULL, NULL, '2025-11-03 11:00:00', '2025-11-03 12:00:00', NULL),
+(5, 'EX20260101', 99, 'Robot AI Booth', NULL, NULL, 'booth', NULL, NULL, NULL, NULL, NULL),
+(6, 'EX20260102', 99, 'Smart Farm Booth', NULL, NULL, 'booth', NULL, NULL, NULL, NULL, NULL),
+(7, 'EX20250107', 1, 'Startup Pitch', 'พิตช์บนเวที', NULL, 'activity', NULL, NULL, '2025-11-05 10:00:00', '2025-11-05 12:00:00', NULL),
+(8, 'EX20250108', 1, 'Hardware Lab', 'ทดลองบอร์ด ESP32', NULL, 'booth', NULL, NULL, '2025-11-02 09:00:00', '2025-11-05 18:00:00', NULL),
+(12, 'EX20250109', 1, 'Robotics Lab Demo', '<p>Hands-on robotics challenge this is the bold<strong> what happpend so that is it lkjklkj</strong></p>', '{\"ops\": [{\"insert\": \"Hands-on robotics challenge this is the bold\"}, {\"insert\": \" what happpend so that is it lkjklkj\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1760008335192.png', NULL, '2024-04-30 06:00:00', '2024-04-30 14:00:00', NULL),
+(15, 'EX20250110', 1, 'dfdfkdj', '<ol><li><strong>รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx</strong></li></ol>', '{\"ops\": [{\"insert\": \"รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\", \"attributes\": {\"list\": \"ordered\"}}]}', 'booth', 'uploads/units/EXP1760260365114.png', NULL, '2025-10-11 06:12:00', '2025-10-12 07:14:00', NULL),
+(16, 'EX20250701', 15, 'units test', '<p><strong><em>test</em></strong></p>', '{\"ops\": [{\"insert\": \"test\", \"attributes\": {\"bold\": true, \"italic\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1761072122823.png', NULL, '2025-10-21 04:41:00', '2025-10-22 04:41:00', NULL),
+(17, 'EX20250301', 3, 'ทดสอบเพิ่มกิจกรรม', 'resrasl;dfka;sdlfkasdf', NULL, 'activity', 'uploads/units/EXP1761072295328.png', NULL, '2025-10-19 22:44:00', '2025-10-22 22:44:00', NULL),
+(18, 'EX20250302', 3, 'test', 'test', NULL, 'activity', 'uploads/units/EXP1761072379903.png', NULL, '2025-10-20 18:46:00', '2025-10-29 18:46:00', NULL),
+(19, 'EX20250901', 17, 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', 'activity', 'uploads/units/EXP1767176856956.png', NULL, '2025-12-11 20:00:00', '2025-12-31 20:00:00', NULL),
+(20, 'EX20250902', 17, 'tes2', '<p>testa</p>', '{\"ops\": [{\"insert\": \"testa\\n\"}]}', 'booth', 'uploads/units/EXP1767418200023.png', NULL, '2025-12-30 05:29:00', '2026-01-22 05:29:00', NULL);
 
 --
 -- Triggers `units`
@@ -692,7 +693,8 @@ ALTER TABLE `survey_submissions`
 ALTER TABLE `units`
   ADD PRIMARY KEY (`unit_id`),
   ADD UNIQUE KEY `uq_units_exh_name` (`exhibition_id`,`unit_name`),
-  ADD UNIQUE KEY `uq_unit_code` (`unit_code`);
+  ADD UNIQUE KEY `uq_unit_code` (`unit_code`),
+  ADD KEY `idx_unit_additional_questions` (`additional_question_set_id`);
 
 --
 -- Indexes for table `units_checkins`
@@ -920,7 +922,8 @@ ALTER TABLE `survey_submissions`
 -- Constraints for table `units`
 --
 ALTER TABLE `units`
-  ADD CONSTRAINT `fk_units_exhibition` FOREIGN KEY (`exhibition_id`) REFERENCES `exhibitions` (`exhibition_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_units_exhibition` FOREIGN KEY (`exhibition_id`) REFERENCES `exhibitions` (`exhibition_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_unit_additional_questions` FOREIGN KEY (`additional_question_set_id`) REFERENCES `question_sets` (`set_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `units_checkins`

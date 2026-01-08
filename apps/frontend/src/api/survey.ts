@@ -3,6 +3,7 @@ import type {
   Question,
   QuestionWithSet,
   QuestionSetWithQuestions,
+  MasterQuestionSet,
   CreateQuestionSetPayload,
   GetQuestionsParams,
   QuestionType,
@@ -23,10 +24,11 @@ export async function getQuestionsByExhibition(
 }
 
 /**
- * Get master questions by type (EXHIBITION or UNIT)
+ * Get master question sets by type (EXHIBITION or UNIT)
+ * Returns all master question sets with their questions for the specified type
  */
-export async function getMasterQuestions(type: QuestionType): Promise<Question[]> {
-  const { data } = await api.get<Question[]>(`${SURVEY_BASE}/master-questions`, {
+export async function getMasterQuestions(type: QuestionType): Promise<MasterQuestionSet[]> {
+  const { data } = await api.get<MasterQuestionSet[]>(`${SURVEY_BASE}/master-questions`, {
     params: { type },
   });
   return data;
@@ -39,6 +41,19 @@ export async function createQuestionSet(
   payload: CreateQuestionSetPayload
 ): Promise<QuestionSetWithQuestions> {
   const { data } = await api.post<QuestionSetWithQuestions>(
+    `${SURVEY_BASE}/questions`,
+    payload
+  );
+  return data;
+}
+
+/**
+ * Update a question set for an exhibition
+ */
+export async function updateQuestionSet(
+  payload: CreateQuestionSetPayload
+): Promise<QuestionSetWithQuestions> {
+  const { data } = await api.put<QuestionSetWithQuestions>(
     `${SURVEY_BASE}/questions`,
     payload
   );

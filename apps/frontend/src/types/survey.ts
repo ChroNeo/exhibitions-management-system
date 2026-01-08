@@ -27,6 +27,18 @@ export interface QuestionSetWithQuestions extends QuestionSet {
   questions: Question[];
 }
 
+export interface MasterQuestionSet {
+  set_id: number;
+  name: string;
+  is_master: number;
+  type: QuestionType;
+  questions: {
+    question_id: number;
+    set_id: number;
+    topic: string;
+  }[];
+}
+
 export interface CreateQuestionSetPayload {
   exhibition_id: number;
   type: QuestionType;
