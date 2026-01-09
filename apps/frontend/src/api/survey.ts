@@ -1,6 +1,7 @@
 import api from "./client";
+import axios from 'axios';
+import liff from '@line/liff';
 import type {
-  Question,
   QuestionWithSet,
   QuestionSetWithQuestions,
   MasterQuestionSet,
@@ -10,9 +11,35 @@ import type {
 } from "../types/survey";
 
 const SURVEY_BASE = "/surveys";
+const BASE = import.meta.env.VITE_API_BASE;
 
 /**
- * Get questions by exhibition ID and optional type
+ * Get questions by exhibition ID and optional type (for LIFF - uses ID token)
+ */
+export async function getQuestionsByExhibitionLiff(
+  params: GetQuestionsParams
+): Promise<QuestionWithSet[]> {
+  const idToken = liff.getIDToken();
+  if (!idToken) {
+    throw new Error('Failed to get ID token');
+  }
+
+  const response = await axios.get<QuestionWithSet[]>(
+    `${BASE}${SURVEY_BASE}/questions`,
+    {
+      params,
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        'ngrok-skip-browser-warning': 'true',
+      },
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Get questions by exhibition ID and optional type (regular auth)
  */
 export async function getQuestionsByExhibition(
   params: GetQuestionsParams

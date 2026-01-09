@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useSurveyQuestions } from "../../hook/useSurveyQuestions";
+import { useSurveyLiff } from "../../hook/useSurveyLiff";
 
 interface SurveyAnswer {
   question_id: number;
@@ -8,13 +7,16 @@ interface SurveyAnswer {
 }
 
 export default function ExhibitionSurveyPage() {
-  const { ex_id } = useParams<{ ex_id: string }>();
+  // Get exhibition_id from URL query string (same pattern as TicketPage)
+  const params = new URLSearchParams(window.location.search);
+  const exhibitionId = params.get("ex_id");
+
   const [answers, setAnswers] = useState<SurveyAnswer[]>([]);
   const [comment, setComment] = useState("");
 
-  const { data: questions, isLoading, error } = useSurveyQuestions({
-    exhibition_id: ex_id!,
-    type: "EXHIBITION",
+  // Use the custom LIFF hook
+  const { state, refetch } = useSurveyLiff({
+    exhibitionId,
   });
 
   const handleRatingChange = (questionId: number, rating: number) => {
@@ -36,33 +38,60 @@ export default function ExhibitionSurveyPage() {
     alert("Survey submitted! Check console for data.");
   };
 
-  if (isLoading) {
-    return (
-      <div style={{ padding: "20px" }}>
-        <h1>Exhibition Survey</h1>
-        <p>Loading questions...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ padding: "20px" }}>
-        <h1>Exhibition Survey</h1>
-        <p>Error loading questions: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
       <h1>Exhibition Survey</h1>
       <p>กรุณาประเมินความพึงพอใจของท่าน</p>
 
-      <form onSubmit={handleSubmit}>
-        {questions && questions.length > 0 ? (
+      {state.status === "initializing" && (
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          <div className="spinner"></div>
+          <p>Loading...</p>
+        </div>
+      )}
+
+      {state.status === "not_logged_in" && (
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          <p>Loading login...</p>
+        </div>
+      )}
+
+      {state.status === "loading" && (
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          <div className="spinner"></div>
+          <p>Loading questions...</p>
+        </div>
+      )}
+
+      {state.status === "error" && (
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          <div style={{ fontSize: "48px", marginBottom: "20px" }}>🚫</div>
+          <h3>Error</h3>
+          <p style={{ color: "#d32f2f", marginBottom: "20px" }}>
+            {state.message}
+          </p>
+          <button
+            onClick={refetch}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#1976d2",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {state.status === "success" && (
+        <form onSubmit={handleSubmit}>
+          {state.questions && state.questions.length > 0 ? (
           <>
-            {questions.map((question, index) => (
+            {state.questions.map((question, index) => (
               <div
                 key={question.question_id}
                 style={{
@@ -161,7 +190,8 @@ export default function ExhibitionSurveyPage() {
         ) : (
           <p>No questions found for this exhibition survey.</p>
         )}
-      </form>
+        </form>
+      )}
     </div>
   );
 }
