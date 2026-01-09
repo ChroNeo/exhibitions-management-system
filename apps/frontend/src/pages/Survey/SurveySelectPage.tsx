@@ -4,6 +4,7 @@ import liff from "@line/liff";
 import axios from "axios";
 import { getUserExhibitions, type UserTicket } from "../../api/tickets";
 import { toFileUrl } from "../../utils/url";
+import styles from "./SurveySelect.module.css";
 
 const LIFF_CONFIG = {
   liffId: "2008498720-Sd7gGdIL",
@@ -87,48 +88,40 @@ export default function SurveySelectPage() {
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
+    <div className={styles.container}>
       <h1>Select Exhibition for Survey</h1>
       <p>กรุณาเลือกงานที่ต้องการทำแบบสอบถาม</p>
 
       {state.status === "initializing" && (
-        <div style={{ textAlign: "center", padding: "40px" }}>
+        <div className={styles.statusMessage}>
           <div className="spinner"></div>
           <p>Loading...</p>
         </div>
       )}
 
       {state.status === "not_logged_in" && (
-        <div style={{ textAlign: "center", padding: "40px" }}>
+        <div className={styles.statusMessage}>
           <p>Loading login...</p>
         </div>
       )}
 
       {state.status === "loading" && (
-        <div style={{ textAlign: "center", padding: "40px" }}>
+        <div className={styles.statusMessage}>
           <div className="spinner"></div>
           <p>Loading your exhibitions...</p>
         </div>
       )}
 
       {state.status === "error" && (
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <div style={{ fontSize: "48px", marginBottom: "20px" }}>🚫</div>
-          <h3>Error</h3>
-          <p style={{ color: "#d32f2f", marginBottom: "20px" }}>
+        <div className={styles.statusMessage}>
+          <div className={styles.errorIcon}>🚫</div>
+          <h3 className={styles.errorTitle}>Error</h3>
+          <p className={styles.errorMessage}>
             {state.message}
           </p>
           <button
             onClick={fetchExhibitions}
-            style={{
-              padding: "10px 20px",
-              fontSize: "16px",
-              backgroundColor: "#1976d2",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
+            className={styles.retryButton}
           >
             Try Again
           </button>
@@ -138,81 +131,50 @@ export default function SurveySelectPage() {
       {state.status === "success" && (
         <>
           {state.exhibitions.length > 0 ? (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-            >
+            <div className={styles.exhibitionList}>
               {state.exhibitions.map((exhibition) => (
                 <div
                   key={exhibition.exhibition_id}
                   onClick={() =>
                     handleExhibitionClick(exhibition.exhibition_id)
                   }
-                  style={{
-                    padding: "20px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    backgroundColor: "#f9f9f9",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#e3f2fd";
-                    e.currentTarget.style.borderColor = "#1976d2";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#f9f9f9";
-                    e.currentTarget.style.borderColor = "#ddd";
-                  }}
+                  className={styles.exhibitionCard}
                 >
-                  <div style={{ display: "flex", gap: "16px", position: "relative" }}>
+                  <div className={styles.exhibitionContent}>
                     {exhibition.picture_path && (
                       <img
                         src={toFileUrl(exhibition.picture_path)}
                         alt={exhibition.title}
-                        style={{
-                          width: "100px",
-                          height: "100px",
-                          objectFit: "cover",
-                          borderRadius: "8px",
-                        }}
+                        className={styles.exhibitionImage}
                       />
                     )}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <h3 style={{ margin: "0 0 8px 0" }}>
+                    <div className={styles.exhibitionDetails}>
+                      <div className={styles.exhibitionHeader}>
+                        <h3 className={styles.exhibitionTitle}>
                           {exhibition.title}
                         </h3>
                         {exhibition.survey_completed === 1 && (
-                          <span
-                            style={{
-                              backgroundColor: "#28a745",
-                              color: "white",
-                              padding: "2px 8px",
-                              borderRadius: "12px",
-                              fontSize: "12px",
-                              fontWeight: "bold",
-                            }}
-                          >
+                          <span className={styles.completedBadge}>
                             ✓ ทำแล้ว
                           </span>
                         )}
                       </div>
                       {exhibition.location && (
-                        <p style={{ margin: "4px 0", color: "#666" }}>
+                        <p className={styles.exhibitionLocation}>
                           📍 {exhibition.location}
                         </p>
                       )}
-                      <p style={{ margin: "4px 0", color: "#666" }}>
+                      <p className={styles.exhibitionDate}>
                         📅{" "}
                         {new Date(exhibition.start_date).toLocaleDateString()} -{" "}
                         {new Date(exhibition.end_date).toLocaleDateString()}
                       </p>
                       <p
-                        style={{
-                          margin: "8px 0 0 0",
-                          fontWeight: "bold",
-                          color: exhibition.survey_completed === 1 ? "#666" : "#1976d2",
-                        }}
+                        className={`${styles.exhibitionAction} ${
+                          exhibition.survey_completed === 1
+                            ? styles.exhibitionActionCompleted
+                            : styles.exhibitionActionPending
+                        }`}
                       >
                         {exhibition.survey_completed === 1
                           ? "คลิกเพื่อดูรายละเอียด →"
@@ -224,7 +186,7 @@ export default function SurveySelectPage() {
               ))}
             </div>
           ) : (
-            <div style={{ textAlign: "center", padding: "40px" }}>
+            <div className={styles.emptyMessage}>
               <p>คุณยังไม่ได้ลงทะเบียนงานใดๆ</p>
             </div>
           )}

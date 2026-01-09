@@ -170,7 +170,7 @@ export default function ExhibitionSurveyPage() {
             <div className={styles.successMessage}>
               <div className={styles.successIcon}>✅</div>
               <h2 className={styles.successTitle}>ขอบคุณสำหรับความคิดเห็นของคุณ!</h2>
-              <p style={{ fontSize: "16px", color: "#666", marginTop: "10px" }}>
+              <p className={styles.successDescription}>
                 คุณได้ทำแบบสอบถามนี้เรียบร้อยแล้ว
               </p>
               <button

@@ -156,3 +156,9 @@
 .backButton:hover {
   background-color: #1565c0;
 }
+
+.successDescription {
+  font-size: 16px;
+  color: #666;
+  margin-top: 10px;
+}
