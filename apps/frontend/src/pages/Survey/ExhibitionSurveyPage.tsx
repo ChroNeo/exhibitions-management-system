@@ -71,7 +71,8 @@ export default function ExhibitionSurveyPage() {
     setSubmitState({ status: "submitting" });
 
     try {
-      console.log("Submitting survey with data:", {
+      // Submit the survey
+      await submitSurveyLiff({
         exhibition_id: Number(exhibitionId),
         comment: comment || undefined,
         answers: answers.map((a) => ({
@@ -79,17 +80,6 @@ export default function ExhibitionSurveyPage() {
           score: a.rating,
         })),
       });
-
-      const response = await submitSurveyLiff({
-        exhibition_id: Number(exhibitionId),
-        comment: comment || undefined,
-        answers: answers.map((a) => ({
-          question_id: a.question_id,
-          score: a.rating,
-        })),
-      });
-
-      console.log("Survey submitted successfully:", response);
 
       setSubmitState({ status: "idle" });
 
@@ -175,10 +165,26 @@ export default function ExhibitionSurveyPage() {
       )}
 
       {state.status === "success" && (
-        <form onSubmit={handleSubmit}>
-          {state.questions && state.questions.length > 0 ? (
-          <>
-            {state.questions.map((question, index) => (
+        <>
+          {state.isCompleted ? (
+            <div className={styles.successMessage}>
+              <div className={styles.successIcon}>✅</div>
+              <h2 className={styles.successTitle}>ขอบคุณสำหรับความคิดเห็นของคุณ!</h2>
+              <p style={{ fontSize: "16px", color: "#666", marginTop: "10px" }}>
+                คุณได้ทำแบบสอบถามนี้เรียบร้อยแล้ว
+              </p>
+              <button
+                onClick={() => navigate("/survey")}
+                className={styles.backButton}
+              >
+                กลับไปหน้าเลือกงาน
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              {state.questions && state.questions.length > 0 ? (
+              <>
+                {state.questions.map((question, index) => (
               <div key={question.question_id} className={styles.questionCard}>
                 <h3 className={styles.questionTitle}>
                   {index + 1}. {question.topic}
@@ -226,7 +232,9 @@ export default function ExhibitionSurveyPage() {
         ) : (
           <p className={styles.noQuestions}>No questions found for this exhibition survey.</p>
         )}
-        </form>
+            </form>
+          )}
+        </>
       )}
     </div>
   );

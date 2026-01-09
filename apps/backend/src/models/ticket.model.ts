@@ -17,17 +17,19 @@ export const AuthHeaderSchema = z.object({
 
 // User Ticket Response
 export const UserTicketSchema = z.object({
+  user_id: z.number().int(),                  
   registration_id: z.number().int().positive(),
   exhibition_id: z.number().int().positive(),
   title: z.string(),
-  code: z.string(),
+  exhibition_code: z.string(),                
   location: z.string().nullable(),
   start_date: z.date().or(z.string()),
   end_date: z.date().or(z.string()),
   picture_path: z.string().nullable(),
   status: z.string(),
+  exhibition_set_id: z.number().nullable(),   
   registered_at: z.date().or(z.string()),
-  survey_completed: z.number().int().min(0).max(1), // 0 or 1 (boolean in MySQL)
+  survey_completed: z.number().int().min(0).max(1),
 });
 
 // QR Token Request

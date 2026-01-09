@@ -15,6 +15,7 @@ import {
   updateQuestionSet,
   submitSurvey
 } from "../queries/survey-query.js";
+import { safeQuery } from "../services/dbconn.js";
 import { requireOrganizerAuth } from "../services/auth-middleware.js";
 import { AuthHeaderSchema } from "../models/ticket.model.js";
 import { verifyLiffIdToken } from "../services/line/security.js";

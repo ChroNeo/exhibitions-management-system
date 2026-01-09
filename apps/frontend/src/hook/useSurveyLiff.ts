@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import liff from '@line/liff';
 import axios from 'axios';
 import { getQuestionsByExhibitionLiff } from '../api/survey';
+import { getUserExhibitions } from '../api/tickets';
 import type { QuestionWithSet } from '../types/survey';
 
 // Configuration - placeholder LIFF ID, will be replaced by user
@@ -14,7 +15,7 @@ export type SurveyState =
   | { status: 'initializing' }
   | { status: 'not_logged_in' }
   | { status: 'loading' }
-  | { status: 'success'; questions: QuestionWithSet[] }
+  | { status: 'success'; questions: QuestionWithSet[]; isCompleted: boolean }
   | { status: 'error'; message: string };
 
 interface UseSurveyLiffOptions {
@@ -35,14 +36,25 @@ export function useSurveyLiff(options: UseSurveyLiffOptions = {}) {
         );
       }
 
-      const questions = await getQuestionsByExhibitionLiff({
-        exhibition_id: exhibitionId,
-        type: 'EXHIBITION',
-      });
+      // Fetch both questions and user exhibitions in parallel
+      const [questions, userExhibitions] = await Promise.all([
+        getQuestionsByExhibitionLiff({
+          exhibition_id: exhibitionId,
+          type: 'EXHIBITION',
+        }),
+        getUserExhibitions(),
+      ]);
+
+      // Find the survey completion status for this exhibition
+      const exhibition = userExhibitions.find(
+        (ex) => ex.exhibition_id === Number(exhibitionId)
+      );
+      const isCompleted = exhibition?.survey_completed === 1;
 
       setState({
         status: 'success',
         questions,
+        isCompleted,
       });
     } catch (error) {
       // Handle 401 Unauthorized - token expired, logout and redirect to login

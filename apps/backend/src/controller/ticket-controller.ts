@@ -46,13 +46,13 @@ export default async function ticketController(fastify: FastifyInstance) {
         const userData = await getUserRegistrationsByLineId(verifiedToken.sub);
 
         if (!userData) {
-          return [];
+          return reply.code(200).send([]);
         }
 
         // 3. ดึงรายการตั๋วแบบละเอียด
         const tickets = await getUserTickets(userData.user_id);
 
-        return tickets;
+        return reply.code(200).send(tickets);
       } catch (error) {
         if (error instanceof AppError) return reply.code(error.status).send(error);
         req.log.error(error);

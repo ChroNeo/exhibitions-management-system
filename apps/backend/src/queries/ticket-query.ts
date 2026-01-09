@@ -2,16 +2,19 @@ import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
 
 export type UserTicketRow = {
+  user_id: number;
   registration_id: number;
   exhibition_id: number;
   title: string;
-  code: string;
+  exhibition_code: string;
   location: string | null;
   start_date: Date;
   end_date: Date;
   picture_path: string | null;
-  status: string;
+  status: 'draft' | 'published' | 'ongoing' | 'ended' | 'archived';
+  exhibition_set_id: number | null;
   registered_at: Date;
+  survey_completed: number;
 };
 
 export type UserRegistrationData = {
@@ -78,25 +81,10 @@ export async function getUserRegistrationsByLineId(
 }
 export async function getUserTickets(userId: number): Promise<UserTicketRow[]> {
   const rows = await safeQuery<UserTicketRow[]>(
-    `SELECT
-       r.registration_id,
-       e.exhibition_id,
-       e.title,
-       e.exhibition_code AS code,
-       e.location,
-       e.start_date,
-       e.end_date,
-       e.picture_path,
-       e.status,
-       r.registered_at,
-       IF(ss.submission_id IS NOT NULL, 1, 0) AS survey_completed
-     FROM registrations r
-     JOIN exhibitions e ON r.exhibition_id = e.exhibition_id
-     LEFT JOIN survey_submissions ss ON ss.user_id = r.user_id
-       AND ss.exhibition_id = r.exhibition_id
-       AND ss.unit_id IS NULL
-     WHERE r.user_id = ?
-     ORDER BY e.start_date DESC`,
+    `SELECT * FROM v_my_event_surveys 
+      WHERE user_id = ? 
+      ORDER BY start_date DESC;
+    `,
     [userId]
   );
   return rows;

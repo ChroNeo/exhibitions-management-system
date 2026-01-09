@@ -113,7 +113,6 @@ export interface SurveySubmissionResponse {
     score: number;
   }[];
 }
-
 /**
  * Submit survey responses (for LIFF - uses ID token)
  */
