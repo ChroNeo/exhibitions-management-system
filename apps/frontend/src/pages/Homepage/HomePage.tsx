@@ -10,7 +10,7 @@ export default function HomePage() {
   const { data, isLoading } = useFeature();
   const location = useLocation();
   const navigate = useNavigate();
-
+  console.log(data);
   const slides = useMemo(() => {
     const images = data?.featureImages ?? [];
     const exData = data?.exhibitions ?? [];
@@ -164,7 +164,7 @@ export default function HomePage() {
                 animLock.current = false; // ปลดล็อกเมื่อแอนิเมตจบ
               }}
             >
-              {extendedSlides.map((slide: { image: string; title: string; start_date: string; end_date: string; location: string }, i: number) => (
+              {extendedSlides.map((slide, i: number) => (
                 <div
                   key={i}
                   className={styles.slide}
@@ -241,7 +241,7 @@ export default function HomePage() {
 
             {slides.length > 1 && (
               <div className={styles.dots}>
-                {slides.map((_: { image: string; title: string; start_date: string; end_date: string; location: string }, i: number) => {
+                {slides.map((_, i: number) => {
                   const active =
                     (index - 1 + slides.length) % slides.length === i;
                   return (
@@ -276,14 +276,14 @@ export default function HomePage() {
                       item={{
                         id: String(ex.exhibition_id),
                         title: ex.title,
-                        location: ex.location,
+                        location: ex.location ?? "",
                         coverUrl: `${ex.picture_path}`,
                         dateText: `${new Date(
                           ex.start_date
                         ).toLocaleDateString()} - ${new Date(
                           ex.end_date
                         ).toLocaleDateString()}`,
-                        picture_path: ex.picture_path,
+                        picture_path: ex.picture_path ?? "",
                         start_date: ex.start_date,
                         end_date: ex.end_date,
                         organizer_name: "",
