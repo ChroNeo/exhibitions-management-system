@@ -1,18 +1,30 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Swal from "sweetalert2";
 import { useSurveyLiff } from "../../hook/useSurveyLiff";
+import { submitSurveyLiff } from "../../api/survey";
+import styles from "./ExhibitionSurvey.module.css";
 
 interface SurveyAnswer {
   question_id: number;
   rating: number;
 }
 
+type SubmitState =
+  | { status: "idle" }
+  | { status: "submitting" };
+
 export default function ExhibitionSurveyPage() {
+  const navigate = useNavigate();
+
   // Get exhibition_id from URL query string (same pattern as TicketPage)
   const params = new URLSearchParams(window.location.search);
   const exhibitionId = params.get("ex_id");
 
   const [answers, setAnswers] = useState<SurveyAnswer[]>([]);
   const [comment, setComment] = useState("");
+  const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
 
   // Use the custom LIFF hook
   const { state, refetch } = useSurveyLiff({
@@ -31,57 +43,132 @@ export default function ExhibitionSurveyPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Survey Answers:", answers);
-    console.log("Comment:", comment);
-    alert("Survey submitted! Check console for data.");
+
+    if (!exhibitionId) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Exhibition ID is missing",
+      });
+      return;
+    }
+
+    // Validate that all questions are answered
+    if (state.status === "success") {
+      const unansweredCount = state.questions.length - answers.length;
+      if (unansweredCount > 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Incomplete Survey",
+          text: `Please answer all questions. ${unansweredCount} question(s) remaining.`,
+        });
+        return;
+      }
+    }
+
+    setSubmitState({ status: "submitting" });
+
+    try {
+      console.log("Submitting survey with data:", {
+        exhibition_id: Number(exhibitionId),
+        comment: comment || undefined,
+        answers: answers.map((a) => ({
+          question_id: a.question_id,
+          score: a.rating,
+        })),
+      });
+
+      const response = await submitSurveyLiff({
+        exhibition_id: Number(exhibitionId),
+        comment: comment || undefined,
+        answers: answers.map((a) => ({
+          question_id: a.question_id,
+          score: a.rating,
+        })),
+      });
+
+      console.log("Survey submitted successfully:", response);
+
+      setSubmitState({ status: "idle" });
+
+      // Show success message with SweetAlert2
+      const result = await Swal.fire({
+        icon: "success",
+        title: "ขอบคุณสำหรับความคิดเห็นของคุณ!",
+        text: "แบบสอบถามของคุณถูกส่งเรียบร้อยแล้ว",
+        confirmButtonText: "กลับไปหน้าเลือกงาน",
+        confirmButtonColor: "#1976d2",
+      });
+
+      if (result.isConfirmed) {
+        navigate("/survey");
+      }
+    } catch (error) {
+      setSubmitState({ status: "idle" });
+
+      console.error("Survey submission error:", error);
+
+      let errorMessage = "Failed to submit survey";
+
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error details:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          headers: error.response?.headers,
+        });
+
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response?.status) {
+          errorMessage = `Server error (${error.response.status})`;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: errorMessage,
+      });
+    }
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
+    <div className={styles.container}>
       <h1>Exhibition Survey</h1>
       <p>กรุณาประเมินความพึงพอใจของท่าน</p>
 
       {state.status === "initializing" && (
-        <div style={{ textAlign: "center", padding: "40px" }}>
+        <div className={styles.statusMessage}>
           <div className="spinner"></div>
           <p>Loading...</p>
         </div>
       )}
 
       {state.status === "not_logged_in" && (
-        <div style={{ textAlign: "center", padding: "40px" }}>
+        <div className={styles.statusMessage}>
           <p>Loading login...</p>
         </div>
       )}
 
       {state.status === "loading" && (
-        <div style={{ textAlign: "center", padding: "40px" }}>
+        <div className={styles.statusMessage}>
           <div className="spinner"></div>
           <p>Loading questions...</p>
         </div>
       )}
 
       {state.status === "error" && (
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <div style={{ fontSize: "48px", marginBottom: "20px" }}>🚫</div>
+        <div className={styles.statusMessage}>
+          <div className={styles.errorIcon}>🚫</div>
           <h3>Error</h3>
-          <p style={{ color: "#d32f2f", marginBottom: "20px" }}>
+          <p className={styles.errorMessage}>
             {state.message}
           </p>
-          <button
-            onClick={refetch}
-            style={{
-              padding: "10px 20px",
-              fontSize: "16px",
-              backgroundColor: "#1976d2",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={refetch} className={styles.retryButton}>
             Try Again
           </button>
         </div>
@@ -92,36 +179,13 @@ export default function ExhibitionSurveyPage() {
           {state.questions && state.questions.length > 0 ? (
           <>
             {state.questions.map((question, index) => (
-              <div
-                key={question.question_id}
-                style={{
-                  marginBottom: "30px",
-                  padding: "20px",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  backgroundColor: "#f9f9f9",
-                }}
-              >
-                <h3 style={{ marginBottom: "15px" }}>
+              <div key={question.question_id} className={styles.questionCard}>
+                <h3 className={styles.questionTitle}>
                   {index + 1}. {question.topic}
                 </h3>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "20px",
-                    justifyContent: "center",
-                  }}
-                >
+                <div className={styles.ratingContainer}>
                   {[1, 2, 3, 4, 5].map((rating) => (
-                    <label
-                      key={rating}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        cursor: "pointer",
-                      }}
-                    >
+                    <label key={rating} className={styles.ratingLabel}>
                       <input
                         type="radio"
                         name={`question-${question.question_id}`}
@@ -129,14 +193,9 @@ export default function ExhibitionSurveyPage() {
                         onChange={() =>
                           handleRatingChange(question.question_id, rating)
                         }
-                        style={{
-                          width: "20px",
-                          height: "20px",
-                          marginBottom: "5px",
-                          cursor: "pointer",
-                        }}
+                        className={styles.ratingInput}
                       />
-                      <span style={{ fontSize: "16px", fontWeight: "500" }}>
+                      <span className={styles.ratingValue}>
                         {rating}
                       </span>
                     </label>
@@ -146,49 +205,26 @@ export default function ExhibitionSurveyPage() {
             ))}
 
             {/* Comment Section */}
-            <div
-              style={{
-                marginBottom: "30px",
-                padding: "20px",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                backgroundColor: "#f9f9f9",
-              }}
-            >
-              <h3 style={{ marginBottom: "15px" }}>ข้อเสนอแนะเพิ่มเติม</h3>
+            <div className={styles.commentSection}>
+              <h3 className={styles.commentTitle}>ข้อเสนอแนะเพิ่มเติม</h3>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="กรุณากรอกข้อเสนอแนะของท่าน..."
-                style={{
-                  width: "100%",
-                  minHeight: "100px",
-                  padding: "10px",
-                  fontSize: "14px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                  resize: "vertical",
-                }}
+                className={styles.commentTextarea}
               />
             </div>
 
             <button
               type="submit"
-              style={{
-                padding: "12px 40px",
-                fontSize: "16px",
-                backgroundColor: "#28a745",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
+              className={styles.submitButton}
+              disabled={submitState.status === "submitting"}
             >
-              Submit Survey
+              {submitState.status === "submitting" ? "Submitting..." : "Submit Survey"}
             </button>
           </>
         ) : (
-          <p>No questions found for this exhibition survey.</p>
+          <p className={styles.noQuestions}>No questions found for this exhibition survey.</p>
         )}
         </form>
       )}

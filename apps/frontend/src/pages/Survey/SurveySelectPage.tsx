@@ -164,7 +164,7 @@ export default function SurveySelectPage() {
                     e.currentTarget.style.borderColor = "#ddd";
                   }}
                 >
-                  <div style={{ display: "flex", gap: "16px" }}>
+                  <div style={{ display: "flex", gap: "16px", position: "relative" }}>
                     {exhibition.picture_path && (
                       <img
                         src={toFileUrl(exhibition.picture_path)}
@@ -178,9 +178,25 @@ export default function SurveySelectPage() {
                       />
                     )}
                     <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: "0 0 8px 0" }}>
-                        {exhibition.title}
-                      </h3>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <h3 style={{ margin: "0 0 8px 0" }}>
+                          {exhibition.title}
+                        </h3>
+                        {exhibition.survey_completed === 1 && (
+                          <span
+                            style={{
+                              backgroundColor: "#28a745",
+                              color: "white",
+                              padding: "2px 8px",
+                              borderRadius: "12px",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            ✓ ทำแล้ว
+                          </span>
+                        )}
+                      </div>
                       {exhibition.location && (
                         <p style={{ margin: "4px 0", color: "#666" }}>
                           📍 {exhibition.location}
@@ -195,10 +211,12 @@ export default function SurveySelectPage() {
                         style={{
                           margin: "8px 0 0 0",
                           fontWeight: "bold",
-                          color: "#1976d2",
+                          color: exhibition.survey_completed === 1 ? "#666" : "#1976d2",
                         }}
                       >
-                        Click to take survey →
+                        {exhibition.survey_completed === 1
+                          ? "คลิกเพื่อดูรายละเอียด →"
+                          : "คลิกเพื่อทำแบบสอบถาม →"}
                       </p>
                     </div>
                   </div>

@@ -9,6 +9,7 @@ export interface UserTicket {
   picture_path: string | null;
   status: string;
   registered_at: string;
+  survey_completed: number; // 0 or 1
 }
 
 export interface QRTokenResponse {

@@ -86,3 +86,60 @@ export async function updateQuestionSet(
   );
   return data;
 }
+
+// Survey submission types
+export interface SurveyAnswer {
+  question_id: number;
+  score: number;
+}
+
+export interface SubmitSurveyPayload {
+  exhibition_id: number;
+  unit_id?: number;
+  comment?: string;
+  answers: SurveyAnswer[];
+}
+
+export interface SurveySubmissionResponse {
+  submission_id: number;
+  exhibition_id: number;
+  unit_id: number | null;
+  user_id: number;
+  comment: string | null;
+  created_at: string;
+  answers: {
+    answer_id: number;
+    question_id: number;
+    score: number;
+  }[];
+}
+
+/**
+ * Submit survey responses (for LIFF - uses ID token)
+ */
+export async function submitSurveyLiff(
+  payload: SubmitSurveyPayload
+): Promise<SurveySubmissionResponse> {
+  const idToken = liff.getIDToken();
+  if (!idToken) {
+    throw new Error('Failed to get ID token');
+  }
+
+  const url = `${BASE}${SURVEY_BASE}/submit`;
+  console.log('Submitting to URL:', url);
+  console.log('Payload:', payload);
+  console.log('ID Token present:', !!idToken);
+
+  const response = await axios.post<SurveySubmissionResponse>(
+    url,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        'ngrok-skip-browser-warning': 'true',
+      },
+    }
+  );
+
+  return response.data;
+}

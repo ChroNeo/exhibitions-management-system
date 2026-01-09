@@ -27,6 +27,7 @@ export const UserTicketSchema = z.object({
   picture_path: z.string().nullable(),
   status: z.string(),
   registered_at: z.date().or(z.string()),
+  survey_completed: z.number().int().min(0).max(1), // 0 or 1 (boolean in MySQL)
 });
 
 // QR Token Request

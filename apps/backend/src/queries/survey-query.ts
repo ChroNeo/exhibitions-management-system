@@ -491,7 +491,9 @@ export async function submitSurvey(
       unit_id: submission.unit_id,
       user_id: submission.user_id,
       comment: submission.comment,
-      created_at: submission.created_at.toISOString(),
+      created_at: submission.created_at instanceof Date
+        ? submission.created_at.toISOString()
+        : new Date(submission.created_at).toISOString(),
       answers: answerRows.map((row: any) => ({
         answer_id: row.answer_id,
         question_id: row.question_id,

@@ -1,0 +1,158 @@
+.container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.statusMessage {
+  text-align: center;
+  padding: 40px;
+}
+
+.errorIcon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.errorMessage {
+  color: #d32f2f;
+  margin-bottom: 20px;
+}
+
+.retryButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.retryButton:hover {
+  background-color: #1565c0;
+}
+
+.questionCard {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.questionTitle {
+  margin-bottom: 15px;
+}
+
+.ratingContainer {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.ratingLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.ratingInput {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+.ratingValue {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.commentSection {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.commentTitle {
+  margin-bottom: 15px;
+}
+
+.commentTextarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+
+.submitButton {
+  padding: 12px 40px;
+  font-size: 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  background-color: #218838;
+}
+
+.noQuestions {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.submitButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.submitError {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 15px;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.successMessage {
+  text-align: center;
+  padding: 40px;
+}
+
+.successIcon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.successTitle {
+  color: #28a745;
+  margin-bottom: 10px;
+}
+
+.backButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.backButton:hover {
+  background-color: #1565c0;
+}

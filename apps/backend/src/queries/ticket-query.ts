@@ -78,7 +78,7 @@ export async function getUserRegistrationsByLineId(
 }
 export async function getUserTickets(userId: number): Promise<UserTicketRow[]> {
   const rows = await safeQuery<UserTicketRow[]>(
-    `SELECT 
+    `SELECT
        r.registration_id,
        e.exhibition_id,
        e.title,
@@ -88,9 +88,13 @@ export async function getUserTickets(userId: number): Promise<UserTicketRow[]> {
        e.end_date,
        e.picture_path,
        e.status,
-       r.registered_at
+       r.registered_at,
+       IF(ss.submission_id IS NOT NULL, 1, 0) AS survey_completed
      FROM registrations r
      JOIN exhibitions e ON r.exhibition_id = e.exhibition_id
+     LEFT JOIN survey_submissions ss ON ss.user_id = r.user_id
+       AND ss.exhibition_id = r.exhibition_id
+       AND ss.unit_id IS NULL
      WHERE r.user_id = ?
      ORDER BY e.start_date DESC`,
     [userId]

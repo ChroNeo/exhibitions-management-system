@@ -6,7 +6,6 @@ import {
   QuestionSetWithQuestionsSchema,
   QUESTION_SET_TYPES,
   DoSurveyBodySchema,
-  SurveySubmissionResponseSchema,
   type DoSurveyBody
 } from "../models/survey.model.js";
 import {
@@ -158,9 +157,6 @@ export default async function surveyController(fastify: FastifyInstance) {
         description: "Submit survey answers using LINE LIFF authentication. Validates user registration and prevents duplicate submissions.",
         headers: AuthHeaderSchema,
         body: DoSurveyBodySchema,
-        response: {
-          201: SurveySubmissionResponseSchema,
-        },
       },
     },
     async (req: FastifyRequest<{ Body: DoSurveyBody }>, reply: FastifyReply) => {
@@ -172,16 +168,20 @@ export default async function surveyController(fastify: FastifyInstance) {
         }
 
         const token = authHeader.split(" ")[1];
+        req.log.info("Verifying LIFF token...");
         const verifiedToken = await verifyLiffIdToken(token);
+        req.log.info({ sub: verifiedToken.sub }, "Token verified");
 
         // Step 2: Get user_id from LINE user ID
         const userData = await getUserRegistrationsByLineId(verifiedToken.sub);
+        req.log.info({ userData }, "User data retrieved");
         if (!userData) {
           throw new AppError("User not found", 404, "USER_NOT_FOUND");
         }
 
         // Step 3: Submit the survey
         const { exhibition_id, unit_id, comment, answers } = req.body;
+        req.log.info({ exhibition_id, unit_id, answerCount: answers.length }, "Submitting survey");
         const result = await submitSurvey(
           userData.user_id,
           exhibition_id,
@@ -189,18 +189,35 @@ export default async function surveyController(fastify: FastifyInstance) {
           comment,
           answers
         );
+        req.log.info({ submissionId: result.submission_id }, "Survey submitted successfully");
 
-        reply.code(201);
-        return result;
+        return reply.code(201).send(result);
       } catch (error) {
         if (error instanceof AppError) {
+          req.log.warn({ error: error.message, code: error.code, status: error.status }, "Application error in survey submission");
           return reply.code(error.status).send({
             message: error.message,
             code: error.code,
           });
         }
-        req.log.error(error, "failed to submit survey");
-        return reply.code(500).send({ message: "internal server error" });
+
+        // Log full error details
+        req.log.error({
+          error: error instanceof Error ? error.stack : String(error),
+          errorMessage: error instanceof Error ? error.message : String(error),
+          body: req.body,
+          headers: req.headers.authorization ? 'present' : 'missing',
+        }, "Unexpected error in survey submission");
+
+        // Return more detailed error in development
+        const isDev = process.env.NODE_ENV !== 'production';
+        return reply.code(500).send({
+          message: "internal server error",
+          ...(isDev && {
+            details: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+          })
+        });
       }
     }
   );
