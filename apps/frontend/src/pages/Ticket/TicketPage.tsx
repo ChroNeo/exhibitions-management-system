@@ -115,7 +115,7 @@ export default function TicketPage() {
             <div className="qr-display">
               <div className="qr-wrapper">
                 <QRCodeSVG
-                  value={state.qrToken}
+                  value={state.data.qrToken}
                   size={260}
                   level="H"
                   className="qr-code"
@@ -133,7 +133,7 @@ export default function TicketPage() {
 
                 <div className="expiry-info">
                   <div className="expiry-countdown">
-                    หมดอายุใน {state.expiresIn}วินาที
+                    หมดอายุใน {state.data.expiresIn}วินาที
                   </div>
                   <p className="refresh-hint">รีเฟรชอัตโนมัติทุก 5 นาที</p>
                 </div>

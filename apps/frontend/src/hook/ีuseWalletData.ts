@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import liff from '@line/liff';
 import axios from 'axios';
+import { LIFF_CONFIG } from '../config/liff';
 
 // Interface
 export interface Ticket {
@@ -18,11 +19,8 @@ export interface UserProfile {
   pictureUrl?: string;
 }
 
-// Config (ควร import มาจาก file config กลาง)
-const LIFF_CONFIG = {
-  liffId: '2008498720-IgQ8sUzW', 
-  apiUrl: import.meta.env.VITE_BASE || 'https://28dbf038a9c8.ngrok-free.app',
-};
+// Config
+const API_URL = import.meta.env.VITE_BASE || 'https://28dbf038a9c8.ngrok-free.app';
 
 export function useWalletData() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -38,7 +36,7 @@ export function useWalletData() {
       // 1. Init LIFF (ถ้า init แล้วจะไม่ทำซ้ำ)
       // เช็ค liff.id เพื่อดูว่า init หรือยัง (ป้องกันการ init ซ้ำ)
       if (!liff.id) {
-          await liff.init({ liffId: LIFF_CONFIG.liffId });
+          await liff.init({ liffId: LIFF_CONFIG.TICKET });
       }
 
       // 2. Check Login
@@ -60,7 +58,7 @@ export function useWalletData() {
 
       // 5. Fetch API
       const response = await axios.get<Ticket[]>(
-        `${LIFF_CONFIG.apiUrl}/api/v1/ticket/`,
+        `${API_URL}/api/v1/ticket/`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,

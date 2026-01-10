@@ -10,11 +10,7 @@ import {
   type RegistrationResponse,
   type RegistrationRole,
 } from "../api/registrations";
-
-// LIFF Configuration
-const LIFF_CONFIG = {
-  liffId: "2008498720-2QsaDpSE",
-};
+import { LIFF_CONFIG } from "../config/liff";
 
 export type RegisterFormPayload = {
   exhibitionId: string | number;
@@ -125,7 +121,7 @@ export function useRegisterForExhibition(options: UseRegisterForExhibitionOption
     try {
       // Check if LIFF is already initialized
       if (!liff.id) {
-        await liff.init({ liffId: LIFF_CONFIG.liffId });
+        await liff.init({ liffId: LIFF_CONFIG.REGISTRATION });
       }
 
       if (!liff.isLoggedIn()) {

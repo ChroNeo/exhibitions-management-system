@@ -13,7 +13,7 @@ export type LiffState<T> =
 interface UseLiffOptions<T> {
   liffApp: LiffAppType;
   fetchData: () => Promise<T>;
-  dependencies?: any[];
+  dependencies?: unknown[];
 }
 
 export function useLiff<T>({ liffApp, fetchData, dependencies = [] }: UseLiffOptions<T>) {

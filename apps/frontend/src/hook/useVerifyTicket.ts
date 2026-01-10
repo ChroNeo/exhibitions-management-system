@@ -1,11 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import liff from '@line/liff';
 import { verifyTicket as verifyTicketApi, type ScanResult } from '../api/tickets';
-
-// Configuration
-const LIFF_CONFIG = {
-  liffId: '2008498720-ohfO7MNd',
-};
+import { LIFF_CONFIG } from '../config/liff';
 
 export type VerifyTicketState =
   | { status: 'initializing' }
@@ -58,7 +54,7 @@ export function useVerifyTicket(options: UseVerifyTicketOptions = {}) {
     try {
       // Check if LIFF is already initialized
       if (!liff.id) {
-        await liff.init({ liffId: LIFF_CONFIG.liffId });
+        await liff.init({ liffId: LIFF_CONFIG.VERIFY_TICKET });
       }
 
       if (!liff.isLoggedIn()) {
