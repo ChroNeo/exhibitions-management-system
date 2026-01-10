@@ -10,7 +10,6 @@ export default function HomePage() {
   const { data, isLoading } = useFeature();
   const location = useLocation();
   const navigate = useNavigate();
-  console.log(data);
   const slides = useMemo(() => {
     const images = data?.featureImages ?? [];
     const exData = data?.exhibitions ?? [];

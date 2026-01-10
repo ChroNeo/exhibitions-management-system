@@ -1,6 +1,5 @@
 import api from "./client";
-import axios from 'axios';
-import liff from '@line/liff';
+import liffClient from './liffClient';
 import type {
   QuestionWithSet,
   QuestionSetWithQuestions,
@@ -11,7 +10,6 @@ import type {
 } from "../types/survey";
 
 const SURVEY_BASE = "/surveys";
-const BASE = import.meta.env.VITE_API_BASE;
 
 /**
  * Get questions by exhibition ID and optional type (for LIFF - uses ID token)
@@ -19,20 +17,9 @@ const BASE = import.meta.env.VITE_API_BASE;
 export async function getQuestionsByExhibitionLiff(
   params: GetQuestionsParams
 ): Promise<QuestionWithSet[]> {
-  const idToken = liff.getIDToken();
-  if (!idToken) {
-    throw new Error('Failed to get ID token');
-  }
-
-  const response = await axios.get<QuestionWithSet[]>(
-    `${BASE}${SURVEY_BASE}/questions`,
-    {
-      params,
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-        'ngrok-skip-browser-warning': 'true',
-      },
-    }
+  const response = await liffClient.get<QuestionWithSet[]>(
+    `${SURVEY_BASE}/questions`,
+    { params }
   );
 
   return response.data;
@@ -119,26 +106,33 @@ export interface SurveySubmissionResponse {
 export async function submitSurveyLiff(
   payload: SubmitSurveyPayload
 ): Promise<SurveySubmissionResponse> {
-  const idToken = liff.getIDToken();
-  if (!idToken) {
-    throw new Error('Failed to get ID token');
-  }
-
-  const url = `${BASE}${SURVEY_BASE}/submit`;
-  console.log('Submitting to URL:', url);
-  console.log('Payload:', payload);
-  console.log('ID Token present:', !!idToken);
-
-  const response = await axios.post<SurveySubmissionResponse>(
-    url,
-    payload,
-    {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-        'ngrok-skip-browser-warning': 'true',
-      },
-    }
+  const response = await liffClient.post<SurveySubmissionResponse>(
+    `${SURVEY_BASE}/submit`,
+    payload
   );
 
   return response.data;
+}
+
+/**
+ * Check if user has completed a survey for an exhibition or unit (for LIFF)
+ */
+export async function checkSurveyCompletedLiff(
+  exhibitionId: string | number,
+  unitId?: string | number
+): Promise<boolean> {
+  const params: any = {
+    exhibition_id: String(exhibitionId),
+  };
+
+  if (unitId !== undefined) {
+    params.unit_id = String(unitId);
+  }
+
+  const response = await liffClient.get<{ is_completed: boolean }>(
+    `${SURVEY_BASE}/check-completed`,
+    { params }
+  );
+
+  return response.data.is_completed;
 }

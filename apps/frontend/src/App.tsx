@@ -11,6 +11,7 @@ import TicketPage from "./pages/Ticket/TicketPage";
 import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
 import ExhibitionSurveyPage from "./pages/Survey/ExhibitionSurveyPage";
 import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
+import UnitListPage from "./pages/Survey/UnitListPage";
 import CreateSurveyPage from "./pages/Survey/CreateSurveyPage";
 import SurveySelectPage from "./pages/Survey/SurveySelectPage";
 
@@ -56,6 +57,7 @@ export default function App() {
       <Route path="/survey/create/:exhibition_id" element={<CreateSurveyPage />} />
       <Route path="/survey/exhibitions" element={<ExhibitionSurveyPage />} />
       <Route path="/survey/units" element={<UnitSurveyPage />} />
+      <Route path="/survey/unit-list" element={<UnitListPage />} />
       
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />
