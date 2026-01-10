@@ -366,6 +366,52 @@ export async function createQuestionSetForExhibition(
   }
 }
 /**
+ * Check if user has already submitted a survey for a specific unit or exhibition
+ */
+export async function checkSurveyCompleted(
+  userId: number,
+  exhibitionId: number,
+  unitId?: number
+): Promise<boolean> {
+  // Validate userId
+  if (typeof userId !== 'number' || userId <= 0) {
+    throw new AppError("invalid user id", 400, "VALIDATION_ERROR");
+  }
+
+  // Validate exhibitionId
+  if (!/^\d+$/.test(String(exhibitionId))) {
+    throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
+  }
+
+  // Validate unitId if provided
+  if (unitId !== undefined && !/^\d+$/.test(String(unitId))) {
+    throw new AppError("invalid unit id", 400, "VALIDATION_ERROR");
+  }
+
+  let query: string;
+  let params: any[];
+
+  if (unitId === undefined) {
+    // Exhibition survey
+    query = `
+      SELECT COUNT(*) as count FROM survey_submissions
+      WHERE user_id = ? AND exhibition_id = ? AND unit_id IS NULL
+    `;
+    params = [userId, exhibitionId];
+  } else {
+    // Unit survey
+    query = `
+      SELECT COUNT(*) as count FROM survey_submissions
+      WHERE user_id = ? AND exhibition_id = ? AND unit_id = ?
+    `;
+    params = [userId, exhibitionId, unitId];
+  }
+
+  const rows = await safeQuery<any[]>(query, params);
+  return rows[0].count > 0;
+}
+
+/**
  * Submit a survey response for an exhibition or unit
  * Creates a survey submission with answers
  */

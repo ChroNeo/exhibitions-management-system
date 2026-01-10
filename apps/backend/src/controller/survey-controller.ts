@@ -13,13 +13,12 @@ import {
   getMasterQuestions,
   createQuestionSetForExhibition,
   updateQuestionSet,
-  submitSurvey
+  submitSurvey,
+  checkSurveyCompleted
 } from "../queries/survey-query.js";
 import { safeQuery } from "../services/dbconn.js";
-import { requireOrganizerAuth } from "../services/auth-middleware.js";
+import { requireOrganizerAuth, requireLiffAuth } from "../services/auth-middleware.js";
 import { AuthHeaderSchema } from "../models/ticket.model.js";
-import { verifyLiffIdToken } from "../services/line/security.js";
-import { getUserRegistrationsByLineId } from "../queries/ticket-query.js";
 import { AppError } from "../errors.js";
 
 export default async function surveyController(fastify: FastifyInstance) {
@@ -149,77 +148,62 @@ export default async function surveyController(fastify: FastifyInstance) {
     }
   );
 
+  // Check if survey is completed
+  app.get(
+    "/check-completed",
+    {
+      preHandler: requireLiffAuth,
+      schema: {
+        tags: ["Survey"],
+        summary: "Check if user has completed a survey",
+        description: "Check if user has already submitted survey for an exhibition or unit",
+        querystring: z.object({
+          exhibition_id: z.string().regex(/^\d+$/, "exhibition_id must be a number"),
+          unit_id: z.string().regex(/^\d+$/, "unit_id must be a number").optional(),
+        }),
+        response: {
+          200: z.object({
+            is_completed: z.boolean(),
+          }),
+        },
+      },
+    },
+    async (req, reply) => {
+      const exhibitionId = Number(req.query.exhibition_id);
+      const unitId = req.query.unit_id ? Number(req.query.unit_id) : undefined;
+
+      const isCompleted = await checkSurveyCompleted(req.lineUser!.user_id, exhibitionId, unitId);
+
+      return { is_completed: isCompleted };
+    }
+  );
+
   app.post(
     "/submit",
     {
+      preHandler: requireLiffAuth,
       schema: {
         tags: ["Survey"],
         summary: "Submit survey responses for exhibition or unit",
         description: "Submit survey answers using LINE LIFF authentication. Validates user registration and prevents duplicate submissions.",
-        headers: AuthHeaderSchema,
         body: DoSurveyBodySchema,
       },
     },
-    async (req: FastifyRequest<{ Body: DoSurveyBody }>, reply: FastifyReply) => {
-      try {
-        // Step 1: Get and verify LINE LIFF ID token
-        const authHeader = req.headers.authorization;
-        if (!authHeader) {
-          throw new AppError("Missing Auth", 401, "MISSING_AUTH");
-        }
+    async (req, reply) => {
+      const { exhibition_id, unit_id, comment, answers } = req.body;
+      req.log.info({ exhibition_id, unit_id, answerCount: answers.length }, "Submitting survey");
 
-        const token = authHeader.split(" ")[1];
-        req.log.info("Verifying LIFF token...");
-        const verifiedToken = await verifyLiffIdToken(token);
-        req.log.info({ sub: verifiedToken.sub }, "Token verified");
+      const result = await submitSurvey(
+        req.lineUser!.user_id,
+        exhibition_id,
+        unit_id,
+        comment,
+        answers
+      );
 
-        // Step 2: Get user_id from LINE user ID
-        const userData = await getUserRegistrationsByLineId(verifiedToken.sub);
-        req.log.info({ userData }, "User data retrieved");
-        if (!userData) {
-          throw new AppError("User not found", 404, "USER_NOT_FOUND");
-        }
+      req.log.info({ submissionId: result.submission_id }, "Survey submitted successfully");
 
-        // Step 3: Submit the survey
-        const { exhibition_id, unit_id, comment, answers } = req.body;
-        req.log.info({ exhibition_id, unit_id, answerCount: answers.length }, "Submitting survey");
-        const result = await submitSurvey(
-          userData.user_id,
-          exhibition_id,
-          unit_id,
-          comment,
-          answers
-        );
-        req.log.info({ submissionId: result.submission_id }, "Survey submitted successfully");
-
-        return reply.code(201).send(result);
-      } catch (error) {
-        if (error instanceof AppError) {
-          req.log.warn({ error: error.message, code: error.code, status: error.status }, "Application error in survey submission");
-          return reply.code(error.status).send({
-            message: error.message,
-            code: error.code,
-          });
-        }
-
-        // Log full error details
-        req.log.error({
-          error: error instanceof Error ? error.stack : String(error),
-          errorMessage: error instanceof Error ? error.message : String(error),
-          body: req.body,
-          headers: req.headers.authorization ? 'present' : 'missing',
-        }, "Unexpected error in survey submission");
-
-        // Return more detailed error in development
-        const isDev = process.env.NODE_ENV !== 'production';
-        return reply.code(500).send({
-          message: "internal server error",
-          ...(isDev && {
-            details: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined
-          })
-        });
-      }
+      return reply.code(201).send(result);
     }
   );
 }
