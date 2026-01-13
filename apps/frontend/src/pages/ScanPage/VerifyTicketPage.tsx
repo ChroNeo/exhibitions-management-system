@@ -51,7 +51,7 @@ export default function VerifyTicketPage() {
   return (
     <div className="staff-scan-page">
       <header className="staff-header">
-        <h1>👮 Staff Scanner</h1>
+        <h1>Staff Scanner</h1>
       </header>
 
       <div className="scan-container">
@@ -74,10 +74,10 @@ export default function VerifyTicketPage() {
         {state.status === "idle" && !isCameraOpen && (
           <div className="result-card">
             <div className="status-icon">📷</div>
-            <h2>Ready to Scan</h2>
-            <p>Tap the button below to start scanning QR codes</p>
+            <h2>พร้อมสำหรับการสแกน</h2>
+            <p>แตะปุ่มด้านล่างเพื่อเริ่มสแกนคิวอาร์โค้ด</p>
             <button className="next-btn" onClick={handleStartScanning}>
-              Start Scanning
+              เริ่มการสแกน
             </button>
           </div>
         )}
