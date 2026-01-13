@@ -1,87 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import liff from "@line/liff";
-import axios from "axios";
-import { getUserExhibitions, type UserTicket } from "../../api/tickets";
+import { useExhibitionSurveyList } from "../../hook/useExhibitionSurveyList";
 import { toFileUrl } from "../../utils/url";
 import styles from "./SurveySelect.module.css";
 
-const LIFF_CONFIG = {
-  liffId: "2008498720-Sd7gGdIL",
-};
-
-type PageState =
-  | { status: "initializing" }
-  | { status: "not_logged_in" }
-  | { status: "loading" }
-  | { status: "success"; exhibitions: UserTicket[] }
-  | { status: "error"; message: string };
-
 export default function SurveySelectPage() {
   const navigate = useNavigate();
-  const [state, setState] = useState<PageState>({ status: "initializing" });
-
-  const fetchExhibitions = useCallback(async () => {
-    setState({ status: "loading" });
-
-    try {
-      const exhibitions = await getUserExhibitions();
-
-      setState({
-        status: "success",
-        exhibitions,
-      });
-    } catch (error) {
-      // Handle 401 Unauthorized
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        setState({ status: "not_logged_in" });
-        if (liff.isLoggedIn()) {
-          liff.logout();
-        }
-        liff.login({ redirectUri: window.location.href });
-        return;
-      }
-
-      let errorMessage = "Failed to load exhibitions";
-
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          errorMessage = error.response.data?.message || errorMessage;
-        } else if (error.request) {
-          errorMessage = "Cannot reach server.";
-        }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      setState({ status: "error", message: errorMessage });
-    }
-  }, []);
-
-  const initializeLiff = useCallback(async () => {
-    try {
-      if (!liff.id) {
-        await liff.init({ liffId: LIFF_CONFIG.liffId });
-      }
-
-      if (!liff.isLoggedIn()) {
-        setState({ status: "not_logged_in" });
-        liff.login({ redirectUri: window.location.href });
-        return;
-      }
-
-      await fetchExhibitions();
-    } catch (error) {
-      setState({
-        status: "error",
-        message: error instanceof Error ? error.message : "LIFF Init Failed",
-      });
-    }
-  }, [fetchExhibitions]);
-
-  useEffect(() => {
-    initializeLiff();
-  }, [initializeLiff]);
+  const { state, refetch } = useExhibitionSurveyList();
 
   const handleExhibitionClick = (exhibitionId: number) => {
     navigate(`/survey/exhibitions?ex_id=${exhibitionId}`);
@@ -120,7 +44,7 @@ export default function SurveySelectPage() {
             {state.message}
           </p>
           <button
-            onClick={fetchExhibitions}
+            onClick={refetch}
             className={styles.retryButton}
           >
             Try Again
@@ -130,9 +54,9 @@ export default function SurveySelectPage() {
 
       {state.status === "success" && (
         <>
-          {state.exhibitions.length > 0 ? (
+          {state.data.length > 0 ? (
             <div className={styles.exhibitionList}>
-              {state.exhibitions.map((exhibition) => (
+              {state.data.map((exhibition) => (
                 <div
                   key={exhibition.exhibition_id}
                   onClick={() =>

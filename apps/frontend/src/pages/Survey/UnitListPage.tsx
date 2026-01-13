@@ -1,95 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import liff from "@line/liff";
-import axios from "axios";
-import { getCheckedInUnits, type CheckedInUnit } from "../../api/tickets";
+import { useUnitList } from "../../hook/useUnitList";
 import styles from "./UnitList.module.css";
-
-const LIFF_CONFIG = {
-  liffId: "2008498720-Sd7gGdIL",
-};
-
-type PageState =
-  | { status: "initializing" }
-  | { status: "not_logged_in" }
-  | { status: "loading" }
-  | { status: "success"; units: CheckedInUnit[] }
-  | { status: "error"; message: string };
 
 export default function UnitListPage() {
   const navigate = useNavigate();
-  const [state, setState] = useState<PageState>({ status: "initializing" });
 
   // Get exhibition_id from URL
   const params = new URLSearchParams(window.location.search);
   const exhibitionId = params.get("ex_id");
 
-  const fetchUnits = useCallback(async () => {
-    if (!exhibitionId) {
-      setState({ status: "error", message: "Exhibition ID is required" });
-      return;
-    }
-
-    setState({ status: "loading" });
-
-    try {
-      const units = await getCheckedInUnits(exhibitionId);
-
-      setState({
-        status: "success",
-        units,
-      });
-    } catch (error) {
-      // Handle 401 Unauthorized
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        setState({ status: "not_logged_in" });
-        if (liff.isLoggedIn()) {
-          liff.logout();
-        }
-        liff.login({ redirectUri: window.location.href });
-        return;
-      }
-
-      let errorMessage = "Failed to load units";
-
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          errorMessage = error.response.data?.message || errorMessage;
-        } else if (error.request) {
-          errorMessage = "Cannot reach server.";
-        }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      setState({ status: "error", message: errorMessage });
-    }
-  }, [exhibitionId]);
-
-  const initializeLiff = useCallback(async () => {
-    try {
-      if (!liff.id) {
-        await liff.init({ liffId: LIFF_CONFIG.liffId });
-      }
-
-      if (!liff.isLoggedIn()) {
-        setState({ status: "not_logged_in" });
-        liff.login({ redirectUri: window.location.href });
-        return;
-      }
-
-      await fetchUnits();
-    } catch (error) {
-      setState({
-        status: "error",
-        message: error instanceof Error ? error.message : "LIFF Init Failed",
-      });
-    }
-  }, [fetchUnits]);
-
-  useEffect(() => {
-    initializeLiff();
-  }, [initializeLiff]);
+  const { state, refetch } = useUnitList({ exhibitionId });
 
   const handleUnitClick = (unitId: number) => {
     navigate(`/survey/units?ex_id=${exhibitionId}&unit_id=${unitId}`);
@@ -137,7 +57,7 @@ export default function UnitListPage() {
             {state.message}
           </p>
           <button
-            onClick={fetchUnits}
+            onClick={refetch}
             className={styles.retryButton}
           >
             Try Again
@@ -147,9 +67,9 @@ export default function UnitListPage() {
 
       {state.status === "success" && (
         <>
-          {state.units.length > 0 ? (
+          {state.data.length > 0 ? (
             <div className={styles.unitList}>
-              {state.units.map((unit) => (
+              {state.data.map((unit) => (
                 <div
                   key={unit.unit_id}
                   onClick={() => handleUnitClick(unit.unit_id)}

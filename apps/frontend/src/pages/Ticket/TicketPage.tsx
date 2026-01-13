@@ -50,7 +50,7 @@ export default function TicketPage() {
 
             // Show SweetAlert popup
             const result = await Swal.fire({
-              title: "ทำแบบสอบถามบูธ/กิจกรรม",
+              title: "มีแบบสอบถาม บูธ/กิจกรรม",
               text: "คุณต้องการทำแบบสอบถามบูธ/กิจกรรมหรือไม่?",
               icon: "question",
               showCancelButton: true,
