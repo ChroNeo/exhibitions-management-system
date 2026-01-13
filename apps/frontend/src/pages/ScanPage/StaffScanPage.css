@@ -55,10 +55,12 @@
 }
 
 .result-card.success {
-  border-top: 10px solid #2ecc71;
+  /* border-top: 10px solid #2ca419; */
+  border-top: none;
 }
 .result-card.fail {
-  border-top: 10px solid #e74c3c;
+  /* border-top: 10px solid #c12d2d; */
+  border-top: none;
 }
 .result-card.loading {
   background: #f0f0f0;
@@ -279,8 +281,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Scanning Overlay */
@@ -319,8 +325,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Scanning Overlay */
@@ -359,8 +369,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Scanning Overlay */
@@ -399,8 +413,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Scanning Overlay */
@@ -437,8 +455,26 @@
   margin: 0;
   padding: 0 20px;
 }
+.icon-success {
+  color: #2ca419;
+  font-size: 4rem;
+}
+
+.icon-fail {
+  color: #c12d2d;
+  font-size: 4rem;
+}
+
+.icon-warning {
+  color: #f39c12;
+  font-size: 4rem;
+}
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
