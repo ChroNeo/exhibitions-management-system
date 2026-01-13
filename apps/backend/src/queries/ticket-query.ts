@@ -141,7 +141,7 @@ export async function verifyAndCheckIn(
   if (duplicateCheck.length > 0) {
     return {
       success: false,
-      message: `⚠️ สแกนซ้ำ! เช็คอินไปแล้วเมื่อ ${new Date(duplicateCheck[0].checkin_at).toLocaleTimeString('th-TH')}`,
+      message: `สแกนซ้ำ! เช็คอินไปแล้วเมื่อ ${new Date(duplicateCheck[0].checkin_at).toLocaleTimeString('th-TH')}`,
       visitor: {
         full_name: visitor[0].full_name,
         picture_url: visitor[0].picture_url,
@@ -159,7 +159,7 @@ export async function verifyAndCheckIn(
 
   return {
     success: true,
-    message: "✅ เช็คอินสำเร็จ",
+    message: "เช็คอินสำเร็จ",
     visitor: {
       full_name: visitor[0].full_name,
       picture_url: visitor[0].picture_url,
