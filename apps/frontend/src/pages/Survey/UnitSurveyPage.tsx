@@ -69,7 +69,7 @@ export default function UnitSurveyPage() {
 
     // Validate that all questions are answered
     if (state.status === "success") {
-      const unansweredCount = state.questions.length - answers.length;
+      const unansweredCount = state.data.questions.length - answers.length;
       if (unansweredCount > 0) {
         Swal.fire({
           icon: "warning",
@@ -179,7 +179,7 @@ export default function UnitSurveyPage() {
 
       {state.status === "success" && (
         <>
-          {state.isCompleted ? (
+          {state.data.isCompleted ? (
             <div className={styles.successMessage}>
               <div className={styles.successIcon}>✅</div>
               <h2 className={styles.successTitle}>ขอบคุณสำหรับความคิดเห็นของคุณ!</h2>
@@ -195,9 +195,9 @@ export default function UnitSurveyPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              {state.questions && state.questions.length > 0 ? (
+              {state.data.questions && state.data.questions.length > 0 ? (
               <>
-                {state.questions.map((question, index) => (
+                {state.data.questions.map((question, index) => (
               <div key={question.question_id} className={styles.questionCard}>
                 <h3 className={styles.questionTitle}>
                   {index + 1}. {question.topic}
