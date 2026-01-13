@@ -1,6 +1,9 @@
 import { useState, useRef } from "react";
 import { QrReader } from "@blackbox-vision/react-qr-reader";
 import { useVerifyTicket } from "../../hook/useVerifyTicket";
+import { FaCheck } from "react-icons/fa6";
+import { IoClose } from "react-icons/io5";
+import { MdErrorOutline } from "react-icons/md";
 import "./StaffScanPage.css";
 
 export default function VerifyTicketPage() {
@@ -85,7 +88,9 @@ export default function VerifyTicketPage() {
         {/* Error Display */}
         {state.status === "error" && (
           <div className="result-card fail">
-            <div className="status-icon">❌</div>
+            <div className="status-icon">
+              <IoClose className="icon-fail" />
+            </div>
             <h2>Connection Error</h2>
             <p>{state.message}</p>
             <button className="next-btn" onClick={handleReset}>
@@ -102,7 +107,11 @@ export default function VerifyTicketPage() {
             }`}
           >
             <div className="status-icon">
-              {state.result.success ? "✅" : "⚠️"}
+              {state.result.success ? (
+                <FaCheck className="icon-success" />
+              ) : (
+                <MdErrorOutline className="icon-warning" />
+              )}
             </div>
             <h2>{state.result.message}</h2>
 
