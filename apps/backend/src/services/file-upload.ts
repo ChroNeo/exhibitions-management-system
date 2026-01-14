@@ -14,6 +14,8 @@ export interface SaveMultipartFileOptions {
   publicPrefix?: string;
   /** Fallback filename when the uploaded part has no original name */
   fallbackName?: string;
+  /** Custom prefix for the filename (defaults to EXP or EXP_PDF based on extension) */
+  filenamePrefix?: string;
 }
 
 export interface SavedMultipartFile {
