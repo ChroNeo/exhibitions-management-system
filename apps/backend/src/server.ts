@@ -17,6 +17,7 @@ import heroController from "./controller/hero-controller.js";
 import registrationsController from "./controller/registrations-controller.js";
 import lineController from "./controller/line-controller.js";
 import ticketController from "./controller/ticket-controller.js";
+import certificateTemplateController from "./controller/certificate-template-controller.js";
 
 // --- Import Services ---
 import { safeQuery } from "./services/dbconn.js";
@@ -170,7 +171,8 @@ app.register(heroController, { prefix: "/api/v1/feature" });
 app.register(registrationsController, { prefix: "/api/v1/registrations" });
 app.register(lineController, { prefix: "/line" });
 app.register(ticketController, { prefix: "/api/v1/ticket" });
-app.register(surveyController, { prefix: "/api/v1/surveys" })
+app.register(surveyController, { prefix: "/api/v1/surveys" });
+app.register(certificateTemplateController, { prefix: "/api/v1/exhibitions" });
 
 // Start Server
 const port = Number(process.env.PORT || 3001);
