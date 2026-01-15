@@ -8,15 +8,17 @@ import {
   createCertificateTemplate,
   updateCertificateTemplate,
   deleteCertificateTemplate,
+  getRegisteredParticipantName,
 } from "../queries/certificate-template-query.js";
 import {
   CertificateTemplateViewSchema,
   type LayoutConfig,
 } from "../models/certificate-template.model.js";
-import { requireOrganizerAuth } from "../services/auth-middleware.js";
+import { optionalAuth, requireOrganizerAuth } from "../services/auth-middleware.js";
 import { collectMultipartFields } from "../services/file-upload.js";
 import { parseJsonField } from "../utils/validation.js";
 import { AppError } from "../errors.js";
+import { generateCertificate } from "../services/certificate-generator.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -202,6 +204,82 @@ export default async function certificateTemplateController(
       const { exhibitionId } = req.params;
       await deleteCertificateTemplate(exhibitionId);
       reply.code(204).send();
+    }
+  );
+
+  // GET /exhibitions/:exhibitionId/certificates/:registrationId/download
+  // Generate and download certificate for a specific registration
+  app.get(
+    "/:exhibitionId/certificates/:userId/download",
+    {
+      preHandler: optionalAuth,
+      schema: {
+        tags: ["Exhibitions"],
+        summary: "Download generated certificate for a registration",
+        description: "Generates a certificate image with participant name overlaid on the template background",
+        params: z.object({
+          exhibitionId: z.string().regex(/^\d+$/),
+          userId: z.string().regex(/^\d+$/),
+        }),
+        produces: ["application/pdf"],
+        response: {
+          200: z.any().describe("Certificate image (PNG)"),
+          404: z.object({
+            message: z.string(),
+            status: z.number(),
+            code: z.string(),
+          }),
+        },
+      },
+    },
+    async (req, reply) => {
+      const { exhibitionId, userId } = req.params;
+
+      // Get certificate template
+      const template = await getCertificateTemplateByExhibitionId(exhibitionId);
+      if (!template) {
+        return reply.status(404).send({
+          message: "certificate template not found",
+          status: 404,
+          code: "NOT_FOUND",
+        });
+      }
+
+      // Get registration data
+      const userData = await getRegisteredParticipantName(
+        exhibitionId,
+        userId
+      );
+      if (!userData) {
+        return reply.status(404).send({
+          message: "User is not registered in this exhibition",
+          status: 404,
+          code: "NOT_FOUND",
+        });
+      }
+
+      // Generate certificate
+      const certificateBuffer = await generateCertificate({
+        backgroundUrl: template.background_url,
+        layoutConfig: template.layout_config || {},
+        data: {
+          participant_name: userData.participant_name,
+        },
+      });
+
+      // Create filename - ASCII only for basic filename, UTF-8 encoded for filename*
+      const asciiFilename = `certificate_${userId}.pdf`;
+      const utf8Filename = `certificate_${userData.participant_name}_${userId}.pdf`;
+      const encodedFilename = encodeURIComponent(utf8Filename);
+
+      // Send response with RFC 5987 compliant Content-Disposition
+      reply
+        .header("Content-Type", "application/pdf")
+        .header(
+          "Content-Disposition",
+          `attachment; filename="${asciiFilename}"; filename*=UTF-8''${encodedFilename}`
+        )
+        .send(certificateBuffer);
     }
   );
 }

@@ -109,3 +109,30 @@ export async function deleteCertificateTemplate(
     throw new Error("ลบ Certificate Template ไม่สำเร็จ");
   }
 }
+
+// service/certificate.service.ts (หรือไฟล์ที่คุณเก็บไว้)
+export async function downloadCertificate(
+  exhibitionId: string | number,
+  userId: string 
+): Promise<Blob> {
+  const res = await fetch(
+    `${BASE}/exhibitions/${exhibitionId}/certificates/${userId}/download`
+  );
+
+  if (res.status === 404) {
+    throw new Error("ไม่พบข้อมูลการลงทะเบียน หรือยังไม่มีใบประกาศนียบัตร");
+  }
+
+  if (!res.ok) {
+    throw new Error("ดาวน์โหลดใบประกาศนียบัตรไม่สำเร็จ");
+  }
+
+  return res.blob();
+}
+
+export function getCertificateDownloadUrl(
+  exhibitionId: string | number,
+  userId: string
+): string {
+  return `${BASE}/exhibitions/${exhibitionId}/certificates/${userId}/download`;
+}

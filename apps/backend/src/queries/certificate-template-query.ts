@@ -143,3 +143,35 @@ export async function deleteCertificateTemplate(
     );
   }
 }
+
+export interface CertificateDataForGeneration {
+  participant_name: string;
+  exhibition_title: string;
+  organizer_name: string;
+  start_date: string | null;
+  end_date: string | null;
+}
+
+export async function getRegisteredParticipantName(
+  exhibitionId: string | number,
+  userId: string | number
+): Promise<CertificateDataForGeneration | null> {
+  if (!/^\d+$/.test(String(exhibitionId)) || !/^\d+$/.test(String(userId))) {
+    throw new AppError("invalid id", 400, "VALIDATION_ERROR");
+  }
+
+  const rows = await safeQuery<CertificateDataForGeneration[]>(
+    `SELECT u.full_name AS participant_name
+      FROM registrations r
+      JOIN normal_users u ON r.user_id = u.user_id
+      WHERE u.user_id = ? AND r.exhibition_id = ?
+      LIMIT 1`,
+    [userId, exhibitionId]
+  );
+
+  if (!rows.length) {
+    return null;
+  }
+
+  return rows[0];
+}

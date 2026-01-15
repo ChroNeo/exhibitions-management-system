@@ -16,6 +16,7 @@ import {
 import { useAuthStatus } from "../../hook/useAuthStatus";
 import NotFound from "../../components/NotFound";
 import { toFileUrl } from "../../utils/url";
+import { downloadCertificate } from "../../api/certificate";
 import type { LayoutConfig } from "../../types/certificate";
 
 import styles from "./CertificatePage.module.css";
@@ -59,6 +60,8 @@ export default function CertificatePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
+  const [testUserId, setTestUserId] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Fetch exhibition details
   const {
@@ -71,7 +74,6 @@ export default function CertificatePage() {
   const {
     data: template,
     isLoading: isLoadingTemplate,
-    isError: isTemplateError,
   } = useCertificateTemplate(exhibitionId ?? "", { enabled: !!exhibitionId });
 
   // Mutations
@@ -249,6 +251,53 @@ export default function CertificatePage() {
     }
   };
 
+  const handleTestDownload = async () => {
+    if (!exhibitionId || !testUserId) {
+      await Swal.fire({
+        // 3. แก้ข้อความเตือน
+        title: "กรุณาระบุ User ID",
+        icon: "warning",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      // เรียก service ตัวใหม่ที่รับ userId
+      const blob = await downloadCertificate(exhibitionId, testUserId);
+
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      // 4. *** สำคัญ *** เปลี่ยนนามสกุลเป็น .pdf
+      link.download = `certificate_${testUserId}.pdf`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      await Swal.fire({
+        title: "ดาวน์โหลดสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+    } catch (error) {
+      console.error("Failed to download certificate", error);
+      await Swal.fire({
+        title: "ดาวน์โหลดไม่สำเร็จ",
+        text: error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (isExhibitionError) {
     return <NotFound />;
   }
@@ -264,12 +313,6 @@ export default function CertificatePage() {
         <Panel title="จัดการ Certificate Template" onBack={handleBack}>
           {!isLoading && exhibition && (
             <div className={styles.content}>
-              {/* Exhibition Info */}
-              <div className={styles.exhibitionInfo}>
-                <h3>{exhibition.title}</h3>
-                <p>รหัส: {exhibition.id}</p>
-              </div>
-
               {/* Current Template */}
               {template && (
                 <div className={styles.currentTemplate}>
@@ -278,7 +321,9 @@ export default function CertificatePage() {
                   {isEditingLayout ? (
                     <CertificateLayoutEditor
                       backgroundUrl={toFileUrl(template.background_url)}
-                      layoutConfig={template.layout_config ?? DEFAULT_LAYOUT_CONFIG}
+                      layoutConfig={
+                        template.layout_config ?? DEFAULT_LAYOUT_CONFIG
+                      }
                       onSave={handleSaveLayout}
                       onCancel={() => setIsEditingLayout(false)}
                       isSaving={isUpdating}
@@ -292,7 +337,12 @@ export default function CertificatePage() {
                         />
                       </div>
                       <p className={styles.templateInfo}>
-                        อัปเดตล่าสุด: {template.updated_at ? new Date(template.updated_at).toLocaleString("th-TH") : "-"}
+                        อัปเดตล่าสุด:{" "}
+                        {template.updated_at
+                          ? new Date(template.updated_at).toLocaleString(
+                              "th-TH"
+                            )
+                          : "-"}
                       </p>
 
                       {hasAuthToken && (
@@ -312,7 +362,9 @@ export default function CertificatePage() {
               {/* Upload Section */}
               {hasAuthToken && (
                 <div className={styles.uploadSection}>
-                  <h4>{template ? "เปลี่ยนไฟล์พื้นหลัง" : "อัปโหลดไฟล์พื้นหลัง"}</h4>
+                  <h4>
+                    {template ? "เปลี่ยนไฟล์พื้นหลัง" : "อัปโหลดไฟล์พื้นหลัง"}
+                  </h4>
 
                   <div className={styles.fileInput}>
                     <input
@@ -321,8 +373,13 @@ export default function CertificatePage() {
                       onChange={handleFileChange}
                       id="certificate-file"
                     />
-                    <label htmlFor="certificate-file" className={styles.fileLabel}>
-                      {selectedFile ? selectedFile.name : "เลือกไฟล์ (รูปภาพ หรือ PDF)"}
+                    <label
+                      htmlFor="certificate-file"
+                      className={styles.fileLabel}
+                    >
+                      {selectedFile
+                        ? selectedFile.name
+                        : "เลือกไฟล์ (รูปภาพ หรือ PDF)"}
                     </label>
                   </div>
 
@@ -386,6 +443,30 @@ export default function CertificatePage() {
                 <p className={styles.authWarning}>
                   กรุณาเข้าสู่ระบบเพื่อจัดการ Certificate Template
                 </p>
+              )}
+
+              {template && (
+                <div className={styles.testDownloadSection}>
+                  <h4>ทดสอบดาวน์โหลดใบประกาศนียบัตร</h4>
+                  <div className={styles.testDownloadForm}>
+                    <input
+                      type="text"
+                      // 2. แก้ Placeholder เป็น User ID
+                      placeholder="UserId"
+                      value={testUserId}
+                      onChange={(e) => setTestUserId(e.target.value)}
+                      className={styles.testInput}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleTestDownload}
+                      disabled={isDownloading || !testUserId}
+                      className={styles.testDownloadButton}
+                    >
+                      {isDownloading ? "กำลังดาวน์โหลด..." : "ดาวน์โหลด"}
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           )}

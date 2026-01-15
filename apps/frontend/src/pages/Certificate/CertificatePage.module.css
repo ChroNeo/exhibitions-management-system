@@ -198,3 +198,59 @@
 .editLayoutButton:hover {
   background-color: #4f46e5;
 }
+
+.testDownloadSection {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f0fdf4;
+}
+
+.testDownloadSection h4 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+.testDownloadForm {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.testInput {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.testInput:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.testDownloadButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.testDownloadButton:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.testDownloadButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
