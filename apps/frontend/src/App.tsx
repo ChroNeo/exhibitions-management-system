@@ -14,6 +14,7 @@ import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import UnitListPage from "./pages/Survey/UnitListPage";
 import CreateSurveyPage from "./pages/Survey/CreateSurveyPage";
 import SurveySelectPage from "./pages/Survey/SurveySelectPage";
+import CertificatePage from "./pages/Certificate/CertificatePage";
 
 export default function App() {
   return (
@@ -46,6 +47,13 @@ export default function App() {
         path="/exhibitions/:exhibitionId/unit/:unitId/edit"
         element={<UnitManageDetail mode="edit" />}
       />
+
+      {/* Certificate management */}
+      <Route
+        path="/exhibitions/:exhibitionId/certificate"
+        element={<CertificatePage />}
+      />
+
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/wallet" element={<WalletPage />} />

@@ -11,7 +11,6 @@ import {
 } from "../queries/certificate-template-query.js";
 import {
   CertificateTemplateViewSchema,
-  UpdateCertificateTemplateSchema,
   type LayoutConfig,
 } from "../models/certificate-template.model.js";
 import { requireOrganizerAuth } from "../services/auth-middleware.js";
@@ -123,17 +122,19 @@ export default async function certificateTemplateController(
   );
 
   // PUT /exhibitions/:exhibitionId/certificate-template
+  // Supports multipart/form-data with optional file upload
   app.put(
     "/:exhibitionId/certificate-template",
     {
       preHandler: requireOrganizerAuth,
       schema: {
         tags: ["Exhibitions"],
-        summary: "Update certificate template for exhibition",
+        summary: "Update certificate template for exhibition (with optional file upload)",
+        description: "Update certificate template. Use multipart/form-data with optional 'file' field for new background and/or 'layout_config' JSON field.",
         params: z.object({
           exhibitionId: z.string().regex(/^\d+$/),
         }),
-        body: UpdateCertificateTemplateSchema,
+        consumes: ["multipart/form-data"],
         response: {
           200: CertificateTemplateViewSchema,
         },
@@ -141,7 +142,42 @@ export default async function certificateTemplateController(
     },
     async (req, reply) => {
       const { exhibitionId } = req.params;
-      const template = await updateCertificateTemplate(exhibitionId, req.body);
+
+      const { fields, files } = await collectMultipartFields(req, {
+        fileFields: {
+          file: {
+            save: {
+              targetDir: certificatesDir,
+              publicPrefix: "uploads/certificates/templates",
+              fallbackName: "certificate_bg",
+              filenamePrefix: "EX_C",
+            },
+          },
+        },
+      });
+
+      const payload: { background_url?: string; layout_config?: LayoutConfig } = {};
+
+      // Handle file upload if provided
+      const backgroundUrl = files.file?.publicPath;
+      if (backgroundUrl) {
+        payload.background_url = backgroundUrl;
+      }
+
+      // Handle layout_config if provided
+      if (fields.layout_config) {
+        const jsonStr = parseJsonField(fields.layout_config, "layout_config");
+        if (jsonStr) {
+          payload.layout_config = JSON.parse(jsonStr) as LayoutConfig;
+        }
+      }
+
+      // Ensure at least one field is being updated
+      if (!payload.background_url && !payload.layout_config) {
+        throw new AppError("no fields to update (provide file or layout_config)", 400, "VALIDATION_ERROR");
+      }
+
+      const template = await updateCertificateTemplate(exhibitionId, payload);
       return template;
     }
   );
