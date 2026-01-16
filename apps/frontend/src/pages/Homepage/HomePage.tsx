@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import ExhibitionCard from "../../components/exhibition/ExhibitionCard";
-import { useFeature } from "../../hook/useFeature";
+import { useFeature } from "./hooks";
 import styles from "./HomePage.module.css";
 import { toFileUrl } from "../../utils/url";
 

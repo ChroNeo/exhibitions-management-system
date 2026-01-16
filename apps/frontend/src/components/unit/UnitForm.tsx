@@ -17,7 +17,7 @@ import Select, { type MultiValue, type StylesConfig } from "react-select";
 import FormButtons from "../DetailButton/FormButtons";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
-import { useUserOptions } from "../../hook/useUserOptions";
+import { useUserOptions } from "../../pages/Exhibitions/hooks";
 import { FaRegFilePdf } from "react-icons/fa6";
 
 export type UnitFormValues = {

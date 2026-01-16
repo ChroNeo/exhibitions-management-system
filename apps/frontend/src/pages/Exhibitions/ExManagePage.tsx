@@ -6,10 +6,8 @@ import Swal from "sweetalert2";
 import AddInline from "../../components/AddInline/AddInline";
 import ExhibitionList from "../../components/exhibition/ExhibitionList";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
-import { useDeleteExhibition } from "../../hook/useDeleteExhibition";
-import { useExhibitions } from "../../hook/useExhibitions";
+import { useDeleteExhibition, useExhibitions, useAuthStatus } from "../../hooks";
 import type { Exhibition } from "../../types/exhibition";
-import { useAuthStatus } from "../../hook/useAuthStatus";
 
 export default function ExhibitionPage() {
   const [query] = useState("");

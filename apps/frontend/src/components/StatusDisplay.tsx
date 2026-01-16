@@ -1,5 +1,5 @@
 import React from 'react';
-import type { LiffState } from '../hook/useLiff';
+import type { LiffState } from '../hooks';
 
 interface StatusDisplayProps<T> {
   state: LiffState<T>;

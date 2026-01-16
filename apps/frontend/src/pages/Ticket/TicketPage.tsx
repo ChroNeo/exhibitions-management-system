@@ -1,7 +1,7 @@
 import { QRCodeSVG } from "qrcode.react";
 import "./TicketPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useTickets } from "../../hook/useTickets";
+import { useTickets } from "./hooks";
 import { IoArrowBack } from "react-icons/io5";
 import { useEffect, useRef } from "react";
 import { checkCheckInStatus, getCheckedInUnits } from "../../api/tickets";

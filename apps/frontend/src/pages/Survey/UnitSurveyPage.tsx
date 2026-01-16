@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import liff from "@line/liff";
-import { useUnitSurveyLiff } from "../../hook/useUnitSurveyLiff";
+import { useUnitSurveyLiff } from "./hooks";
 import { submitSurveyLiff } from "../../api/survey";
 import styles from "../Survey/ExhibitionSurvey.module.css";
 

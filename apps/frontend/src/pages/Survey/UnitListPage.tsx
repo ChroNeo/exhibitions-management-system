@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useUnitList } from "../../hook/useUnitList";
+import { useUnitList } from "./hooks";
 import styles from "./UnitList.module.css";
 
 export default function UnitListPage() {

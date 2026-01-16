@@ -6,14 +6,13 @@ import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
 import CertificateLayoutEditor from "../../components/CertificateEditor/CertificateLayoutEditor";
 import CertificatePreview from "../../components/CertificateEditor/CertificatePreview";
-import { useExhibition } from "../../hook/useExhibition";
+import { useExhibition, useAuthStatus } from "../../hooks";
 import {
   useCertificateTemplate,
   useCreateCertificateTemplate,
   useUpdateCertificateTemplate,
   useDeleteCertificateTemplate,
-} from "../../hook/useCertificateTemplate";
-import { useAuthStatus } from "../../hook/useAuthStatus";
+} from "./hooks";
 import NotFound from "../../components/NotFound";
 import { toFileUrl } from "../../utils/url";
 import { downloadCertificate } from "../../api/certificate";

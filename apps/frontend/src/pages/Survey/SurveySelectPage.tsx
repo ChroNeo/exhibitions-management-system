@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useExhibitionSurveyList } from "../../hook/useExhibitionSurveyList";
+import { useExhibitionSurveyList } from "./hooks";
 import { toFileUrl } from "../../utils/url";
 import styles from "./SurveySelect.module.css";
 

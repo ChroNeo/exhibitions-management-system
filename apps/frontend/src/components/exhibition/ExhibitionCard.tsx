@@ -11,7 +11,7 @@ import { LuClock } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
 import type { Exhibition } from "./../../types/exhibition";
 import { toFileUrl } from "../../utils/url";
-import { useAuthStatus } from "../../hook/useAuthStatus";
+import { useAuthStatus } from "../../hooks";
 import { toThaiDate, toThaiTimeRange } from "../../utils/dateFormat";
 
 const FALLBACK_POSTER = "https://placehold.co/1920x1080";

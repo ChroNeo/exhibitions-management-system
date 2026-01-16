@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useSurveyLiff } from "../../hook/useSurveyLiff";
+import { useSurveyLiff } from "./hooks";
 import { submitSurveyLiff } from "../../api/survey";
 import styles from "./ExhibitionSurvey.module.css";
 
@@ -57,7 +57,7 @@ export default function ExhibitionSurveyPage() {
 
     // Validate that all questions are answered
     if (state.status === "success") {
-      const unansweredCount = state.questions.length - answers.length;
+      const unansweredCount = state.data.length - answers.length;
       if (unansweredCount > 0) {
         Swal.fire({
           icon: "warning",
@@ -166,25 +166,10 @@ export default function ExhibitionSurveyPage() {
 
       {state.status === "success" && (
         <>
-          {state.isCompleted ? (
-            <div className={styles.successMessage}>
-              <div className={styles.successIcon}>✅</div>
-              <h2 className={styles.successTitle}>ขอบคุณสำหรับความคิดเห็นของคุณ!</h2>
-              <p className={styles.successDescription}>
-                คุณได้ทำแบบสอบถามนี้เรียบร้อยแล้ว
-              </p>
-              <button
-                onClick={() => navigate("/survey")}
-                className={styles.backButton}
-              >
-                กลับไปหน้าเลือกงาน
-              </button>
-            </div>
-          ) : (
             <form onSubmit={handleSubmit}>
-              {state.questions && state.questions.length > 0 ? (
+              {state.data && state.data.length > 0 ? (
               <>
-                {state.questions.map((question, index) => (
+                {state.data.map((question, index) => (
               <div key={question.question_id} className={styles.questionCard}>
                 <h3 className={styles.questionTitle}>
                   {index + 1}. {question.topic}
@@ -233,7 +218,6 @@ export default function ExhibitionSurveyPage() {
           <p className={styles.noQuestions}>No questions found for this exhibition survey.</p>
         )}
             </form>
-          )}
         </>
       )}
     </div>

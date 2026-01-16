@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
 import styles from "./LoginPage.module.css";
-import { useSignIn } from "../../hook/useSignIn";
+import { useSignIn } from "../../hooks";
 import { persistAuth } from "../../utils/authStorage";
 import Swal from "sweetalert2";
 

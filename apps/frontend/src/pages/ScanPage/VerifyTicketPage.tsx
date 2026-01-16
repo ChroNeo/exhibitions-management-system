@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { QrReader } from "@blackbox-vision/react-qr-reader";
-import { useVerifyTicket } from "../../hook/useVerifyTicket";
+import { useVerifyTicket } from "./hooks";
 import { FaCheck } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import { MdErrorOutline } from "react-icons/md";
