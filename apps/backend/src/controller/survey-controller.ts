@@ -1,18 +1,25 @@
-import { FastifyInstance, FastifyRequest } from "fastify";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
   QuestionWithSetSchema,
   QuestionSetWithQuestionsSchema,
-  QUESTION_SET_TYPES
+  QUESTION_SET_TYPES,
+  DoSurveyBodySchema,
+  type DoSurveyBody
 } from "../models/survey.model.js";
 import {
   getQuestionsByExhibitionId,
   getMasterQuestions,
   createQuestionSetForExhibition,
-  updateQuestionSet
+  updateQuestionSet,
+  submitSurvey,
+  checkSurveyCompleted
 } from "../queries/survey-query.js";
-import { requireOrganizerAuth } from "../services/auth-middleware.js";
+import { safeQuery } from "../services/dbconn.js";
+import { requireOrganizerAuth, requireLiffAuth } from "../services/auth-middleware.js";
+import { AuthHeaderSchema } from "../models/ticket.model.js";
+import { AppError } from "../errors.js";
 
 export default async function surveyController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -138,6 +145,65 @@ export default async function surveyController(fastify: FastifyInstance) {
 
       reply.code(200);
       return questionSet;
+    }
+  );
+
+  // Check if survey is completed
+  app.get(
+    "/check-completed",
+    {
+      preHandler: requireLiffAuth,
+      schema: {
+        tags: ["Survey"],
+        summary: "Check if user has completed a survey",
+        description: "Check if user has already submitted survey for an exhibition or unit",
+        querystring: z.object({
+          exhibition_id: z.string().regex(/^\d+$/, "exhibition_id must be a number"),
+          unit_id: z.string().regex(/^\d+$/, "unit_id must be a number").optional(),
+        }),
+        response: {
+          200: z.object({
+            is_completed: z.boolean(),
+          }),
+        },
+      },
+    },
+    async (req, reply) => {
+      const exhibitionId = Number(req.query.exhibition_id);
+      const unitId = req.query.unit_id ? Number(req.query.unit_id) : undefined;
+
+      const isCompleted = await checkSurveyCompleted(req.lineUser!.user_id, exhibitionId, unitId);
+
+      return { is_completed: isCompleted };
+    }
+  );
+
+  app.post(
+    "/submit",
+    {
+      preHandler: requireLiffAuth,
+      schema: {
+        tags: ["Survey"],
+        summary: "Submit survey responses for exhibition or unit",
+        description: "Submit survey answers using LINE LIFF authentication. Validates user registration and prevents duplicate submissions.",
+        body: DoSurveyBodySchema,
+      },
+    },
+    async (req, reply) => {
+      const { exhibition_id, unit_id, comment, answers } = req.body;
+      req.log.info({ exhibition_id, unit_id, answerCount: answers.length }, "Submitting survey");
+
+      const result = await submitSurvey(
+        req.lineUser!.user_id,
+        exhibition_id,
+        unit_id,
+        comment,
+        answers
+      );
+
+      req.log.info({ submissionId: result.submission_id }, "Survey submitted successfully");
+
+      return reply.code(201).send(result);
     }
   );
 }

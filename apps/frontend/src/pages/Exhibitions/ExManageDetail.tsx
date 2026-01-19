@@ -2,11 +2,8 @@
 import { useNavigate, useParams } from "react-router-dom";
 
 import Swal from "sweetalert2";
-import { useDeleteExhibition } from "../../hook/useDeleteExhibition";
-import { useExhibition } from "../../hook/useExhibition";
-import { useCreateExhibition } from "../../hook/useCreateExhibition";
-import { useUpdateExhibition } from "../../hook/useUpdateExhibition";
-import { useAuthUser } from "../../hook/useAuthUser";
+import { useDeleteExhibition, useExhibition, useAuthUser, useAuthStatus } from "../../hooks";
+import { useCreateExhibition, useUpdateExhibition } from "./hooks";
 import type { Exhibition } from "../../types/exhibition";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
 import type { ExhibitionFormValues } from "../../components/exhibition/detail_form/ExhibitionForm";
@@ -19,7 +16,6 @@ import ExhibitionForm from "../../components/exhibition/detail_form/ExhibitionFo
 import type { Mode } from "../../types/mode";
 import { toFileUrl } from "../../utils/url";
 import NotFound from "../../components/NotFound";
-import { useAuthStatus } from "../../hook/useAuthStatus";
 import UnitManageList from "../Units/UnitManageList";
 import SurveyManageModal from "../../components/SurveyManageModal/SurveyManageModal";
 // descriptionPlain/Html already provided by Exhibition shape

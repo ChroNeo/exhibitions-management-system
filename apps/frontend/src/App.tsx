@@ -1,17 +1,20 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import UnitManageDetail from "./pages/Units/UnitManageDetail";
+import CertificatePage from "./pages/Certificate/CertificatePage";
 import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
 import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
 import HomePage from "./pages/Homepage/HomePage";
-import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
-import WalletPage from "./pages/Ticket/WalletPage/WalletPage";
-import TicketPage from "./pages/Ticket/TicketPage";
+import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
-import ExhibitionSurveyPage from "./pages/Survey/ExhibitionSurveyPage";
-import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import CreateSurveyPage from "./pages/Survey/CreateSurveyPage";
+import ExhibitionSurveyPage from "./pages/Survey/ExhibitionSurveyPage";
+import SurveySelectPage from "./pages/Survey/SurveySelectPage";
+import UnitListPage from "./pages/Survey/UnitListPage";
+import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
+import TicketPage from "./pages/Ticket/TicketPage";
+import WalletPage from "./pages/Ticket/WalletPage/WalletPage";
+import UnitManageDetail from "./pages/Units/UnitManageDetail";
 
 export default function App() {
   return (
@@ -44,6 +47,13 @@ export default function App() {
         path="/exhibitions/:exhibitionId/unit/:unitId/edit"
         element={<UnitManageDetail mode="edit" />}
       />
+
+      {/* Certificate management */}
+      <Route
+        path="/exhibitions/:exhibitionId/certificate"
+        element={<CertificatePage />}
+      />
+
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/wallet" element={<WalletPage />} />
@@ -51,15 +61,14 @@ export default function App() {
       <Route path="/scan" element={<VerifyTicketPage />} />
 
       {/* Survey Routes */}
+      <Route path="/survey" element={<SurveySelectPage />} />
       <Route
         path="/survey/create/:exhibition_id"
         element={<CreateSurveyPage />}
       />
-      <Route
-        path="/survey/exhibitions/:ex_id"
-        element={<ExhibitionSurveyPage />}
-      />
-      <Route path="/survey/units/:unit_id" element={<UnitSurveyPage />} />
+      <Route path="/survey/exhibitions" element={<ExhibitionSurveyPage />} />
+      <Route path="/survey/units" element={<UnitSurveyPage />} />
+      <Route path="/survey/unit-list" element={<UnitListPage />} />
 
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />

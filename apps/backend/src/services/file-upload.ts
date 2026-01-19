@@ -14,6 +14,8 @@ export interface SaveMultipartFileOptions {
   publicPrefix?: string;
   /** Fallback filename when the uploaded part has no original name */
   fallbackName?: string;
+  /** Custom prefix for the filename (defaults to EXP or EXP_PDF based on extension) */
+  filenamePrefix?: string;
 }
 
 export interface SavedMultipartFile {
@@ -25,13 +27,13 @@ export interface SavedMultipartFile {
 
 export async function saveMultipartFile(
   part: MultipartFile,
-  { targetDir, publicPrefix, fallbackName = "file" }: SaveMultipartFileOptions
+  { targetDir, publicPrefix, fallbackName = "file", filenamePrefix }: SaveMultipartFileOptions
 ): Promise<SavedMultipartFile> {
   await mkdir(targetDir, { recursive: true });
   const originalName = sanitizeFilename(part.filename ?? fallbackName);
   const extension = path.extname(originalName);
   const timestamp = Date.now();
-  const prefix = extension.toLowerCase() === ".pdf" ? "EXP_PDF" : "EXP";
+  const prefix = filenamePrefix ?? (extension.toLowerCase() === ".pdf" ? "EXP_PDF" : "EXP");
   const filename = `${prefix}${timestamp}${extension}`;
   const absolutePath = path.join(targetDir, filename);
   await pipeline(part.file, createWriteStream(absolutePath));

@@ -15,7 +15,7 @@ import {
 
 const RICH_MENU_IDS = {
   STAFF: "richmenu-89c0938cdb1b6ca00dc2f86fc67f2b66",  // ใส่ ID เมนู Staff
-  MEMBER: "richmenu-xxxxxxxxxxxxxxxxxxxxxxxxxxxx", // ใส่ ID เมนู Member (ถ้ามี)
+  MEMBER: "richmenu-e3134670565e0d2e892bbfa0113fa4bc", // ใส่ ID เมนู Member (ถ้ามี)
 };
 export async function handleMessageCommand(
   replyToken: string,
@@ -41,7 +41,7 @@ export async function handleMessageCommand(
         await sendLineTexts(replyToken, ["ยืนยันตัวตน: Staff ✅", "เปลี่ยนเมนูเรียบร้อยครับ"], config, log);
       } else {
         // กรณี user ทั่วไป อาจจะ unlink หรือ link menu member
-        await unlinkRichMenuFromUser(userId, config);
+        await linkRichMenuToUser(userId, RICH_MENU_IDS.MEMBER, config);
         await sendLineTexts(replyToken, ["ยินดีต้อนรับครับ", HELP_TEXT], config, log);
       }
     } catch (err) {
@@ -255,17 +255,6 @@ function getProfileLiffUrl(): string | null {
   return value.trim();
 }
 
-function getTicketLiffUrl(): string | null {
-  const value =
-    process.env.LINE_TICKET_LIFF_URL ??
-    process.env.LIFF_TICKET_URL ??
-    process.env.FRONTEND_TICKET_LIFF_URL ??
-    "https://liff.line.me/2008498720-IgQ8sUzW";
-  if (!value) {
-    return null;
-  }
-  return value.trim();
-}
 async function sendCertificateMessage(
   replyToken: string,
   userId: string,

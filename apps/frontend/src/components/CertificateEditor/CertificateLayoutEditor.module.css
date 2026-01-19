@@ -1,0 +1,97 @@
+.editorContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.editorHeader {
+  margin-bottom: 0.5rem;
+}
+
+.editorHeader h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.imageWrapper {
+  display: flex;
+  justify-content: center;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.imageContainer {
+  position: relative;
+  display: inline-block;
+  background-color: #fff;
+  border-radius: 4px;
+  overflow: visible;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.backgroundImage {
+  display: block;
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+
+.positionInfo {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #555;
+  background-color: #f8f9fa;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.editorActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.saveButton,
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.saveButton {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.cancelButton {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.saveButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

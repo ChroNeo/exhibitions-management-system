@@ -1,8 +1,11 @@
 import { QRCodeSVG } from "qrcode.react";
 import "./TicketPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useTickets } from "../../hook/useTickets";
+import { useTickets } from "./hooks";
 import { IoArrowBack } from "react-icons/io5";
+import { useEffect, useRef } from "react";
+import { checkCheckInStatus, getCheckedInUnits } from "../../api/tickets";
+import Swal from "sweetalert2";
 interface LocationState {
   title?: string;
 }
@@ -21,6 +24,57 @@ export default function TicketPage() {
     exhibitionId,
     autoRefresh: true,
   });
+
+  // Use ref to track if we've already shown the popup
+  const hasShownPopupRef = useRef(false);
+
+  // Check once on page load if user has incomplete surveys
+  useEffect(() => {
+    if (!exhibitionId || hasShownPopupRef.current) return;
+
+    const checkForIncompleteSurveys = async () => {
+      try {
+        const status = await checkCheckInStatus(exhibitionId);
+
+        // Only proceed if user has checked in
+        if (status.checked_in && !hasShownPopupRef.current && status.unit_id) {
+          // Get all checked-in units
+          const units = await getCheckedInUnits(exhibitionId);
+
+          // Check if there are any units with incomplete surveys
+          const hasIncompleteSurveys = units.some(unit => !unit.survey_completed);
+
+          // Only show popup if there are incomplete surveys
+          if (hasIncompleteSurveys) {
+            hasShownPopupRef.current = true;
+
+            // Show SweetAlert popup
+            const result = await Swal.fire({
+              title: "มีแบบสอบถาม บูธ/กิจกรรม",
+              text: "คุณต้องการทำแบบสอบถามบูธ/กิจกรรมหรือไม่?",
+              icon: "question",
+              showCancelButton: true,
+              confirmButtonColor: "#667eea",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "ทำแบบสอบถาม",
+              cancelButtonText: "ไว้ทีหลัง",
+            });
+
+            if (result.isConfirmed) {
+              // Navigate to unit list page
+              navigate(`/survey/unit-list?ex_id=${exhibitionId}`);
+            }
+          }
+        }
+      } catch (error) {
+        // Silently fail - user might not be logged in yet or network issue
+        console.error("Failed to check for incomplete surveys:", error);
+      }
+    };
+
+    // Check only once on page load
+    checkForIncompleteSurveys();
+  }, [exhibitionId, navigate]);
 
   // Function to go back to Wallet
   const goBackToWallet = () => {
@@ -61,7 +115,7 @@ export default function TicketPage() {
             <div className="qr-display">
               <div className="qr-wrapper">
                 <QRCodeSVG
-                  value={state.qrToken}
+                  value={state.data.qrToken}
                   size={260}
                   level="H"
                   className="qr-code"
@@ -79,7 +133,7 @@ export default function TicketPage() {
 
                 <div className="expiry-info">
                   <div className="expiry-countdown">
-                    หมดอายุใน {state.expiresIn}วินาที
+                    หมดอายุใน {state.data.expiresIn}วินาที
                   </div>
                   <p className="refresh-hint">รีเฟรชอัตโนมัติทุก 5 นาที</p>
                 </div>

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useSurveyQuestions } from "../../hook/useSurveyQuestions";
+import { useSurveyQuestions } from "../../pages/Survey/hooks";
 import styles from "./SurveyManageModal.module.css";
 
 interface SurveyManageModalProps {

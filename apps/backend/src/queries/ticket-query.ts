@@ -2,16 +2,19 @@ import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
 
 export type UserTicketRow = {
+  user_id: number;
   registration_id: number;
   exhibition_id: number;
   title: string;
-  code: string;
+  exhibition_code: string;
   location: string | null;
   start_date: Date;
   end_date: Date;
   picture_path: string | null;
-  status: string;
+  status: 'draft' | 'published' | 'ongoing' | 'ended' | 'archived';
+  exhibition_set_id: number | null;
   registered_at: Date;
+  survey_completed: number;
 };
 
 export type UserRegistrationData = {
@@ -78,21 +81,10 @@ export async function getUserRegistrationsByLineId(
 }
 export async function getUserTickets(userId: number): Promise<UserTicketRow[]> {
   const rows = await safeQuery<UserTicketRow[]>(
-    `SELECT 
-       r.registration_id,
-       e.exhibition_id,
-       e.title,
-       e.exhibition_code AS code,
-       e.location,
-       e.start_date,
-       e.end_date,
-       e.picture_path,
-       e.status,
-       r.registered_at
-     FROM registrations r
-     JOIN exhibitions e ON r.exhibition_id = e.exhibition_id
-     WHERE r.user_id = ?
-     ORDER BY e.start_date DESC`,
+    `SELECT * FROM v_my_event_surveys 
+      WHERE user_id = ? 
+      ORDER BY start_date DESC;
+    `,
     [userId]
   );
   return rows;
@@ -149,7 +141,7 @@ export async function verifyAndCheckIn(
   if (duplicateCheck.length > 0) {
     return {
       success: false,
-      message: `⚠️ สแกนซ้ำ! เช็คอินไปแล้วเมื่อ ${new Date(duplicateCheck[0].checkin_at).toLocaleTimeString('th-TH')}`,
+      message: `สแกนซ้ำ! เช็คอินไปแล้วเมื่อ ${new Date(duplicateCheck[0].checkin_at).toLocaleTimeString('th-TH')}`,
       visitor: {
         full_name: visitor[0].full_name,
         picture_url: visitor[0].picture_url,
@@ -167,7 +159,7 @@ export async function verifyAndCheckIn(
 
   return {
     success: true,
-    message: "✅ เช็คอินสำเร็จ",
+    message: "เช็คอินสำเร็จ",
     visitor: {
       full_name: visitor[0].full_name,
       picture_url: visitor[0].picture_url,

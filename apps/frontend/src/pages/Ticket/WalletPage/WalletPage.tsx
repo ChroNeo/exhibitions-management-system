@@ -1,6 +1,6 @@
 import "./WalletPage.css";
 import { useNavigate } from "react-router-dom";
-import { useWalletData } from "../../../hook/ีuseWalletData";
+import { useWalletData } from "../hooks";
 import { toThaiDate } from "../../../utils/dateFormat";
 import { IoLocationOutline } from "react-icons/io5";
 import { MdOutlineCalendarToday } from "react-icons/md";

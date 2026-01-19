@@ -5,7 +5,7 @@ import Panel from "../../components/Panel/Panel";
 import styles from "./RegisterPage.module.css";
 import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
-import { useRegisterForExhibition } from "../../hook/useRegisterForExhibition";
+import { useRegisterForExhibition } from "./hooks";
 
 type Role = "VISITOR" | "STAFF";
 

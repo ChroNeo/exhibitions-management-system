@@ -10,7 +10,7 @@ import { LogOut, UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "./HeaderBar.module.css";
 import { clearAuth } from "../../utils/authStorage";
-import { useAuthStatus } from "../../hook/useAuthStatus";
+import { useAuthStatus } from "../../hooks";
 
 // เพิ่ม "home" เข้ามาใน type
 type TabId = "home" | "exhibition_unit";

@@ -1,6 +1,6 @@
 import api from "./client";
+import liffClient from './liffClient';
 import type {
-  Question,
   QuestionWithSet,
   QuestionSetWithQuestions,
   MasterQuestionSet,
@@ -12,7 +12,21 @@ import type {
 const SURVEY_BASE = "/surveys";
 
 /**
- * Get questions by exhibition ID and optional type
+ * Get questions by exhibition ID and optional type (for LIFF - uses ID token)
+ */
+export async function getQuestionsByExhibitionLiff(
+  params: GetQuestionsParams
+): Promise<QuestionWithSet[]> {
+  const response = await liffClient.get<QuestionWithSet[]>(
+    `${SURVEY_BASE}/questions`,
+    { params }
+  );
+
+  return response.data;
+}
+
+/**
+ * Get questions by exhibition ID and optional type (regular auth)
  */
 export async function getQuestionsByExhibition(
   params: GetQuestionsParams
@@ -58,4 +72,67 @@ export async function updateQuestionSet(
     payload
   );
   return data;
+}
+
+// Survey submission types
+export interface SurveyAnswer {
+  question_id: number;
+  score: number;
+}
+
+export interface SubmitSurveyPayload {
+  exhibition_id: number;
+  unit_id?: number;
+  comment?: string;
+  answers: SurveyAnswer[];
+}
+
+export interface SurveySubmissionResponse {
+  submission_id: number;
+  exhibition_id: number;
+  unit_id: number | null;
+  user_id: number;
+  comment: string | null;
+  created_at: string;
+  answers: {
+    answer_id: number;
+    question_id: number;
+    score: number;
+  }[];
+}
+/**
+ * Submit survey responses (for LIFF - uses ID token)
+ */
+export async function submitSurveyLiff(
+  payload: SubmitSurveyPayload
+): Promise<SurveySubmissionResponse> {
+  const response = await liffClient.post<SurveySubmissionResponse>(
+    `${SURVEY_BASE}/submit`,
+    payload
+  );
+
+  return response.data;
+}
+
+/**
+ * Check if user has completed a survey for an exhibition or unit (for LIFF)
+ */
+export async function checkSurveyCompletedLiff(
+  exhibitionId: string | number,
+  unitId?: string | number
+): Promise<boolean> {
+  const params: any = {
+    exhibition_id: String(exhibitionId),
+  };
+
+  if (unitId !== undefined) {
+    params.unit_id = String(unitId);
+  }
+
+  const response = await liffClient.get<{ is_completed: boolean }>(
+    `${SURVEY_BASE}/check-completed`,
+    { params }
+  );
+
+  return response.data.is_completed;
 }

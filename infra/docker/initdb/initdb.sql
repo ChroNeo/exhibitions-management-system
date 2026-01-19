@@ -47,10 +47,9 @@ INSERT INTO `app_settings` (`key_name`, `value_json`) VALUES
 
 CREATE TABLE `certificate_templates` (
   `template_id` int NOT NULL,
-  `exhibition_id` int NOT NULL,
-  `organizer_name` varchar(255) NOT NULL,
-  `template_name` varchar(255) NOT NULL,
-  `layout_url` varchar(500) DEFAULT NULL,
+  `exhibition_id` int NOT NULL COMMENT 'FK เชื่อมกับตารางนิทรรศการ',
+  `background_url` varchar(500) NOT NULL COMMENT 'ที่อยู่ไฟล์ PDF/Image พื้นหลัง',
+  `layout_config` json DEFAULT NULL COMMENT 'เก็บค่า config เช่น {participant_name: {x: 100, y: 200, font_size: 24}}',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -59,8 +58,8 @@ CREATE TABLE `certificate_templates` (
 -- Dumping data for table `certificate_templates`
 --
 
-INSERT INTO `certificate_templates` (`template_id`, `exhibition_id`, `organizer_name`, `template_name`, `layout_url`, `created_at`, `updated_at`) VALUES
-(1, 1, 'John Doe', 'Certificate of Attendance', 'https://cdn.example.com/certs/templates/attend.png', '2025-09-15 15:06:36', '2025-09-15 15:06:36');
+INSERT INTO `certificate_templates` (`template_id`, `exhibition_id`, `background_url`, `layout_config`, `created_at`, `updated_at`) VALUES
+(1, 1, 'uploads/certificates/templates/smart_tech_expo_2025.png', '{\"participant_name\": {\"x\": 300, \"y\": 500, \"font_size\": 48, \"color\": \"#000000\", \"align\": \"center\"}, \"exhibition_title\": {\"x\": 300, \"y\": 200, \"font_size\": 36, \"color\": \"#333333\", \"align\": \"center\"}, \"date\": {\"x\": 300, \"y\": 600, \"font_size\": 24, \"color\": \"#666666\", \"align\": \"center\"}, \"organizer_name\": {\"x\": 300, \"y\": 700, \"font_size\": 20, \"color\": \"#666666\", \"align\": \"center\"}}', '2025-09-15 15:06:36', '2025-09-15 15:06:36');
 
 -- --------------------------------------------------------
 
@@ -442,11 +441,12 @@ INSERT INTO `unit_staffs` (`unit_id`, `staff_user_id`) VALUES
 --
 CREATE TABLE `v_certificate_templates` (
 `template_id` int
+,`exhibition_id` int
 ,`exhibition_code` varchar(20)
 ,`exhibition_title` varchar(255)
 ,`organizer_name` varchar(255)
-,`template_name` varchar(255)
-,`layout_url` varchar(500)
+,`background_url` varchar(500)
+,`layout_config` json
 ,`created_at` timestamp
 ,`updated_at` timestamp
 );
@@ -790,7 +790,7 @@ ALTER TABLE `units_checkins`
 --
 DROP TABLE IF EXISTS `v_certificate_templates`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_certificate_templates`  AS SELECT `ct`.`template_id` AS `template_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `ct`.`organizer_name` AS `organizer_name`, `ct`.`template_name` AS `template_name`, `ct`.`layout_url` AS `layout_url`, `ct`.`created_at` AS `created_at`, `ct`.`updated_at` AS `updated_at` FROM (`certificate_templates` `ct` join `exhibitions` `e` on((`ct`.`exhibition_id` = `e`.`exhibition_id`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_certificate_templates`  AS SELECT `ct`.`template_id` AS `template_id`, `ct`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `e`.`organizer_name` AS `organizer_name`, `ct`.`background_url` AS `background_url`, `ct`.`layout_config` AS `layout_config`, `ct`.`created_at` AS `created_at`, `ct`.`updated_at` AS `updated_at` FROM (`certificate_templates` `ct` join `exhibitions` `e` on((`ct`.`exhibition_id` = `e`.`exhibition_id`))) ;
 
 -- --------------------------------------------------------
 

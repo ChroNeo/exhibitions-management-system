@@ -1,10 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useMasterQuestions } from "../../hook/useMasterQuestions";
-import { useCreateQuestionSet } from "../../hook/useCreateQuestionSet";
-import { useUpdateQuestionSet } from "../../hook/useUpdateQuestionSet";
-import { useSurveyQuestions } from "../../hook/useSurveyQuestions";
+import { useMasterQuestions, useCreateQuestionSet, useUpdateQuestionSet, useSurveyQuestions } from "./hooks";
 import type { QuestionType } from "../../types/survey";
 import { QuestionItem, LoadingOverlay } from "./components";
 import styles from "./CreateSurvey.module.css";
