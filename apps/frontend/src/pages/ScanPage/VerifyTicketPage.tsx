@@ -1,11 +1,10 @@
-import { useState, useRef } from "react";
 import { QrReader } from "@blackbox-vision/react-qr-reader";
-import { useVerifyTicket } from "../../hook/useVerifyTicket";
+import { useRef, useState } from "react";
 import { FaCheck } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import { MdErrorOutline } from "react-icons/md";
-import "./StaffScanPage.css";
-
+import { useVerifyTicket } from "../../hook/useVerifyTicket";
+import "./StaffScanPage.module.css";
 export default function VerifyTicketPage() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -135,7 +134,7 @@ export default function VerifyTicketPage() {
                       {
                         dateStyle: "medium",
                         timeStyle: "medium",
-                      }
+                      },
                     )}
                   </p>
                 </div>
