@@ -4,7 +4,7 @@ import { FaCheck } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import { MdErrorOutline } from "react-icons/md";
 import { useVerifyTicket } from "./hooks";
-import "./StaffScanPage.module.css";
+import styles from "./StaffScanPage.module.css";
 export default function VerifyTicketPage() {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -51,34 +51,37 @@ export default function VerifyTicketPage() {
   };
 
   return (
-    <div className="staff-scan-page">
-      <header className="staff-header">
+    <div className={styles["staff-scan-page"]}>
+      <header className={styles["staff-header"]}>
         <h1>Staff Scanner</h1>
       </header>
 
-      <div className="scan-container">
+      <div className={styles["scan-container"]}>
         {/* Initializing State */}
         {state.status === "initializing" && (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
+          <div className={styles["loading-spinner"]}>
+            <div className={styles.spinner}></div>
             <p>Initializing LIFF...</p>
           </div>
         )}
 
         {/* Not Logged In State */}
         {state.status === "not_logged_in" && (
-          <div className="loading-spinner">
+          <div className={styles["loading-spinner"]}>
             <p>Redirecting to login...</p>
           </div>
         )}
 
         {/* Idle State - Ready to Scan */}
         {state.status === "idle" && !isCameraOpen && (
-          <div className="result-card">
-            <div className="status-icon">📷</div>
+          <div className={styles["result-card"]}>
+            <div className={styles["status-icon"]}>📷</div>
             <h2>พร้อมสำหรับการสแกน</h2>
             <p>แตะปุ่มด้านล่างเพื่อเริ่มสแกนคิวอาร์โค้ด</p>
-            <button className="next-btn" onClick={handleStartScanning}>
+            <button
+              className={styles["next-btn"]}
+              onClick={handleStartScanning}
+            >
               เริ่มการสแกน
             </button>
           </div>
@@ -86,13 +89,13 @@ export default function VerifyTicketPage() {
 
         {/* Error Display */}
         {state.status === "error" && (
-          <div className="result-card fail">
-            <div className="status-icon">
-              <IoClose className="icon-fail" />
+          <div className={`${styles["result-card"]} ${styles.fail}`}>
+            <div className={styles["status-icon"]}>
+              <IoClose className={styles["icon-fail"]} />
             </div>
             <h2>Connection Error</h2>
             <p>{state.message}</p>
-            <button className="next-btn" onClick={handleReset}>
+            <button className={styles["next-btn"]} onClick={handleReset}>
               Try Again
             </button>
           </div>
@@ -101,33 +104,33 @@ export default function VerifyTicketPage() {
         {/* Scan Result Display */}
         {state.status === "success" && state.result && (
           <div
-            className={`result-card ${
-              state.result.success ? "success" : "fail"
+            className={`${styles["result-card"]} ${
+              state.result.success ? styles.success : styles.fail
             }`}
           >
-            <div className="status-icon">
+            <div className={styles["status-icon"]}>
               {state.result.success ? (
-                <FaCheck className="icon-success" />
+                <FaCheck className={styles["icon-success"]} />
               ) : (
-                <MdErrorOutline className="icon-warning" />
+                <MdErrorOutline className={styles["icon-warning"]} />
               )}
             </div>
             <h2>{state.result.message}</h2>
 
             {state.result.visitor && (
-              <div className="visitor-info">
+              <div className={styles["visitor-info"]}>
                 {state.result.visitor.picture_url && (
                   <img
                     src={state.result.visitor.picture_url}
                     alt={state.result.visitor.full_name}
-                    className="visitor-avatar"
+                    className={styles["visitor-avatar"]}
                   />
                 )}
-                <div className="visitor-details">
-                  <p className="visitor-name">
+                <div className={styles["visitor-details"]}>
+                  <p className={styles["visitor-name"]}>
                     <strong>Name:</strong> {state.result.visitor.full_name}
                   </p>
-                  <p className="checkin-time">
+                  <p className={styles["checkin-time"]}>
                     <strong>Check-in Time:</strong>{" "}
                     {new Date(state.result.visitor.checkin_at).toLocaleString(
                       "th-TH",
@@ -142,12 +145,12 @@ export default function VerifyTicketPage() {
             )}
 
             {state.result.code && (
-              <p className="error-code">
+              <p className={styles["error-code"]}>
                 <strong>Error Code:</strong> {state.result.code}
               </p>
             )}
 
-            <button className="next-btn" onClick={handleReset}>
+            <button className={styles["next-btn"]} onClick={handleReset}>
               {state.result.success ? "Scan Next" : "Try Again"}
             </button>
           </div>
@@ -155,15 +158,15 @@ export default function VerifyTicketPage() {
 
         {/* Loading State */}
         {state.status === "loading" && (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
+          <div className={styles["loading-spinner"]}>
+            <div className={styles.spinner}></div>
             <p>Verifying ticket...</p>
           </div>
         )}
 
         {/* Camera */}
         {state.status === "idle" && isCameraOpen && !isScanning && (
-          <div className="camera-wrapper">
+          <div className={styles["camera-wrapper"]}>
             <QrReader
               onResult={onScan}
               constraints={{
@@ -187,9 +190,9 @@ export default function VerifyTicketPage() {
 
         {/* Scanning Overlay - shown when processing */}
         {state.status === "idle" && isCameraOpen && isScanning && (
-          <div className="camera-wrapper">
-            <div className="scanning-overlay">
-              <div className="spinner"></div>
+          <div className={styles["camera-wrapper"]}>
+            <div className={styles["scanning-overlay"]}>
+              <div className={styles.spinner}></div>
               <p>QR Code Detected! Verifying...</p>
             </div>
           </div>
