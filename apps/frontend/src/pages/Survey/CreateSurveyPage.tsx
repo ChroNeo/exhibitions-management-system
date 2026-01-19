@@ -255,228 +255,232 @@ export default function CreateSurveyPage() {
     selectedType === "EXHIBITION" ? "แบบสอบถามนิทรรศการ" : "แบบสอบถามบูธ";
 
   return (
-    <div className={styles.container}>
-      {isLoading && (
-        <LoadingOverlay
-          message={
-            isEditMode
-              ? "Loading existing questions..."
-              : "Loading master questions..."
-          }
-        />
-      )}
-      <div className={styles.header}>
-        <button
-          className={styles.backButton}
-          onClick={() => navigate(-1)}
-          aria-label="Back"
-        >
-          ←
-        </button>
-        <h1 className={styles.headerTitle}>
-          {isEditMode ? "แก้ไข" : "สร้าง"}
-          {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
-        </h1>
-      </div>
-
-      <p className={styles.subTitle}>Exhibition ID: {exhibition_id}</p>
-
-      {!typeFromQuery && (
-        <div className={styles.section}>
-          <h2>Select Survey Type</h2>
-          <div className={styles.buttonGroup}>
-            <button
-              onClick={() => handleTypeSelect("EXHIBITION")}
-              className={`${styles.typeButton} ${
-                selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
-              }`}
-              disabled={isEditMode}
-            >
-              Exhibition Survey
-            </button>
-            <button
-              onClick={() => handleTypeSelect("UNIT")}
-              className={`${styles.typeButton} ${
-                selectedType === "UNIT" ? styles.typeButtonActive : ""
-              }`}
-              disabled={isEditMode}
-            >
-              Unit Survey
-            </button>
-          </div>
+    <div className={styles.pageBg}>
+      <div className={styles.container}>
+        {isLoading && (
+          <LoadingOverlay
+            message={
+              isEditMode
+                ? "Loading existing questions..."
+                : "Loading master questions..."
+            }
+          />
+        )}
+        <div className={styles.header}>
+          <button
+            className={styles.backButton}
+            onClick={() => navigate(-1)}
+            aria-label="Back"
+          >
+            ←
+          </button>
+          <h1 className={styles.headerTitle}>
+            {isEditMode ? "แก้ไข" : "สร้าง"}
+            {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
+          </h1>
         </div>
-      )}
 
-      {selectedType && (
-        <div className={styles.typePanel}>
+        <p className={styles.subTitle}>Exhibition ID: {exhibition_id}</p>
+
+        {!typeFromQuery && (
           <div className={styles.section}>
-            <h2>Select Template</h2>
-            <select
-              value={selectedSetId || ""}
-              onChange={async (e) => {
-                const newSetId = Number(e.target.value);
-
-                if (isEditMode) {
-                  // Warn user in edit mode that this will replace existing questions
-                  const result = await Swal.fire({
-                    title: "เปลี่ยน Template?",
-                    text: "การเปลี่ยน template จะแทนที่คำถามทั้งหมดที่คุณแก้ไขแล้ว คุณแน่ใจหรือไม่?",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "ใช่, เปลี่ยนเลย",
-                    cancelButtonText: "ยกเลิก",
-                    confirmButtonColor: "#ef4444",
-                  });
-
-                  if (result.isConfirmed) {
-                    setSelectedSetId(newSetId);
-                    setCustomQuestions([]);
-                    setExcludedMasterIds([]);
-                    setHasLoadedExisting(false);
-                  }
-                } else {
-                  setSelectedSetId(newSetId);
-                }
-              }}
-              className={styles.dropdown}
-            >
-              <option value="" disabled>
-                Select a question template
-              </option>
-              {masterQuestionSets?.map((set) => (
-                <option key={set.set_id} value={set.set_id}>
-                  {set.name}
-                </option>
-              ))}
-            </select>
+            <h2>Select Survey Type</h2>
+            <div className={styles.buttonGroup}>
+              <button
+                onClick={() => handleTypeSelect("EXHIBITION")}
+                className={`${styles.typeButton} ${
+                  selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
+                }`}
+                disabled={isEditMode}
+              >
+                Exhibition Survey
+              </button>
+              <button
+                onClick={() => handleTypeSelect("UNIT")}
+                className={`${styles.typeButton} ${
+                  selectedType === "UNIT" ? styles.typeButtonActive : ""
+                }`}
+                disabled={isEditMode}
+              >
+                Unit Survey
+              </button>
+            </div>
           </div>
+        )}
 
-          {selectedSetId && (
+        {selectedType && (
+          <div className={styles.typePanel}>
             <div className={styles.section}>
-              <h2>Questions</h2>
-              <div>
-                {/* Show master questions only if not in edit mode OR if in edit mode but hasn't loaded existing questions from DB */}
-                {(!isEditMode || !hasLoadedExisting) &&
-                  masterQuestions?.map((masterQuestion, index) => {
-                    // Check if this master question is being edited
-                    const editedVersion = customQuestions.find(
-                      (q) => q.originalMasterId === masterQuestion.question_id
-                    );
+              <h2>Select Template</h2>
+              <select
+                value={selectedSetId || ""}
+                onChange={async (e) => {
+                  const newSetId = Number(e.target.value);
 
-                    // If being edited, show the custom version
-                    if (editedVersion) {
+                  if (isEditMode) {
+                    // Warn user in edit mode that this will replace existing questions
+                    const result = await Swal.fire({
+                      title: "เปลี่ยน Template?",
+                      text: "การเปลี่ยน template จะแทนที่คำถามทั้งหมดที่คุณแก้ไขแล้ว คุณแน่ใจหรือไม่?",
+                      icon: "warning",
+                      showCancelButton: true,
+                      confirmButtonText: "ใช่, เปลี่ยนเลย",
+                      cancelButtonText: "ยกเลิก",
+                      confirmButtonColor: "#ef4444",
+                    });
+
+                    if (result.isConfirmed) {
+                      setSelectedSetId(newSetId);
+                      setCustomQuestions([]);
+                      setExcludedMasterIds([]);
+                      setHasLoadedExisting(false);
+                    }
+                  } else {
+                    setSelectedSetId(newSetId);
+                  }
+                }}
+                className={styles.dropdown}
+              >
+                <option value="" disabled>
+                  Select a question template
+                </option>
+                {masterQuestionSets?.map((set) => (
+                  <option key={set.set_id} value={set.set_id}>
+                    {set.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedSetId && (
+              <div className={styles.section}>
+                <h2>Questions</h2>
+                <div>
+                  {/* Show master questions only if not in edit mode OR if in edit mode but hasn't loaded existing questions from DB */}
+                  {(!isEditMode || !hasLoadedExisting) &&
+                    masterQuestions?.map((masterQuestion, index) => {
+                      // Check if this master question is being edited
+                      const editedVersion = customQuestions.find(
+                        (q) => q.originalMasterId === masterQuestion.question_id
+                      );
+
+                      // If being edited, show the custom version
+                      if (editedVersion) {
+                        return (
+                          <QuestionItem
+                            key={editedVersion.id}
+                            id={editedVersion.id}
+                            topic={editedVersion.topic}
+                            questionNumber={index + 1}
+                            isEditing={editedVersion.isEditing}
+                            onUpdateTopic={(value) =>
+                              handleUpdateQuestionTopic(editedVersion.id, value)
+                            }
+                            onConfirm={() =>
+                              handleConfirmQuestion(editedVersion.id)
+                            }
+                            onEdit={() => handleEditQuestion(editedVersion.id)}
+                            onDelete={() =>
+                              handleDeleteQuestion(editedVersion.id)
+                            }
+                          />
+                        );
+                      }
+
+                      // If deleted, don't show anything
+                      if (
+                        excludedMasterIds.includes(masterQuestion.question_id)
+                      ) {
+                        return null;
+                      }
+
+                      // Otherwise show the master question
                       return (
                         <QuestionItem
-                          key={editedVersion.id}
-                          id={editedVersion.id}
-                          topic={editedVersion.topic}
+                          key={masterQuestion.question_id}
+                          id={masterQuestion.question_id}
+                          topic={masterQuestion.topic}
                           questionNumber={index + 1}
-                          isEditing={editedVersion.isEditing}
-                          onUpdateTopic={(value) =>
-                            handleUpdateQuestionTopic(editedVersion.id, value)
+                          isEditing={false}
+                          onUpdateTopic={() => {}}
+                          onConfirm={() => {}}
+                          onEdit={() =>
+                            handleEditMasterQuestion(
+                              masterQuestion.question_id,
+                              masterQuestion.topic
+                            )
                           }
-                          onConfirm={() =>
-                            handleConfirmQuestion(editedVersion.id)
-                          }
-                          onEdit={() => handleEditQuestion(editedVersion.id)}
                           onDelete={() =>
-                            handleDeleteQuestion(editedVersion.id)
+                            handleDeleteMasterQuestion(
+                              masterQuestion.question_id
+                            )
                           }
                         />
                       );
-                    }
+                    })}
 
-                    // If deleted, don't show anything
-                    if (
-                      excludedMasterIds.includes(masterQuestion.question_id)
-                    ) {
-                      return null;
-                    }
+                  {customQuestions
+                    .filter((q) => hasLoadedExisting || !q.originalMasterId)
+                    .map((question, index) => {
+                      const totalMasterQuestions = hasLoadedExisting
+                        ? 0
+                        : masterQuestions?.length || 0;
+                      const questionNumber = totalMasterQuestions + index + 1;
 
-                    // Otherwise show the master question
-                    return (
-                      <QuestionItem
-                        key={masterQuestion.question_id}
-                        id={masterQuestion.question_id}
-                        topic={masterQuestion.topic}
-                        questionNumber={index + 1}
-                        isEditing={false}
-                        onUpdateTopic={() => {}}
-                        onConfirm={() => {}}
-                        onEdit={() =>
-                          handleEditMasterQuestion(
-                            masterQuestion.question_id,
-                            masterQuestion.topic
-                          )
-                        }
-                        onDelete={() =>
-                          handleDeleteMasterQuestion(masterQuestion.question_id)
-                        }
-                      />
-                    );
-                  })}
-
-                {customQuestions
-                  .filter((q) => hasLoadedExisting || !q.originalMasterId)
-                  .map((question, index) => {
-                    const totalMasterQuestions = hasLoadedExisting
-                      ? 0
-                      : masterQuestions?.length || 0;
-                    const questionNumber = totalMasterQuestions + index + 1;
-
-                    return (
-                      <QuestionItem
-                        key={question.id}
-                        id={question.id}
-                        topic={question.topic}
-                        questionNumber={questionNumber}
-                        isEditing={question.isEditing}
-                        onUpdateTopic={(value) =>
-                          handleUpdateQuestionTopic(question.id, value)
-                        }
-                        onConfirm={() => handleConfirmQuestion(question.id)}
-                        onEdit={() => handleEditQuestion(question.id)}
-                        onDelete={() => handleDeleteQuestion(question.id)}
-                      />
-                    );
-                  })}
+                      return (
+                        <QuestionItem
+                          key={question.id}
+                          id={question.id}
+                          topic={question.topic}
+                          questionNumber={questionNumber}
+                          isEditing={question.isEditing}
+                          onUpdateTopic={(value) =>
+                            handleUpdateQuestionTopic(question.id, value)
+                          }
+                          onConfirm={() => handleConfirmQuestion(question.id)}
+                          onEdit={() => handleEditQuestion(question.id)}
+                          onDelete={() => handleDeleteQuestion(question.id)}
+                        />
+                      );
+                    })}
+                </div>
+                <div className={styles.section}>
+                  <button
+                    onClick={handleAddNewQuestion}
+                    className={styles.addButton}
+                  >
+                    Add Question
+                  </button>
+                </div>
               </div>
-              <div className={styles.section}>
+            )}
+
+            {selectedSetId && (
+              <div className={styles.submitSection}>
                 <button
-                  onClick={handleAddNewQuestion}
-                  className={styles.addButton}
+                  onClick={handleSubmit}
+                  disabled={isCreating || isUpdating}
+                  className={styles.createButton}
                 >
-                  Add Question
+                  {isCreating || isUpdating
+                    ? isEditMode
+                      ? "Updating..."
+                      : "Creating..."
+                    : isEditMode
+                    ? "Update Survey"
+                    : "Create Survey"}
+                </button>
+                <button
+                  onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
+                  className={styles.cancelButton}
+                >
+                  Cancel
                 </button>
               </div>
-            </div>
-          )}
-
-          {selectedSetId && (
-            <div className={styles.submitSection}>
-              <button
-                onClick={handleSubmit}
-                disabled={isCreating || isUpdating}
-                className={styles.createButton}
-              >
-                {isCreating || isUpdating
-                  ? isEditMode
-                    ? "Updating..."
-                    : "Creating..."
-                  : isEditMode
-                  ? "Update Survey"
-                  : "Create Survey"}
-              </button>
-              <button
-                onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
-                className={styles.cancelButton}
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
