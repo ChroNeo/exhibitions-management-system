@@ -48,11 +48,17 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/wallet" element={<WalletPage />} />
       <Route path="/wallet/ticket" element={<TicketPage />} />
-      <Route path="/scan" element={<VerifyTicketPage/>} />
+      <Route path="/scan" element={<VerifyTicketPage />} />
 
       {/* Survey Routes */}
-      <Route path="/survey/create/:exhibition_id" element={<CreateSurveyPage />} />
-      <Route path="/survey/exhibitions/:ex_id" element={<ExhibitionSurveyPage />} />
+      <Route
+        path="/survey/create/:exhibition_id"
+        element={<CreateSurveyPage />}
+      />
+      <Route
+        path="/survey/exhibitions/:ex_id"
+        element={<ExhibitionSurveyPage />}
+      />
       <Route path="/survey/units/:unit_id" element={<UnitSurveyPage />} />
 
       {/* กันหลงทาง */}

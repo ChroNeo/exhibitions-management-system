@@ -24,7 +24,9 @@ export default function CreateSurveyPage() {
   const isEditMode = searchParams.get("edit") === "true";
   const typeFromQuery = searchParams.get("type") as QuestionType | null;
 
-  const [selectedType, setSelectedType] = useState<QuestionType | null>(typeFromQuery || null);
+  const [selectedType, setSelectedType] = useState<QuestionType | null>(
+    typeFromQuery || null
+  );
   const [selectedSetId, setSelectedSetId] = useState<number | null>(null);
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
   const [excludedMasterIds, setExcludedMasterIds] = useState<number[]>([]);
@@ -35,7 +37,9 @@ export default function CreateSurveyPage() {
 
   // Get the selected master set - memoized to prevent re-renders
   const masterQuestions = useMemo(() => {
-    const selectedMasterSet = masterQuestionSets?.find(set => set.set_id === selectedSetId);
+    const selectedMasterSet = masterQuestionSets?.find(
+      (set) => set.set_id === selectedSetId
+    );
     return selectedMasterSet?.questions || [];
   }, [masterQuestionSets, selectedSetId]);
 
@@ -128,17 +132,20 @@ export default function CreateSurveyPage() {
     );
   }, []);
 
-  const handleEditMasterQuestion = useCallback((masterId: number, topic: string) => {
-    // Mark master question as excluded and create editable custom version
-    setExcludedMasterIds((prev) => [...prev, masterId]);
-    const newQuestion: CustomQuestion = {
-      id: `master-${masterId}-${Date.now()}`,
-      topic: topic,
-      isEditing: true,
-      originalMasterId: masterId,
-    };
-    setCustomQuestions((prev) => [...prev, newQuestion]);
-  }, []);
+  const handleEditMasterQuestion = useCallback(
+    (masterId: number, topic: string) => {
+      // Mark master question as excluded and create editable custom version
+      setExcludedMasterIds((prev) => [...prev, masterId]);
+      const newQuestion: CustomQuestion = {
+        id: `master-${masterId}-${Date.now()}`,
+        topic: topic,
+        isEditing: true,
+        originalMasterId: masterId,
+      };
+      setCustomQuestions((prev) => [...prev, newQuestion]);
+    },
+    []
+  );
 
   const handleDeleteMasterQuestion = useCallback((masterId: number) => {
     setExcludedMasterIds((prev) => [...prev, masterId]);
@@ -218,7 +225,9 @@ export default function CreateSurveyPage() {
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: isEditMode ? "Failed to update survey" : "Failed to create survey",
+        title: isEditMode
+          ? "Failed to update survey"
+          : "Failed to create survey",
         text: error instanceof Error ? error.message : "Unknown error",
       });
     }
@@ -227,7 +236,9 @@ export default function CreateSurveyPage() {
   // Memoized computed values
   const visibleMasterQuestions = useMemo(() => {
     if (!masterQuestions) return [];
-    return masterQuestions.filter((q) => !excludedMasterIds.includes(q.question_id));
+    return masterQuestions.filter(
+      (q) => !excludedMasterIds.includes(q.question_id)
+    );
   }, [masterQuestions, excludedMasterIds]);
 
   const allQuestionsList = useMemo(() => {
@@ -240,20 +251,35 @@ export default function CreateSurveyPage() {
     ];
   }, [isEditMode, hasLoadedExisting, customQuestions, visibleMasterQuestions]);
 
-  const surveyTypeLabel = selectedType === "EXHIBITION" ? "แบบสอบถามนิทรรศการ" : "แบบสอบถามบูธ";
+  const surveyTypeLabel =
+    selectedType === "EXHIBITION" ? "แบบสอบถามนิทรรศการ" : "แบบสอบถามบูธ";
 
   return (
     <div className={styles.container}>
       {isLoading && (
         <LoadingOverlay
-          message={isEditMode ? "Loading existing questions..." : "Loading master questions..."}
+          message={
+            isEditMode
+              ? "Loading existing questions..."
+              : "Loading master questions..."
+          }
         />
       )}
-      <h1>
-        {isEditMode ? "แก้ไข" : "สร้าง"}
-        {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
-      </h1>
-      <p>Exhibition ID: {exhibition_id}</p>
+      <div className={styles.header}>
+        <button
+          className={styles.backButton}
+          onClick={() => navigate(-1)}
+          aria-label="Back"
+        >
+          ←
+        </button>
+        <h1 className={styles.headerTitle}>
+          {isEditMode ? "แก้ไข" : "สร้าง"}
+          {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
+        </h1>
+      </div>
+
+      <p className={styles.subTitle}>Exhibition ID: {exhibition_id}</p>
 
       {!typeFromQuery && (
         <div className={styles.section}>
@@ -282,7 +308,7 @@ export default function CreateSurveyPage() {
       )}
 
       {selectedType && (
-        <>
+        <div className={styles.typePanel}>
           <div className={styles.section}>
             <h2>Select Template</h2>
             <select
@@ -349,15 +375,21 @@ export default function CreateSurveyPage() {
                           onUpdateTopic={(value) =>
                             handleUpdateQuestionTopic(editedVersion.id, value)
                           }
-                          onConfirm={() => handleConfirmQuestion(editedVersion.id)}
+                          onConfirm={() =>
+                            handleConfirmQuestion(editedVersion.id)
+                          }
                           onEdit={() => handleEditQuestion(editedVersion.id)}
-                          onDelete={() => handleDeleteQuestion(editedVersion.id)}
+                          onDelete={() =>
+                            handleDeleteQuestion(editedVersion.id)
+                          }
                         />
                       );
                     }
 
                     // If deleted, don't show anything
-                    if (excludedMasterIds.includes(masterQuestion.question_id)) {
+                    if (
+                      excludedMasterIds.includes(masterQuestion.question_id)
+                    ) {
                       return null;
                     }
 
@@ -408,39 +440,42 @@ export default function CreateSurveyPage() {
                       />
                     );
                   })}
+              </div>
+              <div className={styles.section}>
+                <button
+                  onClick={handleAddNewQuestion}
+                  className={styles.addButton}
+                >
+                  Add Question
+                </button>
+              </div>
             </div>
-            <div className={styles.section}>
-              <button onClick={handleAddNewQuestion} className={styles.addButton}>
-                Add Question
-              </button>
-            </div>
-          </div>
           )}
 
           {selectedSetId && (
             <div className={styles.submitSection}>
-            <button
-              onClick={handleSubmit}
-              disabled={isCreating || isUpdating}
-              className={styles.createButton}
-            >
-              {isCreating || isUpdating
-                ? isEditMode
-                  ? "Updating..."
-                  : "Creating..."
-                : isEditMode
-                ? "Update Survey"
-                : "Create Survey"}
-            </button>
-            <button
-              onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
-              className={styles.cancelButton}
-            >
-              Cancel
-            </button>
-          </div>
+              <button
+                onClick={handleSubmit}
+                disabled={isCreating || isUpdating}
+                className={styles.createButton}
+              >
+                {isCreating || isUpdating
+                  ? isEditMode
+                    ? "Updating..."
+                    : "Creating..."
+                  : isEditMode
+                  ? "Update Survey"
+                  : "Create Survey"}
+              </button>
+              <button
+                onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
+                className={styles.cancelButton}
+              >
+                Cancel
+              </button>
+            </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );
