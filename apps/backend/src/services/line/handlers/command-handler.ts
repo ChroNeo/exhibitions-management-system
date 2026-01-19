@@ -4,6 +4,7 @@ import {
   findUserByLineId,
   getUpcomingExhibitionsForLine,
   getExhibitionsWithUnitsForUser,
+  getExhibitionIdByCode,
 } from "../../../queries/line-query.js";
 import { linkRichMenuToUser, replyToLineMessage, unlinkRichMenuFromUser } from "../../line/client.js";
 import type { LineConfig, LineMessage } from "../../line/types.js";
@@ -61,6 +62,14 @@ export async function handleMessageCommand(
     return;
   }
 
+  // Check for specific certificate download request FIRST (e.g., "ขอเกียรติบัตร EX123456")
+  const certificateCode = extractCertificateRequestCode(trimmed);
+  if (certificateCode) {
+    await handleCertificateDownloadRequest(replyToken, userId, certificateCode, config, log);
+    return;
+  }
+
+  // General certificate status (shows all exhibitions)
   if (isCertificateCommand(normalized)) {
     await sendCertificateMessage(replyToken, userId, config, log);
     return;
@@ -241,6 +250,12 @@ function isCertificateCommand(normalized: string): boolean {
 function extractExhibitionCode(input: string): string | null {
   const match = input.toUpperCase().match(/\bEX\d{6}\b/);
   return match ? match[0] : null;
+}
+
+function extractCertificateRequestCode(input: string): string | null {
+  // Match "ขอเกียรติบัตร EX123456" pattern
+  const match = input.match(/ขอเกียรติบัตร\s*(EX\d{6})/i);
+  return match ? match[1].toUpperCase() : null;
 }
 
 function getProfileLiffUrl(): string | null {
@@ -472,6 +487,72 @@ async function sendCertificateMessage(
   } catch (err) {
     log.error({ err }, "Failed to send certificate flex message");
     await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการแสดงสถานะ"], config, log);
+  }
+}
+
+async function handleCertificateDownloadRequest(
+  replyToken: string,
+  lineUserId: string,
+  exhibitionCode: string,
+  config: LineConfig,
+  log: FastifyBaseLogger
+): Promise<void> {
+  // Step 1: Find user by LINE ID
+  const user = await findUserByLineId(lineUserId);
+  if (!user) {
+    await sendLineTexts(
+      replyToken,
+      ["ไม่พบข้อมูลผู้ใช้ในระบบ", "กรุณาลงทะเบียนก่อนขอเกียรติบัตร"],
+      config,
+      log
+    );
+    return;
+  }
+
+  // Step 2: Get exhibition ID by code
+  const exhibitionId = await getExhibitionIdByCode(exhibitionCode);
+  if (!exhibitionId) {
+    await sendLineTexts(
+      replyToken,
+      [`ไม่พบงานที่มีรหัส ${exhibitionCode}`, 'พิมพ์ "เกียรติบัตร" เพื่อดูสถานะการเข้าร่วม'],
+      config,
+      log
+    );
+    return;
+  }
+
+  // Step 3: Build certificate download URL
+  const baseUrl = process.env.VITE_BASE || process.env.API_BASE_URL || "https://api.chroneo.dev";
+  const downloadUrl = `${baseUrl}/api/v1/exhibitions/${exhibitionId}/certificates/${user.userId}/download`;
+
+  // Step 4: Send download link via template message
+  const messages: LineMessage[] = [
+    {
+      type: "text",
+      text: "🎉 ยินดีด้วย! คุณเข้าร่วมครบทุกกิจกรรมแล้ว",
+    },
+    {
+      type: "template",
+      altText: "ดาวน์โหลดเกียรติบัตร",
+      template: {
+        type: "buttons",
+        text: `กดปุ่มด้านล่างเพื่อดาวน์โหลดเกียรติบัตรของคุณ\n\nรหัสงาน: ${exhibitionCode}`,
+        actions: [
+          {
+            type: "uri",
+            label: "📜 ดาวน์โหลดเกียรติบัตร",
+            uri: downloadUrl,
+          },
+        ],
+      },
+    },
+  ];
+
+  try {
+    await replyToLineMessage(replyToken, messages, config);
+  } catch (err) {
+    log.error({ err }, "Failed to send certificate download message");
+    await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการส่งลิงก์ดาวน์โหลด"], config, log);
   }
 }
 

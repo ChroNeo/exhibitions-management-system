@@ -184,6 +184,17 @@ export async function getExhibitionsWithUnitsForUser(userId: number): Promise<Ex
   return rows;
 }
 
+export async function getExhibitionIdByCode(code: string): Promise<number | null> {
+  const normalized = code?.trim().toUpperCase();
+  if (!normalized) return null;
+
+  const rows = await safeQuery<{ exhibition_id: number }[]>(
+    `SELECT exhibition_id FROM exhibitions WHERE exhibition_code = ? LIMIT 1`,
+    [normalized]
+  );
+  return rows.length ? rows[0].exhibition_id : null;
+}
+
 function buildUsername(displayName: string): string | null {
   const collapsed = displayName
     .normalize("NFKD")
