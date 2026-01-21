@@ -1,10 +1,15 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useMasterQuestions, useCreateQuestionSet, useUpdateQuestionSet, useSurveyQuestions } from "./hooks";
 import type { QuestionType } from "../../types/survey";
-import { QuestionItem, LoadingOverlay } from "./components";
+import { LoadingOverlay, QuestionItem } from "./components";
 import styles from "./CreateSurvey.module.css";
+import {
+  useCreateQuestionSet,
+  useMasterQuestions,
+  useSurveyQuestions,
+  useUpdateQuestionSet,
+} from "./hooks";
 
 interface CustomQuestion {
   id: string;
@@ -22,7 +27,7 @@ export default function CreateSurveyPage() {
   const typeFromQuery = searchParams.get("type") as QuestionType | null;
 
   const [selectedType, setSelectedType] = useState<QuestionType | null>(
-    typeFromQuery || null
+    typeFromQuery || null,
   );
   const [selectedSetId, setSelectedSetId] = useState<number | null>(null);
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
@@ -35,7 +40,7 @@ export default function CreateSurveyPage() {
   // Get the selected master set - memoized to prevent re-renders
   const masterQuestions = useMemo(() => {
     const selectedMasterSet = masterQuestionSets?.find(
-      (set) => set.set_id === selectedSetId
+      (set) => set.set_id === selectedSetId,
     );
     return selectedMasterSet?.questions || [];
   }, [masterQuestionSets, selectedSetId]);
@@ -46,7 +51,7 @@ export default function CreateSurveyPage() {
         exhibition_id: exhibition_id!,
         type: selectedType!,
       },
-      { enabled: isEditMode && !!selectedType }
+      { enabled: isEditMode && !!selectedType },
     );
 
   const { mutateAsync: createQuestionSet, isPending: isCreating } =
@@ -67,7 +72,7 @@ export default function CreateSurveyPage() {
           topic: q.topic,
           isEditing: false,
           originalMasterId: q.is_master ? q.question_id : undefined,
-        })
+        }),
       );
       setCustomQuestions(existingCustomQuestions);
       setHasLoadedExisting(true);
@@ -99,7 +104,7 @@ export default function CreateSurveyPage() {
 
   const handleUpdateQuestionTopic = useCallback((id: string, topic: string) => {
     setCustomQuestions((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, topic } : q))
+      prev.map((q) => (q.id === id ? { ...q, topic } : q)),
     );
   }, []);
 
@@ -125,7 +130,7 @@ export default function CreateSurveyPage() {
 
   const handleEditQuestion = useCallback((id: string) => {
     setCustomQuestions((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, isEditing: true } : q))
+      prev.map((q) => (q.id === id ? { ...q, isEditing: true } : q)),
     );
   }, []);
 
@@ -141,7 +146,7 @@ export default function CreateSurveyPage() {
       };
       setCustomQuestions((prev) => [...prev, newQuestion]);
     },
-    []
+    [],
   );
 
   const handleDeleteMasterQuestion = useCallback((masterId: number) => {
@@ -234,7 +239,7 @@ export default function CreateSurveyPage() {
   const visibleMasterQuestions = useMemo(() => {
     if (!masterQuestions) return [];
     return masterQuestions.filter(
-      (q) => !excludedMasterIds.includes(q.question_id)
+      (q) => !excludedMasterIds.includes(q.question_id),
     );
   }, [masterQuestions, excludedMasterIds]);
 
@@ -357,7 +362,7 @@ export default function CreateSurveyPage() {
                   masterQuestions?.map((masterQuestion, index) => {
                     // Check if this master question is being edited
                     const editedVersion = customQuestions.find(
-                      (q) => q.originalMasterId === masterQuestion.question_id
+                      (q) => q.originalMasterId === masterQuestion.question_id,
                     );
 
                     // If being edited, show the custom version
@@ -403,7 +408,7 @@ export default function CreateSurveyPage() {
                         onEdit={() =>
                           handleEditMasterQuestion(
                             masterQuestion.question_id,
-                            masterQuestion.topic
+                            masterQuestion.topic,
                           )
                         }
                         onDelete={() =>
@@ -461,8 +466,8 @@ export default function CreateSurveyPage() {
                     ? "Updating..."
                     : "Creating..."
                   : isEditMode
-                  ? "Update Survey"
-                  : "Create Survey"}
+                    ? "Update Survey"
+                    : "Create Survey"}
               </button>
               <button
                 onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
