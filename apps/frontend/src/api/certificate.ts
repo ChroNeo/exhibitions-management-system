@@ -136,3 +136,28 @@ export function getCertificateDownloadUrl(
 ): string {
   return `${BASE}/exhibitions/${exhibitionId}/certificates/${userId}/download`;
 }
+
+export interface CertificatePreviewData {
+  template: CertificateTemplate;
+  participantName: string;
+}
+
+export async function fetchCertificatePreview(
+  exhibitionId: string | number,
+  userId: string | number
+): Promise<CertificatePreviewData> {
+  const res = await fetch(
+    `${BASE}/exhibitions/${exhibitionId}/certificates/${userId}/preview`
+  );
+
+  if (res.status === 404) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "ไม่พบข้อมูลเกียรติบัตร");
+  }
+
+  if (!res.ok) {
+    throw new Error("ไม่สามารถโหลดข้อมูลเกียรติบัตรได้");
+  }
+
+  return res.json();
+}

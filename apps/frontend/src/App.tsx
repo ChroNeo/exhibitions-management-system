@@ -55,7 +55,7 @@ export default function App() {
         element={<CertificatePage />}
       />
       <Route
-        path="/exhibiitions/certificate/download"
+        path="/certificate/download"
         element={<CertificateDownloadPage />}
       />
       <Route path="/register" element={<RegisterPage />} />

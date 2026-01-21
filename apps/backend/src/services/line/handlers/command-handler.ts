@@ -423,15 +423,15 @@ async function sendCertificateMessage(
               type: "button",
               action: isCompleted
                 ? {
-                    type: "uri",
-                    label: "🎓 รับเกียรติบัตร",
-                    uri: `https://liff.line.me/${liffId}/exhibiitions/certificate/download?exhibitionId=${exhibitionId}&userId=${user.userId}`,
-                  }
+                  type: "uri",
+                  label: "🎓 รับเกียรติบัตร",
+                  uri: `https://liff.line.me/${liffId}?exhibitionId=${exhibitionId}&userId=${user.userId}`,
+                }
                 : {
-                    type: "message",
-                    label: "ดูรายชื่อกิจกรรมทั้งหมด",
-                    text: "list",
-                  },
+                  type: "message",
+                  label: "ดูรายชื่อกิจกรรมทั้งหมด",
+                  text: "list",
+                },
               style: isCompleted ? "primary" : "secondary",
               color: isCompleted ? "#06C755" : "#27ACB2",
             },
