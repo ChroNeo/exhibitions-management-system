@@ -2,11 +2,10 @@ import type { FastifyBaseLogger } from "fastify";
 import {
   findExhibitionForLine,
   findUserByLineId,
-  getUpcomingExhibitionsForLine,
   getExhibitionsWithUnitsForUser,
-  getExhibitionIdByCode,
+  getUpcomingExhibitionsForLine,
 } from "../../../queries/line-query.js";
-import { linkRichMenuToUser, replyToLineMessage, unlinkRichMenuFromUser } from "../../line/client.js";
+import { linkRichMenuToUser, replyToLineMessage } from "../../line/client.js";
 import type { LineConfig, LineMessage } from "../../line/types.js";
 import {
   HELP_TEXT,
@@ -15,7 +14,7 @@ import {
 } from "../utils/message-formatter.js";
 
 const RICH_MENU_IDS = {
-  STAFF: "richmenu-89c0938cdb1b6ca00dc2f86fc67f2b66",  // ใส่ ID เมนู Staff
+  STAFF: "richmenu-89c0938cdb1b6ca00dc2f86fc67f2b66", // ใส่ ID เมนู Staff
   MEMBER: "richmenu-e3134670565e0d2e892bbfa0113fa4bc", // ใส่ ID เมนู Member (ถ้ามี)
 };
 export async function handleMessageCommand(
@@ -23,7 +22,7 @@ export async function handleMessageCommand(
   userId: string,
   messageText: string,
   config: LineConfig,
-  log: FastifyBaseLogger
+  log: FastifyBaseLogger,
 ): Promise<void> {
   const trimmed = messageText.trim();
   if (!trimmed) {
@@ -39,15 +38,30 @@ export async function handleMessageCommand(
     try {
       if (role === "staff") {
         await linkRichMenuToUser(userId, RICH_MENU_IDS.STAFF, config);
-        await sendLineTexts(replyToken, ["ยืนยันตัวตน: Staff ✅", "เปลี่ยนเมนูเรียบร้อยครับ"], config, log);
+        await sendLineTexts(
+          replyToken,
+          ["ยืนยันตัวตน: Staff ✅", "เปลี่ยนเมนูเรียบร้อยครับ"],
+          config,
+          log,
+        );
       } else {
         // กรณี user ทั่วไป อาจจะ unlink หรือ link menu member
         await linkRichMenuToUser(userId, RICH_MENU_IDS.MEMBER, config);
-        await sendLineTexts(replyToken, ["ยินดีต้อนรับครับ", HELP_TEXT], config, log);
+        await sendLineTexts(
+          replyToken,
+          ["ยินดีต้อนรับครับ", HELP_TEXT],
+          config,
+          log,
+        );
       }
     } catch (err) {
       log.error({ err }, "Failed to switch rich menu");
-      await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการเปลี่ยนเมนู"], config, log);
+      await sendLineTexts(
+        replyToken,
+        ["เกิดข้อผิดพลาดในการเปลี่ยนเมนู"],
+        config,
+        log,
+      );
     }
     return;
   }
@@ -56,19 +70,6 @@ export async function handleMessageCommand(
     await sendLineTexts(replyToken, ["เข้าสู่โหมด Staff"], config, log);
     return;
   }
-
-  if (isProfileCommand(normalized)) {
-    await sendProfileLiff(replyToken, config, log);
-    return;
-  }
-
-  // Check for specific certificate download request FIRST (e.g., "ขอเกียรติบัตร EX123456")
-  const certificateCode = extractCertificateRequestCode(trimmed);
-  if (certificateCode) {
-    await handleCertificateDownloadRequest(replyToken, userId, certificateCode, config, log);
-    return;
-  }
-
   // General certificate status (shows all exhibitions)
   if (isCertificateCommand(normalized)) {
     await sendCertificateMessage(replyToken, userId, config, log);
@@ -86,7 +87,7 @@ export async function handleMessageCommand(
         replyToken,
         ["ตอนนี้ยังไม่มีกิจกรรมที่เปิดอยู่", HELP_TEXT],
         config,
-        log
+        log,
       );
       return;
     }
@@ -94,10 +95,10 @@ export async function handleMessageCommand(
       replyToken,
       [
         formatUpcomingExhibitions(exhibitions),
-        'พิมพ์รหัสงาน (เช่น EX202501) เพื่อดูรายละเอียดเพิ่มเติม',
+        "พิมพ์รหัสงาน (เช่น EX202501) เพื่อดูรายละเอียดเพิ่มเติม",
       ],
       config,
-      log
+      log,
     );
     return;
   }
@@ -109,11 +110,16 @@ export async function handleMessageCommand(
         replyToken,
         [`ไม่พบงานที่มีรหัส ${code}`, 'พิมพ์ "list" เพื่อดูกิจกรรมที่เปิดอยู่'],
         config,
-        log
+        log,
       );
       return;
     }
-    await sendLineTexts(replyToken, [formatExhibitionDetail(exhibition)], config, log);
+    await sendLineTexts(
+      replyToken,
+      [formatExhibitionDetail(exhibition)],
+      config,
+      log,
+    );
     return;
   }
 
@@ -121,7 +127,7 @@ export async function handleMessageCommand(
     replyToken,
     [`ยังไม่เข้าใจข้อความ "${trimmed}"`, HELP_TEXT],
     config,
-    log
+    log,
   );
 }
 
@@ -129,7 +135,7 @@ async function sendLineTexts(
   replyToken: string,
   texts: string[],
   config: LineConfig,
-  log: FastifyBaseLogger
+  log: FastifyBaseLogger,
 ): Promise<void> {
   const sanitized = texts
     .map((text) => text?.trim())
@@ -144,57 +150,13 @@ async function sendLineTexts(
     await replyToLineMessage(
       replyToken,
       sanitized.map((text) => ({ type: "text" as const, text })),
-      config
+      config,
     );
   } catch (err) {
     log.error({ err }, "failed to reply to LINE message");
   }
 }
 
-async function sendProfileLiff(
-  replyToken: string,
-  config: LineConfig,
-  log: FastifyBaseLogger
-): Promise<void> {
-  const profileUrl = getProfileLiffUrl();
-  if (!profileUrl) {
-    await sendLineTexts(
-      replyToken,
-      [
-        "ยังไม่ได้ตั้งค่า URL สำหรับโปรไฟล์ LIFF",
-        'กรุณาตั้งค่า environment variable LINE_PROFILE_LIFF_URL (ชี้ไปที่ /profile.html)',
-      ],
-      config,
-      log
-    );
-    return;
-  }
-
-  const messages: LineMessage[] = [
-    { type: "text", text: "กดปุ่มด้านล่างเพื่อดูโปรไฟล์ของคุณ 👤" },
-    {
-      type: "template",
-      altText: "View Profile",
-      template: {
-        type: "buttons",
-        text: "คลิกเพื่อดูข้อมูลโปรไฟล์",
-        actions: [
-          {
-            type: "uri",
-            label: "📋 View Profile",
-            uri: profileUrl,
-          },
-        ],
-      },
-    },
-  ];
-
-  try {
-    await replyToLineMessage(replyToken, messages, config);
-  } catch (err) {
-    log.error({ err }, "failed to reply with LIFF profile template");
-  }
-}
 function isStartCommand(normalized: string): boolean {
   return (
     normalized === "start" ||
@@ -252,29 +214,11 @@ function extractExhibitionCode(input: string): string | null {
   return match ? match[0] : null;
 }
 
-function extractCertificateRequestCode(input: string): string | null {
-  // Match "ขอเกียรติบัตร EX123456" pattern
-  const match = input.match(/ขอเกียรติบัตร\s*(EX\d{6})/i);
-  return match ? match[1].toUpperCase() : null;
-}
-
-function getProfileLiffUrl(): string | null {
-  const value =
-    process.env.LINE_PROFILE_LIFF_URL ??
-    process.env.LIFF_PROFILE_URL ??
-    process.env.FRONTEND_PROFILE_LIFF_URL ??
-    "https://liff.line.me/2008498720-weKz53ER";
-  if (!value) {
-    return null;
-  }
-  return value.trim();
-}
-
 async function sendCertificateMessage(
   replyToken: string,
   userId: string,
   config: LineConfig,
-  log: FastifyBaseLogger
+  log: FastifyBaseLogger,
 ): Promise<void> {
   // Step 1: Find the user by LINE ID
   const user = await findUserByLineId(userId);
@@ -284,36 +228,44 @@ async function sendCertificateMessage(
       replyToken,
       ["ไม่พบข้อมูลผู้ใช้ในระบบ", "กรุณาลงทะเบียนก่อนขอเกียรติบัตร"],
       config,
-      log
+      log,
     );
     return;
   }
 
   // Step 2: Get exhibitions and units for this user
-  const exhibitionsWithUnits = await getExhibitionsWithUnitsForUser(user.userId);
+  const exhibitionsWithUnits = await getExhibitionsWithUnitsForUser(
+    user.userId,
+  );
 
   if (!exhibitionsWithUnits.length) {
     await sendLineTexts(
       replyToken,
-      ["คุณยังไม่ได้ลงทะเบียนเข้าร่วมงานใดๆ", "กรุณาลงทะเบียนเข้าร่วมงานก่อนขอเกียรติบัตร"],
+      [
+        "คุณยังไม่ได้ลงทะเบียนเข้าร่วมงานใดๆ",
+        "กรุณาลงทะเบียนเข้าร่วมงานก่อนขอเกียรติบัตร",
+      ],
       config,
-      log
+      log,
     );
     return;
   }
 
   // Group units by exhibition with check-in status
-  const exhibitionsMap = new Map<number, {
-    code: string;
-    title: string;
-    units: Array<{
-      id: number;
-      code: string | null;
-      name: string;
-      type: 'activity' | 'booth';
-      isCheckedIn: boolean;
-    }>;
-  }>();
+  const exhibitionsMap = new Map<
+    number,
+    {
+      code: string;
+      title: string;
+      units: Array<{
+        id: number;
+        code: string | null;
+        name: string;
+        type: "activity" | "booth";
+        isCheckedIn: boolean;
+      }>;
+    }
+  >();
 
   for (const row of exhibitionsWithUnits) {
     if (!exhibitionsMap.has(row.exhibition_id)) {
@@ -325,7 +277,11 @@ async function sendCertificateMessage(
     }
 
     // Add unit if it exists
-    if (row.unit_id !== null && row.unit_name !== null && row.unit_type !== null) {
+    if (
+      row.unit_id !== null &&
+      row.unit_name !== null &&
+      row.unit_type !== null
+    ) {
       exhibitionsMap.get(row.exhibition_id)!.units.push({
         id: row.unit_id,
         code: row.unit_code,
@@ -338,17 +294,18 @@ async function sendCertificateMessage(
 
   // Create Flex Messages for each exhibition
   const flexMessages: LineMessage[] = [];
+  const liffId = "2008498720-RBkBlvYH";
 
   for (const [exhibitionId, exhibition] of exhibitionsMap.entries()) {
     if (exhibition.units.length === 0) continue;
 
     const totalUnits = exhibition.units.length;
-    const checkedInCount = exhibition.units.filter(u => u.isCheckedIn).length;
+    const checkedInCount = exhibition.units.filter((u) => u.isCheckedIn).length;
     const progress = totalUnits > 0 ? (checkedInCount / totalUnits) * 100 : 0;
     const isCompleted = checkedInCount === totalUnits;
 
     // Create unit list items
-    const unitItems = exhibition.units.map(unit => ({
+    const unitItems = exhibition.units.map((unit) => ({
       type: "box" as const,
       layout: "horizontal" as const,
       contents: [
@@ -464,11 +421,17 @@ async function sendCertificateMessage(
           contents: [
             {
               type: "button",
-              action: {
-                type: "message",
-                label: isCompleted ? "🎓 รับเกียรติบัตร" : "ดูรายชื่อกิจกรรมทั้งหมด",
-                text: isCompleted ? `ขอเกียรติบัตร ${exhibition.code}` : `list`,
-              },
+              action: isCompleted
+                ? {
+                    type: "uri",
+                    label: "🎓 รับเกียรติบัตร",
+                    uri: `https://liff.line.me/${liffId}/exhibiitions/certificate/download?exhibitionId=${exhibitionId}&userId=${user.userId}`,
+                  }
+                : {
+                    type: "message",
+                    label: "ดูรายชื่อกิจกรรมทั้งหมด",
+                    text: "list",
+                  },
               style: isCompleted ? "primary" : "secondary",
               color: isCompleted ? "#06C755" : "#27ACB2",
             },
@@ -486,73 +449,11 @@ async function sendCertificateMessage(
     await replyToLineMessage(replyToken, flexMessages, config);
   } catch (err) {
     log.error({ err }, "Failed to send certificate flex message");
-    await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการแสดงสถานะ"], config, log);
-  }
-}
-
-async function handleCertificateDownloadRequest(
-  replyToken: string,
-  lineUserId: string,
-  exhibitionCode: string,
-  config: LineConfig,
-  log: FastifyBaseLogger
-): Promise<void> {
-  // Step 1: Find user by LINE ID
-  const user = await findUserByLineId(lineUserId);
-  if (!user) {
     await sendLineTexts(
       replyToken,
-      ["ไม่พบข้อมูลผู้ใช้ในระบบ", "กรุณาลงทะเบียนก่อนขอเกียรติบัตร"],
+      ["เกิดข้อผิดพลาดในการแสดงสถานะ"],
       config,
-      log
+      log,
     );
-    return;
-  }
-
-  // Step 2: Get exhibition ID by code
-  const exhibitionId = await getExhibitionIdByCode(exhibitionCode);
-  if (!exhibitionId) {
-    await sendLineTexts(
-      replyToken,
-      [`ไม่พบงานที่มีรหัส ${exhibitionCode}`, 'พิมพ์ "เกียรติบัตร" เพื่อดูสถานะการเข้าร่วม'],
-      config,
-      log
-    );
-    return;
-  }
-
-  // Step 3: Build certificate download URL
-  const baseUrl = process.env.VITE_BASE || process.env.API_BASE_URL || "https://api.chroneo.dev";
-  const downloadUrl = `${baseUrl}/api/v1/exhibitions/${exhibitionId}/certificates/${user.userId}/download`;
-
-  // Step 4: Send download link via template message
-  const messages: LineMessage[] = [
-    {
-      type: "text",
-      text: "🎉 ยินดีด้วย! คุณเข้าร่วมครบทุกกิจกรรมแล้ว",
-    },
-    {
-      type: "template",
-      altText: "ดาวน์โหลดเกียรติบัตร",
-      template: {
-        type: "buttons",
-        text: `กดปุ่มด้านล่างเพื่อดาวน์โหลดเกียรติบัตรของคุณ\n\nรหัสงาน: ${exhibitionCode}`,
-        actions: [
-          {
-            type: "uri",
-            label: "📜 ดาวน์โหลดเกียรติบัตร",
-            uri: downloadUrl,
-          },
-        ],
-      },
-    },
-  ];
-
-  try {
-    await replyToLineMessage(replyToken, messages, config);
-  } catch (err) {
-    log.error({ err }, "Failed to send certificate download message");
-    await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการส่งลิงก์ดาวน์โหลด"], config, log);
   }
 }
-
