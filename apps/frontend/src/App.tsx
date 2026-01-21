@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import CertificateDownloadPage from "./pages/Certificate/Certificate-Download-Page";
 import CertificatePage from "./pages/Certificate/CertificatePage";
 import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
 import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
@@ -53,7 +54,10 @@ export default function App() {
         path="/exhibitions/:exhibitionId/certificate"
         element={<CertificatePage />}
       />
-
+      <Route
+        path="/certificate/download"
+        element={<CertificateDownloadPage />}
+      />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/wallet" element={<WalletPage />} />

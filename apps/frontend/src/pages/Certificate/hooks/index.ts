@@ -4,3 +4,5 @@ export {
   useUpdateCertificateTemplate,
   useDeleteCertificateTemplate,
 } from './useCertificateTemplate';
+
+export { useCertificateDownload } from './useCertificateDownload';

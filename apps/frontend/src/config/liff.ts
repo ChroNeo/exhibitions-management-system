@@ -4,6 +4,7 @@ export const LIFF_CONFIG = {
   UNIT_SURVEY: '2008498720-IskiQTvw',
   REGISTRATION: '2008498720-2QsaDpSE',
   VERIFY_TICKET: '2008498720-ohfO7MNd',
+  CERTIFICATE: '2008498720-RBkBlvYH',
 } as const;
 
 export type LiffAppType = keyof typeof LIFF_CONFIG;

@@ -1,13 +1,12 @@
 import type { FastifyBaseLogger } from "fastify";
 import {
-  upsertLineUserProfile,
   markLineUserUnfollowed,
+  upsertLineUserProfile,
 } from "../../queries/line-query.js";
 import { fetchLineProfile } from "./client.js";
-import type { LineConfig } from "./types.js";
-import { handleFollowEvent } from "./handlers/follow-handler.js";
 import { handleMessageCommand } from "./handlers/command-handler.js";
-
+import { handleFollowEvent } from "./handlers/follow-handler.js";
+import type { LineConfig } from "./types.js";
 
 export type LineEvent = {
   type: string;
@@ -25,7 +24,7 @@ export type LineEvent = {
 export async function dispatchLineEvent(
   event: LineEvent,
   config: LineConfig,
-  log: FastifyBaseLogger
+  log: FastifyBaseLogger,
 ): Promise<void> {
   const sourceType = event.source?.type;
   const userId = event.source?.userId;
@@ -61,11 +60,21 @@ export async function dispatchLineEvent(
   }
 
   // Handle message event
-  if (event.type === "message" && event.message?.type === "text" && event.replyToken) {
+  if (
+    event.type === "message" &&
+    event.message?.type === "text" &&
+    event.replyToken
+  ) {
     const messageText = event.message.text ?? "";
 
     // [EDIT] แก้บรรทัดนี้: ส่ง userId เข้าไปเพิ่ม (userId มีค่าแน่นอนเพราะเช็คข้างบนแล้ว)
-    await handleMessageCommand(event.replyToken, userId, messageText, config, log);
+    await handleMessageCommand(
+      event.replyToken,
+      userId,
+      messageText,
+      config,
+      log,
+    );
 
     return;
   }

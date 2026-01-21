@@ -207,6 +207,63 @@ export default async function certificateTemplateController(
     }
   );
 
+  // GET /exhibitions/:exhibitionId/certificates/:userId/preview
+  // Get certificate preview data (template + participant name)
+  app.get(
+    "/:exhibitionId/certificates/:userId/preview",
+    {
+      preHandler: optionalAuth,
+      schema: {
+        tags: ["Exhibitions"],
+        summary: "Get certificate preview data for a user",
+        description: "Returns certificate template data along with participant name for preview",
+        params: z.object({
+          exhibitionId: z.string().regex(/^\d+$/),
+          userId: z.string().regex(/^\d+$/),
+        }),
+        response: {
+          200: z.object({
+            template: CertificateTemplateViewSchema,
+            participantName: z.string(),
+          }),
+          404: z.object({
+            message: z.string(),
+            status: z.number(),
+            code: z.string(),
+          }),
+        },
+      },
+    },
+    async (req, reply) => {
+      const { exhibitionId, userId } = req.params;
+
+      // Get certificate template
+      const template = await getCertificateTemplateByExhibitionId(exhibitionId);
+      if (!template) {
+        return reply.status(404).send({
+          message: "certificate template not found",
+          status: 404,
+          code: "NOT_FOUND",
+        });
+      }
+
+      // Get registration data
+      const userData = await getRegisteredParticipantName(exhibitionId, userId);
+      if (!userData) {
+        return reply.status(404).send({
+          message: "User is not registered in this exhibition",
+          status: 404,
+          code: "NOT_FOUND",
+        });
+      }
+
+      return {
+        template,
+        participantName: userData.participant_name,
+      };
+    }
+  );
+
   // GET /exhibitions/:exhibitionId/certificates/:registrationId/download
   // Generate and download certificate for a specific registration
   app.get(
