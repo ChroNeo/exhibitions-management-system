@@ -1,17 +1,47 @@
-﻿import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+﻿import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import styles from "./ExManagePage.module.css";
 import Swal from "sweetalert2";
 import AddInline from "../../components/AddInline/AddInline";
 import ExhibitionList from "../../components/exhibition/ExhibitionList";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
-import { useDeleteExhibition, useExhibitions, useAuthStatus } from "../../hooks";
+import {
+  useAuthStatus,
+  useDeleteExhibition,
+  useExhibitions,
+} from "../../hooks";
 import type { Exhibition } from "../../types/exhibition";
+import styles from "./ExManagePage.module.css";
 
 export default function ExhibitionPage() {
   const [query] = useState("");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Handle LIFF redirect with exhibitionId query parameter
+  useEffect(() => {
+    // First check direct exhibitionId param
+    let exhibitionId = searchParams.get("exhibitionId");
+
+    // If not found, check liff.state (LIFF encodes path/query as liff.state)
+    if (!exhibitionId) {
+      const liffState = searchParams.get("liff.state");
+      if (liffState) {
+        // liff.state could be "?exhibitionId=1" or "/1"
+        const stateParams = new URLSearchParams(liffState.replace(/^\/?\??/, ""));
+        exhibitionId = stateParams.get("exhibitionId");
+
+        // Also handle path format like "/1"
+        if (!exhibitionId && liffState.startsWith("/")) {
+          exhibitionId = liffState.slice(1);
+        }
+      }
+    }
+
+    if (exhibitionId) {
+      navigate(`/exhibitions/${exhibitionId}`, { replace: true });
+    }
+  }, [searchParams, navigate]);
   const isAuthenticated = useAuthStatus();
 
   const { data, isLoading, isError } = useExhibitions();
@@ -24,8 +54,8 @@ export default function ExhibitionPage() {
     if (!q) return items;
     return items.filter((x) =>
       [x.title, x.description, x.location].some((t) =>
-        (t || "").toLowerCase().includes(q)
-      )
+        (t || "").toLowerCase().includes(q),
+      ),
     );
   }, [items, query]);
 
