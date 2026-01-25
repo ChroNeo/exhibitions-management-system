@@ -9,8 +9,8 @@ import { linkRichMenuToUser, replyToLineMessage } from "../../line/client.js";
 import type { LineConfig, LineMessage } from "../../line/types.js";
 import {
   HELP_TEXT,
+  buildExhibitionFlexCarousel,
   formatExhibitionDetail,
-  formatUpcomingExhibitions,
 } from "../utils/message-formatter.js";
 
 const RICH_MENU_IDS = {
@@ -85,21 +85,20 @@ export async function handleMessageCommand(
     if (!exhibitions.length) {
       await sendLineTexts(
         replyToken,
-        ["ตอนนี้ยังไม่มีกิจกรรมที่เปิดอยู่", HELP_TEXT],
+        ["ตอนนี้ยังไม่มีกิจกรรมที่เปิดอยู่"],
         config,
         log,
       );
       return;
     }
-    await sendLineTexts(
-      replyToken,
-      [
-        formatUpcomingExhibitions(exhibitions),
-        "พิมพ์รหัสงาน (เช่น EX202501) เพื่อดูรายละเอียดเพิ่มเติม",
-      ],
-      config,
-      log,
-    );
+    const baseUrl = process.env.BACKEND_PUBLIC_URL || "https://api.chroneo.dev";
+    const flexMessage = buildExhibitionFlexCarousel(exhibitions, baseUrl);
+    try {
+      await replyToLineMessage(replyToken, [flexMessage], config);
+    } catch (err) {
+      log.error({ err }, "Failed to send exhibition flex carousel");
+      await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการแสดงรายการงาน"], config, log);
+    }
     return;
   }
   const code = extractExhibitionCode(trimmed);
@@ -177,13 +176,13 @@ function isHelpCommand(normalized: string): boolean {
   );
 }
 
-function isProfileCommand(normalized: string): boolean {
-  return (
-    normalized === "profile" ||
-    normalized.includes("profile") ||
-    normalized.includes("โปรไฟล์")
-  );
-}
+// function isProfileCommand(normalized: string): boolean {
+//   return (
+//     normalized === "profile" ||
+//     normalized.includes("profile") ||
+//     normalized.includes("โปรไฟล์")
+//   );
+// }
 
 function isListCommand(normalized: string): boolean {
   if (

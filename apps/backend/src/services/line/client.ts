@@ -1,6 +1,6 @@
 import { AppError } from "../../errors.js";
 import { getLineConfig } from "./config.js";
-import type { LineConfig, LineProfile, LineProfileResponse, LineMessage } from "./types.js";
+import type { LineConfig, LineMessage, LineProfile, LineProfileResponse } from "./types.js";
 
 const LINE_API_BASE = "https://api.line.me/v2/bot";
 

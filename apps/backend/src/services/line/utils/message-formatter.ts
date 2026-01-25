@@ -2,6 +2,7 @@ import type {
   LineExhibitionDetailRow,
   LineExhibitionSummaryRow,
 } from "../../../queries/line-query.js";
+import type { LineMessage } from "../types.js";
 
 const dateFormatter = new Intl.DateTimeFormat("th-TH", {
   dateStyle: "medium",
@@ -56,4 +57,120 @@ export function formatExhibitionDetail(row: LineExhibitionDetailRow): string {
 }
 
 export const HELP_TEXT =
-  'พิมพ์ "list" หรือ "ดูงาน" เพื่อดูกิจกรรมที่กำลังเปิดอยู่\nพิมพ์รหัสงาน เช่น EX202501 เพื่อดูรายละเอียด\nพิมพ์ "ticket" หรือ "บัตร" เพื่อดู QR Code บัตรของคุณ\nพิมพ์ "profile" เพื่อเปิดหน้าโปรไฟล์ LIFF\nพิมพ์ "help" เพื่อดูคำสั่งนี้อีกครั้ง';
+  "สวัสดีครับ! คุณสามารถใช้งานผ่าน Rich Menu ด้านล่างได้เลยครับ";
+
+const DEFAULT_IMAGE =
+  "https://placehold.co/1920x1080?text=Image%20Not%20Found";
+
+export function buildExhibitionFlexCarousel(
+  rows: LineExhibitionSummaryRow[],
+  baseUrl: string,
+): LineMessage {
+  const bubbles = rows.map((row) => {
+    const start = formatDate(row.start_date);
+    const end = formatDate(row.end_date);
+    const imageUrl = row.picture_path
+      ? `${baseUrl}/${row.picture_path}`
+      : DEFAULT_IMAGE;
+
+    return {
+      type: "bubble" as const,
+      hero: {
+        type: "image" as const,
+        url: imageUrl,
+        size: "full" as const,
+        aspectRatio: "16:9" as const,
+        aspectMode: "cover" as const,
+      },
+      body: {
+        type: "box" as const,
+        layout: "vertical" as const,
+        contents: [
+          {
+            type: "text" as const,
+            text: row.title,
+            weight: "bold" as const,
+            size: "lg" as const,
+            wrap: true,
+          },
+          {
+            type: "box" as const,
+            layout: "vertical" as const,
+            margin: "lg" as const,
+            spacing: "sm" as const,
+            contents: [
+              {
+                type: "box" as const,
+                layout: "baseline" as const,
+                spacing: "sm" as const,
+                contents: [
+                  {
+                    type: "text" as const,
+                    text: "📅",
+                    size: "sm" as const,
+                    flex: 0,
+                  },
+                  {
+                    type: "text" as const,
+                    text: `${start} - ${end}`,
+                    wrap: true,
+                    color: "#666666",
+                    size: "sm" as const,
+                    flex: 1,
+                  },
+                ],
+              },
+              {
+                type: "box" as const,
+                layout: "baseline" as const,
+                spacing: "sm" as const,
+                contents: [
+                  {
+                    type: "text" as const,
+                    text: "📍",
+                    size: "sm" as const,
+                    flex: 0,
+                  },
+                  {
+                    type: "text" as const,
+                    text: row.location ?? "-",
+                    wrap: true,
+                    color: "#666666",
+                    size: "sm" as const,
+                    flex: 1,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      footer: {
+        type: "box" as const,
+        layout: "vertical" as const,
+        spacing: "sm" as const,
+        contents: [
+          {
+            type: "button" as const,
+            style: "primary" as const,
+            color: "#27ACB2",
+            action: {
+              type: "uri" as const,
+              label: "ดูรายละเอียด",
+              uri: `https://liff.line.me/2008498720-KaJrlZBN?exhibitionId=${row.exhibition_id}`,
+            },
+          },
+        ],
+      },
+    };
+  });
+
+  return {
+    type: "flex",
+    altText: "งานที่กำลังเปิดอยู่",
+    contents: {
+      type: "carousel",
+      contents: bubbles,
+    },
+  };
+}

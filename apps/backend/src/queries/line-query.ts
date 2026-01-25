@@ -69,12 +69,14 @@ export async function markLineUserUnfollowed(lineUserId: string): Promise<void> 
 }
 
 export type LineExhibitionSummaryRow = {
+  exhibition_id: number;
   exhibition_code: string;
   title: string;
   start_date: string;
   end_date: string;
   location: string | null;
   organizer_name: string;
+  picture_path: string | null;
 };
 
 export type LineExhibitionDetailRow = LineExhibitionSummaryRow & {
@@ -89,12 +91,14 @@ export async function getUpcomingExhibitionsForLine(
   const rows = await safeQuery<LineExhibitionSummaryRow[]>(
     `
       SELECT
+        exhibition_id,
         exhibition_code,
         title,
         start_date,
         end_date,
         location,
-        organizer_name
+        organizer_name,
+        picture_path
       FROM exhibitions
       WHERE status IN ('published', 'ongoing')
       ORDER BY start_date ASC
