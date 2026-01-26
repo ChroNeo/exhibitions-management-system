@@ -2,7 +2,12 @@
 import { useNavigate, useParams } from "react-router-dom";
 
 import Swal from "sweetalert2";
-import { useDeleteExhibition, useExhibition, useAuthUser, useAuthStatus } from "../../hooks";
+import {
+  useDeleteExhibition,
+  useExhibition,
+  useAuthUser,
+  useAuthStatus,
+} from "../../hooks";
 import { useCreateExhibition, useUpdateExhibition } from "./hooks";
 import type { Exhibition } from "../../types/exhibition";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
@@ -74,8 +79,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     mode === "create"
       ? "เพิ่มนิทรรศการ"
       : mode === "edit"
-      ? "แก้ไขนิทรรศการ"
-      : "รายละเอียดนิทรรศการ";
+        ? "แก้ไขนิทรรศการ"
+        : "รายละเอียดนิทรรศการ";
 
   // ค่าตั้งต้นของแบบฟอร์ม
   const { initialValues, initialFileName } = useMemo(() => {
@@ -159,8 +164,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         mode === "create"
           ? DEFAULT_STATUS
           : v.status && v.status.length
-          ? v.status
-          : DEFAULT_STATUS,
+            ? v.status
+            : DEFAULT_STATUS,
     };
     const file = v.file ?? undefined;
 
@@ -258,7 +263,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     imageUrl={toFileUrl(data.picture_path || "")}
                     status={
                       data.status
-                        ? STATUS_LABELS[data.status] ?? data.status
+                        ? (STATUS_LABELS[data.status] ?? data.status)
                         : undefined
                     }
                     registerLink={
@@ -276,9 +281,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     }
                     onDelete={hasAuthToken ? handleDelete : undefined}
                     onManageSurveys={
-                      hasAuthToken
-                        ? () => setShowSurveyModal(true)
-                        : undefined
+                      hasAuthToken ? () => setShowSurveyModal(true) : undefined
                     }
                   />
                 </>
@@ -304,7 +307,9 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                 </>
               )}
             </Panel>
-            {id && mode !== "create" && mode != "edit" && <UnitManageList mode={mode} embedded />}
+            {id && mode !== "create" && mode != "edit" && (
+              <UnitManageList mode={mode} embedded />
+            )}
           </div>
         </>
       )}
