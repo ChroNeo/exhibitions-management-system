@@ -175,3 +175,33 @@ export async function getRegisteredParticipantName(
 
   return rows[0];
 }
+
+export type CheckinCompletionStatus = {
+  total_units: number;
+  checked_in_units: number;
+  is_complete: boolean;
+};
+
+export async function getUserCheckinCompletionStatus(
+  exhibitionId: string | number,
+  userId: string | number
+): Promise<CheckinCompletionStatus> {
+  if (!/^\d+$/.test(String(exhibitionId)) || !/^\d+$/.test(String(userId))) {
+    throw new AppError("invalid id", 400, "VALIDATION_ERROR");
+  }
+
+  const rows = await safeQuery<{ total_units: number; checked_in_units: number }[]>(
+    `SELECT
+       (SELECT COUNT(*) FROM units WHERE exhibition_id = ?) AS total_units,
+       (SELECT COUNT(*) FROM units_checkins
+        WHERE exhibition_id = ? AND user_id = ?) AS checked_in_units`,
+    [exhibitionId, exhibitionId, userId]
+  );
+
+  const result = rows[0];
+  return {
+    total_units: result.total_units,
+    checked_in_units: result.checked_in_units,
+    is_complete: result.total_units > 0 && result.checked_in_units >= result.total_units,
+  };
+}

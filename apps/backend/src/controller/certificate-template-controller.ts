@@ -9,6 +9,7 @@ import {
   updateCertificateTemplate,
   deleteCertificateTemplate,
   getRegisteredParticipantName,
+  getUserCheckinCompletionStatus,
 } from "../queries/certificate-template-query.js";
 import {
   CertificateTemplateViewSchema,
@@ -281,6 +282,16 @@ export default async function certificateTemplateController(
         produces: ["application/pdf"],
         response: {
           200: z.any().describe("Certificate image (PNG)"),
+          403: z.object({
+            message: z.string(),
+            status: z.number(),
+            code: z.string(),
+            details: z.object({
+              total_units: z.number(),
+              checked_in_units: z.number(),
+              missing_units: z.number(),
+            }).optional(),
+          }),
           404: z.object({
             message: z.string(),
             status: z.number(),
@@ -312,6 +323,36 @@ export default async function certificateTemplateController(
           message: "User is not registered in this exhibition",
           status: 404,
           code: "NOT_FOUND",
+        });
+      }
+
+      // Check if user has completed all unit check-ins
+      const checkinStatus = await getUserCheckinCompletionStatus(exhibitionId, userId);
+
+      if (checkinStatus.total_units === 0) {
+        return reply.status(403).send({
+          message: "Cannot download certificate: This exhibition has no units configured.",
+          status: 403,
+          code: "NO_UNITS_CONFIGURED",
+          details: {
+            total_units: 0,
+            checked_in_units: 0,
+            missing_units: 0,
+          },
+        });
+      }
+
+      if (!checkinStatus.is_complete) {
+        const missing = checkinStatus.total_units - checkinStatus.checked_in_units;
+        return reply.status(403).send({
+          message: `Cannot download certificate: You have checked in to ${checkinStatus.checked_in_units} of ${checkinStatus.total_units} units. Please complete all unit check-ins.`,
+          status: 403,
+          code: "INCOMPLETE_CHECKINS",
+          details: {
+            total_units: checkinStatus.total_units,
+            checked_in_units: checkinStatus.checked_in_units,
+            missing_units: missing,
+          },
         });
       }
 
