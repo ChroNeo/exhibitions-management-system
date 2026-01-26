@@ -72,7 +72,7 @@ await app.register(fastifyRawBody, {
 await app.register(cors, {
   origin: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
+  allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning", "X-Mock-Line-User-Id"],
 });
 
 await app.register(multipart, {

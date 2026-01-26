@@ -3,6 +3,16 @@ import liff from '@line/liff';
 import { handleLiffError, performLogout } from '../utils/liffErrorHandler';
 import { LIFF_CONFIG, type LiffAppType } from '../config/liff';
 
+// Check if LIFF mock mode is enabled
+export const isLiffMockEnabled = (): boolean => {
+  return import.meta.env.VITE_LIFF_MOCK === 'true';
+};
+
+// Get mock LINE user ID
+export const getMockLineUserId = (): string | null => {
+  return import.meta.env.VITE_MOCK_LINE_USER_ID || null;
+};
+
 export type LiffState<T> =
   | { status: 'initializing' }
   | { status: 'not_logged_in' }
@@ -41,6 +51,21 @@ export function useLiff<T>({ liffApp, fetchData, dependencies: _dependencies = [
   }, [fetchData]);
 
   const initializeLiff = useCallback(async () => {
+    // If mock mode is enabled, skip LIFF initialization
+    if (isLiffMockEnabled()) {
+      const mockUserId = getMockLineUserId();
+      if (!mockUserId) {
+        setState({
+          status: 'error',
+          message: 'LIFF Mock mode enabled but VITE_MOCK_LINE_USER_ID is not set',
+        });
+        return;
+      }
+      console.log('[LIFF Mock] Using mock mode with user ID:', mockUserId);
+      await fetch();
+      return;
+    }
+
     try {
       // Check if LIFF is already initialized
       if (!liff.id) {

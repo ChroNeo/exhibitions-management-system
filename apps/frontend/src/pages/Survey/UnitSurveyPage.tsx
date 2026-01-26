@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 import liff from "@line/liff";
 import { useUnitSurveyLiff } from "./hooks";
 import { submitSurveyLiff } from "../../api/survey";
+import { isLiffMockEnabled } from "../../hooks/useLiff";
 import styles from "../Survey/ExhibitionSurvey.module.css";
 
 interface SurveyAnswer {
@@ -187,7 +188,13 @@ export default function UnitSurveyPage() {
                 คุณได้ทำแบบสอบถามนี้เรียบร้อยแล้ว
               </p>
               <button
-                onClick={() => liff.closeWindow()}
+                onClick={() => {
+                  if (isLiffMockEnabled()) {
+                    window.close();
+                  } else {
+                    liff.closeWindow();
+                  }
+                }}
                 className={styles.backButton}
               >
                 ปิดหน้าต่าง

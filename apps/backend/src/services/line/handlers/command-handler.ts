@@ -91,7 +91,7 @@ export async function handleMessageCommand(
       );
       return;
     }
-    const baseUrl = process.env.BACKEND_PUBLIC_URL || "https://api.chroneo.dev";
+    const baseUrl = process.env.VITE_BASE || "https://api.chroneo.dev";
     const flexMessage = buildExhibitionFlexCarousel(exhibitions, baseUrl);
     try {
       await replyToLineMessage(replyToken, [flexMessage], config);

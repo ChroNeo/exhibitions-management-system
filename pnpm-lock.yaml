@@ -132,6 +132,9 @@ importers:
       '@eslint/js':
         specifier: ^9.33.0
         version: 9.34.0
+      '@line/liff-mock':
+        specifier: ^1.0.4
+        version: 1.0.4(@line/liff@2.27.3)
       '@testing-library/jest-dom':
         specifier: ^6.6.3
         version: 6.9.1
@@ -901,6 +904,11 @@ packages:
   '@line/bot-sdk@10.5.0':
     resolution: {integrity: sha512-YmFDH1fr6b3kWiTDld8JID80cI+O5IlYegYeqhvBZx/zh2GBHdeV7i+pdwDjATRY9FHahYkcYmHb27UQldh0qw==}
     engines: {node: '>=20'}
+
+  '@line/liff-mock@1.0.4':
+    resolution: {integrity: sha512-galQphORlR83ZTLoMiwh+EilF2ugNjhoQW9o4XfaKk6MpzarIO5JqTa+5JJnkBR+p/ISQZNi7VPI/z58pT2JDg==}
+    peerDependencies:
+      '@line/liff': '>= 2.19.0'
 
   '@line/liff@2.27.3':
     resolution: {integrity: sha512-ot82Rqn0WpMICTDpyVFvmbC18y5N9OTrnDPZLv6lEGvGdjLEMWAlRzBYtZRz61gdsEByTgAPXHULq7V0SMxbNQ==}
@@ -3987,6 +3995,10 @@ snapshots:
       axios: 1.12.2
     transitivePeerDependencies:
       - debug
+
+  '@line/liff-mock@1.0.4(@line/liff@2.27.3)':
+    dependencies:
+      '@line/liff': 2.27.3
 
   '@line/liff@2.27.3':
     dependencies:

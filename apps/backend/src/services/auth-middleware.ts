@@ -92,13 +92,40 @@ export async function optionalAuth(
 }
 
 /**
+ * Check if LIFF mock mode is enabled (for development/testing)
+ */
+function isLiffMockEnabled(): boolean {
+  return process.env.LIFF_MOCK === 'true';
+}
+
+/**
  * Middleware to authenticate LINE LIFF users
  * Verifies LIFF ID token and adds user data to req.lineUser
+ *
+ * In mock mode (LIFF_MOCK=true), accepts X-Mock-Line-User-Id header instead of LIFF token
  */
 export async function requireLiffAuth(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
+  // Check for mock mode
+  if (isLiffMockEnabled()) {
+    const mockUserId = request.headers['x-mock-line-user-id'];
+
+    if (typeof mockUserId === 'string' && mockUserId) {
+      console.log('[LIFF Mock] Using mock LINE user ID:', mockUserId);
+
+      // Get user data from mock LINE ID
+      const userData = await getUserRegistrationsByLineId(mockUserId);
+      if (!userData) {
+        throw new AppError("User not found", 404, "USER_NOT_FOUND");
+      }
+
+      request.lineUser = userData;
+      return;
+    }
+  }
+
   const authHeader = request.headers.authorization;
 
   if (!authHeader) {
