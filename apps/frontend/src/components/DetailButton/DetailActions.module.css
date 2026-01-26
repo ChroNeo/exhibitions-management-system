@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   gap: 14px;
-  /* ลดช่องว่าง */
+  flex-wrap: wrap;
   margin: 16px 0 6px;
 }
 
@@ -85,4 +85,24 @@
 
 .survey:active {
   background: var(--submit-primary-active);
+}
+
+@media (max-width: 576px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+    font-size: 16px;
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+  }
 }

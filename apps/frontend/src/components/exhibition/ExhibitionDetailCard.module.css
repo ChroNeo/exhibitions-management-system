@@ -5,6 +5,7 @@
   padding: 18px;
   margin: 16px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 .header {
   display: flex;
@@ -99,15 +100,6 @@
     height: auto;
   }
 }
-.card {
-  position: relative;
-  background: #fff;
-  border: 2px solid #de6424;
-  border-radius: 14px;
-  padding: 18px;
-  margin: 16px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-}
 
 .registerWrap {
   position: absolute;
@@ -126,7 +118,40 @@
   cursor: pointer;
   transition: 0.2s ease;
   text-decoration: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
 }
 .registerBtn:hover {
   filter: brightness(1.1);
+}
+
+@media (max-width: 768px) {
+  .registerWrap {
+    position: static;
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .registerBtn {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 576px) {
+  .thumbnail {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .thumbnail img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
 }
