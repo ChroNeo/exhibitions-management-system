@@ -87,6 +87,24 @@
   background: var(--submit-primary-active);
 }
 
+/* ปุ่มจัดการใบประกาศ – ม่วง */
+.certificate {
+  transition: all 0.2s ease;
+  background: #9333ea;
+  box-shadow: 0 4px 6px var(--btn-shadow);
+  color: #ffffff;
+}
+
+.certificate:hover {
+  transform: translateY(-2px);
+  background: #7e22ce;
+  box-shadow: 0 6px 12px var(--btn-shadow-hover);
+}
+
+.certificate:active {
+  background: #6b21a8;
+}
+
 @media (max-width: 576px) {
   .actions {
     flex-direction: column;

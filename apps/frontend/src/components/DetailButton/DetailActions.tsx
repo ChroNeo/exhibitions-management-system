@@ -1,4 +1,4 @@
-﻿import { FaEdit, FaClipboardList } from "react-icons/fa";
+﻿import { FaEdit, FaClipboardList, FaCertificate } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import styles from "./DetailActions.module.css";
 export default function DetailActions({
@@ -6,11 +6,13 @@ export default function DetailActions({
   onEdit,
   onDelete,
   onManageSurveys,
+  onManageCertificate,
 }: {
   show?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
   onManageSurveys?: () => void;
+  onManageCertificate?: () => void;
 }) {
   if (!show) return null;
 
@@ -34,6 +36,17 @@ export default function DetailActions({
         >
           <FaClipboardList className={styles.icon} />
           <span>จัดการแบบสอบถาม</span>
+        </button>
+      )}
+
+      {onManageCertificate && (
+        <button
+          type="button"
+          className={`${styles.btn} ${styles.certificate}`}
+          onClick={onManageCertificate}
+        >
+          <FaCertificate className={styles.icon} />
+          <span>จัดการใบประกาศ</span>
         </button>
       )}
 

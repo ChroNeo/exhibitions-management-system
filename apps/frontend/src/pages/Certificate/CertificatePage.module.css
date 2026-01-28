@@ -183,8 +183,15 @@
   text-align: center;
 }
 
-.editLayoutButton {
+.actionButtons {
   margin-top: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.editLayoutButton {
   padding: 0.75rem 1.5rem;
   background-color: #6366f1;
   color: #fff;
@@ -195,8 +202,27 @@
   transition: background-color 0.2s;
 }
 
-.editLayoutButton:hover {
+.editLayoutButton:hover:not(:disabled) {
   background-color: #4f46e5;
+}
+
+.editLayoutButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.noTemplate {
+  padding: 2rem;
+  text-align: center;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.noTemplate p {
+  margin: 0 0 1rem;
+  color: #666;
+  font-size: 1rem;
 }
 
 .testDownloadSection {

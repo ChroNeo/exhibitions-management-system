@@ -283,6 +283,13 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     onManageSurveys={
                       hasAuthToken ? () => setShowSurveyModal(true) : undefined
                     }
+                    onManageCertificate={
+                      hasAuthToken
+                        ? () => {
+                            if (id) navigate(`/exhibitions/${id}/certificate`);
+                          }
+                        : undefined
+                    }
                   />
                 </>
               ) : (

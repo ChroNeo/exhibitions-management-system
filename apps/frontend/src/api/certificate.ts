@@ -113,11 +113,20 @@ export async function deleteCertificateTemplate(
 // service/certificate.service.ts (หรือไฟล์ที่คุณเก็บไว้)
 export async function downloadCertificate(
   exhibitionId: string | number,
-  userId: string 
+  userId: string,
+  options?: { skipValidation?: boolean }
 ): Promise<Blob> {
-  const res = await fetch(
-    `${BASE}/exhibitions/${exhibitionId}/certificates/${userId}/download`
-  );
+  const params = new URLSearchParams();
+  if (options?.skipValidation) {
+    params.set("skipValidation", "true");
+  }
+
+  const queryString = params.toString();
+  const url = `${BASE}/exhibitions/${exhibitionId}/certificates/${userId}/download${queryString ? `?${queryString}` : ""}`;
+
+  const res = await fetch(url, {
+    headers: options?.skipValidation ? getAuthHeaders() : {},
+  });
 
   if (res.status === 404) {
     throw new Error("ไม่พบข้อมูลการลงทะเบียน หรือยังไม่มีใบประกาศนียบัตร");

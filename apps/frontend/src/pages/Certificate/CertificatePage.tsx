@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -55,9 +55,8 @@ export default function CertificatePage() {
   const { exhibitionId } = useParams<{ exhibitionId: string }>();
   const navigate = useNavigate();
   const hasAuthToken = useAuthStatus();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
   const [testUserId, setTestUserId] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
@@ -70,10 +69,8 @@ export default function CertificatePage() {
   } = useExhibition(exhibitionId ?? "", { enabled: !!exhibitionId });
 
   // Fetch certificate template
-  const {
-    data: template,
-    isLoading: isLoadingTemplate,
-  } = useCertificateTemplate(exhibitionId ?? "", { enabled: !!exhibitionId });
+  const { data: template, isLoading: isLoadingTemplate } =
+    useCertificateTemplate(exhibitionId ?? "", { enabled: !!exhibitionId });
 
   // Mutations
   const { mutateAsync: createTemplate, isPending: isCreating } =
@@ -99,84 +96,57 @@ export default function CertificatePage() {
     }
   }, [isLoading]);
 
-  // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle file selection and upload
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    }
-  };
-
-  // Clear file selection
-  const handleClearFile = () => {
-    setSelectedFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
-  };
-
-  // Upload/Create template
-  const handleUpload = async () => {
-    if (!exhibitionId || !selectedFile) return;
+    if (!file || !exhibitionId) return;
 
     try {
-      await createTemplate({
-        exhibitionId,
-        payload: {
-          file: selectedFile,
-          layout_config: DEFAULT_LAYOUT_CONFIG,
-        },
-      });
-
-      await Swal.fire({
-        title: "อัปโหลดสำเร็จ",
-        icon: "success",
-        confirmButtonText: "ตกลง",
-      });
-
-      handleClearFile();
+      if (template) {
+        // Update existing template
+        await updateTemplate({
+          exhibitionId,
+          payload: { file },
+        });
+        await Swal.fire({
+          title: "อัปเดตสำเร็จ",
+          icon: "success",
+          confirmButtonText: "ตกลง",
+        });
+      } else {
+        // Create new template
+        await createTemplate({
+          exhibitionId,
+          payload: {
+            file,
+            layout_config: DEFAULT_LAYOUT_CONFIG,
+          },
+        });
+        await Swal.fire({
+          title: "อัปโหลดสำเร็จ",
+          icon: "success",
+          confirmButtonText: "ตกลง",
+        });
+      }
     } catch (error) {
       console.error("Failed to upload certificate template", error);
       await Swal.fire({
-        title: "อัปโหลดไม่สำเร็จ",
+        title: template ? "อัปเดตไม่สำเร็จ" : "อัปโหลดไม่สำเร็จ",
         text: error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง",
         icon: "error",
         confirmButtonText: "ตกลง",
       });
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
-  // Update template
-  const handleUpdate = async () => {
-    if (!exhibitionId || !selectedFile) return;
-
-    try {
-      await updateTemplate({
-        exhibitionId,
-        payload: {
-          file: selectedFile,
-        },
-      });
-
-      await Swal.fire({
-        title: "อัปเดตสำเร็จ",
-        icon: "success",
-        confirmButtonText: "ตกลง",
-      });
-
-      handleClearFile();
-    } catch (error) {
-      console.error("Failed to update certificate template", error);
-      await Swal.fire({
-        title: "อัปเดตไม่สำเร็จ",
-        text: error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง",
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-    }
+  // Trigger file input click
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   // Save layout config
@@ -253,7 +223,6 @@ export default function CertificatePage() {
   const handleTestDownload = async () => {
     if (!exhibitionId || !testUserId) {
       await Swal.fire({
-        // 3. แก้ข้อความเตือน
         title: "กรุณาระบุ User ID",
         icon: "warning",
         confirmButtonText: "ตกลง",
@@ -263,15 +232,14 @@ export default function CertificatePage() {
 
     setIsDownloading(true);
     try {
-      // เรียก service ตัวใหม่ที่รับ userId
-      const blob = await downloadCertificate(exhibitionId, testUserId);
+      // Admin test download - skip check-in validation
+      const blob = await downloadCertificate(exhibitionId, testUserId, {
+        skipValidation: true,
+      });
 
-      // Create download link
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-
-      // 4. *** สำคัญ *** เปลี่ยนนามสกุลเป็น .pdf
       link.download = `certificate_${testUserId}.pdf`;
 
       document.body.appendChild(link);
@@ -308,15 +276,22 @@ export default function CertificatePage() {
         onLoginClick={() => navigate("/login")}
       />
 
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*,.pdf"
+        onChange={handleFileChange}
+        style={{ display: "none" }}
+      />
+
       <div className="container">
         <Panel title="จัดการ Certificate Template" onBack={handleBack}>
           {!isLoading && exhibition && (
             <div className={styles.content}>
-              {/* Current Template */}
+              {/* Template exists - show preview or editor */}
               {template && (
                 <div className={styles.currentTemplate}>
-                  <h4>Template ปัจจุบัน</h4>
-
                   {isEditingLayout ? (
                     <CertificateLayoutEditor
                       backgroundUrl={toFileUrl(template.background_url)}
@@ -344,97 +319,54 @@ export default function CertificatePage() {
                           : "-"}
                       </p>
 
+                      {/* Two action buttons */}
                       {hasAuthToken && (
-                        <button
-                          type="button"
-                          onClick={() => setIsEditingLayout(true)}
-                          className={styles.editLayoutButton}
-                        >
-                          แก้ไข Layout
-                        </button>
+                        <div className={styles.actionButtons}>
+                          <button
+                            type="button"
+                            onClick={() => setIsEditingLayout(true)}
+                            className={styles.editLayoutButton}
+                            disabled={isMutating}
+                          >
+                            แก้ไข Layout
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleUploadClick}
+                            className={styles.uploadButton}
+                            disabled={isMutating}
+                          >
+                            {isCreating || isUpdating
+                              ? "กำลังอัปโหลด..."
+                              : "อัปโหลด"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleDelete}
+                            disabled={isMutating}
+                            className={styles.deleteButton}
+                          >
+                            {isDeleting ? "กำลังลบ..." : "ลบ Template"}
+                          </button>
+                        </div>
                       )}
                     </>
                   )}
                 </div>
               )}
 
-              {/* Upload Section */}
-              {hasAuthToken && (
-                <div className={styles.uploadSection}>
-                  <h4>
-                    {template ? "เปลี่ยนไฟล์พื้นหลัง" : "อัปโหลดไฟล์พื้นหลัง"}
-                  </h4>
-
-                  <div className={styles.fileInput}>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={handleFileChange}
-                      id="certificate-file"
-                    />
-                    <label
-                      htmlFor="certificate-file"
-                      className={styles.fileLabel}
-                    >
-                      {selectedFile
-                        ? selectedFile.name
-                        : "เลือกไฟล์ (รูปภาพ หรือ PDF)"}
-                    </label>
-                  </div>
-
-                  {/* Preview */}
-                  {previewUrl && (
-                    <div className={styles.uploadPreview}>
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className={styles.previewImage}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleClearFile}
-                        className={styles.clearButton}
-                      >
-                        ยกเลิก
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className={styles.actions}>
-                    {selectedFile && !template && (
-                      <button
-                        type="button"
-                        onClick={handleUpload}
-                        disabled={isMutating}
-                        className={styles.uploadButton}
-                      >
-                        {isCreating ? "กำลังอัปโหลด..." : "อัปโหลด"}
-                      </button>
-                    )}
-
-                    {selectedFile && template && (
-                      <button
-                        type="button"
-                        onClick={handleUpdate}
-                        disabled={isMutating}
-                        className={styles.updateButton}
-                      >
-                        {isUpdating ? "กำลังอัปเดต..." : "อัปเดต"}
-                      </button>
-                    )}
-
-                    {template && (
-                      <button
-                        type="button"
-                        onClick={handleDelete}
-                        disabled={isMutating}
-                        className={styles.deleteButton}
-                      >
-                        {isDeleting ? "กำลังลบ..." : "ลบ Template"}
-                      </button>
-                    )}
-                  </div>
+              {/* No template - show upload prompt */}
+              {!template && hasAuthToken && (
+                <div className={styles.noTemplate}>
+                  <p>ยังไม่มี Certificate Template</p>
+                  <button
+                    type="button"
+                    onClick={handleUploadClick}
+                    className={styles.uploadButton}
+                    disabled={isMutating}
+                  >
+                    {isCreating ? "กำลังอัปโหลด..." : "อัปโหลดไฟล์พื้นหลัง"}
+                  </button>
                 </div>
               )}
 
@@ -444,13 +376,13 @@ export default function CertificatePage() {
                 </p>
               )}
 
+              {/* Test download section */}
               {template && (
                 <div className={styles.testDownloadSection}>
                   <h4>ทดสอบดาวน์โหลดใบประกาศนียบัตร</h4>
                   <div className={styles.testDownloadForm}>
                     <input
                       type="text"
-                      // 2. แก้ Placeholder เป็น User ID
                       placeholder="UserId"
                       value={testUserId}
                       onChange={(e) => setTestUserId(e.target.value)}
