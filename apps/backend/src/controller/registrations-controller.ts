@@ -2,14 +2,14 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { AppError } from "../errors.js";
 import {
-  registerForExhibition,
-  type RegistrationPayload,
-} from "../queries/registrations-query.js";
-import {
   RegistrationInputSchema,
   RegistrationResponseSchema,
   type RegistrationInput,
 } from "../models/registration.model.js";
+import {
+  registerForExhibition,
+  type RegistrationPayload,
+} from "../queries/registrations-query.js";
 
 export default async function registrationsController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
