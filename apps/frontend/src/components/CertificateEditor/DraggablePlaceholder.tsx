@@ -78,6 +78,7 @@ export default function DraggablePlaceholder({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
       if (!containerRef.current) return;
 
       const touch = e.touches[0];
@@ -121,7 +122,7 @@ export default function DraggablePlaceholder({
       style={{
         left: position.x,
         top: position.y,
-        fontSize: config.font_size ? `${config.font_size * 0.5}px` : "14px",
+        fontSize: config.font_size ? `${Math.min(config.font_size * 0.3, 20)}px` : "14px",
         color: config.color || "#000000",
         textAlign: config.align || "center",
         cursor: disabled ? "default" : isDragging ? "grabbing" : "grab",

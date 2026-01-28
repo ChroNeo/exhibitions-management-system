@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { LayoutConfig, LayoutFieldConfig } from "../../types/certificate";
 import DraggablePlaceholder from "./DraggablePlaceholder";
 import styles from "./CertificateLayoutEditor.module.css";
@@ -87,6 +87,8 @@ export default function CertificateLayoutEditor({
     [imageDimensions]
   );
 
+  const imgRef = useRef<HTMLImageElement>(null);
+
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     setImageDimensions({
@@ -95,6 +97,22 @@ export default function CertificateLayoutEditor({
     });
     setImageLoaded(true);
   };
+
+  // Update display dimensions on resize so coordinates stay accurate
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img || !imageLoaded) return;
+
+    const observer = new ResizeObserver(() => {
+      setImageDimensions((prev) => ({
+        ...prev,
+        display: { width: img.clientWidth, height: img.clientHeight },
+      }));
+    });
+
+    observer.observe(img);
+    return () => observer.disconnect();
+  }, [imageLoaded]);
 
   const handlePositionChange = useCallback(
     (displayPosition: { x: number; y: number }) => {
@@ -138,6 +156,7 @@ export default function CertificateLayoutEditor({
           data-dragging="false"
         >
           <img
+            ref={imgRef}
             src={backgroundUrl}
             alt="Certificate Background"
             className={styles.backgroundImage}

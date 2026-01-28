@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { LayoutConfig, LayoutFieldConfig } from "../../types/certificate";
 import styles from "./CertificatePreview.module.css";
 
@@ -54,6 +54,8 @@ export default function CertificatePreview({
     [imageDimensions]
   );
 
+  const imgRef = useRef<HTMLImageElement>(null);
+
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     setImageDimensions({
@@ -63,6 +65,21 @@ export default function CertificatePreview({
     setImageLoaded(true);
   };
 
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img || !imageLoaded) return;
+
+    const observer = new ResizeObserver(() => {
+      setImageDimensions((prev) => ({
+        ...prev,
+        display: { width: img.clientWidth, height: img.clientHeight },
+      }));
+    });
+
+    observer.observe(img);
+    return () => observer.disconnect();
+  }, [imageLoaded]);
+
   const displayPosition = toDisplayCoords({
     x: participantConfig.x,
     y: participantConfig.y,
@@ -71,6 +88,7 @@ export default function CertificatePreview({
   return (
     <div className={styles.previewContainer}>
       <img
+        ref={imgRef}
         src={backgroundUrl}
         alt="Certificate Background"
         className={styles.backgroundImage}
@@ -85,7 +103,7 @@ export default function CertificatePreview({
             left: displayPosition.x,
             top: displayPosition.y,
             fontSize: participantConfig.font_size
-              ? `${participantConfig.font_size * 0.5}px`
+              ? `${Math.min(participantConfig.font_size * 0.3, 20)}px`
               : "14px",
             color: participantConfig.color || "#000000",
             textAlign: participantConfig.align || "center",
