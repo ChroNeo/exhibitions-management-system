@@ -16,7 +16,7 @@ import {
   type LayoutConfig,
 } from "../models/certificate-template.model.js";
 import { optionalAuth, requireOrganizerAuth } from "../services/auth-middleware.js";
-import { collectMultipartFields } from "../services/file-upload.js";
+import { collectMultipartFields, removeUploadedFile } from "../services/file-upload.js";
 import { parseJsonField } from "../utils/validation.js";
 import { AppError } from "../errors.js";
 import { generateCertificate } from "../services/certificate-generator.js";
@@ -146,6 +146,9 @@ export default async function certificateTemplateController(
     async (req, reply) => {
       const { exhibitionId } = req.params;
 
+      // Get existing template to check for old file
+      const existingTemplate = await getCertificateTemplateByExhibitionId(exhibitionId);
+
       const { fields, files } = await collectMultipartFields(req, {
         fileFields: {
           file: {
@@ -181,6 +184,12 @@ export default async function certificateTemplateController(
       }
 
       const template = await updateCertificateTemplate(exhibitionId, payload);
+
+      // Delete old file if a new one was uploaded
+      if (backgroundUrl && existingTemplate?.background_url) {
+        await removeUploadedFile(existingTemplate.background_url, req.log);
+      }
+
       return template;
     }
   );
@@ -203,7 +212,17 @@ export default async function certificateTemplateController(
     },
     async (req, reply) => {
       const { exhibitionId } = req.params;
+
+      // Get existing template to delete the file
+      const existingTemplate = await getCertificateTemplateByExhibitionId(exhibitionId);
+
       await deleteCertificateTemplate(exhibitionId);
+
+      // Delete the file from disk
+      if (existingTemplate?.background_url) {
+        await removeUploadedFile(existingTemplate.background_url, req.log);
+      }
+
       reply.code(204).send();
     }
   );
@@ -274,10 +293,13 @@ export default async function certificateTemplateController(
       schema: {
         tags: ["Exhibitions"],
         summary: "Download generated certificate for a registration",
-        description: "Generates a certificate image with participant name overlaid on the template background",
+        description: "Generates a certificate image with participant name overlaid on the template background. Admin users can add ?skipValidation=true to bypass check-in requirements.",
         params: z.object({
           exhibitionId: z.string().regex(/^\d+$/),
           userId: z.string().regex(/^\d+$/),
+        }),
+        querystring: z.object({
+          skipValidation: z.string().optional(),
         }),
         produces: ["application/pdf"],
         response: {
@@ -302,6 +324,10 @@ export default async function certificateTemplateController(
     },
     async (req, reply) => {
       const { exhibitionId, userId } = req.params;
+      const { skipValidation } = req.query;
+
+      // Check if admin wants to skip validation (requires auth)
+      const isAdminSkip = skipValidation === "true" && req.user;
 
       // Get certificate template
       const template = await getCertificateTemplateByExhibitionId(exhibitionId);
@@ -326,34 +352,37 @@ export default async function certificateTemplateController(
         });
       }
 
-      // Check if user has completed all unit check-ins
-      const checkinStatus = await getUserCheckinCompletionStatus(exhibitionId, userId);
+      // Skip check-in validation for admin test downloads
+      if (!isAdminSkip) {
+        // Check if user has completed all unit check-ins
+        const checkinStatus = await getUserCheckinCompletionStatus(exhibitionId, userId);
 
-      if (checkinStatus.total_units === 0) {
-        return reply.status(403).send({
-          message: "Cannot download certificate: This exhibition has no units configured.",
-          status: 403,
-          code: "NO_UNITS_CONFIGURED",
-          details: {
-            total_units: 0,
-            checked_in_units: 0,
-            missing_units: 0,
-          },
-        });
-      }
+        if (checkinStatus.total_units === 0) {
+          return reply.status(403).send({
+            message: "Cannot download certificate: This exhibition has no units configured.",
+            status: 403,
+            code: "NO_UNITS_CONFIGURED",
+            details: {
+              total_units: 0,
+              checked_in_units: 0,
+              missing_units: 0,
+            },
+          });
+        }
 
-      if (!checkinStatus.is_complete) {
-        const missing = checkinStatus.total_units - checkinStatus.checked_in_units;
-        return reply.status(403).send({
-          message: `Cannot download certificate: You have checked in to ${checkinStatus.checked_in_units} of ${checkinStatus.total_units} units. Please complete all unit check-ins.`,
-          status: 403,
-          code: "INCOMPLETE_CHECKINS",
-          details: {
-            total_units: checkinStatus.total_units,
-            checked_in_units: checkinStatus.checked_in_units,
-            missing_units: missing,
-          },
-        });
+        if (!checkinStatus.is_complete) {
+          const missing = checkinStatus.total_units - checkinStatus.checked_in_units;
+          return reply.status(403).send({
+            message: `Cannot download certificate: You have checked in to ${checkinStatus.checked_in_units} of ${checkinStatus.total_units} units. Please complete all unit check-ins.`,
+            status: 403,
+            code: "INCOMPLETE_CHECKINS",
+            details: {
+              total_units: checkinStatus.total_units,
+              checked_in_units: checkinStatus.checked_in_units,
+              missing_units: missing,
+            },
+          });
+        }
       }
 
       // Generate certificate
