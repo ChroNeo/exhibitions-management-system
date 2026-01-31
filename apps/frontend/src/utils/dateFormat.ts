@@ -1,8 +1,7 @@
-/**
- * Example: toThaiDate("2024-02-10") => "10 กุมภาพันธ์ 2567"
- */
+//*Example: toThaiDate("2024-02-10") => "10 กุมภาพันธ์ 2567"
+
 export const toThaiDate = (iso?: string) => {
-  if (!iso) return "";
+  if (!iso) return "—";
   const d = new Date(iso);
   return d.toLocaleDateString("th-TH", {
     year: "numeric",
@@ -10,6 +9,21 @@ export const toThaiDate = (iso?: string) => {
     day: "numeric",
   });
 };
+
+// * Example: toThaiDateTime("2025-01-31  19:02:00") => "31 ม.ค. 2569 19:02 น."
+
+export const toThaiDateTime = (iso?: string) => {
+  if (!iso) return "—";
+  const d = new Date(iso || "");
+
+  const opt: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
+  const y = d.getFullYear() + 543; // แปลงเป็น พ.ศ.
+
+  const time = (d: Date) =>
+    d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+
+  return `${d.toLocaleDateString("th-TH", opt)} ${y}  ${time(d)} น.`;
+}
 
 /**
  * Example: toThaiTimeRange("2024-02-10T08:30+07:00","2024-02-10T12:00+07:00") => "08:30 - 12:00"

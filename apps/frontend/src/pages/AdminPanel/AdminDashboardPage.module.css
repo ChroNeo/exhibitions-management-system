@@ -80,11 +80,30 @@
   text-transform: capitalize;
 }
 
-.statusDraft { background: #f3f4f6; color: #6b7280; }
-.statusPublished { background: #dbeafe; color: #1e40af; }
-.statusOngoing { background: #d1fae5; color: #065f46; }
-.statusEnded { background: #fef3c7; color: #92400e; }
-.statusArchived { background: #f3e8ff; color: #6b21a8; }
+.statusDraft {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.statusPublished {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.statusOngoing {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.statusEnded {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.statusArchived {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
 
 .regCount {
   font-weight: 600;
@@ -176,5 +195,12 @@
   font-weight: 600;
 }
 
-.typeBooth { background: #dbeafe; color: #1e40af; }
-.typeActivity { background: #fce7f3; color: #9d174d; }
+.typeBooth {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.typeActivity {
+  background: #fce7f3;
+  color: #9d174d;
+}

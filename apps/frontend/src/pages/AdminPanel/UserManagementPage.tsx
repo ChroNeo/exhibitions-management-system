@@ -1,11 +1,12 @@
-import { UserPlus, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
 import Swal from "sweetalert2";
+import { toThaiDateTime } from "../../utils/dateFormat";
 import AdminLayout from "./AdminLayout";
 import {
   useAdminUsers,
   useCreateAdminUser,
-  useUpdateUserRole,
   useDeleteUser,
+  useUpdateUserRole,
 } from "./hooks/useAdminUsers";
 import styles from "./UserManagementPage.module.css";
 
@@ -43,9 +44,8 @@ export default function UserManagementPage() {
           (
             document.getElementById("swal-email") as HTMLInputElement
           ).value.trim() || null;
-        const role = (
-          document.getElementById("swal-role") as HTMLSelectElement
-        ).value as "admin" | "organizer";
+        const role = (document.getElementById("swal-role") as HTMLSelectElement)
+          .value as "admin" | "organizer";
 
         if (!username || !password) {
           Swal.showValidationMessage("กรุณากรอก Username และ Password");
@@ -67,8 +67,9 @@ export default function UserManagementPage() {
     } catch (err: unknown) {
       Swal.fire(
         "เกิดข้อผิดพลาด",
-        (err as AxiosLikeError)?.response?.data?.message || "ไม่สามารถสร้างผู้ใช้ได้",
-        "error"
+        (err as AxiosLikeError)?.response?.data?.message ||
+          "ไม่สามารถสร้างผู้ใช้ได้",
+        "error",
       );
     }
   };
@@ -76,7 +77,7 @@ export default function UserManagementPage() {
   const handleRoleToggle = async (
     userId: number,
     currentRole: string,
-    username: string
+    username: string,
   ) => {
     const newRole = currentRole === "admin" ? "organizer" : "admin";
     const { isConfirmed } = await Swal.fire({
@@ -96,8 +97,9 @@ export default function UserManagementPage() {
     } catch (err: unknown) {
       Swal.fire(
         "เกิดข้อผิดพลาด",
-        (err as AxiosLikeError)?.response?.data?.message || "ไม่สามารถเปลี่ยน Role ได้",
-        "error"
+        (err as AxiosLikeError)?.response?.data?.message ||
+          "ไม่สามารถเปลี่ยน Role ได้",
+        "error",
       );
     }
   };
@@ -121,8 +123,9 @@ export default function UserManagementPage() {
     } catch (err: unknown) {
       Swal.fire(
         "เกิดข้อผิดพลาด",
-        (err as AxiosLikeError)?.response?.data?.message || "ไม่สามารถลบผู้ใช้ได้",
-        "error"
+        (err as AxiosLikeError)?.response?.data?.message ||
+          "ไม่สามารถลบผู้ใช้ได้",
+        "error",
       );
     }
   };
@@ -132,11 +135,7 @@ export default function UserManagementPage() {
       <div className={styles.wrapper}>
         <div className={styles.toolbar}>
           <h1 className={styles.title}>จัดการผู้ใช้งาน</h1>
-          <button
-            type="button"
-            className={styles.addBtn}
-            onClick={handleAdd}
-          >
+          <button type="button" className={styles.addBtn} onClick={handleAdd}>
             <UserPlus size={18} />
             เพิ่มผู้ใช้
           </button>
@@ -180,7 +179,7 @@ export default function UserManagementPage() {
                           {u.role}
                         </span>
                       </td>
-                      <td>{u.last_login_at ?? "—"}</td>
+                      <td>{toThaiDateTime(u.last_login_at || "")}</td>
                       <td>
                         <div className={styles.actions}>
                           <button
@@ -188,11 +187,7 @@ export default function UserManagementPage() {
                             className={`${styles.actionBtn} ${styles.editBtn}`}
                             title="เปลี่ยน Role"
                             onClick={() =>
-                              handleRoleToggle(
-                                u.user_id,
-                                u.role,
-                                u.username
-                              )
+                              handleRoleToggle(u.user_id, u.role, u.username)
                             }
                           >
                             <Pencil size={16} />
@@ -201,9 +196,7 @@ export default function UserManagementPage() {
                             type="button"
                             className={`${styles.actionBtn} ${styles.deleteBtn}`}
                             title="ลบผู้ใช้"
-                            onClick={() =>
-                              handleDelete(u.user_id, u.username)
-                            }
+                            onClick={() => handleDelete(u.user_id, u.username)}
                           >
                             <Trash2 size={16} />
                           </button>
