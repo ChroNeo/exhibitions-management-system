@@ -39,8 +39,6 @@ export const toThaiTimeRange = (start?: string, end?: string) => {
     hour: "2-digit",
     minute: "2-digit",
   });
-  console.log("🚀 ~ toThaiTimeRange ~ e:", e);
-
   return `${s} - ${e}`;
 };
 

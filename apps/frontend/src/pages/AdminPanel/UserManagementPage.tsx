@@ -1,4 +1,4 @@
-import { ChevronDown, Pencil, Trash2, UserPlus } from "lucide-react";
+import { ChevronDown, Repeat, Trash2, UserPlus } from "lucide-react";
 import Swal from "sweetalert2";
 import { toThaiDateTime } from "../../utils/dateFormat";
 import AdminLayout from "./AdminLayout";
@@ -14,11 +14,16 @@ type AxiosLikeError = { response?: { data?: { message?: string } } };
 
 function roleClass(role: string) {
   switch (role) {
-    case "admin": return styles.roleAdmin;
-    case "organizer": return styles.roleOrganizer;
-    case "user": return styles.roleUser;
-    case "staff": return styles.roleStaff;
-    default: return styles.roleOrganizer;
+    case "admin":
+      return styles.roleAdmin;
+    case "organizer":
+      return styles.roleOrganizer;
+    case "user":
+      return styles.roleUser;
+    case "staff":
+      return styles.roleStaff;
+    default:
+      return styles.roleOrganizer;
   }
 }
 
@@ -198,7 +203,7 @@ export default function UserManagementPage() {
                                 handleRoleToggle(u.user_id, u.role, u.username)
                               }
                             >
-                              <Pencil size={16} />
+                              <Repeat size={16} />
                             </button>
                             <button
                               type="button"
@@ -225,7 +230,6 @@ export default function UserManagementPage() {
 
             {/* Mobile accordion cards */}
             <div className={styles.mobileCards}>
-              sdas
               {users && users.length > 0 ? (
                 users.map((u) => (
                   <details key={u.user_id} className={styles.card}>
@@ -263,7 +267,7 @@ export default function UserManagementPage() {
                             handleRoleToggle(u.user_id, u.role, u.username)
                           }
                         >
-                          <Pencil size={16} />
+                          <Repeat size={16} />
                         </button>
                         <button
                           type="button"
