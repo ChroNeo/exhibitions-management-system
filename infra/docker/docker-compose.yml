@@ -4,6 +4,7 @@ services:
     image: mysql:8.4
     ports: ["${DB_PORT}:3306"]
     environment:
+      TZ: Asia/Bangkok
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}

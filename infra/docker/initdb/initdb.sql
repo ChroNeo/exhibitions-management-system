@@ -1022,13 +1022,13 @@ CREATE DEFINER=`root`@`%` EVENT `ev_exhibitions_auto_status` ON SCHEDULE EVERY 5
   UPDATE exhibitions
   SET status = 'ongoing'
   WHERE status IN ('published','ongoing')
-    AND CONVERT_TZ(NOW(), '+00:00', '+07:00') BETWEEN start_date AND end_date;
+    AND NOW() BETWEEN start_date AND end_date;
 
   -- set ended เมื่อจบแล้ว
   UPDATE exhibitions
   SET status = 'ended'
   WHERE status IN ('published','ongoing')
-    AND CONVERT_TZ(NOW(), '+00:00', '+07:00') > end_date;
+    AND NOW() > end_date;
 END$$
 
 DELIMITER ;
