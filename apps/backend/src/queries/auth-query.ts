@@ -21,6 +21,11 @@ export async function authenticateOrganizerUser(
     throw new AppError("invalid username or password", 401, "INVALID_CREDENTIALS");
   }
 
+  await safeQuery(
+    `UPDATE organizer_users SET last_login_at = CONVERT_TZ(NOW(), '+00:00', '+07:00') WHERE user_id = ?`,
+    [rows[0].user_id]
+  );
+
   return rows[0];
 }
 export async function createOrganizerUser(

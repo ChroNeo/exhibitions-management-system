@@ -18,6 +18,7 @@ import registrationsController from "./controller/registrations-controller.js";
 import lineController from "./controller/line-controller.js";
 import ticketController from "./controller/ticket-controller.js";
 import certificateTemplateController from "./controller/certificate-template-controller.js";
+import adminController from "./controller/admin-controller.js";
 
 // --- Import Services ---
 import { safeQuery } from "./services/dbconn.js";
@@ -107,6 +108,7 @@ await app.register(swagger, {
       { name: "Tickets", description: "Manage exhibition tickets and redemption." },
       { name: "LINE", description: "LINE Messaging API webhook integration." },
       { name: "Survey", description: "Manage survey questions and submissions." },
+      { name: "Admin", description: "Admin panel: user and system management." },
     ],
   },
   // 4. สำคัญมาก! ต้องใส่บรรทัดนี้เพื่อให้ Swagger อ่าน Zod Schema ออก
@@ -173,6 +175,7 @@ app.register(lineController, { prefix: "/line" });
 app.register(ticketController, { prefix: "/api/v1/ticket" });
 app.register(surveyController, { prefix: "/api/v1/surveys" });
 app.register(certificateTemplateController, { prefix: "/api/v1/exhibitions" });
+app.register(adminController, { prefix: "/api/v1/admin/users" });
 
 // Start Server
 const port = Number(process.env.PORT || 3001);
