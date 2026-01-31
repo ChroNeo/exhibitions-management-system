@@ -1,0 +1,503 @@
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius-m, 8px);
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.searchInput:focus {
+  border-color: var(--brand, #2e4f8b);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-s, 0 1px 3px rgba(0, 0, 0, 0.1));
+  background: var(--bg, #fff);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 14px 16px;
+  background: var(--base, #224177);
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: var(--text);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover td {
+  background: rgba(46, 79, 139, 0.04);
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.roleUser {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.roleStaff {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #c4b5fd;
+}
+
+.regCount {
+  font-weight: 600;
+  color: var(--brand, #2e4f8b);
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--muted, #6b7280);
+}
+
+.emptyRow td {
+  text-align: center;
+  color: var(--muted, #6b7280);
+  padding: 32px 16px;
+}
+
+/* Back button */
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius-m, 8px);
+  background: var(--bg, #fff);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  margin-bottom: 16px;
+}
+
+.backButton:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* Detail subpage */
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.detailTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.detailCard {
+  background: var(--bg, #fff);
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-s, 0 1px 3px rgba(0, 0, 0, 0.1));
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 24px;
+  font-size: 0.88rem;
+}
+
+.metaLabel {
+  color: var(--muted, #6b7280);
+}
+
+.metaValue {
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Avatar */
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.avatarPlaceholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted, #6b7280);
+}
+
+/* Progress bar */
+.progressWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--brand, #2e4f8b);
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.progressText {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  white-space: nowrap;
+}
+
+/* Exhibition row in visitor detail */
+.exRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: pointer;
+}
+
+.exRow:last-child {
+  border-bottom: none;
+}
+
+.exRow:hover {
+  background: rgba(46, 79, 139, 0.03);
+  margin: 0 -24px;
+  padding: 12px 24px;
+}
+
+.exInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.exTitle {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.exMeta {
+  font-size: 0.82rem;
+  color: var(--muted, #6b7280);
+  margin-top: 2px;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.statusDraft {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.statusPublished {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.statusOngoing {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.statusEnded {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.statusArchived {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #c4b5fd;
+}
+
+/* Checkin toggle */
+.checkinTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-top: 6px;
+}
+
+.checkinTable th {
+  text-align: left;
+  padding: 8px 12px;
+  background: #e5e7eb;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.checkinTable td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.unitTypeBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.typeBooth {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.typeActivity {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.toggleBtn {
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+}
+
+.toggleBtn:hover {
+  opacity: 0.85;
+}
+
+.checkedIn {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.notCheckedIn {
+  background: var(--brand, #2e4f8b);
+  color: #fff;
+}
+
+.subEmpty {
+  color: var(--muted, #6b7280);
+  font-size: 0.88rem;
+  padding: 8px 0;
+}
+
+/* ── Mobile accordion cards ── */
+.mobileCards {
+  display: none;
+}
+
+.card {
+  background: var(--bg, #fff);
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-s, 0 1px 3px rgba(0, 0, 0, 0.1));
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cardHeader::-webkit-details-marker {
+  display: none;
+}
+
+.cardName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  transition: transform 0.2s;
+  color: var(--muted, #6b7280);
+  flex-shrink: 0;
+}
+
+.card[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.cardBody {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardLabel {
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  font-size: 0.82rem;
+}
+
+.cardDetailBtn {
+  margin-top: 6px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-m, 8px);
+  background: var(--brand, #2e4f8b);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.cardDetailBtn:hover {
+  opacity: 0.85;
+}
+
+.emptyCard {
+  text-align: center;
+  color: var(--muted, #6b7280);
+  padding: 32px 16px;
+  font-size: 0.92rem;
+}
+
+/* ── Tablet ── */
+@media (max-width: 768px) {
+  .toolbar {
+    gap: 8px;
+  }
+
+  .searchInput {
+    min-width: 0;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 10px;
+    font-size: 0.84rem;
+  }
+
+  .detailCard {
+    padding: 16px;
+  }
+
+  .exRow:hover {
+    margin: 0 -16px;
+    padding: 12px 16px;
+  }
+}
+
+/* ── Mobile: swap table for accordion cards ── */
+@media (max-width: 920px) {
+  .tableWrapper {
+    display: none;
+  }
+
+  .mobileCards {
+    display: block;
+  }
+
+  .detailHeader {
+    flex-wrap: wrap;
+  }
+
+  .detailTitle {
+    font-size: 1.1rem;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+}

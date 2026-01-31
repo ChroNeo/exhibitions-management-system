@@ -19,6 +19,7 @@ import UnitManageDetail from "./pages/Units/UnitManageDetail";
 import AdminGuard from "./components/AdminGuard";
 import UserManagementPage from "./pages/AdminPanel/UserManagementPage";
 import AdminDashboardPage from "./pages/AdminPanel/AdminDashboardPage";
+import VisitorManagementPage from "./pages/AdminPanel/VisitorManagementPage";
 
 export default function App() {
   return (
@@ -91,6 +92,15 @@ export default function App() {
         element={
           <AdminGuard>
             <UserManagementPage />
+          </AdminGuard>
+        }
+      />
+
+      <Route
+        path="/admin/visitors"
+        element={
+          <AdminGuard>
+            <VisitorManagementPage />
           </AdminGuard>
         }
       />
