@@ -16,6 +16,8 @@ import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import TicketPage from "./pages/Ticket/TicketPage";
 import WalletPage from "./pages/Ticket/WalletPage/WalletPage";
 import UnitManageDetail from "./pages/Units/UnitManageDetail";
+import AdminGuard from "./components/AdminGuard";
+import UserManagementPage from "./pages/AdminPanel/UserManagementPage";
 
 export default function App() {
   return (
@@ -73,6 +75,16 @@ export default function App() {
       <Route path="/survey/exhibitions" element={<ExhibitionSurveyPage />} />
       <Route path="/survey/units" element={<UnitSurveyPage />} />
       <Route path="/survey/unit-list" element={<UnitListPage />} />
+
+      {/* Admin Panel */}
+      <Route
+        path="/admin/users"
+        element={
+          <AdminGuard>
+            <UserManagementPage />
+          </AdminGuard>
+        }
+      />
 
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />

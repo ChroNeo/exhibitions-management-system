@@ -10,10 +10,10 @@ import { LogOut, UserCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "./HeaderBar.module.css";
 import { clearAuth } from "../../utils/authStorage";
-import { useAuthStatus } from "../../hooks";
+import { useAuthStatus, useAuthUser } from "../../hooks";
 
 // เพิ่ม "home" เข้ามาใน type
-type TabId = "home" | "exhibition_unit";
+type TabId = "home" | "exhibition_unit" | "admin";
 
 // เพิ่มแท็บ "หน้าแรก"
 const TABS: Array<{ id: TabId; label: string }> = [
@@ -39,12 +39,18 @@ export default function HeaderBar({
   const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
     home: null,
     exhibition_unit: null,
+    admin: null,
   });
 
   const indicatorTargetRef = useRef<TabId>(active);
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
   const hasAuth = useAuthStatus();
-  const visibleTabs = hasAuth ? TABS : [];
+  const user = useAuthUser();
+  const visibleTabs = hasAuth
+    ? user?.role === "admin"
+      ? [...TABS, { id: "admin" as TabId, label: "จัดการผู้ใช้" }]
+      : TABS
+    : [];
 
   const updateIndicator = useCallback((tabId: TabId) => {
     indicatorTargetRef.current = tabId;
@@ -82,6 +88,7 @@ export default function HeaderBar({
   const handleTabClick = (id: TabId) => {
     if (id === "home") navigate("/");
     if (id === "exhibition_unit") navigate("/exhibitions");
+    if (id === "admin") navigate("/admin/users");
     closeMenu();
   };
 
