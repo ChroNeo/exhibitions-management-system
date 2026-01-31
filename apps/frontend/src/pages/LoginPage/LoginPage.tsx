@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import Panel from "../../components/Panel/Panel";
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { mutateAsync: signIn, isPending } = useSignIn();
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -89,16 +91,26 @@ export default function LoginPage() {
             <label className={styles.label} htmlFor="login-password">
               รหัสผ่าน
             </label>
-            <input
-              id="login-password"
-              type="password"
-              className={styles.input}
-              placeholder="********"
-              value={form.password}
-              onChange={setField("password")}
-              autoComplete="current-password"
-              required
-            />
+            <div className={styles.passwordWrapper}>
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                className={styles.input}
+                placeholder="********"
+                value={form.password}
+                onChange={setField("password")}
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className={styles.eyeButton}
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
 
             <label className={styles.checkbox}>
               <input
