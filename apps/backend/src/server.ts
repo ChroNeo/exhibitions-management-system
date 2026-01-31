@@ -20,6 +20,7 @@ import ticketController from "./controller/ticket-controller.js";
 import certificateTemplateController from "./controller/certificate-template-controller.js";
 import adminController from "./controller/admin-controller.js";
 import adminDashboardController from "./controller/admin-dashboard-controller.js";
+import adminVisitorController from "./controller/admin-visitor-controller.js";
 
 // --- Import Services ---
 import { safeQuery } from "./services/dbconn.js";
@@ -178,6 +179,7 @@ app.register(surveyController, { prefix: "/api/v1/surveys" });
 app.register(certificateTemplateController, { prefix: "/api/v1/exhibitions" });
 app.register(adminController, { prefix: "/api/v1/admin/users" });
 app.register(adminDashboardController, { prefix: "/api/v1/admin/dashboard" });
+app.register(adminVisitorController, { prefix: "/api/v1/admin/visitors" });
 
 // Start Server
 const port = Number(process.env.PORT || 3001);

@@ -1,12 +1,14 @@
 import type { ResultSetHeader } from "mysql2";
 import { AppError } from "../errors.js";
+import {
+  CreateOrganizerUserInput,
+  OrganizerLoginRow,
+} from "../models/auth.model.js";
 import { safeQuery } from "../services/dbconn.js";
-import { CreateOrganizerUserInput, OrganizerLoginRow } from "../models/auth.model.js";
-
 
 export async function authenticateOrganizerUser(
   username: string,
-  password: string
+  password: string,
 ): Promise<OrganizerLoginRow> {
   const rows = await safeQuery<OrganizerLoginRow[]>(
     `SELECT 
@@ -14,29 +16,33 @@ export async function authenticateOrganizerUser(
      FROM organizer_users
      WHERE username = ?
        AND password_hash = SHA2(?, 256)`,
-    [username, password]
+    [username, password],
   );
 
   if (!rows.length) {
-    throw new AppError("invalid username or password", 401, "INVALID_CREDENTIALS");
+    throw new AppError(
+      "invalid username or password",
+      401,
+      "INVALID_CREDENTIALS",
+    );
   }
 
   await safeQuery(
-    `UPDATE organizer_users SET last_login_at = CONVERT_TZ(NOW(), '+00:00', '+07:00') WHERE user_id = ?`,
-    [rows[0].user_id]
+    `UPDATE organizer_users SET last_login_at = NOW() WHERE user_id = ?`,
+    [rows[0].user_id],
   );
 
   return rows[0];
 }
 export async function createOrganizerUser(
-  input: CreateOrganizerUserInput
+  input: CreateOrganizerUserInput,
 ): Promise<OrganizerLoginRow> {
   const { username, password, email, role } = input;
 
   const result = await safeQuery<ResultSetHeader>(
     `INSERT INTO organizer_users (username, password_hash, email, role)
      VALUES (?, SHA2(?, 256), ?, ?)`,
-    [username, password, email, role]
+    [username, password, email, role],
   );
 
   if (!result.insertId) {
@@ -47,7 +53,7 @@ export async function createOrganizerUser(
     `SELECT user_id, username, email, role
      FROM organizer_users
      WHERE user_id = ?`,
-    [result.insertId]
+    [result.insertId],
   );
 
   if (!rows.length) {
