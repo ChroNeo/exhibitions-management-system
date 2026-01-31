@@ -18,6 +18,7 @@ import WalletPage from "./pages/Ticket/WalletPage/WalletPage";
 import UnitManageDetail from "./pages/Units/UnitManageDetail";
 import AdminGuard from "./components/AdminGuard";
 import UserManagementPage from "./pages/AdminPanel/UserManagementPage";
+import AdminDashboardPage from "./pages/AdminPanel/AdminDashboardPage";
 
 export default function App() {
   return (
@@ -77,6 +78,14 @@ export default function App() {
       <Route path="/survey/unit-list" element={<UnitListPage />} />
 
       {/* Admin Panel */}
+      <Route
+        path="/admin"
+        element={
+          <AdminGuard>
+            <AdminDashboardPage />
+          </AdminGuard>
+        }
+      />
       <Route
         path="/admin/users"
         element={

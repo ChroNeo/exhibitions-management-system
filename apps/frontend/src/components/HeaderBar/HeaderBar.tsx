@@ -88,7 +88,7 @@ export default function HeaderBar({
   const handleTabClick = (id: TabId) => {
     if (id === "home") navigate("/");
     if (id === "exhibition_unit") navigate("/exhibitions");
-    if (id === "admin") navigate("/admin/users");
+    if (id === "admin") navigate("/admin");
     closeMenu();
   };
 

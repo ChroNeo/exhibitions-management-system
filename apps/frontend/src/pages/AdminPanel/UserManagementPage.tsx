@@ -1,7 +1,6 @@
-import { useNavigate } from "react-router-dom";
 import { UserPlus, Pencil, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
-import HeaderBar from "../../components/HeaderBar/HeaderBar";
+import AdminLayout from "./AdminLayout";
 import {
   useAdminUsers,
   useCreateAdminUser,
@@ -10,8 +9,9 @@ import {
 } from "./hooks/useAdminUsers";
 import styles from "./UserManagementPage.module.css";
 
+type AxiosLikeError = { response?: { data?: { message?: string } } };
+
 export default function UserManagementPage() {
-  const navigate = useNavigate();
   const { data: users, isLoading, error } = useAdminUsers();
   const createUser = useCreateAdminUser();
   const updateRole = useUpdateUserRole();
@@ -64,10 +64,10 @@ export default function UserManagementPage() {
     try {
       await createUser.mutateAsync(formValues);
       Swal.fire("สำเร็จ", "สร้างผู้ใช้เรียบร้อยแล้ว", "success");
-    } catch (err: any) {
+    } catch (err: unknown) {
       Swal.fire(
         "เกิดข้อผิดพลาด",
-        err?.response?.data?.message || "ไม่สามารถสร้างผู้ใช้ได้",
+        (err as AxiosLikeError)?.response?.data?.message || "ไม่สามารถสร้างผู้ใช้ได้",
         "error"
       );
     }
@@ -93,10 +93,10 @@ export default function UserManagementPage() {
     try {
       await updateRole.mutateAsync({ userId, role: newRole });
       Swal.fire("สำเร็จ", "เปลี่ยน Role เรียบร้อยแล้ว", "success");
-    } catch (err: any) {
+    } catch (err: unknown) {
       Swal.fire(
         "เกิดข้อผิดพลาด",
-        err?.response?.data?.message || "ไม่สามารถเปลี่ยน Role ได้",
+        (err as AxiosLikeError)?.response?.data?.message || "ไม่สามารถเปลี่ยน Role ได้",
         "error"
       );
     }
@@ -118,115 +118,109 @@ export default function UserManagementPage() {
     try {
       await deleteUser.mutateAsync(userId);
       Swal.fire("สำเร็จ", "ลบผู้ใช้เรียบร้อยแล้ว", "success");
-    } catch (err: any) {
+    } catch (err: unknown) {
       Swal.fire(
         "เกิดข้อผิดพลาด",
-        err?.response?.data?.message || "ไม่สามารถลบผู้ใช้ได้",
+        (err as AxiosLikeError)?.response?.data?.message || "ไม่สามารถลบผู้ใช้ได้",
         "error"
       );
     }
   };
 
   return (
-    <>
-      <HeaderBar
-        active="admin"
-        onLoginClick={() => navigate("/login")}
-      />
-      <div className="container">
-        <div className={styles.wrapper}>
-          <div className={styles.toolbar}>
-            <h1 className={styles.title}>จัดการผู้ใช้งาน</h1>
-            <button
-              type="button"
-              className={styles.addBtn}
-              onClick={handleAdd}
-            >
-              <UserPlus size={18} />
-              เพิ่มผู้ใช้
-            </button>
-          </div>
-
-          {isLoading && <p className={styles.loading}>กำลังโหลด...</p>}
-          {error && (
-            <p className={styles.error}>
-              ไม่สามารถโหลดข้อมูลได้: {(error as Error).message}
-            </p>
-          )}
-
-          {!isLoading && !error && (
-            <div className={styles.tableWrapper}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Last Login</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users && users.length > 0 ? (
-                    users.map((u) => (
-                      <tr key={u.user_id}>
-                        <td>{u.user_id}</td>
-                        <td>{u.username}</td>
-                        <td>{u.email ?? "—"}</td>
-                        <td>
-                          <span
-                            className={`${styles.roleBadge} ${
-                              u.role === "admin"
-                                ? styles.roleAdmin
-                                : styles.roleOrganizer
-                            }`}
-                          >
-                            {u.role}
-                          </span>
-                        </td>
-                        <td>{u.last_login_at ?? "—"}</td>
-                        <td>
-                          <div className={styles.actions}>
-                            <button
-                              type="button"
-                              className={`${styles.actionBtn} ${styles.editBtn}`}
-                              title="เปลี่ยน Role"
-                              onClick={() =>
-                                handleRoleToggle(
-                                  u.user_id,
-                                  u.role,
-                                  u.username
-                                )
-                              }
-                            >
-                              <Pencil size={16} />
-                            </button>
-                            <button
-                              type="button"
-                              className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                              title="ลบผู้ใช้"
-                              onClick={() =>
-                                handleDelete(u.user_id, u.username)
-                              }
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr className={styles.emptyRow}>
-                      <td colSpan={6}>ไม่พบข้อมูลผู้ใช้</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+    <AdminLayout>
+      <div className={styles.wrapper}>
+        <div className={styles.toolbar}>
+          <h1 className={styles.title}>จัดการผู้ใช้งาน</h1>
+          <button
+            type="button"
+            className={styles.addBtn}
+            onClick={handleAdd}
+          >
+            <UserPlus size={18} />
+            เพิ่มผู้ใช้
+          </button>
         </div>
+
+        {isLoading && <p className={styles.loading}>กำลังโหลด...</p>}
+        {error && (
+          <p className={styles.error}>
+            ไม่สามารถโหลดข้อมูลได้: {(error as Error).message}
+          </p>
+        )}
+
+        {!isLoading && !error && (
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Last Login</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users && users.length > 0 ? (
+                  users.map((u) => (
+                    <tr key={u.user_id}>
+                      <td>{u.user_id}</td>
+                      <td>{u.username}</td>
+                      <td>{u.email ?? "—"}</td>
+                      <td>
+                        <span
+                          className={`${styles.roleBadge} ${
+                            u.role === "admin"
+                              ? styles.roleAdmin
+                              : styles.roleOrganizer
+                          }`}
+                        >
+                          {u.role}
+                        </span>
+                      </td>
+                      <td>{u.last_login_at ?? "—"}</td>
+                      <td>
+                        <div className={styles.actions}>
+                          <button
+                            type="button"
+                            className={`${styles.actionBtn} ${styles.editBtn}`}
+                            title="เปลี่ยน Role"
+                            onClick={() =>
+                              handleRoleToggle(
+                                u.user_id,
+                                u.role,
+                                u.username
+                              )
+                            }
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                            title="ลบผู้ใช้"
+                            onClick={() =>
+                              handleDelete(u.user_id, u.username)
+                            }
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className={styles.emptyRow}>
+                    <td colSpan={6}>ไม่พบข้อมูลผู้ใช้</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </>
+    </AdminLayout>
   );
 }
