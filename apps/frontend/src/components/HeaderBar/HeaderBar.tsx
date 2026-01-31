@@ -48,7 +48,7 @@ export default function HeaderBar({
   const user = useAuthUser();
   const visibleTabs = hasAuth
     ? user?.role === "admin"
-      ? [...TABS, { id: "admin" as TabId, label: "จัดการผู้ใช้" }]
+      ? [...TABS, { id: "admin" as TabId, label: "แผงควบคุม" }]
       : TABS
     : [];
 
