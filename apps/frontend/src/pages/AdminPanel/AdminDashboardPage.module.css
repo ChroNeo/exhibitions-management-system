@@ -83,26 +83,53 @@
 .statusDraft {
   background: #f3f4f6;
   color: #6b7280;
+  border: 1px solid #d1d5db;
 }
 
 .statusPublished {
   background: #dbeafe;
   color: #1e40af;
+  border: 1px solid #93c5fd;
 }
 
 .statusOngoing {
   background: #d1fae5;
   color: #065f46;
+  border: 1px solid #6ee7b7;
 }
 
 .statusEnded {
   background: #fef3c7;
   color: #92400e;
+  border: 1px solid #fcd34d;
 }
 
 .statusArchived {
   background: #f3e8ff;
   color: #6b21a8;
+  border: 1px solid #c4b5fd;
+}
+
+/* Role badges (used in registration cards) */
+.roleBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.roleUser {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.roleStaff {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #c4b5fd;
 }
 
 .regCount {
@@ -110,14 +137,49 @@
   color: var(--brand, #2e4f8b);
 }
 
-/* Expanded detail */
-.expandedRow td {
-  padding: 0;
-  background: #f9fafb;
+/* Back button */
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius-m, 8px);
+  background: var(--bg, #fff);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  margin-bottom: 16px;
 }
 
-.expandedContent {
+.backButton:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* Detail subpage */
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.detailTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.detailCard {
+  background: var(--bg, #fff);
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-s, 0 1px 3px rgba(0, 0, 0, 0.1));
   padding: 20px 24px;
+  margin-bottom: 16px;
 }
 
 .sectionTitle {
@@ -203,4 +265,191 @@
 .typeActivity {
   background: #fce7f3;
   color: #9d174d;
+}
+
+/* ── Mobile accordion cards (hidden on desktop) ── */
+.mobileCards {
+  display: none;
+}
+
+.card {
+  background: var(--bg, #fff);
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-s, 0 1px 3px rgba(0, 0, 0, 0.1));
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cardHeader::-webkit-details-marker {
+  display: none;
+}
+
+.cardName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  transition: transform 0.2s;
+  color: var(--muted, #6b7280);
+  flex-shrink: 0;
+}
+
+.card[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.cardBody {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardLabel {
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  font-size: 0.82rem;
+}
+
+.cardDetailBtn {
+  margin-top: 6px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-m, 8px);
+  background: var(--brand, #2e4f8b);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.cardDetailBtn:hover {
+  opacity: 0.85;
+}
+
+.emptyCard {
+  text-align: center;
+  color: var(--muted, #6b7280);
+  padding: 32px 16px;
+  font-size: 0.92rem;
+}
+
+/* ── Detail sub-table mobile cards (hidden on desktop) ── */
+.subMobileCards {
+  display: none;
+}
+
+.subCard {
+  background: #f9fafb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.subCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.subCardHeader::-webkit-details-marker {
+  display: none;
+}
+
+.subCardName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subCardBody {
+  padding: 0 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.84rem;
+}
+
+/* ── Tablet ── */
+@media (max-width: 768px) {
+  .toolbar {
+    gap: 8px;
+  }
+
+  .searchInput {
+    min-width: 0;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 10px;
+    font-size: 0.84rem;
+  }
+
+  .detailCard {
+    padding: 16px;
+  }
+}
+
+/* ── Mobile: swap table for accordion cards ── */
+@media (max-width: 920px) {
+  .tableWrapper {
+    display: none;
+  }
+
+  .mobileCards {
+    display: block;
+  }
+
+  .subTable {
+    display: none;
+  }
+
+  .subMobileCards {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detailHeader {
+    flex-wrap: wrap;
+  }
+
+  .detailTitle {
+    font-size: 1.1rem;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
 }

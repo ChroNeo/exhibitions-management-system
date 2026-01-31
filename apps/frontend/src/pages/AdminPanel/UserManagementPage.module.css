@@ -37,7 +37,6 @@
 }
 
 .tableWrapper {
-  overflow-x: auto;
   border-radius: var(--radius-m, 8px);
   box-shadow: var(--shadow-s, 0 1px 3px rgba(0, 0, 0, 0.1));
   background: var(--bg, #fff);
@@ -84,11 +83,25 @@
 .roleAdmin {
   background: #dbeafe;
   color: #1e40af;
+  border: 1px solid #93c5fd;
 }
 
 .roleOrganizer {
   background: #fef3c7;
   color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.roleUser {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.roleStaff {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border: 1px solid #c4b5fd;
 }
 
 .actions {
@@ -133,4 +146,111 @@
   text-align: center;
   color: var(--muted, #6b7280);
   padding: 32px 16px;
+}
+
+/* ── Mobile accordion cards (hidden on desktop) ── */
+.mobileCards {
+  display: none;
+}
+
+.card {
+  background: var(--bg, #fff);
+  border-radius: var(--radius-m, 8px);
+  box-shadow: var(--shadow-s, 0 1px 3px rgba(0, 0, 0, 0.1));
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cardHeader::-webkit-details-marker {
+  display: none;
+}
+
+.cardName {
+  flex: 1;
+}
+
+.chevron {
+  transition: transform 0.2s;
+  color: var(--muted, #6b7280);
+  flex-shrink: 0;
+}
+
+.card[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.cardBody {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.cardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardLabel {
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  font-size: 0.82rem;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 4px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+
+.emptyCard {
+  text-align: center;
+  color: var(--muted, #6b7280);
+  padding: 32px 16px;
+  font-size: 0.92rem;
+}
+
+/* ── Tablet ── */
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 16px 0;
+  }
+
+  .title {
+    font-size: 1.15rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 8px;
+    font-size: 0.84rem;
+  }
+}
+
+/* ── Mobile: swap table for accordion cards ── */
+@media (max-width: 920px) {
+  .tableWrapper {
+    display: none;
+  }
+
+  .mobileCards {
+    display: block;
+  }
 }

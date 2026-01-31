@@ -23,7 +23,7 @@ export const toThaiDateTime = (iso?: string) => {
     d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
 
   return `${d.toLocaleDateString("th-TH", opt)} ${y}  ${time(d)} น.`;
-}
+};
 
 /**
  * Example: toThaiTimeRange("2024-02-10T08:30+07:00","2024-02-10T12:00+07:00") => "08:30 - 12:00"
@@ -34,10 +34,13 @@ export const toThaiTimeRange = (start?: string, end?: string) => {
     hour: "2-digit",
     minute: "2-digit",
   });
+  console.log("🚀 ~ toThaiTimeRange ~ s:", s);
   const e = new Date(end).toLocaleTimeString("th-TH", {
     hour: "2-digit",
     minute: "2-digit",
   });
+  console.log("🚀 ~ toThaiTimeRange ~ e:", e);
+
   return `${s} - ${e}`;
 };
 
@@ -57,10 +60,23 @@ export function fmtDateRangeTH(startISO: string, endISO: string): string {
 
   return `วันที่ ${s.toLocaleDateString("th-TH", opt)}–${e.toLocaleDateString(
     "th-TH",
-    opt
-  )} ${y} | เวลา ${time(s)}–${time(e)} น.`;
+    opt,
+  )} ${y} เวลา ${time(s)}–${time(e)} น.`;
 }
 
+export function fmtDateTimeRangeTH(startISO: string, endISO: string): string {
+  const s = new Date(startISO);
+  const e = new Date(endISO);
+
+  const opt: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
+  const y = e.getFullYear() + 543; // แปลงเป็น พ.ศ.
+
+  const time = (d: Date) =>
+    d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+
+  return `${s.toLocaleDateString("th-TH", opt)} ${y} ${time(s)} –
+  ${e.toLocaleDateString("th-TH", opt)} ${time(e)} น.`;
+}
 /**
  * Example (UTC+07): toApiDateTime("2025-01-02 08:30") => "2025-01-02T08:30:00+07:00"
  */

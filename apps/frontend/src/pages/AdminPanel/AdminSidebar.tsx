@@ -1,10 +1,11 @@
-import { useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users } from "lucide-react";
+import { LayoutDashboard, UserCog2, Users2 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./AdminSidebar.module.css";
 
 const NAV_ITEMS = [
   { path: "/admin", label: "แดชบอร์ด", icon: LayoutDashboard },
-  { path: "/admin/users", label: "จัดการผู้ใช้", icon: Users },
+  { path: "/admin/users", label: "จัดการผู้ใช้", icon: UserCog2 },
+  { path: "/admin/visitors", label: "จัดการผู้เข้าชม", icon: Users2 },
 ];
 
 export default function AdminSidebar() {

@@ -46,3 +46,36 @@
   background: rgba(46, 79, 139, 0.08);
   font-weight: 600;
 }
+
+/* ── Mobile: horizontal nav strip ── */
+@media (max-width: 920px) {
+  .sidebar {
+    min-width: 0;
+    border-radius: var(--radius-m, 8px);
+    margin-bottom: 12px;
+    overflow-x: auto;
+  }
+
+  .navList {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .navItem {
+    flex: 0 0 auto;
+  }
+
+  .navLink {
+    justify-content: center;
+    padding: 10px 14px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .active {
+    border-left-color: transparent;
+    border-bottom-color: var(--brand, #2e4f8b);
+  }
+}

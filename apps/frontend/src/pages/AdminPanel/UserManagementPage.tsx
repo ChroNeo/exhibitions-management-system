@@ -1,4 +1,4 @@
-import { Pencil, Trash2, UserPlus } from "lucide-react";
+import { ChevronDown, Pencil, Trash2, UserPlus } from "lucide-react";
 import Swal from "sweetalert2";
 import { toThaiDateTime } from "../../utils/dateFormat";
 import AdminLayout from "./AdminLayout";
@@ -11,6 +11,16 @@ import {
 import styles from "./UserManagementPage.module.css";
 
 type AxiosLikeError = { response?: { data?: { message?: string } } };
+
+function roleClass(role: string) {
+  switch (role) {
+    case "admin": return styles.roleAdmin;
+    case "organizer": return styles.roleOrganizer;
+    case "user": return styles.roleUser;
+    case "staff": return styles.roleStaff;
+    default: return styles.roleOrganizer;
+  }
+}
 
 export default function UserManagementPage() {
   const { data: users, isLoading, error } = useAdminUsers();
@@ -149,69 +159,128 @@ export default function UserManagementPage() {
         )}
 
         {!isLoading && !error && (
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Last Login</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users && users.length > 0 ? (
-                  users.map((u) => (
-                    <tr key={u.user_id}>
-                      <td>{u.user_id}</td>
-                      <td>{u.username}</td>
-                      <td>{u.email ?? "—"}</td>
-                      <td>
-                        <span
-                          className={`${styles.roleBadge} ${
-                            u.role === "admin"
-                              ? styles.roleAdmin
-                              : styles.roleOrganizer
-                          }`}
-                        >
-                          {u.role}
-                        </span>
-                      </td>
-                      <td>{toThaiDateTime(u.last_login_at || "")}</td>
-                      <td>
-                        <div className={styles.actions}>
-                          <button
-                            type="button"
-                            className={`${styles.actionBtn} ${styles.editBtn}`}
-                            title="เปลี่ยน Role"
-                            onClick={() =>
-                              handleRoleToggle(u.user_id, u.role, u.username)
-                            }
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                            title="ลบผู้ใช้"
-                            onClick={() => handleDelete(u.user_id, u.username)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr className={styles.emptyRow}>
-                    <td colSpan={6}>ไม่พบข้อมูลผู้ใช้</td>
+          <>
+            {/* Desktop / Tablet table */}
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Last Login</th>
+                    <th>Actions</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {users && users.length > 0 ? (
+                    users.map((u) => (
+                      <tr key={u.user_id}>
+                        <td>{u.user_id}</td>
+                        <td>{u.username}</td>
+                        <td>{u.email ?? "—"}</td>
+                        <td>
+                          <span
+                            className={`${styles.roleBadge} ${roleClass(u.role)}`}
+                          >
+                            {u.role}
+                          </span>
+                        </td>
+                        <td>{toThaiDateTime(u.last_login_at || "")}</td>
+                        <td>
+                          <div className={styles.actions}>
+                            <button
+                              type="button"
+                              className={`${styles.actionBtn} ${styles.editBtn}`}
+                              title="เปลี่ยน Role"
+                              onClick={() =>
+                                handleRoleToggle(u.user_id, u.role, u.username)
+                              }
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                              title="ลบผู้ใช้"
+                              onClick={() =>
+                                handleDelete(u.user_id, u.username)
+                              }
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr className={styles.emptyRow}>
+                      <td colSpan={6}>ไม่พบข้อมูลผู้ใช้</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile accordion cards */}
+            <div className={styles.mobileCards}>
+              sdas
+              {users && users.length > 0 ? (
+                users.map((u) => (
+                  <details key={u.user_id} className={styles.card}>
+                    <summary className={styles.cardHeader}>
+                      <span className={styles.cardName}>{u.username}</span>
+                      <span
+                        className={`${styles.roleBadge} ${
+                          u.role === "admin"
+                            ? styles.roleAdmin
+                            : styles.roleOrganizer
+                        }`}
+                      >
+                        {u.role}
+                      </span>
+                      <ChevronDown size={16} className={styles.chevron} />
+                    </summary>
+                    <div className={styles.cardBody}>
+                      <div className={styles.cardRow}>
+                        <span className={styles.cardLabel}>ID</span>
+                        <span>{u.user_id}</span>
+                      </div>
+                      <div className={styles.cardRow}>
+                        <span className={styles.cardLabel}>Email</span>
+                        <span>{u.email ?? "—"}</span>
+                      </div>
+                      <div className={styles.cardRow}>
+                        <span className={styles.cardLabel}>Last Login</span>
+                        <span>{toThaiDateTime(u.last_login_at || "")}</span>
+                      </div>
+                      <div className={styles.cardActions}>
+                        <button
+                          type="button"
+                          className={`${styles.actionBtn} ${styles.editBtn}`}
+                          onClick={() =>
+                            handleRoleToggle(u.user_id, u.role, u.username)
+                          }
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                          onClick={() => handleDelete(u.user_id, u.username)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </details>
+                ))
+              ) : (
+                <p className={styles.emptyCard}>ไม่พบข้อมูลผู้ใช้</p>
+              )}
+            </div>
+          </>
         )}
       </div>
     </AdminLayout>
