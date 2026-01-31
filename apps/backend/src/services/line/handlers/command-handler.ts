@@ -15,7 +15,7 @@ import {
 
 const RICH_MENU_IDS = {
   STAFF: "richmenu-89c0938cdb1b6ca00dc2f86fc67f2b66", // ใส่ ID เมนู Staff
-  MEMBER: "richmenu-e3134670565e0d2e892bbfa0113fa4bc", // ใส่ ID เมนู Member (ถ้ามี)
+  MEMBER: "richmenu-d639c3dbe3978c69d91043e46044c8c9", // ใส่ ID เมนู Member (ถ้ามี)
 };
 export async function handleMessageCommand(
   replyToken: string,
@@ -97,7 +97,12 @@ export async function handleMessageCommand(
       await replyToLineMessage(replyToken, [flexMessage], config);
     } catch (err) {
       log.error({ err }, "Failed to send exhibition flex carousel");
-      await sendLineTexts(replyToken, ["เกิดข้อผิดพลาดในการแสดงรายการงาน"], config, log);
+      await sendLineTexts(
+        replyToken,
+        ["เกิดข้อผิดพลาดในการแสดงรายการงาน"],
+        config,
+        log,
+      );
     }
     return;
   }
@@ -422,15 +427,15 @@ async function sendCertificateMessage(
               type: "button",
               action: isCompleted
                 ? {
-                  type: "uri",
-                  label: "🎓 รับเกียรติบัตร",
-                  uri: `https://liff.line.me/${liffId}?exhibitionId=${exhibitionId}&userId=${user.userId}`,
-                }
+                    type: "uri",
+                    label: "🎓 รับเกียรติบัตร",
+                    uri: `https://liff.line.me/${liffId}?exhibitionId=${exhibitionId}&userId=${user.userId}`,
+                  }
                 : {
-                  type: "message",
-                  label: "ดูรายชื่อกิจกรรมทั้งหมด",
-                  text: "list",
-                },
+                    type: "uri" as const,
+                    label: "ดูรายชื่อกิจกรรมทั้งหมด",
+                    uri: `https://liff.line.me/2008498720-KaJrlZBN?exhibitionId=${exhibitionId}`,
+                  },
               style: isCompleted ? "primary" : "secondary",
               color: isCompleted ? "#06C755" : "#27ACB2",
             },
