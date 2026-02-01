@@ -164,6 +164,7 @@ export function buildExhibitionFlexCarousel(
               type: "postback" as const,
               label: "เข้าร่วมนิทรรศการ",
               data: `action=enter_exhibition&exhibitionId=${row.exhibition_id}`,
+              displayText: `เข้าร่วม ${row.title}`,
             },
           },
         ],

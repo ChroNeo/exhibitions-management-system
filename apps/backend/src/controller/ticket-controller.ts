@@ -7,6 +7,7 @@ import {
   getUserTickets,
   verifyAndCheckIn,
 } from "../queries/ticket-query.js";
+import { getCurrentExhibitionByLineId } from "../queries/line-query.js";
 import { requireLiffAuth } from "../services/auth-middleware.js";
 import {
   UserTicketSchema,
@@ -178,6 +179,28 @@ export default async function ticketController(fastify: FastifyInstance) {
         survey_completed: row.survey_completed > 0,
       }));
     }
+  );
+
+  app.get(
+    "/current-exhibition",
+    {
+      preHandler: requireLiffAuth,
+      schema: {
+        tags: ["Tickets"],
+        summary: "Get the user's current exhibition ID",
+        response: {
+          200: z.object({
+            current_exhibition_id: z.number().nullable(),
+          }),
+        },
+      },
+    },
+    async (req) => {
+      const exhibitionId = await getCurrentExhibitionByLineId(
+        req.lineUser!.line_user_id,
+      );
+      return { current_exhibition_id: exhibitionId };
+    },
   );
 
   app.post(

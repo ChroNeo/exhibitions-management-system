@@ -1,5 +1,6 @@
 import type { FastifyBaseLogger } from "fastify";
 import {
+  clearCurrentExhibition,
   findExhibitionForLine,
   findUserByLineId,
   getExhibitionsWithUnitsForUser,
@@ -72,6 +73,7 @@ export async function handleMessageCommand(
   if (isBackToHomeCommand(normalized)) {
     try {
       await unlinkRichMenuFromUser(userId, config);
+      await clearCurrentExhibition(userId);
       await sendLineTexts(
         replyToken,
         ["กลับสู่หน้าหลักเรียบร้อย"],
@@ -119,7 +121,11 @@ export async function handleMessageCommand(
     const baseUrl = process.env.VITE_BASE || "https://api.chroneo.dev";
     const flexMessage = buildExhibitionFlexCarousel(exhibitions, baseUrl);
     try {
-      await replyToLineMessage(replyToken, [flexMessage], config);
+      await replyToLineMessage(
+        replyToken,
+        [{ type: "text", text: "กรุณาเลือกนิทรรศการ" }, flexMessage],
+        config,
+      );
     } catch (err) {
       log.error({ err }, "Failed to send exhibition flex carousel");
       await sendLineTexts(

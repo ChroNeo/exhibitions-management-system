@@ -3,6 +3,7 @@ import {
   findRegistrationByUserAndExhibition,
   findUserByLineId,
   getExhibitionTitleById,
+  setCurrentExhibition,
 } from "../../../queries/line-query.js";
 import { linkRichMenuToUser, replyToLineMessage } from "../client.js";
 import type { LineConfig, LineMessage } from "../types.js";
@@ -132,6 +133,7 @@ async function handleEnterExhibition(
 
   try {
     await linkRichMenuToUser(userId, richMenuId, config);
+    await setCurrentExhibition(userId, exhibitionId);
   } catch (err) {
     log.error({ err }, "Failed to link rich menu for exhibition entry");
     await replyToLineMessage(
@@ -148,7 +150,7 @@ async function handleEnterExhibition(
     [
       {
         type: "text",
-        text: `ยินดีต้อนรับสู่ ${registration.title}${roleLabel}`,
+        text: `กำลังเข้าสู่ ${registration.title}${roleLabel}`,
       },
     ],
     config,

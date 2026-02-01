@@ -217,6 +217,35 @@ export async function findRegistrationByUserAndExhibition(
   return rows.length ? rows[0] : null;
 }
 
+export async function setCurrentExhibition(
+  lineUserId: string,
+  exhibitionId: number,
+): Promise<void> {
+  await safeQuery<ResultSetHeader>(
+    `UPDATE normal_users SET current_exhibition_id = ? WHERE line_user_id = ?`,
+    [exhibitionId, lineUserId],
+  );
+}
+
+export async function clearCurrentExhibition(
+  lineUserId: string,
+): Promise<void> {
+  await safeQuery<ResultSetHeader>(
+    `UPDATE normal_users SET current_exhibition_id = NULL WHERE line_user_id = ?`,
+    [lineUserId],
+  );
+}
+
+export async function getCurrentExhibitionByLineId(
+  lineUserId: string,
+): Promise<number | null> {
+  const rows = await safeQuery<{ current_exhibition_id: number | null }[]>(
+    `SELECT current_exhibition_id FROM normal_users WHERE line_user_id = ? LIMIT 1`,
+    [lineUserId],
+  );
+  return rows.length ? rows[0].current_exhibition_id : null;
+}
+
 export async function getExhibitionTitleById(
   exhibitionId: number,
 ): Promise<string | null> {
