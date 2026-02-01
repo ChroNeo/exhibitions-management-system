@@ -23,4 +23,24 @@
   margin: 0;
 }
 
-/* test css change */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  max-width: 960px;
+  margin: 20px auto 0;
+  padding: 0 20px;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  border-color: #6366f1;
+}

@@ -1,4 +1,3 @@
-import styles from "./ExhibitionCard.module.css";
 import { Edit2, Trash2 } from "lucide-react";
 import {
   useEffect,
@@ -6,13 +5,14 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from "react";
-import { MdOutlineCalendarToday } from "react-icons/md";
-import { LuClock } from "react-icons/lu";
 import { IoLocationOutline } from "react-icons/io5";
-import type { Exhibition } from "./../../types/exhibition";
-import { toFileUrl } from "../../utils/url";
+import { LuClock } from "react-icons/lu";
+import { MdOutlineCalendarToday } from "react-icons/md";
 import { useAuthStatus } from "../../hooks";
 import { toThaiDate, toThaiTimeRange } from "../../utils/dateFormat";
+import { toFileUrl } from "../../utils/url";
+import type { Exhibition } from "./../../types/exhibition";
+import styles from "./ExhibitionCard.module.css";
 
 const FALLBACK_POSTER = "https://placehold.co/1920x1080";
 
@@ -29,17 +29,13 @@ export default function ExhibitionCard({
   onDelete,
   onSelect,
 }: {
-  item: Exhibition & {
-    status?: ExhibitionStatus | null;
-    startDate?: string | null;
-    endDate?: string | null;
-  };
+  item: Exhibition;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onSelect?: (id: string) => void;
 }) {
   const [posterSrc, setPosterSrc] = useState(
-    () => toFileUrl(item.coverUrl) || FALLBACK_POSTER
+    () => toFileUrl(item.coverUrl) || FALLBACK_POSTER,
   );
 
   useEffect(() => {
@@ -66,13 +62,15 @@ export default function ExhibitionCard({
   const startISO = toISO(item.start_date);
   const endISO = toISO(item.end_date);
 
-  const datePart = startISO && endISO
-    ? `${toThaiDate(startISO)} – ${toThaiDate(endISO)}`
-    : (item.dateText.split("|")[0]?.trim() ?? "");
+  const datePart =
+    startISO && endISO
+      ? `${toThaiDate(startISO)} – ${toThaiDate(endISO)}`
+      : (item.dateText.split("|")[0]?.trim() ?? "");
 
-  const timePart = startISO && endISO
-    ? toThaiTimeRange(startISO, endISO)
-    : (item.dateText.split("|")[1]?.trim() ?? "");
+  const timePart =
+    startISO && endISO
+      ? toThaiTimeRange(startISO, endISO)
+      : (item.dateText.split("|")[1]?.trim() ?? "");
   const hasActions = Boolean(onEdit || onDelete);
 
   const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -87,24 +85,12 @@ export default function ExhibitionCard({
 
   const isAuthenticated = useAuthStatus();
 
-  const inferredStatus: ExhibitionStatus = (() => {
-    if (item.status) return item.status;
-    const s = item.startDate ? new Date(item.startDate) : null;
-    const e = item.endDate ? new Date(item.endDate) : null;
-    if (!s || !e) return "draft";
-    const now = new Date();
-    if (now < s) return "published";
-    if (now >= s && now <= e) return "ongoing";
-    if (now > e) return "ended";
-    return "draft";
-  })();
-
   const statusLabel: Record<ExhibitionStatus, string> = {
-    draft: "draft (ร่าง)",
-    published: "published (เผยแพร่)",
-    ongoing: "ongoing (กำลังจัด)",
-    ended: "ended (จบงาน)",
-    archived: "archived (เก็บ)",
+    draft: "ร่าง",
+    published: "เผยแพร่",
+    ongoing: "กำลังจัด",
+    ended: "จบงาน",
+    archived: "เก็บ",
   };
 
   const statusColorClass: Record<ExhibitionStatus, string> = {
@@ -115,6 +101,8 @@ export default function ExhibitionCard({
     archived: styles.dotBrown,
   };
 
+  const status = item.status as ExhibitionStatus;
+
   return (
     <div
       className={styles.card}
@@ -124,14 +112,6 @@ export default function ExhibitionCard({
       onKeyDown={handleKeyDown}
       aria-label={onSelect ? `เปิดดู ${item.title}` : undefined}
     >
-      {isAuthenticated && (
-        <span
-          className={`${styles.statusDot} ${statusColorClass[inferredStatus]}`}
-          aria-label={statusLabel[inferredStatus]}
-          title={statusLabel[inferredStatus]}
-        />
-      )}
-
       <div className={styles.inner}>
         <div className={styles.media}>
           <div className={styles.cover_container}>
@@ -151,6 +131,15 @@ export default function ExhibitionCard({
             <div className={styles.titleRow}>
               <div className={styles.titleLeft}>
                 <h3 className={styles.title}>{item.title}</h3>
+                {isAuthenticated && (
+                  <span
+                    className={`${styles.statusBadge} ${statusColorClass[status]}`}
+                    aria-label={statusLabel[status]}
+                    title={statusLabel[status]}
+                  >
+                    {statusLabel[status]}
+                  </span>
+                )}
                 {item.isPinned && (
                   <span className={styles.pin} aria-label="ปักหมุด" />
                 )}

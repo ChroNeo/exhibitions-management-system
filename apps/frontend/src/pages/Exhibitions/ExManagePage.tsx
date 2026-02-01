@@ -1,8 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-
 import Swal from "sweetalert2";
 import AddInline from "../../components/AddInline/AddInline";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 import ExhibitionList from "../../components/exhibition/ExhibitionList";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import {
@@ -14,10 +14,18 @@ import type { Exhibition } from "../../types/exhibition";
 import styles from "./ExManagePage.module.css";
 
 export default function ExhibitionPage() {
-  const [query] = useState("");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const STATUS_OPTIONS = [
+    { value: "", label: "ทุกสถานะ" },
+    { value: "draft", label: "Draft" },
+    { value: "published", label: "Published" },
+    { value: "ongoing", label: "Ongoing" },
+    { value: "ended", label: "Ended" },
+    { value: "archived", label: "Archived" },
+  ];
   // Handle LIFF redirect with exhibitionId query parameter
   useEffect(() => {
     // First check direct exhibitionId param
@@ -28,7 +36,9 @@ export default function ExhibitionPage() {
       const liffState = searchParams.get("liff.state");
       if (liffState) {
         // liff.state could be "?exhibitionId=1" or "/1"
-        const stateParams = new URLSearchParams(liffState.replace(/^\/?\??/, ""));
+        const stateParams = new URLSearchParams(
+          liffState.replace(/^\/?\??/, ""),
+        );
         exhibitionId = stateParams.get("exhibitionId");
 
         // Also handle path format like "/1"
@@ -50,14 +60,26 @@ export default function ExhibitionPage() {
     useDeleteExhibition();
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((x) =>
-      [x.title, x.description, x.location].some((t) =>
-        (t || "").toLowerCase().includes(q),
-      ),
-    );
-  }, [items, query]);
+    if (!items) return [];
+    return items.filter((ex) => {
+      const q = search.toLowerCase();
+      const matchSearch =
+        !q ||
+        ex.title.toLowerCase().includes(q) ||
+        (ex.location ?? "").toLowerCase().includes(q);
+      const matchStatus = !statusFilter || ex.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [items, search, statusFilter]);
+  // const filtered = useMemo(() => {
+  //   const q = query.trim().toLowerCase();
+  //   if (!q) return items;
+  //   return items.filter((x) =>
+  //     [x.title, x.description, x.location].some((t) =>
+  //       (t || "").toLowerCase().includes(q),
+  //     ),
+  //   );
+  // }, [items, query]);
 
   const handleAdd = () => {
     navigate("/exhibitions/new");
@@ -108,6 +130,22 @@ export default function ExhibitionPage() {
         active="exhibition_unit"
         onLoginClick={() => navigate("/login")}
       />
+      <div className={styles.toolbar}>
+        <input
+          className={styles.searchInput}
+          type="text"
+          placeholder="ค้นหานิทรรศการ..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <CustomSelect
+          options={STATUS_OPTIONS}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          placeholder="ทุกสถานะ"
+        />
+      </div>
+
       <div className="container">
         <section className={styles.panel}>
           <div className={styles.header}>
