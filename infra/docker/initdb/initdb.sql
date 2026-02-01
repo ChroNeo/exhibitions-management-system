@@ -144,7 +144,8 @@ CREATE TABLE `normal_users` (
   `email` varchar(255) DEFAULT NULL,
   `phone` varchar(30) DEFAULT NULL,
   `last_synced_at` timestamp NULL DEFAULT NULL,
-  `role` enum('user','staff') DEFAULT 'user'
+  `role` enum('user','staff') DEFAULT 'user',
+  `current_exhibition_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
