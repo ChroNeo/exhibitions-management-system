@@ -10,7 +10,10 @@ const dateFormatter = new Intl.DateTimeFormat("th-TH", {
 });
 
 export function stripHtml(input: string): string {
-  return input.replace(/<\/?[^>]+>/gi, " ").replace(/\s+/g, " ").trim();
+  return input
+    .replace(/<\/?[^>]+>/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function truncateText(input: string, maxLength: number): string {
@@ -28,7 +31,9 @@ export function formatDate(value: string): string {
   return dateFormatter.format(date);
 }
 
-export function formatUpcomingExhibitions(rows: LineExhibitionSummaryRow[]): string {
+export function formatUpcomingExhibitions(
+  rows: LineExhibitionSummaryRow[],
+): string {
   const lines = rows.map((row, index) => {
     const start = formatDate(row.start_date);
     const location = row.location ? ` @ ${row.location}` : "";
@@ -40,7 +45,9 @@ export function formatUpcomingExhibitions(rows: LineExhibitionSummaryRow[]): str
 export function formatExhibitionDetail(row: LineExhibitionDetailRow): string {
   const start = formatDate(row.start_date);
   const end = formatDate(row.end_date);
-  const description = row.description ? truncateText(stripHtml(row.description), 280) : null;
+  const description = row.description
+    ? truncateText(stripHtml(row.description), 280)
+    : null;
   const segments = [
     `${row.title} (${row.exhibition_code})`,
     `ช่วงจัดงาน: ${start} - ${end}`,
@@ -59,8 +66,7 @@ export function formatExhibitionDetail(row: LineExhibitionDetailRow): string {
 export const HELP_TEXT =
   "สวัสดีครับ! คุณสามารถใช้งานผ่าน Rich Menu ด้านล่างได้เลยครับ";
 
-const DEFAULT_IMAGE =
-  "https://placehold.co/1920x1080?text=Image%20Not%20Found";
+const DEFAULT_IMAGE = "https://placehold.co/1920x1080?text=Image%20Not%20Found";
 
 export function buildExhibitionFlexCarousel(
   rows: LineExhibitionSummaryRow[],
@@ -155,9 +161,9 @@ export function buildExhibitionFlexCarousel(
             style: "primary" as const,
             color: "#27ACB2",
             action: {
-              type: "uri" as const,
-              label: "ดูรายละเอียด",
-              uri: `https://liff.line.me/2008498720-KaJrlZBN?exhibitionId=${row.exhibition_id}`,
+              type: "postback" as const,
+              label: "เข้าร่วมนิทรรศการ",
+              data: `action=enter_exhibition&exhibitionId=${row.exhibition_id}`,
             },
           },
         ],

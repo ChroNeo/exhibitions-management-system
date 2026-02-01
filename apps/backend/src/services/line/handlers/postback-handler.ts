@@ -1,0 +1,156 @@
+import type { FastifyBaseLogger } from "fastify";
+import {
+  findRegistrationByUserAndExhibition,
+  findUserByLineId,
+  getExhibitionTitleById,
+} from "../../../queries/line-query.js";
+import { linkRichMenuToUser, replyToLineMessage } from "../client.js";
+import type { LineConfig, LineMessage } from "../types.js";
+
+const RICH_MENU_IDS = {
+  STAFF: "richmenu-2912b2d76754fbfa073a4a8fc2f82b34",
+  MEMBER: "richmenu-b3ba8b7701691b4facbfa0267bc203ee",
+};
+
+const LIFF_REGISTRATION_ID = "2008498720-KaJrlZBN";
+
+function buildRegistrationFlexMessage(
+  headerText: string,
+  exhibitionId: number,
+): LineMessage {
+  return {
+    type: "flex" as const,
+    altText: headerText,
+    contents: {
+      type: "bubble",
+      body: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: headerText,
+            weight: "bold",
+            size: "md",
+            wrap: true,
+          },
+        ],
+      },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        spacing: "sm",
+        contents: [
+          {
+            type: "button",
+            style: "primary",
+            color: "#27ACB2",
+            action: {
+              type: "uri",
+              label: "ลงทะเบียน",
+              uri: `https://liff.line.me/${LIFF_REGISTRATION_ID}?exhibitionId=${exhibitionId}`,
+            },
+          },
+        ],
+      },
+    },
+  };
+}
+
+export async function handlePostbackEvent(
+  replyToken: string,
+  userId: string,
+  postbackData: string,
+  config: LineConfig,
+  log: FastifyBaseLogger,
+): Promise<void> {
+  const params = new URLSearchParams(postbackData);
+  const action = params.get("action");
+
+  if (action === "enter_exhibition") {
+    const exhibitionId = Number(params.get("exhibitionId"));
+    if (!exhibitionId) {
+      log.warn({ postbackData }, "Missing exhibitionId in postback");
+      return;
+    }
+    await handleEnterExhibition(replyToken, userId, exhibitionId, config, log);
+    return;
+  }
+
+  log.info({ action }, "Unhandled postback action");
+}
+
+async function handleEnterExhibition(
+  replyToken: string,
+  userId: string,
+  exhibitionId: number,
+  config: LineConfig,
+  log: FastifyBaseLogger,
+): Promise<void> {
+  const user = await findUserByLineId(userId);
+
+  if (!user) {
+    // User not in system at all — send to registration
+    const title = await getExhibitionTitleById(exhibitionId);
+    await replyToLineMessage(
+      replyToken,
+      [
+        buildRegistrationFlexMessage(
+          "กรุณาลงทะเบียนก่อนเข้าร่วมนิทรรศการ",
+          exhibitionId,
+        ),
+      ],
+      config,
+    );
+    return;
+  }
+
+  // Check if registered for this exhibition
+  const registration = await findRegistrationByUserAndExhibition(
+    user.userId,
+    exhibitionId,
+  );
+
+  if (!registration) {
+    // Not registered for this exhibition — redirect to registration
+    await replyToLineMessage(
+      replyToken,
+      [
+        buildRegistrationFlexMessage(
+          "คุณยังไม่ได้ลงทะเบียนสำหรับนิทรรศการนี้",
+          exhibitionId,
+        ),
+      ],
+      config,
+    );
+    return;
+  }
+
+  // Registered — switch rich menu based on role
+  const richMenuId =
+    registration.role === "staff" ? RICH_MENU_IDS.STAFF : RICH_MENU_IDS.MEMBER;
+
+  try {
+    await linkRichMenuToUser(userId, richMenuId, config);
+  } catch (err) {
+    log.error({ err }, "Failed to link rich menu for exhibition entry");
+    await replyToLineMessage(
+      replyToken,
+      [{ type: "text", text: "เกิดข้อผิดพลาดในการเข้าร่วมนิทรรศการ" }],
+      config,
+    );
+    return;
+  }
+
+  const roleLabel = registration.role === "staff" ? " (Staff)" : "";
+  await replyToLineMessage(
+    replyToken,
+    [
+      {
+        type: "text",
+        text: `ยินดีต้อนรับสู่ ${registration.title}${roleLabel}`,
+      },
+    ],
+    config,
+  );
+}

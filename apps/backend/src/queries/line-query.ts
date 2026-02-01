@@ -199,6 +199,34 @@ export async function getExhibitionIdByCode(code: string): Promise<number | null
   return rows.length ? rows[0].exhibition_id : null;
 }
 
+export async function findRegistrationByUserAndExhibition(
+  userId: number,
+  exhibitionId: number,
+): Promise<{ role: string; title: string } | null> {
+  const rows = await safeQuery<{ role: string; title: string }[]>(
+    `
+      SELECT nu.role, e.title
+      FROM registrations r
+      JOIN normal_users nu ON nu.user_id = r.user_id
+      JOIN exhibitions e ON e.exhibition_id = r.exhibition_id
+      WHERE r.user_id = ? AND r.exhibition_id = ?
+      LIMIT 1
+    `,
+    [userId, exhibitionId],
+  );
+  return rows.length ? rows[0] : null;
+}
+
+export async function getExhibitionTitleById(
+  exhibitionId: number,
+): Promise<string | null> {
+  const rows = await safeQuery<{ title: string }[]>(
+    `SELECT title FROM exhibitions WHERE exhibition_id = ? LIMIT 1`,
+    [exhibitionId],
+  );
+  return rows.length ? rows[0].title : null;
+}
+
 function buildUsername(displayName: string): string | null {
   const collapsed = displayName
     .normalize("NFKD")

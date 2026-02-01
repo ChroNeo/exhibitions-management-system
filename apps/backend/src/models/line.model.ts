@@ -12,11 +12,16 @@ export const LineEventMessageSchema = z.object({
   text: z.string().optional(),
 });
 
+export const LineEventPostbackSchema = z.object({
+  data: z.string().optional(),
+});
+
 export const LineEventSchema = z.object({
   type: z.string(),
   replyToken: z.string().optional(),
   source: LineEventSourceSchema.optional(),
   message: LineEventMessageSchema.optional(),
+  postback: LineEventPostbackSchema.optional(),
 });
 
 export const LineWebhookPayloadSchema = z.object({

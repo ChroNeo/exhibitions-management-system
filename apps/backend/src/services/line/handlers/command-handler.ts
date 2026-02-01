@@ -5,7 +5,11 @@ import {
   getExhibitionsWithUnitsForUser,
   getUpcomingExhibitionsForLine,
 } from "../../../queries/line-query.js";
-import { linkRichMenuToUser, replyToLineMessage } from "../../line/client.js";
+import {
+  linkRichMenuToUser,
+  replyToLineMessage,
+  unlinkRichMenuFromUser,
+} from "../../line/client.js";
 import type { LineConfig, LineMessage } from "../../line/types.js";
 import {
   HELP_TEXT,
@@ -14,8 +18,8 @@ import {
 } from "../utils/message-formatter.js";
 
 const RICH_MENU_IDS = {
-  STAFF: "richmenu-bc710b89b73ab862e22f8e3160817bc1", // ใส่ ID เมนู Staff
-  MEMBER: "richmenu-d639c3dbe3978c69d91043e46044c8c9", // ใส่ ID เมนู Member (ถ้ามี)
+  STAFF: "richmenu-2912b2d76754fbfa073a4a8fc2f82b34", // ใส่ ID เมนู Staff
+  MEMBER: "richmenu-b3ba8b7701691b4facbfa0267bc203ee", // ใส่ ID เมนู Member (ถ้ามี)
 };
 export async function handleMessageCommand(
   replyToken: string,
@@ -65,6 +69,27 @@ export async function handleMessageCommand(
     }
     return;
   }
+  if (isBackToHomeCommand(normalized)) {
+    try {
+      await unlinkRichMenuFromUser(userId, config);
+      await sendLineTexts(
+        replyToken,
+        ["กลับสู่หน้าหลักเรียบร้อย"],
+        config,
+        log,
+      );
+    } catch (err) {
+      log.error({ err }, "Failed to unlink rich menu");
+      await sendLineTexts(
+        replyToken,
+        ["เกิดข้อผิดพลาดในการกลับหน้าหลัก"],
+        config,
+        log,
+      );
+    }
+    return;
+  }
+
   if (normalized === "#staff_mode") {
     await linkRichMenuToUser(userId, RICH_MENU_IDS.STAFF, config);
     await sendLineTexts(replyToken, ["เข้าสู่โหมด Staff"], config, log);
@@ -159,6 +184,15 @@ async function sendLineTexts(
   } catch (err) {
     log.error({ err }, "failed to reply to LINE message");
   }
+}
+
+function isBackToHomeCommand(normalized: string): boolean {
+  return (
+    normalized.includes("กลับหน้าหลัก") ||
+    normalized === "กลับ" ||
+    normalized === "back" ||
+    normalized === "home"
+  );
 }
 
 function isStartCommand(normalized: string): boolean {

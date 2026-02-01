@@ -6,6 +6,7 @@ import {
 import { fetchLineProfile } from "./client.js";
 import { handleMessageCommand } from "./handlers/command-handler.js";
 import { handleFollowEvent } from "./handlers/follow-handler.js";
+import { handlePostbackEvent } from "./handlers/postback-handler.js";
 import type { LineConfig } from "./types.js";
 
 export type LineEvent = {
@@ -18,6 +19,9 @@ export type LineEvent = {
   message?: {
     type?: string;
     text?: string;
+  };
+  postback?: {
+    data?: string;
   };
 };
 
@@ -56,6 +60,18 @@ export async function dispatchLineEvent(
   // Handle follow event
   if (event.type === "follow" && event.replyToken) {
     await handleFollowEvent(event.replyToken, config, log);
+    return;
+  }
+
+  // Handle postback event
+  if (event.type === "postback" && event.postback?.data && event.replyToken) {
+    await handlePostbackEvent(
+      event.replyToken,
+      userId,
+      event.postback.data,
+      config,
+      log,
+    );
     return;
   }
 
