@@ -1,5 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import AdminGuard from "./components/AdminGuard";
+import AdminDashboardPage from "./pages/AdminPanel/AdminDashboardPage";
+import UserManagementPage from "./pages/AdminPanel/UserManagementPage";
+import VisitorManagementPage from "./pages/AdminPanel/VisitorManagementPage";
 import CertificateDownloadPage from "./pages/Certificate/Certificate-Download-Page";
 import CertificatePage from "./pages/Certificate/CertificatePage";
 import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
@@ -14,12 +18,7 @@ import SurveySelectPage from "./pages/Survey/SurveySelectPage";
 import UnitListPage from "./pages/Survey/UnitListPage";
 import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import TicketPage from "./pages/Ticket/TicketPage";
-import WalletPage from "./pages/Ticket/WalletPage/WalletPage";
 import UnitManageDetail from "./pages/Units/UnitManageDetail";
-import AdminGuard from "./components/AdminGuard";
-import UserManagementPage from "./pages/AdminPanel/UserManagementPage";
-import AdminDashboardPage from "./pages/AdminPanel/AdminDashboardPage";
-import VisitorManagementPage from "./pages/AdminPanel/VisitorManagementPage";
 
 export default function App() {
   return (
@@ -64,8 +63,7 @@ export default function App() {
       />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/wallet" element={<WalletPage />} />
-      <Route path="/wallet/ticket" element={<TicketPage />} />
+      <Route path="/ticket" element={<TicketPage />} />
       <Route path="/scan" element={<VerifyTicketPage />} />
 
       {/* Survey Routes */}

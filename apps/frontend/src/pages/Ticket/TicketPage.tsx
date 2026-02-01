@@ -1,29 +1,81 @@
+import liff from "@line/liff";
+import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
-import "./TicketPage.css";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useTickets } from "./hooks";
+import { useEffect, useRef, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
-import { useEffect, useRef } from "react";
-import { checkCheckInStatus, getCheckedInUnits } from "../../api/tickets";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-interface LocationState {
-  title?: string;
-}
+import { checkCheckInStatus, getCheckedInUnits } from "../../api/tickets";
+import { LIFF_CONFIG as LIFF_IDS } from "../../config/liff";
+import { useTickets } from "./hooks";
+import "./TicketPage.css";
+
+const API_BASE = import.meta.env.VITE_BASE;
 
 export default function TicketPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const exhibitionTitle = (location.state as LocationState)?.title;
+  const [exhibitionId, setExhibitionId] = useState<string | null>(null);
 
-  // Get exhibition_id from URL query string
-  const params = new URLSearchParams(window.location.search);
-  const exhibitionId = params.get("exhibition_id");
+  // Fetch current exhibition ID from API
+  useEffect(() => {
+    async function fetchCurrentExhibition() {
+      try {
+        if (!liff.id) {
+          await liff.init({ liffId: LIFF_IDS.TICKET });
+        }
+        if (!liff.isLoggedIn()) return;
+        const idToken = liff.getIDToken();
+        if (!idToken) return;
+        const res = await axios.get<{ current_exhibition_id: number | null }>(
+          `${API_BASE}/api/v1/ticket/current-exhibition`,
+          {
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+              "ngrok-skip-browser-warning": "true",
+            },
+          },
+        );
+        if (res.data.current_exhibition_id) {
+          setExhibitionId(String(res.data.current_exhibition_id));
+        }
+      } catch (err) {
+        console.error("Failed to fetch current exhibition:", err);
+      }
+    }
+    fetchCurrentExhibition();
+  }, []);
 
   // Use the custom hook
   const { state, refetch } = useTickets({
     exhibitionId,
     autoRefresh: true,
   });
+
+  // Countdown timer
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  const qrToken = state.status === "success" ? state.data.qrToken : null;
+  const expiresIn = state.status === "success" ? state.data.expiresIn : null;
+
+  useEffect(() => {
+    if (qrToken && expiresIn) {
+      setCountdown(expiresIn);
+    }
+  }, [qrToken, expiresIn]);
+
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev !== null && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const formatCountdown = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
   // Use ref to track if we've already shown the popup
   const hasShownPopupRef = useRef(false);
@@ -42,7 +94,9 @@ export default function TicketPage() {
           const units = await getCheckedInUnits(exhibitionId);
 
           // Check if there are any units with incomplete surveys
-          const hasIncompleteSurveys = units.some(unit => !unit.survey_completed);
+          const hasIncompleteSurveys = units.some(
+            (unit) => !unit.survey_completed,
+          );
 
           // Only show popup if there are incomplete surveys
           if (hasIncompleteSurveys) {
@@ -88,7 +142,7 @@ export default function TicketPage() {
           <button className="back-link" onClick={goBackToWallet}>
             <IoArrowBack />
           </button>
-          <h1 className="ticket-title">{exhibitionTitle || "E-Ticket"}</h1>
+          <h1 className="ticket-title">E-Ticket</h1>
           <p className="subtitle">โปรดแสดงคิวอาร์โค้ดนี้ให้เจ้าหน้าที่</p>
         </header>
 
@@ -133,7 +187,10 @@ export default function TicketPage() {
 
                 <div className="expiry-info">
                   <div className="expiry-countdown">
-                    หมดอายุใน {state.data.expiresIn}วินาที
+                    หมดอายุใน{" "}
+                    {countdown !== null
+                      ? formatCountdown(countdown)
+                      : state.data.expiresIn + "วินาที"}
                   </div>
                   <p className="refresh-hint">รีเฟรชอัตโนมัติทุก 5 นาที</p>
                 </div>
