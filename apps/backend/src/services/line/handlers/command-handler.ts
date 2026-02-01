@@ -14,7 +14,7 @@ import {
 } from "../utils/message-formatter.js";
 
 const RICH_MENU_IDS = {
-  STAFF: "richmenu-89c0938cdb1b6ca00dc2f86fc67f2b66", // ใส่ ID เมนู Staff
+  STAFF: "richmenu-bc710b89b73ab862e22f8e3160817bc1", // ใส่ ID เมนู Staff
   MEMBER: "richmenu-d639c3dbe3978c69d91043e46044c8c9", // ใส่ ID เมนู Member (ถ้ามี)
 };
 export async function handleMessageCommand(
