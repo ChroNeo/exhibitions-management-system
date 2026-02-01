@@ -12,8 +12,8 @@ import "./TicketPage.css";
 const API_BASE = import.meta.env.VITE_BASE;
 
 export default function TicketPage() {
-  const navigate = useNavigate();
   const [exhibitionId, setExhibitionId] = useState<string | null>(null);
+  const [fetchingExhibition, setFetchingExhibition] = useState(true);
 
   // Fetch current exhibition ID from API
   useEffect(() => {
@@ -39,10 +39,41 @@ export default function TicketPage() {
         }
       } catch (err) {
         console.error("Failed to fetch current exhibition:", err);
+      } finally {
+        setFetchingExhibition(false);
       }
     }
     fetchCurrentExhibition();
   }, []);
+
+  useEffect(() => {
+    if (fetchingExhibition) {
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+    } else {
+      Swal.close();
+      if (!exhibitionId) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No current exhibition available",
+        });
+      }
+    }
+  }, [fetchingExhibition, exhibitionId]);
+
+  if (fetchingExhibition || !exhibitionId) {
+    return null;
+  }
+
+  return <TicketContent exhibitionId={exhibitionId} />;
+}
+
+function TicketContent({ exhibitionId }: { exhibitionId: string }) {
+  const navigate = useNavigate();
 
   // Use the custom hook
   const { state, refetch } = useTickets({

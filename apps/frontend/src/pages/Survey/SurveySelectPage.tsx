@@ -21,7 +21,7 @@ export default function SurveySelectPage() {
   const [query, setQuery] = useState("");
 
   const handleExhibitionClick = (exhibitionId: number) => {
-    navigate(`/survey/exhibitions?ex_id=${exhibitionId}`);
+    navigate(`/survey/answer?ex_id=${exhibitionId}`);
   };
 
   const list = state.status === "success" ? state.data : [];

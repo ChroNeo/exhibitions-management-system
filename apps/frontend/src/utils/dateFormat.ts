@@ -34,7 +34,6 @@ export const toThaiTimeRange = (start?: string, end?: string) => {
     hour: "2-digit",
     minute: "2-digit",
   });
-  console.log("🚀 ~ toThaiTimeRange ~ s:", s);
   const e = new Date(end).toLocaleTimeString("th-TH", {
     hour: "2-digit",
     minute: "2-digit",

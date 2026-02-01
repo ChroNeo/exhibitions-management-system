@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import liff from "@line/liff";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useSurveyLiff } from "./hooks";
 import { submitSurveyLiff } from "../../api/survey";
+import { LIFF_CONFIG as LIFF_IDS } from "../../config/liff";
 import styles from "./ExhibitionSurvey.module.css";
+
+const API_BASE = import.meta.env.VITE_BASE;
 
 interface SurveyAnswer {
   question_id: number;
@@ -16,11 +20,68 @@ type SubmitState =
   | { status: "submitting" };
 
 export default function ExhibitionSurveyPage() {
-  const navigate = useNavigate();
+  const [exhibitionId, setExhibitionId] = useState<string | null>(null);
+  const [fetchingExhibition, setFetchingExhibition] = useState(true);
 
-  // Get exhibition_id from URL query string (same pattern as TicketPage)
-  const params = new URLSearchParams(window.location.search);
-  const exhibitionId = params.get("ex_id");
+  // Fetch current exhibition ID from API
+  useEffect(() => {
+    async function fetchCurrentExhibition() {
+      try {
+        if (!liff.id) {
+          await liff.init({ liffId: LIFF_IDS.SURVEY });
+        }
+        if (!liff.isLoggedIn()) return;
+        const idToken = liff.getIDToken();
+        if (!idToken) return;
+        const res = await axios.get<{ current_exhibition_id: number | null }>(
+          `${API_BASE}/api/v1/ticket/current-exhibition`,
+          {
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+              "ngrok-skip-browser-warning": "true",
+            },
+          },
+        );
+        if (res.data.current_exhibition_id) {
+          setExhibitionId(String(res.data.current_exhibition_id));
+        }
+      } catch (err) {
+        console.error("Failed to fetch current exhibition:", err);
+      } finally {
+        setFetchingExhibition(false);
+      }
+    }
+    fetchCurrentExhibition();
+  }, []);
+
+  useEffect(() => {
+    if (fetchingExhibition) {
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+    } else {
+      Swal.close();
+      if (!exhibitionId) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No current exhibition found",
+        });
+      }
+    }
+  }, [fetchingExhibition, exhibitionId]);
+
+  if (fetchingExhibition || !exhibitionId) {
+    return null;
+  }
+
+  return <ExhibitionSurveyContent exhibitionId={exhibitionId} />;
+}
+
+function ExhibitionSurveyContent({ exhibitionId }: { exhibitionId: string }) {
+  const navigate = useNavigate();
 
   const [answers, setAnswers] = useState<SurveyAnswer[]>([]);
   const [comment, setComment] = useState("");
@@ -93,7 +154,7 @@ export default function ExhibitionSurveyPage() {
       });
 
       if (result.isConfirmed) {
-        navigate("/survey");
+        navigate("/survey/exhibitions");
       }
     } catch (error) {
       setSubmitState({ status: "idle" });

@@ -107,7 +107,7 @@ export default function UnitSurveyPage() {
       });
 
       if (result.isConfirmed) {
-        navigate("/survey");
+        navigate("/survey/exhibitions");
       }
     } catch (error) {
       setSubmitState({ status: "idle" });

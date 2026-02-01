@@ -67,12 +67,12 @@ export default function App() {
       <Route path="/scan" element={<VerifyTicketPage />} />
 
       {/* Survey Routes */}
-      <Route path="/survey" element={<SurveySelectPage />} />
+      <Route path="/survey/exhibitions" element={<SurveySelectPage />} />
       <Route
         path="/survey/create/:exhibition_id"
         element={<CreateSurveyPage />}
       />
-      <Route path="/survey/exhibitions" element={<ExhibitionSurveyPage />} />
+      <Route path="/survey/answer" element={<ExhibitionSurveyPage />} />
       <Route path="/survey/units" element={<UnitSurveyPage />} />
       <Route path="/survey/unit-list" element={<UnitListPage />} />
 
