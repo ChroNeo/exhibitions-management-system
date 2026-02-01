@@ -4,7 +4,7 @@
 # Docker Compose variables
 DOCKER_COMPOSE = docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env
 
-.PHONY: help up down build rebuild restart logs clean status ps backup-uploads list-uploads
+.PHONY: help up down build rebuild rebuild-clean restart logs clean status ps backup-uploads list-uploads
 
 # Default target - show help
 help:
@@ -18,6 +18,7 @@ help:
 	@echo "  make down            Stop and remove all containers"
 	@echo "  make build           Rebuild all Docker images"
 	@echo "  make rebuild         Rebuild and restart all containers"
+	@echo "  make rebuild-clean   Rebuild with fresh DB (removes db volume)"
 	@echo "  make restart         Restart all containers"
 	@echo "  make logs            View logs from all containers (follow mode)"
 	@echo "  make logs-backend    View backend logs only"
@@ -61,6 +62,16 @@ build:
 
 # Rebuild and restart
 rebuild: down build up
+
+# Rebuild with fresh DB (removes db volume so initdb.sql re-runs)
+rebuild-clean:
+	@echo "Stopping containers and removing DB volume..."
+	$(DOCKER_COMPOSE) down -v
+	@echo "Building images..."
+	$(DOCKER_COMPOSE) build
+	@echo "Starting containers with fresh DB..."
+	$(DOCKER_COMPOSE) up -d
+	@echo "✓ Rebuild complete with fresh database!"
 
 # Restart all containers
 restart:
