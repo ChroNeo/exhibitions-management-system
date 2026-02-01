@@ -2,7 +2,6 @@ import liff from "@line/liff";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
-import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { checkCheckInStatus, getCheckedInUnits } from "../../api/tickets";
@@ -129,19 +128,10 @@ export default function TicketPage() {
     // Check only once on page load
     checkForIncompleteSurveys();
   }, [exhibitionId, navigate]);
-
-  // Function to go back to Wallet
-  const goBackToWallet = () => {
-    navigate("/wallet");
-  };
-
   return (
     <div className="ticket-page">
       <div className="ticket-container">
         <header className="ticket-header">
-          <button className="back-link" onClick={goBackToWallet}>
-            <IoArrowBack />
-          </button>
           <h1 className="ticket-title">E-Ticket</h1>
           <p className="subtitle">โปรดแสดงคิวอาร์โค้ดนี้ให้เจ้าหน้าที่</p>
         </header>
@@ -203,14 +193,9 @@ export default function TicketPage() {
               <div className="error-icon">🚫</div>
               <h3>Access Denied</h3>
               <p className="error-message">{state.message}</p>
-
               <div className="action-buttons">
                 <button onClick={refetch} className="retry-btn">
                   Try Again
-                </button>
-                {/* ปุ่มกลับหน้ารายการ กรณีเข้าผิดงาน */}
-                <button onClick={goBackToWallet} className="secondary-btn">
-                  Back to My Tickets
                 </button>
               </div>
             </div>
