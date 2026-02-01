@@ -1,0 +1,57 @@
+.dropdown {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.trigger:focus {
+  border-color: #6366f1;
+}
+
+.arrow {
+  font-size: 0.8rem;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.option {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.15s;
+}
+
+.option:hover {
+  background-color: #f3f4f6;
+}
+
+.optionActive {
+  background-color: #eef2ff;
+  font-weight: 600;
+}
