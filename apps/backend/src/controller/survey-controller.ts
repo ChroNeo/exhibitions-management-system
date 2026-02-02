@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   QuestionWithSetSchema,
   QuestionSetWithQuestionsSchema,
+  QuestionsTemplateSchema,
   QUESTION_SET_TYPES,
   DoSurveyBodySchema,
   type DoSurveyBody
@@ -14,7 +15,11 @@ import {
   createQuestionSetForExhibition,
   updateQuestionSet,
   submitSurvey,
-  checkSurveyCompleted
+  checkSurveyCompleted,
+  getQuestionsTemplate,
+  createQuestionsTemplate,
+  updateQuestionTemplate,
+  deleteQuestionTemplate
 } from "../queries/survey-query.js";
 import { safeQuery } from "../services/dbconn.js";
 import { requireOrganizerAuth, requireLiffAuth } from "../services/auth-middleware.js";
@@ -23,6 +28,105 @@ import { AppError } from "../errors.js";
 
 export default async function surveyController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
+
+  // ─── Questions Template CRUD ─────────────────────────────────────────────
+
+  app.get(
+    "/questions-template",
+    {
+      preHandler: requireOrganizerAuth,
+      schema: {
+        tags: ["Survey"],
+        summary: "Get all questions from template bank",
+        querystring: z.object({
+          category: z.string().optional(),
+        }),
+        response: {
+          200: z.array(QuestionsTemplateSchema),
+        },
+      },
+    },
+    async (req, reply) => {
+      const { category } = req.query as { category?: string };
+      return await getQuestionsTemplate(category);
+    }
+  );
+
+  app.post(
+    "/questions-template",
+    {
+      preHandler: requireOrganizerAuth,
+      schema: {
+        tags: ["Survey"],
+        summary: "Create new question(s) in the template bank",
+        body: z.object({
+          questions: z.array(z.object({
+            content: z.string().min(1, "Question content is required"),
+            category: z.string().nullable().optional(),
+          })).min(1, "At least one question is required"),
+        }),
+        response: {
+          201: z.array(QuestionsTemplateSchema),
+        },
+      },
+    },
+    async (req, reply) => {
+      const { questions } = req.body as { questions: Array<{ content: string; category?: string | null }> };
+      const result = await createQuestionsTemplate(questions);
+      reply.code(201);
+      return result;
+    }
+  );
+
+  app.put(
+    "/questions-template/:id",
+    {
+      preHandler: requireOrganizerAuth,
+      schema: {
+        tags: ["Survey"],
+        summary: "Update a question template",
+        params: z.object({
+          id: z.string().regex(/^\d+$/),
+        }),
+        body: z.object({
+          content: z.string().min(1, "Question content is required"),
+          category: z.string().nullable().optional(),
+        }),
+        response: {
+          200: QuestionsTemplateSchema,
+        },
+      },
+    },
+    async (req) => {
+      const qtId = Number((req.params as any).id);
+      const { content, category } = req.body as { content: string; category?: string | null };
+      return await updateQuestionTemplate(qtId, content, category);
+    }
+  );
+
+  app.delete(
+    "/questions-template/:id",
+    {
+      preHandler: requireOrganizerAuth,
+      schema: {
+        tags: ["Survey"],
+        summary: "Delete a question template",
+        params: z.object({
+          id: z.string().regex(/^\d+$/),
+        }),
+        response: {
+          204: z.null(),
+        },
+      },
+    },
+    async (req, reply) => {
+      const qtId = Number((req.params as any).id);
+      await deleteQuestionTemplate(qtId);
+      reply.code(204).send();
+    }
+  );
+
+  // ─── Question Sets ───────────────────────────────────────────────────────
 
   app.get(
     "/questions",
@@ -73,12 +177,13 @@ export default async function surveyController(fastify: FastifyInstance) {
       schema: {
         tags: ["Survey"],
         summary: "Create question set for exhibition",
-        description: "Creates a question set with custom questions and links it to the specified exhibition",
+        description: "Creates a question set by mapping qt_ids from the template bank to the exhibition",
         body: z.object({
           exhibition_id: z.number().int().positive(),
           type: z.enum(QUESTION_SET_TYPES),
           questions: z.array(z.object({
-            topic: z.string().min(1, "Question topic is required"),
+            qt_id: z.number().int().positive(),
+            sort_order: z.number().int().min(0).default(0),
           })).min(1, "At least one question is required"),
         }),
         response: {
@@ -90,16 +195,13 @@ export default async function surveyController(fastify: FastifyInstance) {
       const { exhibition_id, type, questions } = req.body as {
         exhibition_id: number;
         type: "EXHIBITION" | "UNIT";
-        questions: { topic: string }[];
+        questions: Array<{ qt_id: number; sort_order: number }>;
       };
-
-      // Extract just the topics
-      const questionTopics = questions.map(q => q.topic);
 
       const questionSet = await createQuestionSetForExhibition(
         exhibition_id,
         type,
-        questionTopics
+        questions
       );
 
       reply.code(201);
@@ -114,12 +216,13 @@ export default async function surveyController(fastify: FastifyInstance) {
       schema: {
         tags: ["Survey"],
         summary: "Update question set for exhibition",
-        description: "Updates an existing question set by replacing all questions with new ones",
+        description: "Updates an existing question set by replacing all mappings with new qt_ids",
         body: z.object({
           exhibition_id: z.number().int().positive(),
           type: z.enum(QUESTION_SET_TYPES),
           questions: z.array(z.object({
-            topic: z.string().min(1, "Question topic is required"),
+            qt_id: z.number().int().positive(),
+            sort_order: z.number().int().min(0).default(0),
           })).min(1, "At least one question is required"),
         }),
         response: {
@@ -131,16 +234,13 @@ export default async function surveyController(fastify: FastifyInstance) {
       const { exhibition_id, type, questions } = req.body as {
         exhibition_id: number;
         type: "EXHIBITION" | "UNIT";
-        questions: { topic: string }[];
+        questions: Array<{ qt_id: number; sort_order: number }>;
       };
-
-      // Extract just the topics
-      const questionTopics = questions.map(q => q.topic);
 
       const questionSet = await updateQuestionSet(
         exhibition_id,
         type,
-        questionTopics
+        questions
       );
 
       reply.code(200);
@@ -148,7 +248,8 @@ export default async function surveyController(fastify: FastifyInstance) {
     }
   );
 
-  // Check if survey is completed
+  // ─── Survey Submission ───────────────────────────────────────────────────
+
   app.get(
     "/check-completed",
     {
