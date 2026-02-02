@@ -48,7 +48,7 @@ INSERT INTO `app_settings` (`key_name`, `value_json`) VALUES
 CREATE TABLE `certificate_templates` (
   `template_id` int NOT NULL,
   `exhibition_id` int NOT NULL COMMENT 'FK เชื่อมกับตารางนิทรรศการ',
-  `background_url` varchar(500) NOT NULL COMMENT 'ที่อยู่ไฟล์ PDF/Image พื้นหลัง',
+  `background_url` varchar(500) DEFAULT NULL COMMENT 'ที่อยู่ไฟล์ PDF/Image พื้นหลัง',
   `layout_config` json DEFAULT NULL COMMENT 'เก็บค่า config เช่น {participant_name: {x: 100, y: 200, font_size: 24}}',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -59,8 +59,8 @@ CREATE TABLE `certificate_templates` (
 --
 
 INSERT INTO `certificate_templates` (`template_id`, `exhibition_id`, `background_url`, `layout_config`, `created_at`, `updated_at`) VALUES
-(1, 1, 'uploads/certificates/templates/smart_tech_expo_2025.png', '{\"date\": {\"x\": 300, \"y\": 600, \"align\": \"center\", \"color\": \"#666666\", \"font_size\": 24}, \"organizer_name\": {\"x\": 300, \"y\": 700, \"align\": \"center\", \"color\": \"#666666\", \"font_size\": 20}, \"exhibition_title\": {\"x\": 300, \"y\": 200, \"align\": \"center\", \"color\": \"#333333\", \"font_size\": 36}, \"participant_name\": {\"x\": 300, \"y\": 500, \"align\": \"center\", \"color\": \"#000000\", \"font_size\": 48}}', '2025-09-15 15:06:36', '2025-09-15 15:06:36'),
-(3, 17, 'uploads/certificates/templates/EX_C1768491558445.png', '{\"participant_name\": {\"x\": 996, \"y\": 798, \"align\": \"center\", \"color\": \"#000000\", \"font_size\": 48}}', '2026-01-14 15:34:52', '2026-01-15 16:33:22');
+(1, 1, NULL, '{\"date\": {\"x\": 300, \"y\": 600, \"align\": \"center\", \"color\": \"#666666\", \"font_size\": 24}, \"organizer_name\": {\"x\": 300, \"y\": 700, \"align\": \"center\", \"color\": \"#666666\", \"font_size\": 20}, \"exhibition_title\": {\"x\": 300, \"y\": 200, \"align\": \"center\", \"color\": \"#333333\", \"font_size\": 36}, \"participant_name\": {\"x\": 300, \"y\": 500, \"align\": \"center\", \"color\": \"#000000\", \"font_size\": 48}}', '2025-09-15 15:06:36', '2025-09-15 15:06:36'),
+(3, 17, NULL, '{\"participant_name\": {\"x\": 996, \"y\": 798, \"align\": \"center\", \"color\": \"#000000\", \"font_size\": 48}}', '2026-01-14 15:34:52', '2026-01-15 16:33:22');
 
 -- --------------------------------------------------------
 
@@ -94,15 +94,15 @@ CREATE TABLE `exhibitions` (
 --
 
 INSERT INTO `exhibitions` (`exhibition_id`, `exhibition_code`, `title`, `description`, `description_delta`, `start_date`, `end_date`, `location`, `organizer_name`, `picture_path`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`, `archived_at`, `exhibition_set_id`, `unit_set_id`) VALUES
-(1, 'EX202501', 'Future Tech Expo 2026', '<p><strong>สัมผัสนวัตกรรม</strong> AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก</p>', '{\"ops\": [{\"insert\": \"สัมผัสนวัตกรรม\", \"attributes\": {\"bold\": true}}, {\"insert\": \" AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก\\n\"}]}', '2026-02-09 19:00:00', '2026-06-12 20:00:00', 'BITEC Bangna, Hall 98', 'Tech Pioneer Group', 'uploads/exhibitions/EXP1769361196864.png', 'ongoing', 1, NULL, '2025-09-15 15:06:36', '2026-01-25 17:13:17', NULL, 103, 104),
-(3, 'EX202503', 'Green Future Week', 'งานสิ่งแวดล้อมและพลังงานสะอาด', NULL, '2025-10-05 02:00:00', '2025-10-09 11:00:00', 'Khon Kaen Hall', 'Mai Organizer', 'uploads/exhibitions/EXP1758869541507.png', 'ended', 1, NULL, '2025-09-15 15:06:36', '2025-10-24 18:54:55', NULL, NULL, NULL),
-(5, 'EX202401', 'Modern Art Showcase 2011', 'A curated selection of contemporary pieces from emerging artists.', NULL, '2024-08-30 02:00:00', '2024-09-13 10:00:00', 'Gallery Hall A', 'City Arts Council', 'uploads/exhibitions/EXP1758868393393.png', 'ended', 42, NULL, '2025-09-25 13:07:39', '2025-10-24 18:59:55', NULL, NULL, NULL),
-(8, 'EX202404', 'Modern Art Showcase 2024', 'A curated selection of contemporary pieces.', NULL, '2024-08-31 20:00:00', '2024-09-15 04:00:00', 'Gallery Hall A', 'City Arts Council', 'uploads/exhibitions/EXP1758868400309.png', 'draft', 42, NULL, '2025-09-25 13:35:02', '2025-09-26 06:33:20', NULL, NULL, NULL),
-(12, 'EX202505', 're', 'test', NULL, '2025-09-25 09:05:00', '2025-09-26 09:05:00', 'test', 'test', 'uploads/exhibitions/EXP1758868407111.png', 'draft', 1, NULL, '2025-09-25 23:05:55', '2025-09-26 06:33:27', NULL, NULL, NULL),
-(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ “Smart Tech Expo 2025” ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ “อนาคตของการอยู่อาศัย” และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', NULL, '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', 'uploads/exhibitions/EXP1758868430956.png', 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL, NULL, NULL),
-(15, 'EX202507', 'test', 'test', NULL, '2025-10-31 04:57:00', '2025-11-08 04:57:00', 'test', 'test', 'uploads/exhibitions/EXP1759433238838.jpg', 'ended', 1, NULL, '2025-10-02 19:27:19', '2025-12-31 09:19:55', NULL, NULL, NULL),
+(1, 'EX202501', 'Future Tech Expo 2026', '<p><strong>สัมผัสนวัตกรรม</strong> AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก</p>', '{\"ops\": [{\"insert\": \"สัมผัสนวัตกรรม\", \"attributes\": {\"bold\": true}}, {\"insert\": \" AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก\\n\"}]}', '2026-02-09 19:00:00', '2026-06-12 20:00:00', 'BITEC Bangna, Hall 98', 'Tech Pioneer Group', NULL, 'ongoing', 1, NULL, '2025-09-15 15:06:36', '2026-01-25 17:13:17', NULL, 103, 104),
+(3, 'EX202503', 'Green Future Week', 'งานสิ่งแวดล้อมและพลังงานสะอาด', NULL, '2025-10-05 02:00:00', '2025-10-09 11:00:00', 'Khon Kaen Hall', 'Mai Organizer', NULL, 'ended', 1, NULL, '2025-09-15 15:06:36', '2025-10-24 18:54:55', NULL, NULL, NULL),
+(5, 'EX202401', 'Modern Art Showcase 2011', 'A curated selection of contemporary pieces from emerging artists.', NULL, '2024-08-30 02:00:00', '2024-09-13 10:00:00', 'Gallery Hall A', 'City Arts Council', NULL, 'ended', 42, NULL, '2025-09-25 13:07:39', '2025-10-24 18:59:55', NULL, NULL, NULL),
+(8, 'EX202404', 'Modern Art Showcase 2024', 'A curated selection of contemporary pieces.', NULL, '2024-08-31 20:00:00', '2024-09-15 04:00:00', 'Gallery Hall A', 'City Arts Council', NULL, 'draft', 42, NULL, '2025-09-25 13:35:02', '2025-09-26 06:33:20', NULL, NULL, NULL),
+(12, 'EX202505', 're', 'test', NULL, '2025-09-25 09:05:00', '2025-09-26 09:05:00', 'test', 'test', NULL, 'draft', 1, NULL, '2025-09-25 23:05:55', '2025-09-26 06:33:27', NULL, NULL, NULL),
+(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ "Smart Tech Expo 2025" ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ "อนาคตของการอยู่อาศัย" และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', NULL, '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', NULL, 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL, NULL, NULL),
+(15, 'EX202507', 'test', 'test', NULL, '2025-10-31 04:57:00', '2025-11-08 04:57:00', 'test', 'test', NULL, 'ended', 1, NULL, '2025-10-02 19:27:19', '2025-12-31 09:19:55', NULL, NULL, NULL),
 (16, 'EX202508', 'test', '<p>this is the test <strong>wow this is the bold wow za 007 </strong></p>', NULL, '2025-10-21 04:57:00', '2025-10-21 04:57:00', 'test', 'asdf', NULL, 'ended', 1, NULL, '2025-10-24 18:57:43', '2025-10-24 20:49:32', NULL, NULL, NULL),
-(17, 'EX202509', 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', '2025-10-27 15:51:00', '2028-05-29 15:51:00', 'test', 'test', 'uploads/exhibitions/EXP1769364844742.jpg', 'ongoing', 2, NULL, '2025-12-31 09:51:48', '2026-01-25 18:14:04', NULL, 105, 106),
+(17, 'EX202509', 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', '2025-10-27 15:51:00', '2028-05-29 15:51:00', 'test', 'test', NULL, 'ongoing', 2, NULL, '2025-12-31 09:51:48', '2026-01-25 18:14:04', NULL, 105, 106),
 (99, 'EX202601', 'AI Technology Expo 2026', NULL, NULL, '2026-01-01 00:00:00', '2026-01-10 00:00:00', NULL, 'test', NULL, 'ended', 1, NULL, '2026-01-06 08:39:03', '2026-01-10 07:34:55', NULL, 101, 102);
 
 --
@@ -149,29 +149,20 @@ CREATE TABLE `normal_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `normal_users`
+-- Seed data for table `normal_users`
 --
 
-INSERT INTO `normal_users` (`user_id`, `line_user_id`, `full_name`, `gender`, `birthdate`, `username`, `picture_url`, `email`, `phone`, `last_synced_at`, `role`) VALUES
-(1, 'U1234567890', 'Alice Chan', 'female', '1998-05-12', 'alicec', NULL, 'alice@example.com', NULL, NULL, 'user'),
-(2, 'U0987654321', 'Bob Lee', 'male', '1995-09-22', 'boblee', NULL, 'bob@example.com', NULL, NULL, 'user'),
-(3, 'U1122334455', 'Charlie Kim', 'male', '1999-03-18', 'charliek', NULL, 'charlie@example.com', NULL, NULL, 'staff'),
-(4, 'U5566778899', 'ดลยา มงคล', 'female', '2000-01-15', 'donlaya', NULL, 'donlaya@example.com', NULL, NULL, 'staff'),
-(5, 'U6677889900', 'ปรีชา ใจดี', 'male', '1997-07-07', 'preecha', NULL, 'preecha@example.com', NULL, NULL, 'user'),
-(6, 'U1010101010', 'Som Tana', 'male', '1996-02-20', 'somt', NULL, 'somt@example.com', NULL, NULL, 'user'),
-(7, 'U2020202020', 'Mina Phan', 'female', '2001-11-11', 'minaph', NULL, 'mina@example.com', NULL, NULL, 'user'),
-(8, 'U3030303030', 'Ken Wong', 'male', '1994-04-04', 'kenw', NULL, 'ken@example.com', NULL, NULL, 'user'),
-(9, 'U4040404040', 'ศศิธร สายชล', 'female', '1998-08-21', 'sasithorn', NULL, 'sasi@example.com', NULL, NULL, 'user'),
-(10, 'U5050505050', 'Napat J.', 'male', '1997-12-05', 'napatj', NULL, 'napat@example.com', NULL, NULL, 'user'),
-(11, 'U6060606060', 'Ploy Nun', 'female', '1999-06-30', 'ploynun', NULL, 'ploy@example.com', NULL, NULL, 'user'),
-(12, 'U7070707070', 'Arthit K.', 'male', '1995-03-03', 'arthitk', NULL, 'arthit@example.com', NULL, NULL, 'user'),
-(13, NULL, 'สมชาย ใจดี', 'male', '1999-05-21', NULL, NULL, 'visitor@example.com', '0812345678', NULL, 'user'),
-(14, NULL, 'สุกัญญา ใจดี', 'female', '1995-03-10', NULL, NULL, 'staff@example.com', '0897654321', NULL, 'staff'),
-(15, 'Ue9761b5cc006f2b8c7d0897e8b272c61', '279 ยงศักดิ์ (Neo)', 'male', '2026-01-01', '279neo', 'https://sprofile.line-scdn.net/0h3enF8LH7bEpDP3IYHEISdDNvbyBgTjVYbVlxJXQ3Z3kpWi1Oa1BwfyU6Oyp9BytPOFwgLiQ7MHJhWWhyZhknLw12VxMGVFF5DiJfeQ1iLn4mS3NZCyA_KQFbeRIgbFVXJAlUcSNLdz8rZF9-CAcjRxhfaH58T1JbEWgAHEYNAsksPRsfblgqKX44M3L2', 'egency999@gmail.com', '0952909471', '2026-01-25 18:36:53', 'user'),
-(16, 'Ub4cf78728db86411aad7edcc1da9d55b', '65200123 ณัฐวัฒน์', 'male', '2004-06-08', '65200123', 'https://sprofile.line-scdn.net/0heL-djeviOmMAHS0TR35EHHBNOQkjbGNxL3wnBmFNN1E7JXs2L31xUWIdZ1Q1JXUxJClwUTAfZ1EMDk0FHkvGVwctZ1I8JHg9K3p9jQ', 'nattawat.fing@gmail.com', '0941493541', '2026-01-25 18:38:55', 'staff'),
-(17, NULL, 'ณัฐวัฒน์', 'male', '2026-01-05', NULL, NULL, 'nah@gmail.com', '57818881', NULL, 'user');
-
--- --------------------------------------------------------
+INSERT INTO `normal_users` (`user_id`, `line_user_id`, `full_name`, `gender`, `birthdate`, `username`, `picture_url`, `email`, `phone`, `role`, `current_exhibition_id`) VALUES
+(1,  'U0001', 'สมชาย ใจดี',       'male',   '1990-05-15', 'somchai',  NULL, 'somchai@example.com',  '0812345671', 'user',  1),
+(2,  'U0002', 'สมหญิง รักสวย',    'female', '1992-03-22', 'somying',  NULL, 'somying@example.com',  '0812345672', 'user',  1),
+(3,  'U0003', 'วิชัย สตาฟ',       'male',   '1988-11-10', 'wichai',   NULL, 'wichai@example.com',   '0812345673', 'staff', NULL),
+(4,  'U0004', 'นารี สตาฟ',        'female', '1995-07-01', 'naree',    NULL, 'naree@example.com',    '0812345674', 'staff', NULL),
+(5,  'U0005', 'ประยุทธ์ ทดสอบ',   'male',   '1985-01-30', 'prayuth',  NULL, 'prayuth@example.com',  '0812345675', 'user',  1),
+(13, 'U0013', 'ทดสอบ สิบสาม',     'male',   '1991-06-18', 'test13',   NULL, 'test13@example.com',   '0812345683', 'user',  1),
+(14, 'U0014', 'ทดสอบ สิบสี่',     'female', '1993-09-25', 'test14',   NULL, 'test14@example.com',   '0812345684', 'user',  1),
+(15, 'U0015', 'ทดสอบ สิบห้า',     'male',   '1994-02-14', 'test15',   NULL, 'test15@example.com',   '0812345685', 'user',  17),
+(16, 'U0016', 'ทดสอบ สิบหก',      'female', '1996-12-05', 'test16',   NULL, 'test16@example.com',   '0812345686', 'user',  1),
+(17, 'U0017', 'ทดสอบ สิบเจ็ด',    'male',   '1997-08-20', 'test17',   NULL, 'test17@example.com',   '0812345687', 'user',  1);
 
 --
 -- Table structure for table `organizer_users`
@@ -193,77 +184,133 @@ CREATE TABLE `organizer_users` (
 
 INSERT INTO `organizer_users` (`user_id`, `username`, `password_hash`, `email`, `last_synced_at`, `role`, `last_login_at`) VALUES
 (1, 'admin01', '$2a$12$G6hlqoz6yKviU4Oult3lgOSkiw0aP7urh3gKW9dCF6XP5QS6EiFNy', 'admin01@example.com', NULL, 'admin', NULL),
-(2, 'org_john', '9f735e0df9a1ddc702bf0a1a7b83033f9f7153a00c29de82cedadc9957289b05', 'john@expo.com', NULL, 'organizer', NULL),
-(3, 'org_somchai', 'hashedpass3', 'somchai@expo.com', NULL, 'organizer', NULL),
-(4, 'org_mai', 'hashedpass4', 'mai@expo.com', NULL, 'organizer', NULL),
-(5, 'organizer_new', 'a615a46a9f52e117dffce7d7235b464a910f74508dfb51a27ce8c63d0413d9a0', 'organizer_new@example.com', NULL, 'organizer', NULL);
+(2, 'org_john', '$2a$12$D5ahB2w4pMDgxxy9dWPWUeQJBuFrjbILYxaA645cb7HpqbKxAB3Mi', 'john@expo.com', NULL, 'organizer', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `questions`
+-- Table structure for table `questions_template`
 --
 
-CREATE TABLE `questions` (
-  `question_id` int NOT NULL,
-  `set_id` int NOT NULL,
-  `topic` varchar(255) NOT NULL
+CREATE TABLE `questions_template` (
+  `qt_id` int NOT NULL,
+  `content` text NOT NULL,
+  `category` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `questions`
+-- Dumping data for table `questions_template`
 --
 
-INSERT INTO `questions` (`question_id`, `set_id`, `topic`) VALUES
-(1, 1, 'ความสะอาดและความปลอดภัย'),
-(2, 1, 'การประชาสัมพันธ์ข้อมูล'),
-(3, 2, 'ความรู้ที่ได้รับจากบูธ'),
-(4, 2, 'การให้บริการของเจ้าหน้าที่'),
-(10, 3, 'ความสุภาพและเป็นมิตรของเจ้าหน้าที่ประจำบูธ'),
-(11, 3, 'ความกระตือรือร้นในการให้บริการ'),
-(12, 3, 'ความชัดเจนในการตอบคำถามและให้ข้อมูล'),
-(13, 3, 'บุคลิกภาพและการแต่งกายของเจ้าหน้าที่'),
-(20, 4, 'ความน่าสนใจของเนื้อหา/นวัตกรรมที่นำมาจัดแสดง'),
-(21, 4, 'ความรู้ใหม่ที่ได้รับจากบูธนี้'),
-(22, 4, 'ความสามารถในการอธิบายข้อมูลเชิงลึกของวิทยากร'),
-(23, 4, 'เอกสารประกอบหรือสื่อการเรียนรู้มีความเหมาะสม'),
-(30, 5, 'ความสนุกสนานของกิจกรรมที่จัดขึ้น'),
-(31, 5, 'ระยะเวลาในการร่วมกิจกรรมมีความเหมาะสม'),
-(32, 5, 'ของรางวัลหรือของที่ระลึกมีความน่าสนใจ'),
-(33, 5, 'ขั้นตอนการร่วมกิจกรรมเข้าใจง่าย ไม่ซับซ้อน'),
-(40, 6, 'ความสะดวกในการเดินทางมายังสถานที่จัดงาน'),
-(41, 6, 'ความเพียงพอและความสะอาดของห้องน้ำ'),
-(42, 6, 'ความชัดเจนของป้ายบอกทางภายในงาน'),
-(43, 6, 'ระบบการลงทะเบียนเข้างานมีความรวดเร็ว'),
-(44, 6, 'ความเหมาะสมของระบบแสง เสียง และอุณหภูมิภายในฮอลล์'),
-(50, 7, 'ภาพรวมความพึงพอใจต่อการจัดงานครั้งนี้'),
-(51, 7, 'ความน่าสนใจของหัวข้อการจัดงาน'),
-(52, 7, 'ระยะเวลาการจัดงานมีความเหมาะสม'),
-(53, 7, 'โอกาสที่คุณจะมาร่วมงานนี้อีกในครั้งต่อไป'),
-(501, 101, 'ความสะอาดและความปลอดภัย'),
-(502, 101, 'การประชาสัมพันธ์ข้อมูล'),
-(503, 101, 'ชอบวิทยากรหลักหรือไม่?'),
-(601, 102, 'ความรู้ที่ได้รับจากบูธ'),
-(602, 102, 'การให้บริการของเจ้าหน้าที่'),
-(615, 103, 'ความสะอาดและความปลอดภัย'),
-(616, 103, 'การประชาสัมพันธ์ข้อมูล'),
-(617, 103, 'ความสะอาดและความปลอดภัย'),
-(618, 103, 'การประชาสัมพันธ์ข้อมูล'),
-(619, 103, 'ความสะอาดและความปลอดภัย'),
-(620, 103, 'การประชาสัมพันธ์ข้อมูล2123123213'),
-(621, 103, 'asfsadfdsa'),
-(626, 105, 'test'),
-(632, 104, 'ความสุภาพและเป็นมิตรของเจ้าหน้าที่ประจำบูธ'),
-(633, 104, 'ความกระตือรือร้นในการให้บริการ'),
-(634, 104, 'ความชัดเจนในการตอบคำถามและให้ข้อมูล'),
-(635, 104, 'บุคลิกภาพและการแต่งกายของเจ้าหน้าที่'),
-(636, 104, 'taht is cus'),
-(637, 104, 'together we fight'),
-(638, 106, 'ความสุภาพและเป็นมิตรของเจ้าหน้าที่ประจำบูธ'),
-(639, 106, 'ความกระตือรือร้นในการให้บริการ'),
-(640, 106, 'ความชัดเจนในการตอบคำถามและให้ข้อมูล'),
-(641, 106, 'บุคลิกภาพและการแต่งกายของเจ้าหน้าที่'),
-(642, 106, 'test');
+INSERT INTO `questions_template` (`qt_id`, `content`, `category`) VALUES
+(1, 'ความสะอาดและความปลอดภัย', NULL),
+(2, 'การประชาสัมพันธ์ข้อมูล', NULL),
+(3, 'ความรู้ที่ได้รับจากบูธ', NULL),
+(4, 'การให้บริการของเจ้าหน้าที่', NULL),
+(5, 'ความสุภาพและเป็นมิตรของเจ้าหน้าที่ประจำบูธ', NULL),
+(6, 'ความกระตือรือร้นในการให้บริการ', NULL),
+(7, 'ความชัดเจนในการตอบคำถามและให้ข้อมูล', NULL),
+(8, 'บุคลิกภาพและการแต่งกายของเจ้าหน้าที่', NULL),
+(9, 'ความน่าสนใจของเนื้อหา/นวัตกรรมที่นำมาจัดแสดง', NULL),
+(10, 'ความรู้ใหม่ที่ได้รับจากบูธนี้', NULL),
+(11, 'ความสามารถในการอธิบายข้อมูลเชิงลึกของวิทยากร', NULL),
+(12, 'เอกสารประกอบหรือสื่อการเรียนรู้มีความเหมาะสม', NULL),
+(13, 'ความสนุกสนานของกิจกรรมที่จัดขึ้น', NULL),
+(14, 'ระยะเวลาในการร่วมกิจกรรมมีความเหมาะสม', NULL),
+(15, 'ของรางวัลหรือของที่ระลึกมีความน่าสนใจ', NULL),
+(16, 'ขั้นตอนการร่วมกิจกรรมเข้าใจง่าย ไม่ซับซ้อน', NULL),
+(17, 'ความสะดวกในการเดินทางมายังสถานที่จัดงาน', NULL),
+(18, 'ความเพียงพอและความสะอาดของห้องน้ำ', NULL),
+(19, 'ความชัดเจนของป้ายบอกทางภายในงาน', NULL),
+(20, 'ระบบการลงทะเบียนเข้างานมีความรวดเร็ว', NULL),
+(21, 'ความเหมาะสมของระบบแสง เสียง และอุณหภูมิภายในฮอลล์', NULL),
+(22, 'ภาพรวมความพึงพอใจต่อการจัดงานครั้งนี้', NULL),
+(23, 'ความน่าสนใจของหัวข้อการจัดงาน', NULL),
+(24, 'ระยะเวลาการจัดงานมีความเหมาะสม', NULL),
+(25, 'โอกาสที่คุณจะมาร่วมงานนี้อีกในครั้งต่อไป', NULL),
+(26, 'ชอบวิทยากรหลักหรือไม่?', NULL),
+(27, 'การประชาสัมพันธ์ข้อมูล2123123213', NULL),
+(28, 'asfsadfdsa', NULL),
+(29, 'test', NULL),
+(30, 'taht is cus', NULL),
+(31, 'together we fight', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `set_question_mapping`
+--
+
+CREATE TABLE `set_question_mapping` (
+  `set_id` int NOT NULL,
+  `qt_id` int NOT NULL,
+  `sort_order` int DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `set_question_mapping`
+-- Master set 1 (Master Exhibition Standard): qt 1,2
+-- Master set 2 (Master Unit Standard): qt 3,4
+-- Master set 3 (Master Unit: Service Mind): qt 5,6,7,8
+-- Master set 4 (Master Unit: Knowledge & Innovation): qt 9,10,11,12
+-- Master set 5 (Master Unit: Activity & Fun): qt 13,14,15,16
+-- Master set 6 (Master Exh: Facilities & Logistics): qt 17,18,19,20,21
+-- Master set 7 (Master Exh: Overall Experience): qt 22,23,24,25
+-- Set 101 (AI Expo Exhibition): qt 1,2,26
+-- Set 102 (AI Expo Unit): qt 3,4
+-- Set 103 (EX202501 Exhibition): qt 1,2,1,2,1,27,28
+-- Set 104 (EX202501 Unit): qt 5,6,7,8,30,31
+-- Set 105 (EX202509 Exhibition): qt 29
+-- Set 106 (EX202509 Unit): qt 5,6,7,8,29
+--
+
+INSERT INTO `set_question_mapping` (`set_id`, `qt_id`, `sort_order`) VALUES
+(1, 1, 1),
+(1, 2, 2),
+(2, 3, 1),
+(2, 4, 2),
+(3, 5, 1),
+(3, 6, 2),
+(3, 7, 3),
+(3, 8, 4),
+(4, 9, 1),
+(4, 10, 2),
+(4, 11, 3),
+(4, 12, 4),
+(5, 13, 1),
+(5, 14, 2),
+(5, 15, 3),
+(5, 16, 4),
+(6, 17, 1),
+(6, 18, 2),
+(6, 19, 3),
+(6, 20, 4),
+(6, 21, 5),
+(7, 22, 1),
+(7, 23, 2),
+(7, 24, 3),
+(7, 25, 4),
+(101, 1, 1),
+(101, 2, 2),
+(101, 26, 3),
+(102, 3, 1),
+(102, 4, 2),
+(103, 1, 1),
+(103, 2, 2),
+(103, 27, 3),
+(103, 28, 4),
+(104, 5, 1),
+(104, 6, 2),
+(104, 7, 3),
+(104, 8, 4),
+(104, 30, 5),
+(104, 31, 6),
+(105, 29, 1),
+(106, 5, 1),
+(106, 6, 2),
+(106, 7, 3),
+(106, 8, 4),
+(106, 29, 5);
 
 -- --------------------------------------------------------
 
@@ -333,7 +380,8 @@ INSERT INTO `registrations` (`registration_id`, `exhibition_id`, `user_id`, `reg
 CREATE TABLE `survey_answers` (
   `answer_id` int NOT NULL,
   `submission_id` int NOT NULL,
-  `question_id` int NOT NULL,
+  `set_id` int NOT NULL,
+  `qt_id` int NOT NULL,
   `score` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -341,10 +389,10 @@ CREATE TABLE `survey_answers` (
 -- Dumping data for table `survey_answers`
 --
 
-INSERT INTO `survey_answers` (`answer_id`, `submission_id`, `question_id`, `score`) VALUES
-(1, 1001, 501, 5),
-(2, 1001, 502, 4),
-(3, 1001, 503, 5);
+INSERT INTO `survey_answers` (`answer_id`, `submission_id`, `set_id`, `qt_id`, `score`) VALUES
+(1, 1001, 101, 1, 5),
+(2, 1001, 101, 2, 4),
+(3, 1001, 101, 26, 5);
 
 -- --------------------------------------------------------
 
@@ -395,21 +443,21 @@ CREATE TABLE `units` (
 --
 
 INSERT INTO `units` (`unit_id`, `unit_code`, `exhibition_id`, `unit_name`, `description`, `description_delta`, `unit_type`, `poster_url`, `detail_pdf_url`, `starts_at`, `ends_at`, `additional_question_set_id`) VALUES
-(1, 'EX20250101', 1, 'Robotics Lab Demo2', '<p><strong>s dlrow eht</strong></p>', '{\"ops\": [{\"insert\": \"s dlrow eht\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1759848361494.jpg', NULL, '2024-04-30 06:00:00', '2024-04-30 14:00:00', NULL),
-(2, 'EX20250102', 1, 'Robot Show', 'โชว์บนเวทีใหญ่', NULL, 'activity', 'uploads/units/EXP1759849066017.webp', NULL, '2025-11-02 07:00:00', '2025-11-02 08:00:00', NULL),
-(3, 'EX20250103', 1, 'IoT Corner', 'ของเล่น IoT', NULL, 'booth', 'uploads/units/EXP1759849287066.png', NULL, '2025-11-01 03:00:00', '2025-11-05 10:00:00', NULL),
+(1, 'EX20250101', 1, 'Robotics Lab Demo2', '<p><strong>s dlrow eht</strong></p>', '{\"ops\": [{\"insert\": \"s dlrow eht\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', NULL, NULL, '2024-04-30 06:00:00', '2024-04-30 14:00:00', NULL),
+(2, 'EX20250102', 1, 'Robot Show', 'โชว์บนเวทีใหญ่', NULL, 'activity', NULL, NULL, '2025-11-02 07:00:00', '2025-11-02 08:00:00', NULL),
+(3, 'EX20250103', 1, 'IoT Corner', 'ของเล่น IoT', NULL, 'booth', NULL, NULL, '2025-11-01 03:00:00', '2025-11-05 10:00:00', NULL),
 (4, 'EX20250104', 1, 'Cloud 101 Talk', 'แนะนำพื้นฐานคลาวด์', NULL, 'activity', NULL, NULL, '2025-11-03 11:00:00', '2025-11-03 12:00:00', NULL),
 (5, 'EX20260101', 99, 'Robot AI Booth', NULL, NULL, 'booth', NULL, NULL, NULL, NULL, NULL),
 (6, 'EX20260102', 99, 'Smart Farm Booth', NULL, NULL, 'booth', NULL, NULL, NULL, NULL, NULL),
 (7, 'EX20250107', 1, 'Startup Pitch', 'พิตช์บนเวที', NULL, 'activity', NULL, NULL, '2025-11-05 10:00:00', '2025-11-05 12:00:00', NULL),
 (8, 'EX20250108', 1, 'Hardware Lab', 'ทดลองบอร์ด ESP32', NULL, 'booth', NULL, NULL, '2025-11-02 09:00:00', '2025-11-05 18:00:00', NULL),
-(12, 'EX20250109', 1, 'Robotics Lab Demo', '<p>Hands-on robotics challenge this is the bold<strong> what happpend so that is it lkjklkj</strong></p>', '{\"ops\": [{\"insert\": \"Hands-on robotics challenge this is the bold\"}, {\"insert\": \" what happpend so that is it lkjklkj\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1760008335192.png', NULL, '2024-04-30 06:00:00', '2024-04-30 14:00:00', NULL),
-(15, 'EX20250110', 1, 'dfdfkdj', '<ol><li><strong>รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx</strong></li></ol>', '{\"ops\": [{\"insert\": \"รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\", \"attributes\": {\"list\": \"ordered\"}}]}', 'booth', 'uploads/units/EXP1760260365114.png', NULL, '2025-10-11 06:12:00', '2025-10-12 07:14:00', NULL),
-(16, 'EX20250701', 15, 'units test', '<p><strong><em>test</em></strong></p>', '{\"ops\": [{\"insert\": \"test\", \"attributes\": {\"bold\": true, \"italic\": true}}, {\"insert\": \"\\n\"}]}', 'booth', 'uploads/units/EXP1761072122823.png', NULL, '2025-10-21 04:41:00', '2025-10-22 04:41:00', NULL),
-(17, 'EX20250301', 3, 'ทดสอบเพิ่มกิจกรรม', 'resrasl;dfka;sdlfkasdf', NULL, 'activity', 'uploads/units/EXP1761072295328.png', NULL, '2025-10-19 22:44:00', '2025-10-22 22:44:00', NULL),
-(18, 'EX20250302', 3, 'test', 'test', NULL, 'activity', 'uploads/units/EXP1761072379903.png', NULL, '2025-10-20 18:46:00', '2025-10-29 18:46:00', NULL),
-(19, 'EX20250901', 17, 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', 'activity', 'uploads/units/EXP1767176856956.png', NULL, '2025-12-11 20:00:00', '2025-12-31 20:00:00', NULL),
-(20, 'EX20250902', 17, 'tes2', '<p>testa</p>', '{\"ops\": [{\"insert\": \"testa\\n\"}]}', 'booth', 'uploads/units/EXP1767418200023.png', NULL, '2025-12-30 05:29:00', '2026-01-22 05:29:00', NULL);
+(12, 'EX20250109', 1, 'Robotics Lab Demo', '<p>Hands-on robotics challenge this is the bold<strong> what happpend so that is it lkjklkj</strong></p>', '{\"ops\": [{\"insert\": \"Hands-on robotics challenge this is the bold\"}, {\"insert\": \" what happpend so that is it lkjklkj\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\"}]}', 'booth', NULL, NULL, '2024-04-30 06:00:00', '2024-04-30 14:00:00', NULL),
+(15, 'EX20250110', 1, 'dfdfkdj', '<ol><li><strong>รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx</strong></li></ol>', '{\"ops\": [{\"insert\": \"รายละเอียดรายละเอียดรายละเอียดรายละเอียดรายละเอียด zxcvzxcvx\", \"attributes\": {\"bold\": true}}, {\"insert\": \"\\n\", \"attributes\": {\"list\": \"ordered\"}}]}', 'booth', NULL, NULL, '2025-10-11 06:12:00', '2025-10-12 07:14:00', NULL),
+(16, 'EX20250701', 15, 'units test', '<p><strong><em>test</em></strong></p>', '{\"ops\": [{\"insert\": \"test\", \"attributes\": {\"bold\": true, \"italic\": true}}, {\"insert\": \"\\n\"}]}', 'booth', NULL, NULL, '2025-10-21 04:41:00', '2025-10-22 04:41:00', NULL),
+(17, 'EX20250301', 3, 'ทดสอบเพิ่มกิจกรรม', 'resrasl;dfka;sdlfkasdf', NULL, 'activity', NULL, NULL, '2025-10-19 22:44:00', '2025-10-22 22:44:00', NULL),
+(18, 'EX20250302', 3, 'test', 'test', NULL, 'activity', NULL, NULL, '2025-10-20 18:46:00', '2025-10-29 18:46:00', NULL),
+(19, 'EX20250901', 17, 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', 'activity', NULL, NULL, '2025-12-11 20:00:00', '2025-12-31 20:00:00', NULL),
+(20, 'EX20250902', 17, 'tes2', '<p>testa</p>', '{\"ops\": [{\"insert\": \"testa\\n\"}]}', 'booth', NULL, NULL, '2025-12-30 05:29:00', '2026-01-22 05:29:00', NULL);
 
 --
 -- Triggers `units`
@@ -533,7 +581,7 @@ CREATE TABLE `v_exhibition_feedback` (
 ,`created_at` timestamp
 ,`exhibition_id` int
 ,`exhibition_name` varchar(255)
-,`question_topic` varchar(255)
+,`question_topic` text
 ,`score` int
 ,`submission_id` int
 ,`user_id` int
@@ -599,7 +647,7 @@ CREATE TABLE `v_stats_score_by_question` (
 `average_score` decimal(13,2)
 ,`exhibition_name` varchar(255)
 ,`target_name` varchar(255)
-,`topic` varchar(255)
+,`topic` text
 ,`total_voters` bigint
 );
 
@@ -650,7 +698,7 @@ CREATE TABLE `v_unit_feedback` (
 ,`created_at` timestamp
 ,`exhibition_id` int
 ,`exhibition_name` varchar(255)
-,`question_topic` varchar(255)
+,`question_topic` text
 ,`score` int
 ,`submission_id` int
 ,`unit_id` int
@@ -721,11 +769,17 @@ ALTER TABLE `organizer_users`
   ADD UNIQUE KEY `uq_org_email` (`email`);
 
 --
--- Indexes for table `questions`
+-- Indexes for table `questions_template`
 --
-ALTER TABLE `questions`
-  ADD PRIMARY KEY (`question_id`),
-  ADD KEY `fk_questions_set` (`set_id`);
+ALTER TABLE `questions_template`
+  ADD PRIMARY KEY (`qt_id`);
+
+--
+-- Indexes for table `set_question_mapping`
+--
+ALTER TABLE `set_question_mapping`
+  ADD PRIMARY KEY (`set_id`, `qt_id`),
+  ADD KEY `fk_sqm_qt` (`qt_id`);
 
 --
 -- Indexes for table `question_sets`
@@ -747,7 +801,7 @@ ALTER TABLE `registrations`
 ALTER TABLE `survey_answers`
   ADD PRIMARY KEY (`answer_id`),
   ADD KEY `fk_ans_sub` (`submission_id`),
-  ADD KEY `fk_ans_quest` (`question_id`);
+  ADD KEY `fk_ans_mapping` (`set_id`, `qt_id`);
 
 --
 -- Indexes for table `survey_submissions`
@@ -813,10 +867,10 @@ ALTER TABLE `organizer_users`
   MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `questions`
+-- AUTO_INCREMENT for table `questions_template`
 --
-ALTER TABLE `questions`
-  MODIFY `question_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=643;
+ALTER TABLE `questions_template`
+  MODIFY `qt_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `question_sets`
@@ -879,7 +933,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhib
 --
 DROP TABLE IF EXISTS `v_exhibition_feedback`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`appuser`@`%` SQL SECURITY DEFINER VIEW `v_exhibition_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `u`.`user_id` AS `user_id`, `u`.`full_name` AS `user_name`, `q`.`topic` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM ((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `normal_users` `u` on((`s`.`user_id` = `u`.`user_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions` `q` on((`a`.`question_id` = `q`.`question_id`))) WHERE (`s`.`unit_id` is null) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhibition_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `u`.`user_id` AS `user_id`, `u`.`full_name` AS `user_name`, `qt`.`content` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM ((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `normal_users` `u` on((`s`.`user_id` = `u`.`user_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is null) ;
 
 -- --------------------------------------------------------
 
@@ -915,7 +969,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_regis
 --
 DROP TABLE IF EXISTS `v_stats_score_by_question`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_stats_score_by_question`  AS SELECT `e`.`title` AS `exhibition_name`, coalesce(`un`.`unit_name`,'Event Overview') AS `target_name`, `q`.`topic` AS `topic`, count(distinct `s`.`submission_id`) AS `total_voters`, round(avg(`a`.`score`),2) AS `average_score` FROM ((((`survey_answers` `a` join `questions` `q` on((`a`.`question_id` = `q`.`question_id`))) join `survey_submissions` `s` on((`a`.`submission_id` = `s`.`submission_id`))) join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) left join `units` `un` on((`s`.`unit_id` = `un`.`unit_id`))) GROUP BY `e`.`exhibition_id`, `un`.`unit_id`, `q`.`question_id` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_stats_score_by_question`  AS SELECT `e`.`title` AS `exhibition_name`, coalesce(`un`.`unit_name`,'Event Overview') AS `target_name`, `qt`.`content` AS `topic`, count(distinct `s`.`submission_id`) AS `total_voters`, round(avg(`a`.`score`),2) AS `average_score` FROM ((((`survey_answers` `a` join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) join `survey_submissions` `s` on((`a`.`submission_id` = `s`.`submission_id`))) join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) left join `units` `un` on((`s`.`unit_id` = `un`.`unit_id`))) GROUP BY `e`.`exhibition_id`, `un`.`unit_id`, `qt`.`qt_id` ;
 
 -- --------------------------------------------------------
 
@@ -942,7 +996,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units
 --
 DROP TABLE IF EXISTS `v_unit_feedback`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_unit_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `un`.`unit_id` AS `unit_id`, `un`.`unit_name` AS `unit_name`, `u`.`user_id` AS `user_id`, `u`.`full_name` AS `user_name`, `q`.`topic` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM (((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `units` `un` on((`s`.`unit_id` = `un`.`unit_id`))) join `normal_users` `u` on((`s`.`user_id` = `u`.`user_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions` `q` on((`a`.`question_id` = `q`.`question_id`))) WHERE (`s`.`unit_id` is not null) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_unit_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `un`.`unit_id` AS `unit_id`, `un`.`unit_name` AS `unit_name`, `u`.`user_id` AS `user_id`, `u`.`full_name` AS `user_name`, `qt`.`content` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM (((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `units` `un` on((`s`.`unit_id` = `un`.`unit_id`))) join `normal_users` `u` on((`s`.`user_id` = `u`.`user_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is not null) ;
 
 -- --------------------------------------------------------
 
@@ -965,10 +1019,11 @@ ALTER TABLE `exhibitions`
   ADD CONSTRAINT `fk_exh_unit_set` FOREIGN KEY (`unit_set_id`) REFERENCES `question_sets` (`set_id`);
 
 --
--- Constraints for table `questions`
+-- Constraints for table `set_question_mapping`
 --
-ALTER TABLE `questions`
-  ADD CONSTRAINT `fk_questions_set` FOREIGN KEY (`set_id`) REFERENCES `question_sets` (`set_id`) ON DELETE CASCADE;
+ALTER TABLE `set_question_mapping`
+  ADD CONSTRAINT `fk_sqm_set` FOREIGN KEY (`set_id`) REFERENCES `question_sets` (`set_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_sqm_qt` FOREIGN KEY (`qt_id`) REFERENCES `questions_template` (`qt_id`);
 
 --
 -- Constraints for table `registrations`
@@ -981,7 +1036,7 @@ ALTER TABLE `registrations`
 -- Constraints for table `survey_answers`
 --
 ALTER TABLE `survey_answers`
-  ADD CONSTRAINT `fk_ans_quest` FOREIGN KEY (`question_id`) REFERENCES `questions` (`question_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_ans_mapping` FOREIGN KEY (`set_id`, `qt_id`) REFERENCES `set_question_mapping` (`set_id`, `qt_id`),
   ADD CONSTRAINT `fk_ans_sub` FOREIGN KEY (`submission_id`) REFERENCES `survey_submissions` (`submission_id`) ON DELETE CASCADE;
 
 --
