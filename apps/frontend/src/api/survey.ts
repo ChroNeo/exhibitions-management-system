@@ -1,6 +1,7 @@
 import api from "./client";
 import liffClient from './liffClient';
 import type {
+  QuestionsTemplate,
   QuestionWithSet,
   QuestionSetWithQuestions,
   MasterQuestionSet,
@@ -10,6 +11,56 @@ import type {
 } from "../types/survey";
 
 const SURVEY_BASE = "/surveys";
+
+// ─── Questions Template CRUD ───────────────────────────────────────────────
+
+/**
+ * Get all questions from the template bank
+ */
+export async function getQuestionsTemplateApi(
+  category?: string
+): Promise<QuestionsTemplate[]> {
+  const { data } = await api.get<QuestionsTemplate[]>(`${SURVEY_BASE}/questions-template`, {
+    params: category ? { category } : {},
+  });
+  return data;
+}
+
+/**
+ * Create new question(s) in the template bank
+ */
+export async function createQuestionsTemplateApi(
+  questions: Array<{ content: string; category?: string | null }>
+): Promise<QuestionsTemplate[]> {
+  const { data } = await api.post<QuestionsTemplate[]>(
+    `${SURVEY_BASE}/questions-template`,
+    { questions }
+  );
+  return data;
+}
+
+/**
+ * Update a question template
+ */
+export async function updateQuestionTemplateApi(
+  qtId: number,
+  payload: { content: string; category?: string | null }
+): Promise<QuestionsTemplate> {
+  const { data } = await api.put<QuestionsTemplate>(
+    `${SURVEY_BASE}/questions-template/${qtId}`,
+    payload
+  );
+  return data;
+}
+
+/**
+ * Delete a question template
+ */
+export async function deleteQuestionTemplateApi(qtId: number): Promise<void> {
+  await api.delete(`${SURVEY_BASE}/questions-template/${qtId}`);
+}
+
+// ─── Question Sets ─────────────────────────────────────────────────────────
 
 /**
  * Get questions by exhibition ID and optional type (for LIFF - uses ID token)
@@ -74,9 +125,10 @@ export async function updateQuestionSet(
   return data;
 }
 
-// Survey submission types
+// ─── Survey Submission ─────────────────────────────────────────────────────
+
 export interface SurveyAnswer {
-  question_id: number;
+  qt_id: number;
   score: number;
 }
 
@@ -96,10 +148,12 @@ export interface SurveySubmissionResponse {
   created_at: string;
   answers: {
     answer_id: number;
-    question_id: number;
+    set_id: number;
+    qt_id: number;
     score: number;
   }[];
 }
+
 /**
  * Submit survey responses (for LIFF - uses ID token)
  */

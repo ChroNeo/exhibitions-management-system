@@ -14,6 +14,7 @@ import {
 interface CustomQuestion {
   id: string;
   topic: string;
+  qt_id?: number;
   isEditing: boolean;
   originalMasterId?: number;
 }
@@ -37,7 +38,6 @@ export default function CreateSurveyPage() {
   const { data: masterQuestionSets, isLoading: isLoadingMaster } =
     useMasterQuestions(selectedType!, { enabled: !!selectedType });
 
-  // Get the selected master set - memoized to prevent re-renders
   const masterQuestions = useMemo(() => {
     const selectedMasterSet = masterQuestionSets?.find(
       (set) => set.set_id === selectedSetId,
@@ -65,13 +65,13 @@ export default function CreateSurveyPage() {
   // Populate form with existing questions in edit mode
   useEffect(() => {
     if (isEditMode && existingQuestions && existingQuestions.length > 0) {
-      // Convert existing questions to custom questions format
       const existingCustomQuestions: CustomQuestion[] = existingQuestions.map(
         (q) => ({
-          id: `existing-${q.question_id}`,
-          topic: q.topic,
+          id: `existing-${q.qt_id}`,
+          topic: q.content,
+          qt_id: q.qt_id,
           isEditing: false,
-          originalMasterId: q.is_master ? q.question_id : undefined,
+          originalMasterId: q.is_master ? q.qt_id : undefined,
         }),
       );
       setCustomQuestions(existingCustomQuestions);
@@ -86,7 +86,6 @@ export default function CreateSurveyPage() {
     setExcludedMasterIds([]);
   };
 
-  // Auto-select first set when master sets are loaded
   useEffect(() => {
     if (masterQuestionSets && masterQuestionSets.length > 0 && !selectedSetId) {
       setSelectedSetId(masterQuestionSets[0].set_id);
@@ -136,11 +135,11 @@ export default function CreateSurveyPage() {
 
   const handleEditMasterQuestion = useCallback(
     (masterId: number, topic: string) => {
-      // Mark master question as excluded and create editable custom version
       setExcludedMasterIds((prev) => [...prev, masterId]);
       const newQuestion: CustomQuestion = {
         id: `master-${masterId}-${Date.now()}`,
         topic: topic,
+        qt_id: masterId,
         isEditing: true,
         originalMasterId: masterId,
       };
@@ -235,22 +234,31 @@ export default function CreateSurveyPage() {
     }
   };
 
-  // Memoized computed values
   const visibleMasterQuestions = useMemo(() => {
     if (!masterQuestions) return [];
     return masterQuestions.filter(
-      (q) => !excludedMasterIds.includes(q.question_id),
+      (q) => !excludedMasterIds.includes(q.qt_id),
     );
   }, [masterQuestions, excludedMasterIds]);
 
+  // Build the final questions list as { qt_id, sort_order }
   const allQuestionsList = useMemo(() => {
     if (isEditMode && hasLoadedExisting) {
-      return customQuestions.map((q) => ({ topic: q.topic }));
+      return customQuestions
+        .filter((q) => q.qt_id != null)
+        .map((q, i) => ({ qt_id: q.qt_id!, sort_order: i + 1 }));
     }
-    return [
-      ...visibleMasterQuestions.map((q) => ({ topic: q.topic })),
-      ...customQuestions.map((q) => ({ topic: q.topic })),
-    ];
+    const masterList = visibleMasterQuestions.map((q, i) => ({
+      qt_id: q.qt_id,
+      sort_order: i + 1,
+    }));
+    const customList = customQuestions
+      .filter((q) => q.qt_id != null)
+      .map((q, i) => ({
+        qt_id: q.qt_id!,
+        sort_order: masterList.length + i + 1,
+      }));
+    return [...masterList, ...customList];
   }, [isEditMode, hasLoadedExisting, customQuestions, visibleMasterQuestions]);
 
   const surveyTypeLabel =
@@ -320,7 +328,6 @@ export default function CreateSurveyPage() {
                   const newSetId = Number(e.target.value);
 
                   if (isEditMode) {
-                    // Warn user in edit mode that this will replace existing questions
                     const result = await Swal.fire({
                       title: "เปลี่ยน Template?",
                       text: "การเปลี่ยน template จะแทนที่คำถามทั้งหมดที่คุณแก้ไขแล้ว คุณแน่ใจหรือไม่?",
@@ -358,16 +365,13 @@ export default function CreateSurveyPage() {
               <div className={styles.section}>
                 <h2>Questions</h2>
                 <div>
-                  {/* Show master questions only if not in edit mode OR if in edit mode but hasn't loaded existing questions from DB */}
                   {(!isEditMode || !hasLoadedExisting) &&
                     masterQuestions?.map((masterQuestion, index) => {
-                      // Check if this master question is being edited
                       const editedVersion = customQuestions.find(
                         (q) =>
-                          q.originalMasterId === masterQuestion.question_id,
+                          q.originalMasterId === masterQuestion.qt_id,
                       );
 
-                      // If being edited, show the custom version
                       if (editedVersion) {
                         return (
                           <QuestionItem
@@ -390,32 +394,30 @@ export default function CreateSurveyPage() {
                         );
                       }
 
-                      // If deleted, don't show anything
                       if (
-                        excludedMasterIds.includes(masterQuestion.question_id)
+                        excludedMasterIds.includes(masterQuestion.qt_id)
                       ) {
                         return null;
                       }
 
-                      // Otherwise show the master question
                       return (
                         <QuestionItem
-                          key={masterQuestion.question_id}
-                          id={masterQuestion.question_id}
-                          topic={masterQuestion.topic}
+                          key={masterQuestion.qt_id}
+                          id={masterQuestion.qt_id}
+                          topic={masterQuestion.content}
                           questionNumber={index + 1}
                           isEditing={false}
                           onUpdateTopic={() => {}}
                           onConfirm={() => {}}
                           onEdit={() =>
                             handleEditMasterQuestion(
-                              masterQuestion.question_id,
-                              masterQuestion.topic,
+                              masterQuestion.qt_id,
+                              masterQuestion.content,
                             )
                           }
                           onDelete={() =>
                             handleDeleteMasterQuestion(
-                              masterQuestion.question_id,
+                              masterQuestion.qt_id,
                             )
                           }
                         />
