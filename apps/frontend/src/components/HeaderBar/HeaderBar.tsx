@@ -133,11 +133,27 @@ export default function HeaderBar({
         </label>
 
         <div
-          className={styles.left}
+          className={styles.brand}
           onClick={() => navigate("/")}
-          style={{ cursor: "pointer" }}
         >
-          Exhibition Management System
+          <svg
+            className={styles.logo}
+            viewBox="0 0 32 32"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect x="2" y="2" width="28" height="28" rx="6" fill="#2E4F8B" />
+            <rect x="6" y="6" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.92" />
+            <rect x="13.25" y="6" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.75" />
+            <rect x="20.5" y="6" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.92" />
+            <rect x="6" y="13.25" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.75" />
+            <rect x="13.25" y="13.25" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.95" />
+            <rect x="20.5" y="13.25" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.75" />
+            <rect x="6" y="20.5" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.92" />
+            <rect x="13.25" y="20.5" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.75" />
+            <rect x="20.5" y="20.5" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.92" />
+          </svg>
+          <span className={styles.brandText}>Exhibition Management</span>
         </div>
 
         {/* เมนูหลัก */}
