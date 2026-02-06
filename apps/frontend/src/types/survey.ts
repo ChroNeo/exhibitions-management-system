@@ -1,30 +1,37 @@
 export type QuestionType = "EXHIBITION" | "UNIT";
 
-export interface Question {
-  question_id: number;
-  topic: string;
-  is_master: boolean;
-  created_at: string;
+export interface QuestionsTemplate {
+  qt_id: number;
+  content: string;
+  category: string | null;
 }
 
-export interface QuestionSet {
-  question_set_id: number;
-  exhibition_id: number;
-  type: QuestionType;
-  created_at: string;
+export interface QuestionInSet {
+  qt_id: number;
+  content: string;
+  category: string | null;
+  sort_order: number;
 }
 
 export interface QuestionWithSet {
-  question_id: number;
+  qt_id: number;
   set_id: number;
-  topic: string;
+  content: string;
+  sort_order: number;
   set_name: string;
   set_type: QuestionType;
   is_master: number;
 }
 
+export interface QuestionSet {
+  set_id: number;
+  name: string;
+  is_master: number;
+  type: QuestionType;
+}
+
 export interface QuestionSetWithQuestions extends QuestionSet {
-  questions: Question[];
+  questions: QuestionInSet[];
 }
 
 export interface MasterQuestionSet {
@@ -32,18 +39,15 @@ export interface MasterQuestionSet {
   name: string;
   is_master: number;
   type: QuestionType;
-  questions: {
-    question_id: number;
-    set_id: number;
-    topic: string;
-  }[];
+  questions: QuestionInSet[];
 }
 
 export interface CreateQuestionSetPayload {
   exhibition_id: number;
   type: QuestionType;
   questions: {
-    topic: string;
+    qt_id: number;
+    sort_order: number;
   }[];
 }
 
