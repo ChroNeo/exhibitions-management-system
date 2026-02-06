@@ -1,8 +1,7 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Plus, Search } from "lucide-react";
 import Swal from "sweetalert2";
-import AddInline from "../../components/AddInline/AddInline";
-import CustomSelect from "../../components/CustomSelect/CustomSelect";
 import ExhibitionList from "../../components/exhibition/ExhibitionList";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import {
@@ -13,35 +12,33 @@ import {
 import type { Exhibition } from "../../types/exhibition";
 import styles from "./ExManagePage.module.css";
 
+const STATUS_OPTIONS = [
+  { value: "", label: "ทุกสถานะ" },
+  { value: "draft", label: "Draft" },
+  { value: "published", label: "Published" },
+  { value: "ongoing", label: "Ongoing" },
+  { value: "ended", label: "Ended" },
+  { value: "archived", label: "Archived" },
+];
+
 export default function ExhibitionPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const STATUS_OPTIONS = [
-    { value: "", label: "ทุกสถานะ" },
-    { value: "draft", label: "Draft" },
-    { value: "published", label: "Published" },
-    { value: "ongoing", label: "Ongoing" },
-    { value: "ended", label: "Ended" },
-    { value: "archived", label: "Archived" },
-  ];
+
   // Handle LIFF redirect with exhibitionId query parameter
   useEffect(() => {
-    // First check direct exhibitionId param
     let exhibitionId = searchParams.get("exhibitionId");
 
-    // If not found, check liff.state (LIFF encodes path/query as liff.state)
     if (!exhibitionId) {
       const liffState = searchParams.get("liff.state");
       if (liffState) {
-        // liff.state could be "?exhibitionId=1" or "/1"
         const stateParams = new URLSearchParams(
           liffState.replace(/^\/?\??/, ""),
         );
         exhibitionId = stateParams.get("exhibitionId");
 
-        // Also handle path format like "/1"
         if (!exhibitionId && liffState.startsWith("/")) {
           exhibitionId = liffState.slice(1);
         }
@@ -52,8 +49,8 @@ export default function ExhibitionPage() {
       navigate(`/exhibitions/${exhibitionId}`, { replace: true });
     }
   }, [searchParams, navigate]);
-  const isAuthenticated = useAuthStatus();
 
+  const isAuthenticated = useAuthStatus();
   const { data, isLoading, isError } = useExhibitions();
   const items: Exhibition[] = useMemo(() => data ?? [], [data]);
   const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } =
@@ -71,15 +68,6 @@ export default function ExhibitionPage() {
       return matchSearch && matchStatus;
     });
   }, [items, search, statusFilter]);
-  // const filtered = useMemo(() => {
-  //   const q = query.trim().toLowerCase();
-  //   if (!q) return items;
-  //   return items.filter((x) =>
-  //     [x.title, x.description, x.location].some((t) =>
-  //       (t || "").toLowerCase().includes(q),
-  //     ),
-  //   );
-  // }, [items, query]);
 
   const handleAdd = () => {
     navigate("/exhibitions/new");
@@ -125,72 +113,72 @@ export default function ExhibitionPage() {
   };
 
   return (
-    <div>
+    <div className={styles.page}>
       <HeaderBar
         active="exhibition_unit"
         onLoginClick={() => navigate("/login")}
       />
-      <div className={styles.toolbar}>
-        <input
-          className={styles.searchInput}
-          type="text"
-          placeholder="ค้นหานิทรรศการ..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <CustomSelect
-          options={STATUS_OPTIONS}
-          value={statusFilter}
-          onChange={setStatusFilter}
-          placeholder="ทุกสถานะ"
-        />
+
+      {/* Page header */}
+      <div className={styles.pageHeader}>
+        <div>
+          <h1 className={styles.pageTitle}>จัดการนิทรรศการ</h1>
+          <p className={styles.pageSubtitle}>
+            จัดการและติดตามนิทรรศการทั้งหมดของคุณ
+          </p>
+        </div>
+        {isAuthenticated && (
+          <button
+            type="button"
+            className={styles.addBtn}
+            onClick={handleAdd}
+          >
+            <Plus size={16} />
+            เพิ่มนิทรรศการ
+          </button>
+        )}
       </div>
 
-      <div className="container">
-        <section className={styles.panel}>
-          <div className={styles.header}>
-            <h2 className={styles.title}>จัดการนิทรรศการ</h2>
-          </div>
-          <div className="cardWrap">
-            {isLoading && <div>Loading exhibitions...</div>}
-            {isError && <div>Failed to load exhibitions</div>}
-            {!isLoading && !isError && (
-              <>
-                <ExhibitionList
-                  items={filtered}
-                  onSelect={handleSelect}
-                  onEdit={isAuthenticated ? handleEdit : undefined}
-                  onDelete={isAuthenticated ? handleDelete : undefined}
-                />
-                {isAuthenticated && (
-                  <AddInline
-                    variant="floating"
-                    label="เพิ่มนิทรรศการ"
-                    ariaLabel="เพิ่มนิทรรศการ"
-                    onClick={handleAdd}
-                  />
-                )}
-              </>
-            )}
-            {isDeleting && <div>กำลังลบ...</div>}
-          </div>
-        </section>
+      {/* Toolbar: search + filter chips */}
+      <div className={styles.toolbar}>
+        <div className={styles.searchBox}>
+          <Search size={18} className={styles.searchIcon} />
+          <input
+            className={styles.searchInput}
+            type="text"
+            placeholder="ค้นหานิทรรศการ..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className={styles.filterChips}>
+          {STATUS_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={`${styles.chip}${statusFilter === opt.value ? ` ${styles.chipActive}` : ""}`}
+              onClick={() => setStatusFilter(opt.value)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Exhibition grid */}
+      <div className={styles.grid}>
+        {isLoading && <div className={styles.loading}>Loading exhibitions...</div>}
+        {isError && <div className={styles.error}>Failed to load exhibitions</div>}
+        {!isLoading && !isError && (
+          <ExhibitionList
+            items={filtered}
+            onSelect={handleSelect}
+            onEdit={isAuthenticated ? handleEdit : undefined}
+            onDelete={isAuthenticated ? handleDelete : undefined}
+          />
+        )}
+        {isDeleting && <div className={styles.loading}>กำลังลบ...</div>}
       </div>
     </div>
   );
 }
-
-// return (
-//   <div>
-
-//     <Panel title="จัดการนิทรรศการ">
-//       <ExhibitionList
-//         items={filtered}
-//           onSelect={handleSelect}
-//           onEdit={handleEdit}
-//           onDelete={handleDelete}
-//       />
-//       {isDeleting && <div style={{ marginTop: 12 }}>กำลังลบ...</div>}
-//     </Panel>
-//   </div>
-// );
