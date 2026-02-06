@@ -3,30 +3,35 @@
   background: var(--bg);
 }
 
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px);
+}
+
 /* ── Page Header ── */
 
 .pageHeader {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 40px 0;
+  padding-top: clamp(24px, 4vw, 40px);
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .pageTitle {
-  font-size: clamp(1.75rem, 3vw + 0.5rem, 2.25rem);
+  font-size: clamp(26px, 5vw, 36px);
   font-weight: 700;
-  color: var(--text);
+  color: var(--ink);
   margin: 0;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
 }
 
 .pageSubtitle {
-  color: var(--muted);
-  font-size: 15px;
-  margin-top: 6px;
+  color: var(--ink-muted);
+  font-size: clamp(13px, 2vw, 15px);
+  margin-top: 4px;
 }
 
 .addBtn {
@@ -36,72 +41,115 @@
   background: var(--brand);
   color: #fff;
   border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
+  padding: 11px 22px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+  transition: var(--transition);
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(46, 79, 139, 0.25);
+  box-shadow: 0 2px 8px rgba(196, 93, 62, 0.25);
 }
 
 .addBtn:hover {
   background: var(--base);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(46, 79, 139, 0.35);
+  box-shadow: 0 4px 16px rgba(196, 93, 62, 0.35);
 }
 
 .addBtn:active {
   transform: translateY(0);
 }
 
+/* ── Stats Bar ── */
+
+.statsBar {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.statCard {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  border: 1px solid var(--border-light);
+  transition: var(--transition);
+}
+
+.statCard:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.statValue {
+  font-size: clamp(22px, 4vw, 28px);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.statSuccess .statValue {
+  color: #2d8a54;
+}
+
+.statAccent .statValue {
+  color: var(--accent);
+}
+
 /* ── Toolbar ── */
 
 .toolbar {
-  max-width: 1200px;
-  margin: 24px auto 0;
-  padding: 0 40px;
+  margin-top: 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .searchBox {
   flex: 1;
   position: relative;
+  min-width: 0;
 }
 
 .searchIcon {
   position: absolute;
-  left: 16px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--muted);
+  color: var(--ink-muted);
   pointer-events: none;
 }
 
 .searchInput {
   width: 100%;
-  padding: 12px 16px 12px 46px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  padding: 11px 14px 11px 42px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-family: inherit;
-  background: #fff;
-  color: var(--text);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  background: var(--surface);
+  color: var(--ink);
+  transition: var(--transition);
   outline: none;
 }
 
 .searchInput::placeholder {
-  color: var(--muted);
+  color: var(--ink-muted);
 }
 
 .searchInput:focus {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(46, 79, 139, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(196, 93, 62, 0.1);
 }
 
 /* ── Filter Chips ── */
@@ -109,74 +157,171 @@
 .filterChips {
   display: flex;
   gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.filterChips::-webkit-scrollbar {
+  display: none;
 }
 
 .chip {
-  padding: 10px 18px;
+  padding: 9px 16px;
   border-radius: 100px;
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: var(--muted);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-light);
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: var(--transition);
   white-space: nowrap;
 }
 
 .chip:hover {
-  border-color: var(--muted);
-  color: var(--text);
+  border-color: var(--ink-muted);
+  color: var(--ink);
 }
 
 .chipActive {
-  background: var(--text);
-  color: #fff;
-  border-color: var(--text);
+  background: var(--ink);
+  color: white;
+  border-color: var(--ink);
 }
 
 /* ── Grid area ── */
 
 .grid {
-  max-width: 1200px;
-  margin: 28px auto 0;
-  padding: 0 40px 80px;
+  margin-top: 24px;
+  padding-bottom: 80px;
 }
 
 .loading,
 .error {
   text-align: center;
   padding: 80px 20px;
-  color: var(--muted);
+  color: var(--ink-muted);
   font-size: 15px;
+}
+
+/* ── FAB (mobile only) ── */
+
+.fab {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 150;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--brand);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 20px rgba(196, 93, 62, 0.4);
+  cursor: pointer;
+  transition: var(--transition);
+  align-items: center;
+  justify-content: center;
+}
+
+.fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 28px rgba(196, 93, 62, 0.5);
+}
+
+.fab:active {
+  transform: scale(0.97);
 }
 
 /* ── Responsive ── */
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  .desktopAdd {
+    display: none;
+  }
+
+  .fab {
+    display: flex;
+  }
+
+  .statsBar {
+    gap: 8px;
+  }
+
+  .statCard {
+    padding: 14px 14px;
+  }
+}
+
+@media (max-width: 600px) {
   .pageHeader {
-    padding: 28px 20px 0;
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+    padding-top: 20px;
   }
 
   .pageTitle {
-    font-size: 1.5rem;
+    font-size: 24px;
+  }
+
+  .statsBar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .statCard {
+    padding: 12px 14px;
+  }
+
+  .statLabel {
+    font-size: 10px;
+  }
+
+  .statValue {
+    font-size: 22px;
   }
 
   .toolbar {
-    padding: 0 20px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .searchInput {
+    padding: 10px 12px 10px 38px;
+    font-size: 13px;
+  }
+
+  .searchIcon {
+    left: 12px;
   }
 
   .filterChips {
-    overflow-x: auto;
     width: 100%;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
+  }
+
+  .chip {
+    padding: 8px 14px;
+    font-size: 12px;
   }
 
   .grid {
-    padding: 0 20px 60px;
+    margin-top: 18px;
+    padding-bottom: 100px;
+  }
+
+  .fab {
+    bottom: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
   }
 }

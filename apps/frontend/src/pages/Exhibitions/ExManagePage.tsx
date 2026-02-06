@@ -1,6 +1,6 @@
+import { Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Plus, Search } from "lucide-react";
 import Swal from "sweetalert2";
 import ExhibitionList from "../../components/exhibition/ExhibitionList";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
@@ -14,11 +14,11 @@ import styles from "./ExManagePage.module.css";
 
 const STATUS_OPTIONS = [
   { value: "", label: "ทุกสถานะ" },
-  { value: "draft", label: "Draft" },
-  { value: "published", label: "Published" },
-  { value: "ongoing", label: "Ongoing" },
-  { value: "ended", label: "Ended" },
-  { value: "archived", label: "Archived" },
+  { value: "draft", label: "ร่าง" },
+  { value: "published", label: "เผยแพร่" },
+  { value: "ongoing", label: "กำลังจัด" },
+  { value: "ended", label: "จบงาน" },
+  { value: "archived", label: "เก็บ" },
 ];
 
 export default function ExhibitionPage() {
@@ -55,6 +55,15 @@ export default function ExhibitionPage() {
   const items: Exhibition[] = useMemo(() => data ?? [], [data]);
   const { mutateAsync: deleteExhibitionAsync, isPending: isDeleting } =
     useDeleteExhibition();
+
+  // Stats
+  const stats = useMemo(() => {
+    const total = items.length;
+    const ongoing = items.filter((e) => e.status === "ongoing").length;
+    const published = items.filter((e) => e.status === "published").length;
+    const ended = items.filter((e) => e.status === "ended").length;
+    return { total, ongoing, published, ended };
+  }, [items]);
 
   const filtered = useMemo(() => {
     if (!items) return [];
@@ -119,66 +128,104 @@ export default function ExhibitionPage() {
         onLoginClick={() => navigate("/login")}
       />
 
-      {/* Page header */}
-      <div className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.pageTitle}>จัดการนิทรรศการ</h1>
-          <p className={styles.pageSubtitle}>
-            จัดการและติดตามนิทรรศการทั้งหมดของคุณ
-          </p>
-        </div>
-        {isAuthenticated && (
-          <button
-            type="button"
-            className={styles.addBtn}
-            onClick={handleAdd}
-          >
-            <Plus size={16} />
-            เพิ่มนิทรรศการ
-          </button>
-        )}
-      </div>
-
-      {/* Toolbar: search + filter chips */}
-      <div className={styles.toolbar}>
-        <div className={styles.searchBox}>
-          <Search size={18} className={styles.searchIcon} />
-          <input
-            className={styles.searchInput}
-            type="text"
-            placeholder="ค้นหานิทรรศการ..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className={styles.filterChips}>
-          {STATUS_OPTIONS.map((opt) => (
+      <div className={styles.container}>
+        {/* Page header */}
+        <div className={styles.pageHeader}>
+          <div>
+            <h1 className={styles.pageTitle}>จัดการนิทรรศการ</h1>
+            <p className={styles.pageSubtitle}>
+              จัดการและติดตามนิทรรศการทั้งหมดของคุณ
+            </p>
+          </div>
+          {isAuthenticated && (
             <button
-              key={opt.value}
               type="button"
-              className={`${styles.chip}${statusFilter === opt.value ? ` ${styles.chipActive}` : ""}`}
-              onClick={() => setStatusFilter(opt.value)}
+              className={`${styles.addBtn} ${styles.desktopAdd}`}
+              onClick={handleAdd}
             >
-              {opt.label}
+              <Plus size={16} />
+              เพิ่มนิทรรศการ
             </button>
-          ))}
+          )}
+        </div>
+
+        {/* Stats bar */}
+        <div className={styles.statsBar}>
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>ทั้งหมด</div>
+            <div className={styles.statValue}>{stats.total}</div>
+          </div>
+          <div className={`${styles.statCard} ${styles.statSuccess}`}>
+            <div className={styles.statLabel}>กำลังจัด</div>
+            <div className={styles.statValue}>{stats.ongoing}</div>
+          </div>
+          <div className={`${styles.statCard} ${styles.statAccent}`}>
+            <div className={styles.statLabel}>เผยแพร่</div>
+            <div className={styles.statValue}>{stats.published}</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>จบงาน</div>
+            <div className={styles.statValue}>{stats.ended}</div>
+          </div>
+        </div>
+
+        {/* Toolbar: search + filter chips */}
+        <div className={styles.toolbar}>
+          <div className={styles.searchBox}>
+            <Search size={18} className={styles.searchIcon} />
+            <input
+              className={styles.searchInput}
+              type="text"
+              placeholder="ค้นหานิทรรศการ..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className={styles.filterChips}>
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`${styles.chip}${statusFilter === opt.value ? ` ${styles.chipActive}` : ""}`}
+                onClick={() => setStatusFilter(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Exhibition grid */}
+        <div className={styles.grid}>
+          {isLoading && (
+            <div className={styles.loading}>Loading exhibitions...</div>
+          )}
+          {isError && (
+            <div className={styles.error}>Failed to load exhibitions</div>
+          )}
+          {!isLoading && !isError && (
+            <ExhibitionList
+              items={filtered}
+              onSelect={handleSelect}
+              onEdit={isAuthenticated ? handleEdit : undefined}
+              onDelete={isAuthenticated ? handleDelete : undefined}
+            />
+          )}
+          {isDeleting && <div className={styles.loading}>กำลังลบ...</div>}
         </div>
       </div>
 
-      {/* Exhibition grid */}
-      <div className={styles.grid}>
-        {isLoading && <div className={styles.loading}>Loading exhibitions...</div>}
-        {isError && <div className={styles.error}>Failed to load exhibitions</div>}
-        {!isLoading && !isError && (
-          <ExhibitionList
-            items={filtered}
-            onSelect={handleSelect}
-            onEdit={isAuthenticated ? handleEdit : undefined}
-            onDelete={isAuthenticated ? handleDelete : undefined}
-          />
-        )}
-        {isDeleting && <div className={styles.loading}>กำลังลบ...</div>}
-      </div>
+      {/* FAB for mobile */}
+      {isAuthenticated && (
+        <button
+          type="button"
+          className={styles.fab}
+          onClick={handleAdd}
+          aria-label="เพิ่มนิทรรศการ"
+        >
+          <Plus size={24} />
+        </button>
+      )}
     </div>
   );
 }
