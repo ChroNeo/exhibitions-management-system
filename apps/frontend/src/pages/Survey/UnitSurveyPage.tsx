@@ -9,7 +9,7 @@ import { isLiffMockEnabled } from "../../hooks/useLiff";
 import styles from "../Survey/ExhibitionSurvey.module.css";
 
 interface SurveyAnswer {
-  question_id: number;
+  qt_id: number;
   rating: number;
 }
 
@@ -37,13 +37,13 @@ export default function UnitSurveyPage() {
 
   const handleRatingChange = (questionId: number, rating: number) => {
     setAnswers((prev) => {
-      const existing = prev.find((a) => a.question_id === questionId);
+      const existing = prev.find((a) => a.qt_id === questionId);
       if (existing) {
         return prev.map((a) =>
-          a.question_id === questionId ? { ...a, rating } : a
+          a.qt_id === questionId ? { ...a, rating } : a
         );
       }
-      return [...prev, { question_id: questionId, rating }];
+      return [...prev, { qt_id: questionId, rating }];
     });
   };
 
@@ -90,7 +90,7 @@ export default function UnitSurveyPage() {
         unit_id: Number(unitId),
         comment: comment || undefined,
         answers: answers.map((a) => ({
-          question_id: a.question_id,
+          qt_id: a.qt_id,
           score: a.rating,
         })),
       });
@@ -205,19 +205,19 @@ export default function UnitSurveyPage() {
               {state.data.questions && state.data.questions.length > 0 ? (
               <>
                 {state.data.questions.map((question, index) => (
-              <div key={question.question_id} className={styles.questionCard}>
+              <div key={question.qt_id} className={styles.questionCard}>
                 <h3 className={styles.questionTitle}>
-                  {index + 1}. {question.topic}
+                  {index + 1}. {question.content}
                 </h3>
                 <div className={styles.ratingContainer}>
                   {[1, 2, 3, 4, 5].map((rating) => (
                     <label key={rating} className={styles.ratingLabel}>
                       <input
                         type="radio"
-                        name={`question-${question.question_id}`}
+                        name={`question-${question.qt_id}`}
                         value={rating}
                         onChange={() =>
-                          handleRatingChange(question.question_id, rating)
+                          handleRatingChange(question.qt_id, rating)
                         }
                         className={styles.ratingInput}
                       />

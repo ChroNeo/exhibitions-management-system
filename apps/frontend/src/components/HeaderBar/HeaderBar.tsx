@@ -1,25 +1,15 @@
-﻿import {
-  useCallback,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
-import { LogOut, UserCircle } from "lucide-react";
+import { LogOut, Menu, UserCircle, X } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./HeaderBar.module.css";
-import { clearAuth } from "../../utils/authStorage";
 import { useAuthStatus, useAuthUser } from "../../hooks";
+import { clearAuth } from "../../utils/authStorage";
+import styles from "./HeaderBar.module.css";
 
-// เพิ่ม "home" เข้ามาใน type
 type TabId = "home" | "exhibition_unit" | "admin";
 
-// เพิ่มแท็บ "หน้าแรก"
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "exhibition_unit", label: "นิทรรศการ & กิจกรรม" },
 ];
-
 
 export default function HeaderBar({
   active = "home",
@@ -31,196 +21,160 @@ export default function HeaderBar({
   onLogoutClick?: () => void;
 }) {
   const navigate = useNavigate();
-  const navRef = useRef<HTMLElement | null>(null);
-  const toggleRef = useRef<HTMLInputElement>(null);
-  const toggleId = useId().replace(/:/g, "-");
-  const navId = `${toggleId}-nav`;
-
-  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
-    home: null,
-    exhibition_unit: null,
-    admin: null,
-  });
-
-  const indicatorTargetRef = useRef<TabId>(active);
-  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
   const hasAuth = useAuthStatus();
   const user = useAuthUser();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const visibleTabs = hasAuth
     ? user?.role === "admin"
       ? [...TABS, { id: "admin" as TabId, label: "แผงควบคุม" }]
       : TABS
     : [];
 
-  const updateIndicator = useCallback((tabId: TabId) => {
-    indicatorTargetRef.current = tabId;
-    const navEl = navRef.current;
-    const tabEl = tabRefs.current[tabId];
+  const handleTabClick = useCallback(
+    (id: TabId) => {
+      if (id === "home") navigate("/");
+      if (id === "exhibition_unit") navigate("/exhibitions");
+      if (id === "admin") navigate("/admin");
+      setMobileOpen(false);
+    },
+    [navigate],
+  );
 
-    if (!navEl || !tabEl) {
-      setIndicatorStyle({ width: 0, left: 0 });
-      return;
-    }
-
-    const navRect = navEl.getBoundingClientRect();
-    const tabRect = tabEl.getBoundingClientRect();
-
-    setIndicatorStyle({
-      width: tabRect.width,
-      left: tabRect.left - navRect.left,
-    });
-  }, []);
-
-  useLayoutEffect(() => {
-    updateIndicator(active);
-  }, [active, updateIndicator]);
-
-  useEffect(() => {
-    const handleResize = () => updateIndicator(indicatorTargetRef.current);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [updateIndicator]);
-
-  const closeMenu = () => {
-    if (toggleRef.current?.checked) toggleRef.current.checked = false;
-  };
-
-  const handleTabClick = (id: TabId) => {
-    if (id === "home") navigate("/");
-    if (id === "exhibition_unit") navigate("/exhibitions");
-    if (id === "admin") navigate("/admin");
-    closeMenu();
-  };
-
-  const handleLoginClick = () => {
-    closeMenu();
-
+  const handleLoginClick = useCallback(() => {
+    setMobileOpen(false);
     if (hasAuth) {
       clearAuth();
       onLogoutClick?.();
-      if (!onLogoutClick) {
-        navigate("/");
-      }
+      if (!onLogoutClick) navigate("/");
       return;
     }
+    if (onLoginClick) onLoginClick();
+    else navigate("/login");
+  }, [hasAuth, navigate, onLoginClick, onLogoutClick]);
 
-    if (onLoginClick) {
-      onLoginClick();
-    } else {
-      navigate("/login");
-    }
-  };
+  const userInitial = user?.username?.[0]?.toUpperCase() ?? "A";
 
   return (
-    <header className={styles.bar}>
-      <div className={styles.row}>
-        <input
-          ref={toggleRef}
-          type="checkbox"
-          id={toggleId}
-          className={styles.toggle}
-          aria-label="Toggle navigation menu"
-          aria-controls={navId}
-        />
-        <label
-          htmlFor={toggleId}
-          className={styles.hamburger}
-          aria-hidden="true"
-        >
-          <span className={styles.hamburgerBar} />
-          <span className={styles.hamburgerBar} />
-          <span className={styles.hamburgerBar} />
-        </label>
+    <>
+      <header className={styles.bar}>
+        <div className={styles.row}>
+          {/* Brand */}
+          <div className={styles.brand} onClick={() => navigate("/")}>
+            <div className={styles.brandIcon}>
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="2" y="2" width="12" height="12" rx="2" />
+                <path d="M2 7h12M7 2v12" />
+              </svg>
+            </div>
+            <span className={styles.brandText}>Exhibition Management</span>
+          </div>
 
-        <div
-          className={styles.brand}
-          onClick={() => navigate("/")}
-        >
-          <svg
-            className={styles.logo}
-            viewBox="0 0 32 32"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
+          {/* Desktop nav links */}
+          <div className={styles.navLinks}>
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`${styles.navLink}${active === tab.id ? ` ${styles.navLinkActive}` : ""}`}
+                onClick={() => handleTabClick(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+            {hasAuth ? (
+              <div
+                className={styles.avatar}
+                onClick={handleLoginClick}
+                title="ออกจากระบบ"
+              >
+                {userInitial}
+              </div>
+            ) : (
+              <button
+                type="button"
+                className={styles.navLink}
+                onClick={handleLoginClick}
+              >
+                <UserCircle size={20} />
+              </button>
+            )}
+          </div>
+
+          {/* Hamburger (mobile) */}
+          <button
+            type="button"
+            className={styles.hamburger}
+            onClick={() => setMobileOpen(true)}
+            aria-label="เปิดเมนู"
           >
-            <rect x="2" y="2" width="28" height="28" rx="6" fill="#2E4F8B" />
-            <rect x="6" y="6" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.92" />
-            <rect x="13.25" y="6" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.75" />
-            <rect x="20.5" y="6" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.92" />
-            <rect x="6" y="13.25" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.75" />
-            <rect x="13.25" y="13.25" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.95" />
-            <rect x="20.5" y="13.25" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.75" />
-            <rect x="6" y="20.5" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.92" />
-            <rect x="13.25" y="20.5" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.75" />
-            <rect x="20.5" y="20.5" width="5.5" height="5.5" rx="1.2" fill="#fff" opacity="0.92" />
-          </svg>
-          <span className={styles.brandText}>Exhibition Management</span>
+            <Menu size={20} />
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile overlay + slide menu */}
+      <div
+        className={`${styles.overlay}${mobileOpen ? ` ${styles.overlayOpen}` : ""}`}
+        onClick={() => setMobileOpen(false)}
+      />
+      <div
+        className={`${styles.mobileMenu}${mobileOpen ? ` ${styles.mobileMenuOpen}` : ""}`}
+      >
+        <div className={styles.mobileHeader}>
+          <h3 className={styles.mobileTitle}>เมนู</h3>
+          <button
+            type="button"
+            className={styles.mobileClose}
+            onClick={() => setMobileOpen(false)}
+          >
+            <X size={16} />
+          </button>
         </div>
 
-        {/* เมนูหลัก */}
-        <nav
-          ref={navRef}
-          className={styles.tabs}
-          id={navId}
-          aria-label="Main navigation"
-          onMouseLeave={() => updateIndicator(active)}
-        >
-          {/* indicator bar */}
-          <span
-            className={styles.tabIndicator}
-            style={{
-              width: `${indicatorStyle.width}px`,
-              transform: `translateX(${indicatorStyle.left}px)`,
-              opacity: indicatorStyle.width ? 1 : 0,
-            }}
-            aria-hidden="true"
-          />
-
+        <div className={styles.mobileLinks}>
           {visibleTabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
-              className={`${styles.tab}${
-                active === tab.id ? ` ${styles.tabActive}` : ""
-              }`}
+              className={`${styles.mobileLink}${active === tab.id ? ` ${styles.mobileLinkActive}` : ""}`}
               onClick={() => handleTabClick(tab.id)}
-              onMouseEnter={() => updateIndicator(tab.id)}
-              onFocus={() => updateIndicator(tab.id)}
-              onBlur={(event) => {
-                const next = event.relatedTarget as Element | null;
-                if (
-                  !next ||
-                  !event.currentTarget.parentElement?.contains(next)
-                ) {
-                  updateIndicator(active);
-                }
-              }}
-              aria-current={active === tab.id ? "page" : undefined}
-              ref={(node) => {
-                tabRefs.current[tab.id] = node;
-              }}
             >
               {tab.label}
             </button>
           ))}
-        </nav>
+        </div>
 
-        {/* ปุ่มผู้ใช้ */}
-        <div className={styles.right}>
-          <button
-            type="button"
-            className={styles.login}
-            onClick={handleLoginClick}
-            aria-label={hasAuth ? "Logout" : "Account menu"}
-          >
-            {hasAuth ? (
-              <LogOut size={22} aria-hidden="true" />
-            ) : (
-              <UserCircle size={22} aria-hidden="true" />
-            )}
-          </button>
+        <div className={styles.mobileFooter}>
+          {hasAuth ? (
+            <button
+              type="button"
+              className={styles.mobileLink}
+              onClick={handleLoginClick}
+            >
+              <LogOut size={18} />
+              ออกจากระบบ
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.mobileLink}
+              onClick={handleLoginClick}
+            >
+              <UserCircle size={18} />
+              เข้าสู่ระบบ
+            </button>
+          )}
         </div>
       </div>
-    </header>
+    </>
   );
 }
-

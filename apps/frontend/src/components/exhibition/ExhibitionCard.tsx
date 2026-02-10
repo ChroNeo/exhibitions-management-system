@@ -1,4 +1,4 @@
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Eye, Trash2 } from "lucide-react";
 import {
   useEffect,
   useState,
@@ -71,7 +71,13 @@ export default function ExhibitionCard({
     startISO && endISO
       ? toThaiTimeRange(startISO, endISO)
       : (item.dateText.split("|")[1]?.trim() ?? "");
+
   const hasActions = Boolean(onEdit || onDelete);
+
+  const handleViewClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onSelect?.(item.id);
+  };
 
   const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -112,79 +118,81 @@ export default function ExhibitionCard({
       onKeyDown={handleKeyDown}
       aria-label={onSelect ? `เปิดดู ${item.title}` : undefined}
     >
-      <div className={styles.inner}>
-        <div className={styles.media}>
-          <div className={styles.cover_container}>
-            <img
-              src={posterSrc}
-              alt={item.title}
-              className={styles.cover}
-              loading="lazy"
-              onError={() => {
-                if (posterSrc === FALLBACK_POSTER) return;
-                setPosterSrc(FALLBACK_POSTER);
-              }}
-            />
-          </div>
+      {/* Image with overlay + badge */}
+      <div className={styles.imgWrap}>
+        <img
+          src={posterSrc}
+          alt={item.title}
+          className={styles.cover}
+          loading="lazy"
+          onError={() => {
+            if (posterSrc === FALLBACK_POSTER) return;
+            setPosterSrc(FALLBACK_POSTER);
+          }}
+        />
+        <div className={styles.imgOverlay} />
+        {isAuthenticated && (
+          <span
+            className={`${styles.statusBadge} ${statusColorClass[status]}`}
+            aria-label={statusLabel[status]}
+            title={statusLabel[status]}
+          >
+            {statusLabel[status]}
+          </span>
+        )}
+        {item.isPinned && (
+          <span className={styles.pin} aria-label="ปักหมุด" />
+        )}
+      </div>
 
-          <div className={styles.content}>
-            <div className={styles.titleRow}>
-              <div className={styles.titleLeft}>
-                <h3 className={styles.title}>{item.title}</h3>
-                {isAuthenticated && (
-                  <span
-                    className={`${styles.statusBadge} ${statusColorClass[status]}`}
-                    aria-label={statusLabel[status]}
-                    title={statusLabel[status]}
-                  >
-                    {statusLabel[status]}
-                  </span>
-                )}
-                {item.isPinned && (
-                  <span className={styles.pin} aria-label="ปักหมุด" />
-                )}
-              </div>
+      {/* Body */}
+      <div className={styles.body}>
+        <h3 className={styles.title}>{item.title}</h3>
+
+        <div className={styles.metaGroup}>
+          {datePart && (
+            <div className={styles.metaRow}>
+              <MdOutlineCalendarToday className={styles.metaIcon} />
+              <span>{datePart}</span>
             </div>
-
-            <div className={styles.metaGroup}>
-              {datePart && (
-                <div className={styles.metaRow}>
-                  <MdOutlineCalendarToday className={styles.metaIcon} />
-                  <span>{datePart}</span>
-                </div>
-              )}
-
-              {timePart && (
-                <div className={styles.metaRow}>
-                  <LuClock className={styles.metaIcon} />
-                  <span>{timePart}</span>
-                </div>
-              )}
-
-              {item.location && (
-                <div className={styles.metaRow}>
-                  <IoLocationOutline className={styles.metaIcon} />
-                  <span>{item.location}</span>
-                </div>
-              )}
+          )}
+          {timePart && (
+            <div className={styles.metaRow}>
+              <LuClock className={styles.metaIcon} />
+              <span>{timePart}</span>
             </div>
-
-            {item.description && (
-              <p className={styles.desc}>{item.description}</p>
-            )}
-          </div>
+          )}
+          {item.location && (
+            <div className={styles.metaRow}>
+              <IoLocationOutline className={styles.metaIcon} />
+              <span>{item.location}</span>
+            </div>
+          )}
         </div>
 
+        {item.description && (
+          <p className={styles.desc}>{item.description}</p>
+        )}
+
+        {/* Actions */}
         {hasActions && (
           <div className={styles.actions}>
+            <button
+              className={`${styles.actionBtn} ${styles.actionBtnView}`}
+              onClick={handleViewClick}
+              title="ดู"
+              type="button"
+            >
+              <Eye size={14} /> ดู
+            </button>
             {onEdit && (
               <button
-                className={styles.actionBtn}
+                className={`${styles.actionBtn} ${styles.actionBtnEdit}`}
                 onClick={handleEditClick}
                 title="แก้ไข"
                 type="button"
               >
-                <Edit2 size={16} /> แก้ไข
+                <Edit2 size={14} /> แก้ไข
               </button>
             )}
             {onDelete && (
@@ -194,7 +202,7 @@ export default function ExhibitionCard({
                 title="ลบ"
                 type="button"
               >
-                <Trash2 size={16} /> ลบ
+                <Trash2 size={14} /> ลบ
               </button>
             )}
           </div>
