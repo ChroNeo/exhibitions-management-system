@@ -2,54 +2,77 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
-import HeaderBar from "../../components/HeaderBar/HeaderBar";
-import Panel from "../../components/Panel/Panel";
-import CertificateLayoutEditor from "../../components/CertificateEditor/CertificateLayoutEditor";
+import { downloadCertificate } from "../../api/certificate";
 import CertificatePreview from "../../components/CertificateEditor/CertificatePreview";
-import { useExhibition, useAuthStatus } from "../../hooks";
+import HeaderBar from "../../components/HeaderBar/HeaderBar";
+import NotFound from "../../components/NotFound";
+import Panel from "../../components/Panel/Panel";
+import { useAuthStatus, useExhibition } from "../../hooks";
+import type { LayoutConfig } from "../../types/certificate";
+import { toFileUrl } from "../../utils/url";
 import {
   useCertificateTemplate,
   useCreateCertificateTemplate,
-  useUpdateCertificateTemplate,
   useDeleteCertificateTemplate,
+  useUpdateCertificateTemplate,
 } from "./hooks";
-import NotFound from "../../components/NotFound";
-import { toFileUrl } from "../../utils/url";
-import { downloadCertificate } from "../../api/certificate";
-import type { LayoutConfig } from "../../types/certificate";
 
 import styles from "./CertificatePage.module.css";
 
-const DEFAULT_LAYOUT_CONFIG: LayoutConfig = {
-  participant_name: {
-    x: 300,
-    y: 500,
-    font_size: 48,
-    color: "#000000",
-    align: "center",
-  },
-  exhibition_title: {
-    x: 300,
-    y: 200,
-    font_size: 36,
-    color: "#333333",
-    align: "center",
-  },
-  date: {
-    x: 300,
-    y: 600,
-    font_size: 24,
-    color: "#666666",
-    align: "center",
-  },
-  organizer_name: {
-    x: 300,
-    y: 700,
-    font_size: 20,
-    color: "#666666",
-    align: "center",
-  },
-};
+function getImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load image"));
+    };
+    img.src = url;
+  });
+}
+
+function buildCenteredLayoutConfig(
+  width: number,
+  height: number,
+): LayoutConfig {
+  const centerX = Math.round(width / 2);
+  return {
+    participant_name: {
+      x: centerX,
+      y: Math.round(height * 0.5),
+      font_size: 48,
+      color: "#000000",
+      align: "center",
+    },
+    exhibition_title: {
+      x: centerX,
+      y: Math.round(height * 0.25),
+      font_size: 36,
+      color: "#333333",
+      align: "center",
+    },
+    date: {
+      x: centerX,
+      y: Math.round(height * 0.65),
+      font_size: 24,
+      color: "#666666",
+      align: "center",
+    },
+    organizer_name: {
+      x: centerX,
+      y: Math.round(height * 0.75),
+      font_size: 20,
+      color: "#666666",
+      align: "center",
+    },
+  };
+}
 
 export default function CertificatePage() {
   const { exhibitionId } = useParams<{ exhibitionId: string }>();
@@ -57,7 +80,6 @@ export default function CertificatePage() {
   const hasAuthToken = useAuthStatus();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [isEditingLayout, setIsEditingLayout] = useState(false);
   const [testUserId, setTestUserId] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -102,11 +124,14 @@ export default function CertificatePage() {
     if (!file || !exhibitionId) return;
 
     try {
+      const { width, height } = await getImageDimensions(file);
+      const layoutConfig = buildCenteredLayoutConfig(width, height);
+
       if (template) {
         // Update existing template
         await updateTemplate({
           exhibitionId,
-          payload: { file },
+          payload: { file, layout_config: layoutConfig },
         });
         await Swal.fire({
           title: "อัปเดตสำเร็จ",
@@ -119,7 +144,7 @@ export default function CertificatePage() {
           exhibitionId,
           payload: {
             file,
-            layout_config: DEFAULT_LAYOUT_CONFIG,
+            layout_config: layoutConfig,
           },
         });
         await Swal.fire({
@@ -147,34 +172,6 @@ export default function CertificatePage() {
   // Trigger file input click
   const handleUploadClick = () => {
     fileInputRef.current?.click();
-  };
-
-  // Save layout config
-  const handleSaveLayout = async (newConfig: LayoutConfig) => {
-    if (!exhibitionId) return;
-
-    try {
-      await updateTemplate({
-        exhibitionId,
-        payload: { layout_config: newConfig },
-      });
-
-      await Swal.fire({
-        title: "บันทึก Layout สำเร็จ",
-        icon: "success",
-        confirmButtonText: "ตกลง",
-      });
-
-      setIsEditingLayout(false);
-    } catch (error) {
-      console.error("Failed to save layout config", error);
-      await Swal.fire({
-        title: "บันทึกไม่สำเร็จ",
-        text: error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง",
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-    }
   };
 
   // Delete template
@@ -292,65 +289,40 @@ export default function CertificatePage() {
               {/* Template exists - show preview or editor */}
               {template && (
                 <div className={styles.currentTemplate}>
-                  {isEditingLayout ? (
-                    <CertificateLayoutEditor
+                  <div className={styles.templatePreview}>
+                    <CertificatePreview
                       backgroundUrl={toFileUrl(template.background_url)}
-                      layoutConfig={
-                        template.layout_config ?? DEFAULT_LAYOUT_CONFIG
-                      }
-                      onSave={handleSaveLayout}
-                      onCancel={() => setIsEditingLayout(false)}
-                      isSaving={isUpdating}
+                      layoutConfig={template.layout_config}
                     />
-                  ) : (
-                    <>
-                      <div className={styles.templatePreview}>
-                        <CertificatePreview
-                          backgroundUrl={toFileUrl(template.background_url)}
-                          layoutConfig={template.layout_config}
-                        />
-                      </div>
-                      <p className={styles.templateInfo}>
-                        อัปเดตล่าสุด:{" "}
-                        {template.updated_at
-                          ? new Date(template.updated_at).toLocaleString(
-                              "th-TH"
-                            )
-                          : "-"}
-                      </p>
+                  </div>
+                  <p className={styles.templateInfo}>
+                    อัปเดตล่าสุด:{" "}
+                    {template.updated_at
+                      ? new Date(template.updated_at).toLocaleString("th-TH")
+                      : "-"}
+                  </p>
 
-                      {/* Two action buttons */}
-                      {hasAuthToken && (
-                        <div className={styles.actionButtons}>
-                          <button
-                            type="button"
-                            onClick={() => setIsEditingLayout(true)}
-                            className={styles.editLayoutButton}
-                            disabled={isMutating}
-                          >
-                            แก้ไข Layout
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleUploadClick}
-                            className={styles.uploadButton}
-                            disabled={isMutating}
-                          >
-                            {isCreating || isUpdating
-                              ? "กำลังอัปโหลด..."
-                              : "อัปโหลด"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleDelete}
-                            disabled={isMutating}
-                            className={styles.deleteButton}
-                          >
-                            {isDeleting ? "กำลังลบ..." : "ลบ Template"}
-                          </button>
-                        </div>
-                      )}
-                    </>
+                  {hasAuthToken && (
+                    <div className={styles.actionButtons}>
+                      <button
+                        type="button"
+                        onClick={handleUploadClick}
+                        className={styles.uploadButton}
+                        disabled={isMutating}
+                      >
+                        {isCreating || isUpdating
+                          ? "กำลังอัปโหลด..."
+                          : "อัปโหลด"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={isMutating}
+                        className={styles.deleteButton}
+                      >
+                        {isDeleting ? "กำลังลบ..." : "ลบ Template"}
+                      </button>
+                    </div>
                   )}
                 </div>
               )}

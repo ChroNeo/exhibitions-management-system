@@ -32,7 +32,7 @@ export default function CertificatePreview({
 
   const participantConfig =
     layoutConfig?.participant_name ?? DEFAULT_PARTICIPANT_NAME_CONFIG;
-
+  console.log(participantConfig);
   // Convert actual coordinates to display coordinates
   const toDisplayCoords = useCallback(
     (actual: { x: number; y: number }) => {
@@ -51,7 +51,7 @@ export default function CertificatePreview({
         y: actual.y * scaleY,
       };
     },
-    [imageDimensions]
+    [imageDimensions],
   );
 
   const imgRef = useRef<HTMLImageElement>(null);
