@@ -10,6 +10,7 @@ import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
 import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
 import HomePage from "./pages/Homepage/HomePage";
 import LoginPage from "./pages/LoginPage/LoginPage";
+import NewsPage from "./pages/News/NewsPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
 import CreateSurveyPage from "./pages/Survey/CreateSurveyPage";
@@ -47,6 +48,8 @@ export default function App() {
         path="/exhibitions/:exhibitionId/unit/:unitId/edit"
         element={<UnitManageDetail mode="edit" />}
       />
+      {/*Announcement Page*/}
+      <Route path="/news" element={<NewsPage />} />
 
       {/* Certificate management */}
       <Route
