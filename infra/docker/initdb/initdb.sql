@@ -65,6 +65,23 @@ INSERT INTO `certificate_templates` (`template_id`, `exhibition_id`, `background
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `exhibition_announcements`
+--
+
+CREATE TABLE `exhibition_announcements` (
+  `announcement_id` int NOT NULL,
+  `exhibition_id` int NOT NULL COMMENT 'Links to a specific exhibition',
+  `topic` varchar(255) NOT NULL COMMENT 'The headline',
+  `description` text COMMENT 'The main content',
+  `image_url` varchar(2048) DEFAULT NULL COMMENT 'Path or URL to the picture',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '1 = Show, 0 = Hide (Soft delete)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `exhibitions`
 --
 
@@ -743,6 +760,13 @@ ALTER TABLE `certificate_templates`
   ADD KEY `idx_ct_exhibition` (`exhibition_id`);
 
 --
+-- Indexes for table `exhibition_announcements`
+--
+ALTER TABLE `exhibition_announcements`
+  ADD PRIMARY KEY (`announcement_id`),
+  ADD KEY `fk_announce_exhibition` (`exhibition_id`);
+
+--
 -- Indexes for table `exhibitions`
 --
 ALTER TABLE `exhibitions`
@@ -847,6 +871,12 @@ ALTER TABLE `unit_staffs`
 --
 ALTER TABLE `certificate_templates`
   MODIFY `template_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `exhibition_announcements`
+--
+ALTER TABLE `exhibition_announcements`
+  MODIFY `announcement_id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `exhibitions`
@@ -1017,6 +1047,12 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_user_
 ALTER TABLE `exhibitions`
   ADD CONSTRAINT `fk_exh_exhibition_set` FOREIGN KEY (`exhibition_set_id`) REFERENCES `question_sets` (`set_id`),
   ADD CONSTRAINT `fk_exh_unit_set` FOREIGN KEY (`unit_set_id`) REFERENCES `question_sets` (`set_id`);
+
+--
+-- Constraints for table `exhibition_announcements`
+--
+ALTER TABLE `exhibition_announcements`
+  ADD CONSTRAINT `fk_announce_exhibition` FOREIGN KEY (`exhibition_id`) REFERENCES `exhibitions` (`exhibition_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `set_question_mapping`
