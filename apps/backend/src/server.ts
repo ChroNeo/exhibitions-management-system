@@ -1,40 +1,40 @@
-import Fastify from "fastify";
 import cors from "@fastify/cors";
-import dotenv from "dotenv";
+import multipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
 import swagger from "@fastify/swagger";
 import fastifySwaggerUI from "@fastify/swagger-ui";
-import multipart from "@fastify/multipart";
-import path from "node:path";
-import fastifyStatic from "@fastify/static";
+import dotenv from "dotenv";
+import Fastify from "fastify";
 import fastifyRawBody from "fastify-raw-body";
+import path from "node:path";
 import { z } from "zod";
 // --- Import Controllers ---
-import exhibitionsController from "./controller/exhibitions-controller.js";
-import unitsController from "./controller/units-controller.js";
-import authController from "./controller/auth-controller.js";
-import userController from "./controller/user-controller.js";
-import heroController from "./controller/hero-controller.js";
-import registrationsController from "./controller/registrations-controller.js";
-import lineController from "./controller/line-controller.js";
-import ticketController from "./controller/ticket-controller.js";
-import certificateTemplateController from "./controller/certificate-template-controller.js";
 import adminController from "./controller/admin-controller.js";
 import adminDashboardController from "./controller/admin-dashboard-controller.js";
 import adminVisitorController from "./controller/admin-visitor-controller.js";
+import authController from "./controller/auth-controller.js";
+import certificateTemplateController from "./controller/certificate-template-controller.js";
+import exhibitionsController from "./controller/exhibitions-controller.js";
+import heroController from "./controller/hero-controller.js";
+import lineController from "./controller/line-controller.js";
+import registrationsController from "./controller/registrations-controller.js";
+import ticketController from "./controller/ticket-controller.js";
+import unitsController from "./controller/units-controller.js";
+import userController from "./controller/user-controller.js";
 
 // --- Import Services ---
-import { safeQuery } from "./services/dbconn.js";
-import { registerSchemas } from "./services/schema.js";
 import { AppError } from "./errors.js";
+import { safeQuery } from "./services/dbconn.js";
 
 // --- Import Zod Provider ---
 // 1. เพิ่ม import ตรงนี้
 import {
-  validatorCompiler,
+  jsonSchemaTransform,
   serializerCompiler,
+  validatorCompiler,
   ZodTypeProvider,
-  jsonSchemaTransform // ตัวช่วยแปลง Zod เป็น Swagger
-} from 'fastify-type-provider-zod';
+} from "fastify-type-provider-zod";
+import newsController from "./controller/news-controller.js";
 import surveyController from "./controller/survey-controller.js";
 
 dotenv.config();
@@ -75,7 +75,12 @@ await app.register(fastifyRawBody, {
 await app.register(cors, {
   origin: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning", "X-Mock-Line-User-Id"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "ngrok-skip-browser-warning",
+    "X-Mock-Line-User-Id",
+  ],
 });
 
 await app.register(multipart, {
@@ -101,16 +106,37 @@ await app.register(swagger, {
       version: "1.0.0",
     },
     tags: [
-      { name: "System", description: "Utility endpoints such as health checks." },
-      { name: "Exhibitions", description: "Manage exhibitions lifecycle and metadata." },
+      {
+        name: "System",
+        description: "Utility endpoints such as health checks.",
+      },
+      {
+        name: "Exhibitions",
+        description: "Manage exhibitions lifecycle and metadata.",
+      },
       { name: "Units", description: "Manage exhibition units and activities." },
       { name: "Users", description: "Manage system users and assignments." },
-      { name: "Hero", description: "Featured exhibitions and banners for homepage." },
-      { name: "Registrations", description: "Register visitors and staff to exhibitions." },
-      { name: "Tickets", description: "Manage exhibition tickets and redemption." },
+      {
+        name: "Hero",
+        description: "Featured exhibitions and banners for homepage.",
+      },
+      {
+        name: "Registrations",
+        description: "Register visitors and staff to exhibitions.",
+      },
+      {
+        name: "Tickets",
+        description: "Manage exhibition tickets and redemption.",
+      },
       { name: "LINE", description: "LINE Messaging API webhook integration." },
-      { name: "Survey", description: "Manage survey questions and submissions." },
-      { name: "Admin", description: "Admin panel: user and system management." },
+      {
+        name: "Survey",
+        description: "Manage survey questions and submissions.",
+      },
+      {
+        name: "Admin",
+        description: "Admin panel: user and system management.",
+      },
     ],
   },
   // 4. สำคัญมาก! ต้องใส่บรรทัดนี้เพื่อให้ Swagger อ่าน Zod Schema ออก
@@ -141,7 +167,7 @@ app.get(
       },
     },
   },
-  async () => ({ ok: true })
+  async () => ({ ok: true }),
 );
 
 app.get(
@@ -163,7 +189,7 @@ app.get(
   async () => {
     const rows = await safeQuery<{ ping: number }[]>("SELECT 1 AS ping");
     return { db: "ok", result: rows[0] };
-  }
+  },
 );
 
 // Register Controllers
@@ -180,6 +206,7 @@ app.register(certificateTemplateController, { prefix: "/api/v1/exhibitions" });
 app.register(adminController, { prefix: "/api/v1/admin/users" });
 app.register(adminDashboardController, { prefix: "/api/v1/admin/dashboard" });
 app.register(adminVisitorController, { prefix: "/api/v1/admin/visitors" });
+app.register(newsController, { prefix: "/api/v1/news" });
 
 // Start Server
 const port = Number(process.env.PORT || 3001);
