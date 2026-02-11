@@ -1,0 +1,40 @@
+.title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+}
+
+.container {
+      margin: 25px;
+}
+
+.titleLeft {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+}
+
+.titleLeft button {
+      padding: 0.5rem;
+      border-radius: 9999px;
+      color: #475569;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+}
+
+.titleLeft button:hover {
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.titleLeft h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+}

@@ -1,29 +1,33 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { FaEdit, FaClipboardList, FaCertificate } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
 import Swal from "sweetalert2";
+import type QuillType from "quill";
+import type { ExhibitionFormValues } from "../../components/exhibition/detail_form/ExhibitionForm";
+import ExhibitionForm from "../../components/exhibition/detail_form/ExhibitionForm";
+import ExhibitionDetailCard from "../../components/exhibition/ExhibitionDetailCard";
+import type { EditFormState } from "../../components/exhibition/ExhibitionDetailCard";
+import HeaderBar from "../../components/HeaderBar/HeaderBar";
+import NotFound from "../../components/NotFound";
+import SurveyManageModal from "../../components/SurveyManageModal/SurveyManageModal";
 import {
+  useAuthStatus,
+  useAuthUser,
   useDeleteExhibition,
   useExhibition,
-  useAuthUser,
-  useAuthStatus,
 } from "../../hooks";
-import { useCreateExhibition, useUpdateExhibition } from "./hooks";
 import type { Exhibition } from "../../types/exhibition";
-import { toApiDateTime, toInputDateTime } from "../../utils/date";
-import type { ExhibitionFormValues } from "../../components/exhibition/detail_form/ExhibitionForm";
-import HeaderBar from "../../components/HeaderBar/HeaderBar";
-import ExhibitionDetailCard from "../../components/exhibition/ExhibitionDetailCard";
-import Panel from "../../components/Panel/Panel";
-import DetailActions from "../../components/DetailButton/DetailActions";
-import FormButtons from "../../components/DetailButton/FormButtons";
-import ExhibitionForm from "../../components/exhibition/detail_form/ExhibitionForm";
 import type { Mode } from "../../types/mode";
+import { toApiDateTime, toInputDateTime } from "../../utils/date";
 import { toFileUrl } from "../../utils/url";
-import NotFound from "../../components/NotFound";
+import { initializeRichTextEditor } from "../../utils/quill";
+import { toDeltaObject } from "../../utils/quillDelta";
 import UnitManageList from "../Units/UnitManageList";
-import SurveyManageModal from "../../components/SurveyManageModal/SurveyManageModal";
-// descriptionPlain/Html already provided by Exhibition shape
+import styles from "./ExManageDetail.module.css";
+import cardStyles from "../../components/exhibition/ExhibitionDetailCard.module.css";
+import { useCreateExhibition, useUpdateExhibition } from "./hooks";
 
 const DEFAULT_STATUS = "draft";
 
@@ -43,12 +47,20 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
 
-  // hooks
+  // ── Inline edit state ──
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<EditFormState | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>();
+  const quillContainerRef = useRef<HTMLDivElement | null>(null);
+  const quillRef = useRef<QuillType | null>(null);
+
+  // ── Data hooks ──
   const { mutateAsync: deleteExhibitionAsync } = useDeleteExhibition();
   const shouldFetch = mode !== "create" && !!id;
   const { data, isLoading, isError } = useExhibition(id ?? "", {
     enabled: shouldFetch,
   });
+
   useEffect(() => {
     if (isLoading) {
       Swal.fire({
@@ -61,13 +73,13 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       Swal.close();
     }
   }, [isLoading]);
+
   const { mutateAsync: createExh } = useCreateExhibition();
   const { mutateAsync: updateExh } = useUpdateExhibition();
   const authUser = useAuthUser();
   const descriptionPlain = data?.description?.trim() || undefined;
   const descriptionHtml = data?.descriptionHtml;
 
-  // Normalize various date input types to ISO string when needed
   const toISO = (value?: string | number | Date | null): string | undefined => {
     if (value === undefined || value === null) return undefined;
     const d = value instanceof Date ? value : new Date(value);
@@ -75,14 +87,13 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     return d.toISOString();
   };
 
-  const title =
-    mode === "create"
+  const pageTitle = isEditing
+    ? "แก้ไขนิทรรศการ"
+    : mode === "create"
       ? "เพิ่มนิทรรศการ"
-      : mode === "edit"
-        ? "แก้ไขนิทรรศการ"
-        : "รายละเอียดนิทรรศการ";
+      : "รายละเอียดนิทรรศการ";
 
-  // ค่าตั้งต้นของแบบฟอร์ม
+  // ── Create mode form values ──
   const { initialValues, initialFileName } = useMemo(() => {
     if (!data || mode === "create") {
       return { initialValues: undefined, initialFileName: undefined };
@@ -109,10 +120,141 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     };
   }, [data, mode]);
 
-  // ลบ
+  // ── Quill lifecycle ──
+  useEffect(() => {
+    if (!isEditing) {
+      // Cleanup on exit
+      if (quillRef.current) {
+        quillRef.current = null;
+      }
+      return;
+    }
+
+    // Wait for DOM to be ready
+    const raf = requestAnimationFrame(() => {
+      const container = quillContainerRef.current;
+      if (!container || quillRef.current) return;
+
+      const { quill, cleanup } = initializeRichTextEditor({
+        container,
+        placeholder: "รายละเอียดเพิ่มเติมของนิทรรศการ",
+      });
+
+      // Hydrate with existing content
+      if (data) {
+        const deltaRaw = data.descriptionDelta;
+        if (deltaRaw) {
+          const deltaObj = toDeltaObject(deltaRaw);
+          quill.setContents(deltaObj, "silent");
+        } else if (data.descriptionHtml) {
+          const clip = quill.clipboard.convert({ html: data.descriptionHtml });
+          quill.setContents(clip, "silent");
+        }
+      }
+
+      quillRef.current = quill;
+
+      // Store cleanup for when effect re-runs
+      return cleanup;
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+    };
+  }, [isEditing, data]);
+
+  // ── Inline edit handlers ──
+  const handleStartEdit = useCallback(() => {
+    if (!data) return;
+    setEditForm({
+      title: data.title ?? "",
+      start_date: toInputDateTime(toISO(data.start_date) ?? null),
+      end_date: toInputDateTime(toISO(data.end_date) ?? null),
+      location: data.location ?? "",
+      organizer_name: data.organizer_name ?? "",
+      status: data.status ?? DEFAULT_STATUS,
+    });
+    setIsEditing(true);
+  }, [data]);
+
+  const handleCancelInlineEdit = useCallback(() => {
+    setIsEditing(false);
+    setEditForm(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(undefined);
+    }
+    quillRef.current = null;
+  }, [imagePreview]);
+
+  const handleFieldChange = useCallback((field: string, value: string) => {
+    setEditForm((prev) =>
+      prev ? { ...prev, [field]: value } : prev
+    );
+  }, []);
+
+  const handleFileChange = useCallback(
+    (file: File | undefined) => {
+      setEditForm((prev) => (prev ? { ...prev, file } : prev));
+      setImagePreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return file ? URL.createObjectURL(file) : undefined;
+      });
+    },
+    []
+  );
+
+  const handleInlineSave = useCallback(async () => {
+    if (!id || !editForm) return;
+
+    const quill = quillRef.current;
+    const html = quill ? quill.root.innerHTML : "";
+    const deltaStr = quill ? JSON.stringify(quill.getContents()) : "";
+
+    const payload = {
+      title: editForm.title,
+      start_date: toApiDateTime(editForm.start_date),
+      end_date: toApiDateTime(editForm.end_date),
+      location: editForm.location,
+      organizer_name: editForm.organizer_name,
+      description: html === "<p><br></p>" ? "" : html,
+      description_delta: deltaStr,
+      status: editForm.status || DEFAULT_STATUS,
+      ...(editForm.file ? { file: editForm.file } : {}),
+    };
+
+    try {
+      await updateExh({ id, payload });
+      await Swal.fire({
+        title: "บันทึกการแก้ไขสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+      setIsEditing(false);
+      setEditForm(null);
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        setImagePreview(undefined);
+      }
+      quillRef.current = null;
+    } catch (error) {
+      console.error("Failed to save exhibition", error);
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "กรุณาลองใหม่อีกครั้ง";
+      await Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: message,
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  }, [id, editForm, imagePreview, updateExh]);
+
+  // ── Delete handler ──
   const handleDelete = async () => {
     if (!id) return;
-
     const confirmResult = await Swal.fire({
       title: "ยืนยันการลบงานนี้หรือไม่?",
       icon: "warning",
@@ -123,7 +265,6 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       reverseButtons: true,
       focusCancel: true,
     });
-
     if (!confirmResult.isConfirmed) return;
 
     try {
@@ -144,15 +285,19 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     }
   };
 
-  // ยกเลิกแก้ไข
-  const handleCancelEdit = () => {
-    if (id) navigate(`/exhibitions/${id}`);
-    else navigate(-1);
-  };
+  // ── Create mode submit ──
+  const handleCreateSubmit = async (v: ExhibitionFormValues) => {
+    if (!authUser?.user_id) {
+      await Swal.fire({
+        title: "ต้องเข้าสู่ระบบ",
+        text: "กรุณาเข้าสู่ระบบก่อนสร้างนิทรรศการ",
+        icon: "warning",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
 
-  // submit ฟอร์ม
-  const handleSubmit = async (v: ExhibitionFormValues) => {
-    const basePayload = {
+    const payload = {
       title: v.title,
       start_date: toApiDateTime(v.start_date),
       end_date: toApiDateTime(v.end_date),
@@ -160,55 +305,20 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       organizer_name: v.organizer_name,
       description: v.description,
       description_delta: v.description_delta,
-      status:
-        mode === "create"
-          ? DEFAULT_STATUS
-          : v.status && v.status.length
-            ? v.status
-            : DEFAULT_STATUS,
+      status: DEFAULT_STATUS,
+      ...(v.file ? { file: v.file } : {}),
     };
-    const file = v.file ?? undefined;
 
     try {
-      if (mode === "create") {
-        if (!authUser?.user_id) {
-          await Swal.fire({
-            title: "ต้องเข้าสู่ระบบ",
-            text: "กรุณาเข้าสู่ระบบก่อนสร้างนิทรรศการ",
-            icon: "warning",
-            confirmButtonText: "ตกลง",
-          });
-          return;
-        }
-
-        const res = await createExh({
-          ...basePayload,
-          // created_by is now extracted from JWT token on backend
-          ...(file ? { file } : {}),
-        });
-        await Swal.fire({
-          title: "เพิ่มนิทรรศการสำเร็จ",
-          icon: "success",
-          confirmButtonText: "ตกลง",
-        });
-        navigate(`/exhibitions/${res.id}`);
-        return;
-      }
-
-      if (mode === "edit" && id) {
-        await updateExh({
-          id,
-          payload: { ...basePayload, ...(file ? { file } : {}) },
-        });
-        await Swal.fire({
-          title: "บันทึกการแก้ไขสำเร็จ",
-          icon: "success",
-          confirmButtonText: "ตกลง",
-        });
-        navigate(`/exhibitions/${id}`);
-      }
+      const res = await createExh(payload);
+      await Swal.fire({
+        title: "เพิ่มนิทรรศการสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+      navigate(`/exhibitions/${res.id}`);
     } catch (error) {
-      console.error("Failed to submit exhibition form", error);
+      console.error("Failed to create exhibition", error);
       const message =
         error instanceof Error && error.message
           ? error.message
@@ -225,6 +335,10 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const hasAuthToken = useAuthStatus();
 
   const handlePanelBack = () => {
+    if (isEditing) {
+      handleCancelInlineEdit();
+      return;
+    }
     const historyIdx =
       typeof window !== "undefined" &&
       typeof window.history.state?.idx === "number"
@@ -235,9 +349,48 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       navigate(-1);
       return;
     }
-
     navigate("/exhibitions");
   };
+
+  // ── Action bar buttons for view mode ──
+  const viewActionBar = hasAuthToken ? (
+    <>
+      <button
+        type="button"
+        className={cardStyles.toolBtn}
+        onClick={handleStartEdit}
+      >
+        <FaEdit size={16} />
+        แก้ไข
+      </button>
+      <button
+        type="button"
+        className={cardStyles.toolBtn}
+        onClick={() => setShowSurveyModal(true)}
+      >
+        <FaClipboardList size={16} />
+        จัดการแบบสอบถาม
+      </button>
+      {id && (
+        <button
+          type="button"
+          className={cardStyles.toolBtn}
+          onClick={() => navigate(`/exhibitions/${id}/certificate`)}
+        >
+          <FaCertificate size={16} />
+          จัดการใบประกาศ
+        </button>
+      )}
+      <button
+        type="button"
+        className={`${cardStyles.toolBtn} ${cardStyles.toolBtnDanger}`}
+        onClick={handleDelete}
+      >
+        <FiTrash2 size={16} />
+        ลบ
+      </button>
+    </>
+  ) : undefined;
 
   return (
     <div>
@@ -247,10 +400,30 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
             active="exhibition_unit"
             onLoginClick={() => navigate("/login")}
           />
-
-          <div className="container">
-            <Panel title={title} onBack={handlePanelBack}>
-              {mode === "view" && data ? (
+          <div className={styles.container}>
+            <div className={styles.title}>
+              <div className={styles.titleLeft}>
+                <button onClick={handlePanelBack}>
+                  <ArrowLeft size={24} />
+                </button>
+                <h1>{pageTitle}</h1>
+              </div>
+            </div>
+            <div>
+              {mode === "create" ? (
+                <>
+                  <ExhibitionForm
+                    ref={formRef}
+                    mode="create"
+                    exhibitionId={id}
+                    initialValues={initialValues}
+                    initialFileName={initialFileName}
+                    readOnly={false}
+                    onSubmit={handleCreateSubmit}
+                    preferDraft
+                  />
+                </>
+              ) : data ? (
                 <>
                   <ExhibitionDetailCard
                     title={data.title}
@@ -269,54 +442,22 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     registerLink={
                       id ? `/register?exhibition_id=${id}` : undefined
                     }
+                    isEditing={isEditing}
+                    editForm={editForm ?? undefined}
+                    imagePreview={imagePreview}
+                    quillContainerRef={quillContainerRef}
+                    onFieldChange={handleFieldChange}
+                    onFileChange={handleFileChange}
+                    onSave={handleInlineSave}
+                    onCancelEdit={handleCancelInlineEdit}
+                    actionBar={viewActionBar}
                   />
-                  <DetailActions
-                    show={hasAuthToken}
-                    onEdit={
-                      hasAuthToken
-                        ? () => {
-                            if (id) navigate(`/exhibitions/${id}/edit`);
-                          }
-                        : undefined
-                    }
-                    onDelete={hasAuthToken ? handleDelete : undefined}
-                    onManageSurveys={
-                      hasAuthToken ? () => setShowSurveyModal(true) : undefined
-                    }
-                    onManageCertificate={
-                      hasAuthToken
-                        ? () => {
-                            if (id) navigate(`/exhibitions/${id}/certificate`);
-                          }
-                        : undefined
-                    }
-                  />
-                </>
-              ) : (
-                <>
-                  <ExhibitionForm
-                    ref={formRef}
-                    mode={mode}
-                    exhibitionId={id}
-                    initialValues={initialValues}
-                    initialFileName={initialFileName}
-                    readOnly={mode === "view"}
-                    onSubmit={handleSubmit}
-                    footer={mode === "edit" ? null : undefined}
-                    preferDraft={mode !== "view"}
-                  />
-                  {mode === "edit" && (
-                    <FormButtons
-                      onConfirm={() => formRef.current?.requestSubmit()}
-                      onCancel={handleCancelEdit}
-                    />
+                  {!isEditing && id && (
+                    <UnitManageList mode={mode} embedded />
                   )}
                 </>
-              )}
-            </Panel>
-            {id && mode !== "create" && mode != "edit" && (
-              <UnitManageList mode={mode} embedded />
-            )}
+              ) : null}
+            </div>
           </div>
         </>
       )}

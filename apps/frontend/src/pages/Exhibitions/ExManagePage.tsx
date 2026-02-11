@@ -234,7 +234,7 @@ export default function ExhibitionPage() {
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/exhibitions/${id}/edit`);
+    navigate(`/exhibitions/${id}`);
   };
 
   const handleDelete = async (id: string) => {

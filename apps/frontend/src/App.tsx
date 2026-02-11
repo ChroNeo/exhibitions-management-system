@@ -33,10 +33,6 @@ export default function App() {
         element={<ExManageDetail mode="create" />}
       />
       <Route path="/exhibitions/:id" element={<ExManageDetail mode="view" />} />
-      <Route
-        path="/exhibitions/:id/edit"
-        element={<ExManageDetail mode="edit" />}
-      />
 
       {/* Unit management within exhibitions */}
       <Route
