@@ -1,40 +1,47 @@
 import {
+  ArrowLeft,
   Camera,
   Image as ImageIcon,
-  Layout,
   Plus,
   Send,
   Trash2,
   X,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
+import HeaderBar from "../../components/HeaderBar/HeaderBar";
+import { toFileUrl } from "../../utils/url";
 import styles from "./NewsPage.module.css";
+import { useCreateNews, useDeleteNews, useNewsList } from "./hooks/useNews";
 
 export default function NewsPage() {
-  // State สำหรับเก็บรายการข่าวทั้งหมด
-  const [newsList, setNewsList] = useState([
-    {
-      id: 1,
-      title: "เตรียมพบกับโซนใหม่: Future Art",
-      description: "เปิดประสบการณ์ศิลปะดิจิทัลเต็มรูปแบบ เจอกันที่ Hall 2",
-      image:
-        "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80",
-      date: new Date().toLocaleDateString("th-TH"),
-    },
-  ]);
+  const { exhibitionId } = useParams<{ exhibitionId: string }>();
+  const navigate = useNavigate();
+  const exId = Number(exhibitionId);
+  const { data: newsList = [] } = useNewsList(exId);
+  const createNewsMutation = useCreateNews(exId);
+  const deleteNewsMutation = useDeleteNews(exId);
 
   // State สำหรับฟอร์มปัจจุบัน
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    image: File | null;
+    imagePreview: string | null;
+  }>({
     title: "",
     description: "",
     image: null,
     imagePreview: null,
   });
 
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // จัดการการเปลี่ยนข้อมูลใน Input
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -43,8 +50,8 @@ export default function NewsPage() {
   };
 
   // จัดการการอัปโหลดรูปภาพ
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setFormData((prev) => ({
@@ -66,51 +73,79 @@ export default function NewsPage() {
   };
 
   // บันทึกข่าวสาร
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!formData.title || !formData.imagePreview) return;
 
-    const newNews = {
-      id: Date.now(),
-      title: formData.title,
-      description: formData.description,
-      image: formData.imagePreview,
-      date: new Date().toLocaleDateString("th-TH"),
-    };
-
-    setNewsList([newNews, ...newsList]);
-
-    // Reset Form
-    setFormData({
-      title: "",
-      description: "",
-      image: null,
-      imagePreview: null,
-    });
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    createNewsMutation.mutate(
+      {
+        exhibition_id: exId,
+        topic: formData.title,
+        description: formData.description || null,
+        is_active: 1,
+        file: formData.image ?? undefined,
+      },
+      {
+        onSuccess: () => {
+          setFormData({
+            title: "",
+            description: "",
+            image: null,
+            imagePreview: null,
+          });
+          if (fileInputRef.current) fileInputRef.current.value = "";
+        },
+      },
+    );
   };
 
   // ลบข่าวสาร
-  const handleDelete = (id) => {
-    setNewsList(newsList.filter((item) => item.id !== id));
+  const handleDelete = async (id: number) => {
+    const result = await Swal.fire({
+      title: "ยืนยันการลบข่าวนี้หรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบ",
+      confirmButtonColor: "#ef4444",
+      cancelButtonText: "ยกเลิก",
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await deleteNewsMutation.mutateAsync(id);
+      await Swal.fire({
+        title: "ลบข่าวสำเร็จ",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+    } catch {
+      await Swal.fire({
+        title: "ลบไม่สำเร็จ กรุณาลองใหม่",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
+    }
   };
 
   return (
     <div className={styles.page}>
       {/* Navbar */}
-      <nav className={styles.navbar}>
-        <div className={styles.navInner}>
-          <div className={styles.navRow}>
-            <div className={styles.navBrand}>
-              <Layout className={styles.navIcon} />
-              <h1 className={styles.navTitle}>Exhibition News Admin</h1>
-            </div>
-            <div className={styles.navSubtitle}>สำหรับผู้จัดนิทรรศการ</div>
-          </div>
-        </div>
-      </nav>
-
+      <HeaderBar />
       <main className={styles.main}>
+        <div className={styles.backRow}>
+          <button
+            type="button"
+            className={styles.backBtn}
+            onClick={() => navigate(`/exhibitions/${exhibitionId}`)}
+          >
+            <ArrowLeft size={20} />
+            กลับ
+          </button>
+          <h1 className={styles.pageTitle}>ข่าวสารและประกาศ</h1>
+        </div>
         <div className={styles.grid}>
           {/* ส่วนฟอร์มสร้างข่าว (Left Column) */}
           <div>
@@ -130,7 +165,7 @@ export default function NewsPage() {
 
                   {!formData.imagePreview ? (
                     <div
-                      onClick={() => fileInputRef.current.click()}
+                      onClick={() => fileInputRef.current?.click()}
                       className={styles.dropzone}
                     >
                       <div className={styles.dropzoneInner}>
@@ -196,7 +231,7 @@ export default function NewsPage() {
                       name="description"
                       value={formData.description}
                       onChange={handleInputChange}
-                      rows="3"
+                      rows={3}
                       placeholder="ใส่รายละเอียดเล็กน้อย เพราะเนื้อหาหลักอยู่ในรูปภาพ..."
                       className={styles.textarea}
                     />
@@ -234,17 +269,17 @@ export default function NewsPage() {
                 </div>
               ) : (
                 newsList.map((news) => (
-                  <div key={news.id} className={styles.newsCard}>
+                  <div key={news.announcement_id} className={styles.newsCard}>
                     {/* ส่วนรูปภาพ - เน้นใหญ่ตามโจทย์ */}
                     <div className={styles.newsImageWrap}>
                       <img
-                        src={news.image}
-                        alt={news.title}
+                        src={toFileUrl(news.image_url)}
+                        alt={news.topic}
                         className={styles.newsImage}
                       />
                       <div className={styles.newsDeleteWrap}>
                         <button
-                          onClick={() => handleDelete(news.id)}
+                          onClick={() => handleDelete(news.announcement_id)}
                           className={styles.newsDeleteBtn}
                           title="ลบข่าว"
                         >
@@ -257,9 +292,11 @@ export default function NewsPage() {
                     <div className={styles.newsContent}>
                       <div className={styles.newsMeta}>
                         <span className={styles.newsTag}>News Update</span>
-                        <span className={styles.newsDate}>{news.date}</span>
+                        <span className={styles.newsDate}>
+                          {news.created_at}
+                        </span>
                       </div>
-                      <h3 className={styles.newsTitle}>{news.title}</h3>
+                      <h3 className={styles.newsTitle}>{news.topic}</h3>
                       {news.description && (
                         <p className={styles.newsDesc}>{news.description}</p>
                       )}

@@ -49,7 +49,7 @@ export default function App() {
         element={<UnitManageDetail mode="edit" />}
       />
       {/*Announcement Page*/}
-      <Route path="/news" element={<NewsPage />} />
+      <Route path="/exhibitions/:exhibitionId/news" element={<NewsPage />} />
 
       {/* Certificate management */}
       <Route

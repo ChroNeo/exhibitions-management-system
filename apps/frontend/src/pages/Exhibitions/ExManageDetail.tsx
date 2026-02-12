@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaEdit, FaClipboardList, FaCertificate } from "react-icons/fa";
+import { FaEdit, FaClipboardList, FaCertificate, FaBullhorn } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import type QuillType from "quill";
@@ -379,6 +379,16 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         >
           <FaCertificate size={16} />
           จัดการใบประกาศ
+        </button>
+      )}
+      {id && (
+        <button
+          type="button"
+          className={cardStyles.toolBtn}
+          onClick={() => navigate(`/exhibitions/${id}/news`)}
+        >
+          <FaBullhorn size={16} />
+          ประกาศข่าวสาร
         </button>
       )}
       <button
