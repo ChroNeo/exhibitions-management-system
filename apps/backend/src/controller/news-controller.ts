@@ -1,3 +1,4 @@
+import path from "node:path";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
@@ -13,8 +14,15 @@ import {
   createAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
+  getAnnouncementById,
 } from "../queries/news-query.js";
 import { requireOrganizerAuth } from "../services/auth-middleware.js";
+import { collectMultipartFields, removeUploadedFile } from "../services/file-upload.js";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const newsUploadsDir = path.resolve(__dirname, "../../uploads/news");
 
 export default async function newsController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -59,7 +67,7 @@ export default async function newsController(fastify: FastifyInstance) {
       schema: {
         tags: ["Announcements"],
         summary: "Create Announcement",
-        body: AnnoucncementsPayload,
+        body: z.union([AnnoucncementsPayload, z.any()]),
         response: {
           201: z.object({
             message: z.string(),
@@ -72,7 +80,32 @@ export default async function newsController(fastify: FastifyInstance) {
       if (!req.user) {
         throw new AppError("User not authenticated", 401, "UNAUTHORIZED");
       }
-      const payload = AnnoucncementsPayload.parse(req.body);
+
+      let payload;
+      if (req.isMultipart()) {
+        const { fields, files } = await collectMultipartFields(req, {
+          fileFields: {
+            image_url: {
+              save: {
+                targetDir: newsUploadsDir,
+                publicPrefix: "uploads/news",
+                fallbackName: "news_image",
+                filenamePrefix: "NEWS",
+              },
+            },
+          },
+        });
+        payload = AnnoucncementsPayload.parse({
+          exhibition_id: Number(fields.exhibition_id),
+          topic: fields.topic,
+          description: fields.description || null,
+          image_url: files.image_url?.publicPath ?? null,
+          is_active: fields.is_active ? Number(fields.is_active) : 1,
+        });
+      } else {
+        payload = AnnoucncementsPayload.parse(req.body);
+      }
+
       const result = await createAnnouncement(payload);
       return reply.status(201).send({
         message: "Announcement created",
@@ -89,7 +122,7 @@ export default async function newsController(fastify: FastifyInstance) {
         tags: ["Announcements"],
         summary: "Update Announcement",
         params: z.object({ id: z.string().regex(/^\d+$/) }),
-        body: UpdateAnnouncementPayload,
+        body: z.union([UpdateAnnouncementPayload, z.any()]),
         response: {
           200: z.object({
             message: z.string(),
@@ -102,7 +135,40 @@ export default async function newsController(fastify: FastifyInstance) {
         throw new AppError("User not authenticated", 401, "UNAUTHORIZED");
       }
       const { id } = req.params as { id: string };
-      const payload = UpdateAnnouncementPayload.parse(req.body);
+
+      let payload;
+      if (req.isMultipart()) {
+        const existing = await getAnnouncementById(id);
+        const { fields, files } = await collectMultipartFields(req, {
+          fileFields: {
+            image_url: {
+              save: {
+                targetDir: newsUploadsDir,
+                publicPrefix: "uploads/news",
+                fallbackName: "news_image",
+                filenamePrefix: "NEWS",
+              },
+            },
+          },
+        });
+
+        const raw: Record<string, unknown> = {};
+        if (fields.exhibition_id) raw.exhibition_id = Number(fields.exhibition_id);
+        if (fields.topic) raw.topic = fields.topic;
+        if (fields.description !== undefined) raw.description = fields.description || null;
+        if (fields.is_active) raw.is_active = Number(fields.is_active);
+        if (files.image_url?.publicPath) {
+          raw.image_url = files.image_url.publicPath;
+          if (existing?.image_url) {
+            await removeUploadedFile(existing.image_url, req.log);
+          }
+        }
+
+        payload = UpdateAnnouncementPayload.parse(raw);
+      } else {
+        payload = UpdateAnnouncementPayload.parse(req.body);
+      }
+
       await updateAnnouncement(id, payload);
       return reply.status(200).send({
         message: "Announcement updated",

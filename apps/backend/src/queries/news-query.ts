@@ -36,6 +36,19 @@ export async function getAnnouncementListbyId(
   }
   return rows;
 }
+export async function getAnnouncementById(
+  id: string | number,
+): Promise<any> {
+  if (!/^\d+$/.test(String(id))) {
+    throw new AppError("invalid announcement id", 400, "VALIDATION_ERROR");
+  }
+  const rows = await safeQuery(
+    `SELECT * FROM exhibition_announcements WHERE announcement_id = ?;`,
+    [id],
+  );
+  return rows[0] ?? null;
+}
+
 export async function createAnnouncement(
   payload: AnnoucncementsPayloadType,
 ): Promise<ResultSetHeader> {
@@ -86,7 +99,7 @@ export async function deleteAnnouncement(
     throw new AppError("invalid announcement id", 400, "VALIDATION_ERROR");
   }
   const result = await safeQuery<ResultSetHeader>(
-    `UPDATE exhibition_announcements SET is_active = 0 WHERE announcement_id = ?;`,
+    `DELETE FROM exhibition_announcements WHERE announcement_id = ?;`,
     [id],
   );
   if (result.affectedRows === 0) {
