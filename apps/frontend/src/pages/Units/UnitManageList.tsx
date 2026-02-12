@@ -1,9 +1,9 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa6";
 
 import AddInline from "../../components/AddInline/AddInline";
 import styles from "./UnitManageList.module.css";
-import Panel from "../../components/Panel/Panel";
 import UnitExhibitionCard, {
   type UnitCardItem,
 } from "../../components/unit/UnitExhibitionCard";
@@ -145,8 +145,8 @@ export default function UnitManageList({
     navigate(`/exhibitions/${exhibitionId}/unit/new`);
   };
 
-  const panel = (
-    <Panel title={title} onBack={embedded ? undefined : handleBack}>
+  const body = (
+    <>
       {isLoading && <div>กำลังโหลดกิจกรรม...</div>}
       {isError && <div>ไม่สามารถโหลดกิจกรรมได้</div>}
 
@@ -183,11 +183,16 @@ export default function UnitManageList({
           )}
         </>
       )}
-    </Panel>
+    </>
   );
 
   if (embedded) {
-    return panel;
+    return (
+      <div>
+        <h2 className={styles.embeddedTitle}>{title}</h2>
+        {body}
+      </div>
+    );
   }
 
   return (
@@ -196,9 +201,23 @@ export default function UnitManageList({
         active="exhibition_unit"
         onLoginClick={() => navigate("/login")}
       />
-      <div className="container">{panel}</div>
+      <div className="container">
+        <section className={styles.section}>
+          <div className={styles.header}>
+            <button
+              type="button"
+              className={styles.backBtn}
+              onClick={handleBack}
+              aria-label="ย้อนกลับ"
+            >
+              <FaArrowLeft />
+            </button>
+            <h2 className={styles.title}>{title}</h2>
+            <span />
+          </div>
+          <div className={styles.body}>{body}</div>
+        </section>
+      </div>
     </div>
   );
 }
-
-

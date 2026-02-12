@@ -1,8 +1,10 @@
+import { useState, useEffect, useCallback } from "react";
 import type { RefObject, ReactNode } from "react";
 import { IoLocationOutline, IoPersonOutline } from "react-icons/io5";
 import { LuBadgeCheck, LuClock } from "react-icons/lu";
 import { MdOutlineCalendarToday } from "react-icons/md";
 import { LuCamera } from "react-icons/lu";
+import { X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toThaiDate, toThaiTimeRange } from "../../utils/dateFormat";
 import styles from "./ExhibitionDetailCard.module.css";
@@ -88,6 +90,23 @@ export default function ExhibitionDetailCard({
 
   const displayImage = isEditing && imagePreview ? imagePreview : imageUrl;
 
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  const openLightbox = useCallback(() => {
+    if (!isEditing && displayImage) setLightboxOpen(true);
+  }, [isEditing, displayImage]);
+
+  const closeLightbox = useCallback(() => setLightboxOpen(false), []);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [lightboxOpen, closeLightbox]);
+
   const cardClass = `${styles.card} ${isEditing ? styles.editing : ""}`;
 
   return (
@@ -96,7 +115,12 @@ export default function ExhibitionDetailCard({
         {/* Left: Image */}
         <div className={styles.imageSection}>
           {displayImage && (
-            <img src={displayImage} alt={title} className={styles.image} />
+            <img
+              src={displayImage}
+              alt={title}
+              className={`${styles.image} ${!isEditing ? styles.imageClickable : ""}`}
+              onClick={openLightbox}
+            />
           )}
 
           {/* Status badge - view only */}
@@ -337,6 +361,24 @@ export default function ExhibitionDetailCard({
             <div className={styles.actionBarButtons}>{actionBar}</div>
           </div>
         )
+      )}
+      {lightboxOpen && displayImage && (
+        <div className={styles.lightbox} onClick={closeLightbox}>
+          <button
+            type="button"
+            className={styles.lightboxClose}
+            onClick={closeLightbox}
+            aria-label="ปิด"
+          >
+            <X size={24} />
+          </button>
+          <img
+            src={displayImage}
+            alt={title}
+            className={styles.lightboxImage}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
     </section>
   );
