@@ -4,8 +4,8 @@ import {
   createOrganizerUser,
   updateUserRole,
   deleteOrganizerUserApi,
-  type CreateUserPayload,
-} from "../../../api/adminUserApi";
+} from "../../../api/adminApi";
+import type { CreateUserPayload } from "../../../types/admin";
 
 const QUERY_KEY = ["admin", "users"];
 

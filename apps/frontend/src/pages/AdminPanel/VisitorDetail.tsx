@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ArrowLeft, User } from "lucide-react";
 import Swal from "sweetalert2";
-import type { Visitor, VisitorExhibition } from "../../api/adminVisitorApi";
-import { toggleCheckin as apiToggleCheckin } from "../../api/adminVisitorApi";
+import type { Visitor, VisitorExhibition } from "../../types/admin";
+import { toggleCheckin as apiToggleCheckin } from "../../api/adminApi";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useVisitorDetail,

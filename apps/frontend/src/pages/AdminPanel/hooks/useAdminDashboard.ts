@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getDashboardExhibitions,
   getExhibitionRegistrations,
-} from "../../../api/adminDashboardApi";
+} from "../../../api/adminApi";
 
 export function useAdminExhibitions() {
   return useQuery({

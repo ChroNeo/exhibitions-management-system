@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { Visitor } from "../../api/adminVisitorApi";
+import type { Visitor } from "../../types/admin";
 import AdminLayout from "./AdminLayout";
 import VisitorDetail from "./VisitorDetail";
 import { useVisitors } from "./hooks/useAdminVisitors";

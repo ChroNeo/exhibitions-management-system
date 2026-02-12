@@ -5,7 +5,7 @@ import {
   getVisitorExhibitions,
   getUnitCheckins,
   toggleCheckin,
-} from "../../../api/adminVisitorApi";
+} from "../../../api/adminApi";
 
 export function useVisitors() {
   return useQuery({
