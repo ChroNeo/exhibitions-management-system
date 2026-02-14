@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import liff from "@line/liff";
@@ -10,7 +10,14 @@ import {
   type RegistrationResponse,
   type RegistrationRole,
 } from "../../../api/registrations";
-import { LIFF_CONFIG } from "../../../config/liff";
+import { useLiff, type LiffState } from "../../../hooks/useLiff";
+
+type LiffProfile = {
+  userId: string;
+  displayName: string;
+  pictureUrl?: string;
+  statusMessage?: string;
+};
 
 export type RegisterFormPayload = {
   exhibitionId: string | number;
@@ -24,18 +31,7 @@ export type RegisterFormPayload = {
   lineUserId?: string;
 };
 
-type LiffProfile = {
-  userId: string;
-  displayName: string;
-  pictureUrl?: string;
-  statusMessage?: string;
-};
-
-export type LiffState =
-  | { status: "initializing" }
-  | { status: "not_logged_in" }
-  | { status: "idle"; profile: LiffProfile | null }
-  | { status: "error"; message: string };
+export type { LiffState };
 
 const genderMap: Record<string, RegistrationGender> = {
   male: "male",
@@ -98,6 +94,15 @@ const toRegistrationPayload = (input: RegisterFormPayload): RegistrationPayload 
   };
 };
 
+const fetchProfile = async (): Promise<LiffProfile | null> => {
+  try {
+    return await liff.getProfile();
+  } catch (profileError) {
+    console.warn("Cannot access LINE profile (missing 'profile' scope):", profileError);
+    return null;
+  }
+};
+
 interface UseRegisterForExhibitionOptions {
   enableLiff?: boolean;
   autoFillName?: boolean;
@@ -106,46 +111,19 @@ interface UseRegisterForExhibitionOptions {
 export function useRegisterForExhibition(options: UseRegisterForExhibitionOptions = {}) {
   const { enableLiff = false, autoFillName = true } = options;
   const navigate = useNavigate();
-  const [liffState, setLiffState] = useState<LiffState>(
-    enableLiff ? { status: "initializing" } : { status: "idle", profile: null }
-  );
+
+  const {
+    state: liffState,
+    refetch,
+    initializeLiff,
+  } = useLiff<LiffProfile | null>({
+    liffApp: "REGISTRATION",
+    fetchData: fetchProfile,
+  });
 
   const mutation = useMutation<RegistrationResponse, Error, RegisterFormPayload>({
     mutationFn: (payload) => registerForExhibition(toRegistrationPayload(payload)),
   });
-
-  // Initialize LIFF
-  const initializeLiff = useCallback(async () => {
-    if (!enableLiff) return;
-
-    try {
-      // Check if LIFF is already initialized
-      if (!liff.id) {
-        await liff.init({ liffId: LIFF_CONFIG.REGISTRATION });
-      }
-
-      if (!liff.isLoggedIn()) {
-        setLiffState({ status: "not_logged_in" });
-        liff.login({ redirectUri: window.location.href });
-        return;
-      }
-
-      // Try to get profile, but continue if permission is not granted
-      try {
-        const profile = await liff.getProfile();
-        setLiffState({ status: "idle", profile });
-      } catch (profileError) {
-        console.warn("Cannot access LINE profile (missing 'profile' scope):", profileError);
-        setLiffState({ status: "idle", profile: null });
-      }
-    } catch (error) {
-      console.error("LIFF init error:", error);
-      setLiffState({
-        status: "error",
-        message: error instanceof Error ? error.message : "LIFF Init Failed",
-      });
-    }
-  }, [enableLiff]);
 
   // Close LIFF window
   const closeWindow = useCallback(() => {
@@ -158,11 +136,13 @@ export function useRegisterForExhibition(options: UseRegisterForExhibitionOption
 
   // Get auto-fill name
   const getAutoFillName = useCallback(() => {
-    if (autoFillName && liffState.status === "idle" && liffState.profile) {
-      return liffState.profile.displayName;
+    if (autoFillName && liffState.status === "success" && liffState.data) {
+      return liffState.data.displayName;
     }
     return "";
   }, [autoFillName, liffState]);
+
+  const profile = liffState.status === "success" ? liffState.data : null;
 
   // Register with LIFF integration
   const register = useCallback(
@@ -170,10 +150,10 @@ export function useRegisterForExhibition(options: UseRegisterForExhibitionOption
       try {
         // Add LINE user ID if LIFF is enabled and user is logged in
         let finalPayload = payload;
-        if (enableLiff && liffState.status === "idle" && liffState.profile) {
+        if (enableLiff && profile) {
           finalPayload = {
             ...payload,
-            lineUserId: liffState.profile.userId,
+            lineUserId: profile.userId,
           };
         }
 
@@ -205,15 +185,8 @@ export function useRegisterForExhibition(options: UseRegisterForExhibitionOption
         throw error;
       }
     },
-    [mutation, navigate, enableLiff, liffState]
+    [mutation, navigate, enableLiff, profile]
   );
-
-  // Initialize LIFF on mount if enabled
-  useEffect(() => {
-    if (enableLiff) {
-      initializeLiff();
-    }
-  }, [enableLiff, initializeLiff]);
 
   return {
     // Original mutation return
@@ -221,13 +194,14 @@ export function useRegisterForExhibition(options: UseRegisterForExhibitionOption
     // LIFF-specific features
     liffState,
     initializeLiff,
+    refetch,
     closeWindow,
     getAutoFillName,
     register,
-    isLiffReady: liffState.status === "idle",
-    isLiffInitializing: liffState.status === "initializing",
+    isLiffReady: liffState.status === "success",
+    isLiffInitializing: liffState.status === "initializing" || liffState.status === "loading",
     isLiffError: liffState.status === "error",
-    profile: liffState.status === "idle" ? liffState.profile : null,
+    profile,
     liffError: liffState.status === "error" ? liffState.message : null,
   };
 }
