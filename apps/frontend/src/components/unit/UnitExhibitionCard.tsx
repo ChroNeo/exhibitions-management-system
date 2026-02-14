@@ -1,14 +1,26 @@
+<<<<<<< Updated upstream
 import type { KeyboardEvent, MouseEvent } from "react";
 import styles from "./UnitExhibitionCard.module.css";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
+=======
+import { MoreVertical } from "lucide-react";
+import type { KeyboardEvent, MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { Link } from "react-router-dom";
+import styles from "./UnitExhibitionCard.module.css";
+>>>>>>> Stashed changes
 
 export type UnitCardItem = {
   id: string;
   title: string;
   description?: string;
+  dateText?: string;
+  typeLabel?: string;
   posterUrl?: string;
 };
 
@@ -58,9 +70,17 @@ export default function UnitExhibitionCard({
       onKeyDown={handleKeyDown}
       aria-label={onSelect ? `เปิดดู ${item.title}` : undefined}
     >
+<<<<<<< Updated upstream
       <div className={styles.media}>
         <div className={styles.posterWrap}>
           {item.posterUrl ? (
+=======
+      <div
+        className={`${styles.media} ${!item.posterUrl ? styles.mediaBg : ""}`}
+      >
+        {item.posterUrl ? (
+          <div className={styles.posterWrap}>
+>>>>>>> Stashed changes
             <img
               src={item.posterUrl}
               alt={item.title}
