@@ -1,15 +1,17 @@
-import { useState, useRef, useEffect, useMemo } from "react";
-import type { KeyboardEvent, MouseEvent } from "react";
-import { Link } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
+import type { KeyboardEvent, MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
+import { Link } from "react-router-dom";
 import styles from "./UnitExhibitionCard.module.css";
 
 export type UnitCardItem = {
   id: string;
   title: string;
   description?: string;
+  dateText?: string;
+  typeLabel?: string;
   posterUrl?: string;
 };
 
@@ -82,7 +84,9 @@ export default function UnitExhibitionCard({
       onKeyDown={handleKeyDown}
       aria-label={onSelect ? `เปิดดู ${item.title}` : undefined}
     >
-      <div className={`${styles.media} ${!item.posterUrl ? styles.mediaBg : ""}`}>
+      <div
+        className={`${styles.media} ${!item.posterUrl ? styles.mediaBg : ""}`}
+      >
         {item.posterUrl ? (
           <div className={styles.posterWrap}>
             <img
