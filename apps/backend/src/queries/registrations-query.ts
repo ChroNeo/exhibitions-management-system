@@ -46,18 +46,19 @@ type RegistrationIdRow = RowDataPacket & {
 };
 
 export async function registerForExhibition(
-  payload: RegistrationPayload
+  payload: RegistrationPayload,
 ): Promise<RegistrationResult> {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
     const [existingUsers] = await conn.query<NormalUserRow[]>(
-      "SELECT user_id, role FROM normal_users WHERE email = ? FOR UPDATE",
-      [payload.email]
+      "SELECT user_id,line_user_id, role FROM normal_users WHERE email = ? OR line_user_id = ? FOR UPDATE",
+      [payload.email, payload.line_user_id],
     );
 
-    const storedRole: "user" | "staff" = payload.role === "staff" ? "staff" : "user";
+    const storedRole: "user" | "staff" =
+      payload.role === "staff" ? "staff" : "user";
     let userId: number;
     let effectiveRole: "user" | "staff";
 
@@ -83,7 +84,7 @@ export async function registerForExhibition(
           payload.phone ?? null,
           storedRole,
           payload.line_user_id ?? null,
-        ]
+        ],
       );
       userId = insertUser.insertId;
       effectiveRole = storedRole;
@@ -98,6 +99,7 @@ export async function registerForExhibition(
               gender = ?,
               birthdate = ?,
               phone = ?,
+              email = ?,
               role = ?,
               line_user_id = COALESCE(?, line_user_id)
           WHERE user_id = ?
@@ -107,10 +109,11 @@ export async function registerForExhibition(
           payload.gender ?? null,
           payload.birthdate ?? null,
           payload.phone ?? null,
+          payload.email ?? null,
           effectiveRole,
           payload.line_user_id ?? null,
           userId,
-        ]
+        ],
       );
     }
 
@@ -120,7 +123,7 @@ export async function registerForExhibition(
         VALUES (?, ?)
         ON DUPLICATE KEY UPDATE registered_at = registered_at
       `,
-      [payload.exhibition_id, userId]
+      [payload.exhibition_id, userId],
     );
 
     let registrationId = registrationInsert.insertId;
@@ -132,10 +135,14 @@ export async function registerForExhibition(
           WHERE exhibition_id = ? AND user_id = ?
           LIMIT 1
         `,
-        [payload.exhibition_id, userId]
+        [payload.exhibition_id, userId],
       );
       if (!existingRegistration.length) {
-        throw new AppError("registration record not found", 500, "REGISTRATION_NOT_FOUND");
+        throw new AppError(
+          "registration record not found",
+          500,
+          "REGISTRATION_NOT_FOUND",
+        );
       }
       registrationId = existingRegistration[0].registration_id;
     }
@@ -143,7 +150,11 @@ export async function registerForExhibition(
     let staffLinked: RegistrationResult["staff_linked"];
     if (storedRole === "staff") {
       if (!payload.unit_code) {
-        throw new AppError("unit_code required for staff registration", 400, "VALIDATION_ERROR");
+        throw new AppError(
+          "unit_code required for staff registration",
+          400,
+          "VALIDATION_ERROR",
+        );
       }
 
       const [unitRows] = await conn.query<UnitRow[]>(
@@ -153,11 +164,15 @@ export async function registerForExhibition(
           WHERE unit_code = ? AND exhibition_id = ?
           LIMIT 1
         `,
-        [payload.unit_code, payload.exhibition_id]
+        [payload.unit_code, payload.exhibition_id],
       );
 
       if (!unitRows.length) {
-        throw new AppError("unit_code not found in this exhibition", 400, "UNIT_NOT_FOUND");
+        throw new AppError(
+          "unit_code not found in this exhibition",
+          400,
+          "UNIT_NOT_FOUND",
+        );
       }
 
       const unitId = unitRows[0].unit_id;
@@ -166,7 +181,7 @@ export async function registerForExhibition(
           INSERT IGNORE INTO unit_staffs (unit_id, staff_user_id)
           VALUES (?, ?)
         `,
-        [unitId, userId]
+        [unitId, userId],
       );
 
       staffLinked = {
@@ -193,10 +208,9 @@ export async function registerForExhibition(
     throw new AppError(
       (error as Error)?.message ?? "failed to register for exhibition",
       400,
-      "REGISTRATION_ERROR"
+      "REGISTRATION_ERROR",
     );
   } finally {
     conn.release();
   }
 }
-
