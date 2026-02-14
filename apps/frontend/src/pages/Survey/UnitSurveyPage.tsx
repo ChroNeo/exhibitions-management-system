@@ -6,16 +6,14 @@ import liff from "@line/liff";
 import { useUnitSurveyLiff } from "./hooks";
 import { submitSurveyLiff } from "../../api/survey";
 import { isLiffMockEnabled } from "../../hooks/useLiff";
-import styles from "../Survey/ExhibitionSurvey.module.css";
+import styles from "./UnitSurvey.module.css";
 
 interface SurveyAnswer {
   qt_id: number;
   rating: number;
 }
 
-type SubmitState =
-  | { status: "idle" }
-  | { status: "submitting" };
+type SubmitState = { status: "idle" } | { status: "submitting" };
 
 export default function UnitSurveyPage() {
   const navigate = useNavigate();
@@ -27,7 +25,9 @@ export default function UnitSurveyPage() {
 
   const [answers, setAnswers] = useState<SurveyAnswer[]>([]);
   const [comment, setComment] = useState("");
-  const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
+  const [submitState, setSubmitState] = useState<SubmitState>({
+    status: "idle",
+  });
 
   // Use the custom LIFF hook for unit surveys
   const { state, refetch } = useUnitSurveyLiff({
@@ -39,9 +39,7 @@ export default function UnitSurveyPage() {
     setAnswers((prev) => {
       const existing = prev.find((a) => a.qt_id === questionId);
       if (existing) {
-        return prev.map((a) =>
-          a.qt_id === questionId ? { ...a, rating } : a
-        );
+        return prev.map((a) => (a.qt_id === questionId ? { ...a, rating } : a));
       }
       return [...prev, { qt_id: questionId, rating }];
     });
@@ -141,121 +139,141 @@ export default function UnitSurveyPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <h1>Unit Survey</h1>
-      <p>กรุณาประเมินความพึงพอใจของท่านต่อบูธนี้</p>
-
-      {state.status === "initializing" && (
-        <div className={styles.statusMessage}>
-          <div className="spinner"></div>
-          <p>Loading...</p>
-        </div>
-      )}
-
-      {state.status === "not_logged_in" && (
-        <div className={styles.statusMessage}>
-          <p>Loading login...</p>
-        </div>
-      )}
-
-      {state.status === "loading" && (
-        <div className={styles.statusMessage}>
-          <div className="spinner"></div>
-          <p>Loading questions...</p>
-        </div>
-      )}
-
-      {state.status === "error" && (
-        <div className={styles.statusMessage}>
-          <div className={styles.errorIcon}>🚫</div>
-          <h3>Error</h3>
-          <p className={styles.errorMessage}>
-            {state.message}
+    <div className={styles.page}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Unit Survey</h1>
+          <p className={styles.subtitle}>
+            กรุณาประเมินความพึงพอใจของท่านต่อบูธนี้
           </p>
-          <button onClick={refetch} className={styles.retryButton}>
-            Try Again
-          </button>
+          <div className={styles.divider} />
         </div>
-      )}
 
-      {state.status === "success" && (
-        <>
-          {state.data.isCompleted ? (
-            <div className={styles.successMessage}>
-              <div className={styles.successIcon}>✅</div>
-              <h2 className={styles.successTitle}>ขอบคุณสำหรับความคิดเห็นของคุณ!</h2>
-              <p className={styles.successDescription}>
-                คุณได้ทำแบบสอบถามนี้เรียบร้อยแล้ว
-              </p>
-              <button
-                onClick={() => {
-                  if (isLiffMockEnabled()) {
-                    window.close();
-                  } else {
-                    liff.closeWindow();
-                  }
-                }}
-                className={styles.backButton}
-              >
-                ปิดหน้าต่าง
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              {state.data.questions && state.data.questions.length > 0 ? (
-              <>
-                {state.data.questions.map((question, index) => (
-              <div key={question.qt_id} className={styles.questionCard}>
-                <h3 className={styles.questionTitle}>
-                  {index + 1}. {question.content}
-                </h3>
-                <div className={styles.ratingContainer}>
-                  {[1, 2, 3, 4, 5].map((rating) => (
-                    <label key={rating} className={styles.ratingLabel}>
-                      <input
-                        type="radio"
-                        name={`question-${question.qt_id}`}
-                        value={rating}
-                        onChange={() =>
-                          handleRatingChange(question.qt_id, rating)
-                        }
-                        className={styles.ratingInput}
-                      />
-                      <span className={styles.ratingValue}>
-                        {rating}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {/* Comment Section */}
-            <div className={styles.commentSection}>
-              <h3 className={styles.commentTitle}>ข้อเสนอแนะเพิ่มเติม</h3>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="กรุณากรอกข้อเสนอแนะของท่าน..."
-                className={styles.commentTextarea}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className={styles.submitButton}
-              disabled={submitState.status === "submitting"}
-            >
-              {submitState.status === "submitting" ? "Submitting..." : "Submit Survey"}
-            </button>
-          </>
-        ) : (
-          <p className={styles.noQuestions}>No questions found for this unit survey.</p>
+        {state.status === "initializing" && (
+          <div className={styles.statusMessage}>
+            <div className={styles.spinner} />
+            <p>Loading...</p>
+          </div>
         )}
-            </form>
-          )}
-        </>
-      )}
+
+        {state.status === "not_logged_in" && (
+          <div className={styles.statusMessage}>
+            <div className={styles.spinner} />
+            <p>Loading login...</p>
+          </div>
+        )}
+
+        {state.status === "loading" && (
+          <div className={styles.statusMessage}>
+            <div className={styles.spinner} />
+            <p>Loading questions...</p>
+          </div>
+        )}
+
+        {state.status === "error" && (
+          <div className={styles.statusMessage}>
+            <div className={styles.errorIcon}>🚫</div>
+            <h3 className={styles.errorTitle}>Error</h3>
+            <p className={styles.errorMessage}>{state.message}</p>
+            <button onClick={refetch} className={styles.retryButton}>
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {state.status === "success" && (
+          <>
+            {state.data.isCompleted ? (
+              <div className={styles.successMessage}>
+                <div className={styles.successIcon}>✅</div>
+                <h2 className={styles.successTitle}>
+                  ขอบคุณสำหรับความคิดเห็นของคุณ!
+                </h2>
+                <p className={styles.successDescription}>
+                  คุณได้ทำแบบสอบถามนี้เรียบร้อยแล้ว
+                </p>
+
+                <button
+                  onClick={() => {
+                    if (isLiffMockEnabled()) window.close();
+                    else liff.closeWindow();
+                  }}
+                  className={styles.primaryButton}
+                >
+                  ปิดหน้าต่าง
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className={styles.form}>
+                {state.data.questions && state.data.questions.length > 0 ? (
+                  <div className={styles.questionList}>
+                    {state.data.questions.map((question, index) => (
+                      <div key={question.qt_id} className={styles.questionCard}>
+                        <h3 className={styles.questionTitle}>
+                          {index + 1}. {question.content}
+                        </h3>
+
+                        <div className={styles.ratingRow}>
+                          {[1, 2, 3, 4, 5].map((rating) => (
+                            <label key={rating} className={styles.ratingChip}>
+                              <input
+                                type="radio"
+                                name={`question-${question.qt_id}`}
+                                value={rating}
+                                onChange={() =>
+                                  handleRatingChange(question.qt_id, rating)
+                                }
+                                className={styles.ratingInput}
+                              />
+                              <span className={styles.ratingValue}>
+                                {rating}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className={styles.commentCard}>
+                      <h3 className={styles.commentTitle}>
+                        ข้อเสนอแนะเพิ่มเติม
+                      </h3>
+                      <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="กรุณากรอกข้อเสนอแนะของท่าน..."
+                        className={styles.commentTextarea}
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className={styles.primaryButton}
+                      disabled={submitState.status === "submitting"}
+                    >
+                      {submitState.status === "submitting"
+                        ? "Submitting..."
+                        : "Submit Survey"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.emptyMessage}>
+                    <div className={styles.emptyIcon}>🗂️</div>
+                    <h3 className={styles.emptyTitle}>ไม่พบคำถาม</h3>
+                    <button
+                      type="button"
+                      className={styles.retryButton}
+                      onClick={refetch}
+                    >
+                      โหลดใหม่
+                    </button>
+                  </div>
+                )}
+              </form>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   IoSearchOutline,
   IoCheckmark,
   IoArrowForward,
+  IoBanOutline,
 } from "react-icons/io5";
 import styles from "./SurveySelect.module.css";
 
@@ -82,7 +83,7 @@ export default function SurveySelectPage() {
 
         {state.status === "error" && (
           <div className={styles.statusMessage}>
-            <div className={styles.errorIcon}>🚫</div>
+            <IoBanOutline className={styles.errorIcon} />
             <h3 className={styles.errorTitle}>Error</h3>
             <p className={styles.errorMessage}>{state.message}</p>
             <button onClick={refetch} className={styles.retryButton}>
