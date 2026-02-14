@@ -4,6 +4,7 @@ import type {
   UpdateNewsPayload,
 } from "../types/news";
 import api from "./client";
+import liffClient from "./liffClient";
 
 export async function getNewsLists(): Promise<NewsLists[]> {
   const res = await api.get<NewsLists[]>("/news");
@@ -53,5 +54,12 @@ export async function updateNews(
 
 export async function deleteNews(id: number): Promise<{ message: string }> {
   const res = await api.delete<{ message: string }>(`/news/${id}`);
+  return res.data;
+}
+
+export async function getNewsByExhibitionIdLiff(
+  exhibitionId: number,
+): Promise<NewsLists[]> {
+  const res = await liffClient.get<NewsLists[]>(`/news/${exhibitionId}`);
   return res.data;
 }

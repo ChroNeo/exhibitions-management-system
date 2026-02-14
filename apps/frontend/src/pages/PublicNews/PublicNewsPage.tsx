@@ -1,15 +1,13 @@
-import { ArrowLeft, Calendar, ChevronRight, Clock, Newspaper } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Calendar, ChevronRight, Clock, Newspaper } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import { toFileUrl } from "../../utils/url";
 import styles from "./PublicNewsPage.module.css";
-import { useAllNews } from "./hooks/useAllNews";
+import { useAllNewsLiff } from "./hooks/useAllNews";
 
 export default function PublicNewsPage() {
-  const { exhibitionId } = useParams<{ exhibitionId: string }>();
   const navigate = useNavigate();
-  const exId = exhibitionId ? Number(exhibitionId) : undefined;
-  const { data: newsList = [], isLoading } = useAllNews(exId);
+  const { state, refetch } = useAllNewsLiff();
 
   return (
     <div className={styles.page}>
@@ -17,29 +15,28 @@ export default function PublicNewsPage() {
 
       <main className={styles.main}>
         <div className={styles.header}>
-          {exhibitionId && (
-            <button
-              type="button"
-              className={styles.backBtn}
-              onClick={() => navigate("/news")}
-            >
-              <ArrowLeft size={20} />
-            </button>
-          )}
           <Newspaper className={styles.headerIcon} />
           <h1 className={styles.title}>ข่าวสารและประกาศ</h1>
         </div>
 
-        {isLoading ? (
+        {state.status === "initializing" || state.status === "loading" ? (
           <div className={styles.loading}>กำลังโหลด...</div>
-        ) : newsList.length === 0 ? (
+        ) : state.status === "not_logged_in" ? (
+          <div className={styles.loading}>กำลังเข้าสู่ระบบ LINE...</div>
+        ) : state.status === "error" ? (
+          <div className={styles.empty}>
+            <Newspaper className={styles.emptyIcon} />
+            <p className={styles.emptyText}>{state.message}</p>
+            <button type="button" onClick={refetch}>ลองใหม่</button>
+          </div>
+        ) : state.data.length === 0 ? (
           <div className={styles.empty}>
             <Newspaper className={styles.emptyIcon} />
             <p className={styles.emptyText}>ยังไม่มีข่าวสารในขณะนี้</p>
           </div>
         ) : (
           <div className={styles.grid}>
-            {newsList.map((news) => {
+            {state.data.map((news) => {
               const [datePart, timePart] = news.created_at?.split(" ") ?? [];
 
               return (
