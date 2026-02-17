@@ -104,7 +104,6 @@ export default function UnitListPage() {
         {state.status === "error" && (
           <div className={styles.statusMessage}>
             <IoBanOutline className={styles.errorIcon} />
-
             <h3 className={styles.errorTitle}>Error</h3>
             <p className={styles.errorMessage}>{state.message}</p>
             <button onClick={refetch} className={styles.retryButton}>

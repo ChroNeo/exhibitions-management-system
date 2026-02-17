@@ -10,6 +10,7 @@ import {
   useSurveyQuestions,
   useUpdateQuestionSet,
 } from "./hooks";
+import { IoArrowBack } from "react-icons/io5";
 
 interface CustomQuestion {
   id: string;
@@ -62,7 +63,6 @@ export default function CreateSurveyPage() {
 
   const isLoading = isLoadingMaster || isLoadingExisting;
 
-  // Populate form with existing questions in edit mode
   useEffect(() => {
     if (isEditMode && existingQuestions && existingQuestions.length > 0) {
       const existingCustomQuestions: CustomQuestion[] = existingQuestions.map(
@@ -84,6 +84,7 @@ export default function CreateSurveyPage() {
     setSelectedSetId(null);
     setCustomQuestions([]);
     setExcludedMasterIds([]);
+    setHasLoadedExisting(false);
   };
 
   useEffect(() => {
@@ -98,7 +99,7 @@ export default function CreateSurveyPage() {
       topic: "",
       isEditing: true,
     };
-    setCustomQuestions([...customQuestions, newQuestion]);
+    setCustomQuestions((prev) => [...prev, newQuestion]);
   };
 
   const handleUpdateQuestionTopic = useCallback((id: string, topic: string) => {
@@ -113,12 +114,11 @@ export default function CreateSurveyPage() {
       if (!question?.topic.trim()) {
         Swal.fire({
           icon: "warning",
-          title: "Please enter a question topic",
+          title: "กรุณากรอกหัวข้อคำถาม",
           timer: 2000,
         });
         return prev;
       }
-
       return prev.map((q) => (q.id === id ? { ...q, isEditing: false } : q));
     });
   }, []);
@@ -138,7 +138,7 @@ export default function CreateSurveyPage() {
       setExcludedMasterIds((prev) => [...prev, masterId]);
       const newQuestion: CustomQuestion = {
         id: `master-${masterId}-${Date.now()}`,
-        topic: topic,
+        topic,
         qt_id: masterId,
         isEditing: true,
         originalMasterId: masterId,
@@ -152,29 +152,47 @@ export default function CreateSurveyPage() {
     setExcludedMasterIds((prev) => [...prev, masterId]);
   }, []);
 
+  const visibleMasterQuestions = useMemo(() => {
+    if (!masterQuestions) return [];
+    return masterQuestions.filter((q) => !excludedMasterIds.includes(q.qt_id));
+  }, [masterQuestions, excludedMasterIds]);
+
+  const allQuestionsList = useMemo(() => {
+    if (isEditMode && hasLoadedExisting) {
+      return customQuestions
+        .filter((q) => q.qt_id != null)
+        .map((q, i) => ({ qt_id: q.qt_id!, sort_order: i + 1 }));
+    }
+
+    const masterList = visibleMasterQuestions.map((q, i) => ({
+      qt_id: q.qt_id,
+      sort_order: i + 1,
+    }));
+
+    const customList = customQuestions
+      .filter((q) => q.qt_id != null)
+      .map((q, i) => ({
+        qt_id: q.qt_id!,
+        sort_order: masterList.length + i + 1,
+      }));
+
+    return [...masterList, ...customList];
+  }, [isEditMode, hasLoadedExisting, customQuestions, visibleMasterQuestions]);
+
   const handleSubmit = async () => {
     if (!selectedType) {
-      Swal.fire({
-        icon: "warning",
-        title: "Please select a survey type",
-      });
+      Swal.fire({ icon: "warning", title: "กรุณาเลือกประเภทแบบสอบถาม" });
       return;
     }
 
     if (!exhibition_id) {
-      Swal.fire({
-        icon: "error",
-        title: "Exhibition ID not found",
-      });
+      Swal.fire({ icon: "error", title: "ไม่พบ Exhibition ID" });
       return;
     }
 
     const exhibitionIdNum = parseInt(exhibition_id, 10);
     if (isNaN(exhibitionIdNum)) {
-      Swal.fire({
-        icon: "error",
-        title: "Invalid Exhibition ID",
-      });
+      Swal.fire({ icon: "error", title: "Exhibition ID ไม่ถูกต้อง" });
       return;
     }
 
@@ -182,16 +200,13 @@ export default function CreateSurveyPage() {
     if (hasEditingQuestions) {
       Swal.fire({
         icon: "warning",
-        title: "Please confirm all questions before submitting",
+        title: "กรุณายืนยันคำถามให้ครบก่อนบันทึก",
       });
       return;
     }
 
     if (allQuestionsList.length === 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "Please add at least one question",
-      });
+      Swal.fire({ icon: "warning", title: "กรุณาเพิ่มคำถามอย่างน้อย 1 ข้อ" });
       return;
     }
 
@@ -205,8 +220,8 @@ export default function CreateSurveyPage() {
 
         await Swal.fire({
           icon: "success",
-          title: "Survey updated successfully!",
-          timer: 2000,
+          title: "อัปเดตแบบสอบถามเรียบร้อย",
+          timer: 1800,
         });
       } else {
         await createQuestionSet({
@@ -217,8 +232,8 @@ export default function CreateSurveyPage() {
 
         await Swal.fire({
           icon: "success",
-          title: "Survey created successfully!",
-          timer: 2000,
+          title: "สร้างแบบสอบถามเรียบร้อย",
+          timer: 1800,
         });
       }
 
@@ -226,40 +241,11 @@ export default function CreateSurveyPage() {
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: isEditMode
-          ? "Failed to update survey"
-          : "Failed to create survey",
+        title: isEditMode ? "อัปเดตไม่สำเร็จ" : "สร้างไม่สำเร็จ",
         text: error instanceof Error ? error.message : "Unknown error",
       });
     }
   };
-
-  const visibleMasterQuestions = useMemo(() => {
-    if (!masterQuestions) return [];
-    return masterQuestions.filter(
-      (q) => !excludedMasterIds.includes(q.qt_id),
-    );
-  }, [masterQuestions, excludedMasterIds]);
-
-  // Build the final questions list as { qt_id, sort_order }
-  const allQuestionsList = useMemo(() => {
-    if (isEditMode && hasLoadedExisting) {
-      return customQuestions
-        .filter((q) => q.qt_id != null)
-        .map((q, i) => ({ qt_id: q.qt_id!, sort_order: i + 1 }));
-    }
-    const masterList = visibleMasterQuestions.map((q, i) => ({
-      qt_id: q.qt_id,
-      sort_order: i + 1,
-    }));
-    const customList = customQuestions
-      .filter((q) => q.qt_id != null)
-      .map((q, i) => ({
-        qt_id: q.qt_id!,
-        sort_order: masterList.length + i + 1,
-      }));
-    return [...masterList, ...customList];
-  }, [isEditMode, hasLoadedExisting, customQuestions, visibleMasterQuestions]);
 
   const surveyTypeLabel =
     selectedType === "EXHIBITION" ? "แบบสอบถามนิทรรศการ" : "แบบสอบถามบูธ";
@@ -270,50 +256,57 @@ export default function CreateSurveyPage() {
         {isLoading && (
           <LoadingOverlay
             message={
-              isEditMode
-                ? "Loading existing questions..."
-                : "Loading master questions..."
+              isEditMode ? "กำลังโหลดคำถามเดิม..." : "กำลังโหลดคำถามต้นแบบ..."
             }
           />
         )}
-        <div className={styles.header}>
+
+        <div className={styles.headerRow}>
           <button
-            className={styles.backButton}
+            type="button"
+            className={styles.backBtn}
             onClick={() => navigate(-1)}
-            aria-label="Back"
+            aria-label="ย้อนกลับ"
           >
-            ←
+            <IoArrowBack />
           </button>
-          <h1 className={styles.headerTitle}>
-            {isEditMode ? "แก้ไข" : "สร้าง"}
-            {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
-          </h1>
+
+          <div className={styles.header}>
+            <h1 className={styles.headerTitle}>
+              {isEditMode ? "แก้ไข" : "สร้าง"}
+              {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
+            </h1>
+            <p className={styles.subTitle}>Exhibition ID: {exhibition_id}</p>
+            <div className={styles.divider} />
+          </div>
         </div>
 
-        <p className={styles.subTitle}>Exhibition ID: {exhibition_id}</p>
-
         {!typeFromQuery && (
-          <div className={styles.section}>
-            <h2>Select Survey Type</h2>
-            <div className={styles.buttonGroup}>
-              <button
-                onClick={() => handleTypeSelect("EXHIBITION")}
-                className={`${styles.typeButton} ${
-                  selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
-                }`}
-                disabled={isEditMode}
-              >
-                Exhibition Survey
-              </button>
-              <button
-                onClick={() => handleTypeSelect("UNIT")}
-                className={`${styles.typeButton} ${
-                  selectedType === "UNIT" ? styles.typeButtonActive : ""
-                }`}
-                disabled={isEditMode}
-              >
-                Unit Survey
-              </button>
+          <div className={styles.card}>
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Select Survey Type</h2>
+
+              <div className={styles.buttonGroup}>
+                <button
+                  onClick={() => handleTypeSelect("EXHIBITION")}
+                  className={`${styles.typeButton} ${
+                    selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
+                  }`}
+                  disabled={isEditMode}
+                >
+                  Exhibition Survey
+                </button>
+
+                <button
+                  onClick={() => handleTypeSelect("UNIT")}
+                  className={`${styles.typeButton} ${
+                    selectedType === "UNIT" ? styles.typeButtonActive : ""
+                  }`}
+                  disabled={isEditMode}
+                >
+                  Unit Survey
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -321,7 +314,8 @@ export default function CreateSurveyPage() {
         {selectedType && (
           <div className={styles.typePanel}>
             <div className={styles.section}>
-              <h2>Select Template</h2>
+              <h2 className={styles.sectionTitle}>Select Template</h2>
+
               <select
                 value={selectedSetId || ""}
                 onChange={async (e) => {
@@ -363,13 +357,13 @@ export default function CreateSurveyPage() {
 
             {selectedSetId && (
               <div className={styles.section}>
-                <h2>Questions</h2>
-                <div>
+                <h2 className={styles.sectionTitle}>Questions</h2>
+
+                <div className={styles.questionsWrap}>
                   {(!isEditMode || !hasLoadedExisting) &&
                     masterQuestions?.map((masterQuestion, index) => {
                       const editedVersion = customQuestions.find(
-                        (q) =>
-                          q.originalMasterId === masterQuestion.qt_id,
+                        (q) => q.originalMasterId === masterQuestion.qt_id,
                       );
 
                       if (editedVersion) {
@@ -394,16 +388,14 @@ export default function CreateSurveyPage() {
                         );
                       }
 
-                      if (
-                        excludedMasterIds.includes(masterQuestion.qt_id)
-                      ) {
+                      if (excludedMasterIds.includes(masterQuestion.qt_id)) {
                         return null;
                       }
 
                       return (
                         <QuestionItem
                           key={masterQuestion.qt_id}
-                          id={masterQuestion.qt_id}
+                          id={String(masterQuestion.qt_id)}
                           topic={masterQuestion.content}
                           questionNumber={index + 1}
                           isEditing={false}
@@ -416,9 +408,7 @@ export default function CreateSurveyPage() {
                             )
                           }
                           onDelete={() =>
-                            handleDeleteMasterQuestion(
-                              masterQuestion.qt_id,
-                            )
+                            handleDeleteMasterQuestion(masterQuestion.qt_id)
                           }
                         />
                       );
@@ -449,7 +439,8 @@ export default function CreateSurveyPage() {
                       );
                     })}
                 </div>
-                <div className={styles.section}>
+
+                <div className={styles.actionsRow}>
                   <button
                     onClick={handleAddNewQuestion}
                     className={styles.addButton}
@@ -465,7 +456,7 @@ export default function CreateSurveyPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={isCreating || isUpdating}
-                  className={styles.createButton}
+                  className={styles.primaryButton}
                 >
                   {isCreating || isUpdating
                     ? isEditMode
@@ -475,9 +466,10 @@ export default function CreateSurveyPage() {
                       ? "Update Survey"
                       : "Create Survey"}
                 </button>
+
                 <button
                   onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
-                  className={styles.cancelButton}
+                  className={styles.secondaryButton}
                 >
                   Cancel
                 </button>

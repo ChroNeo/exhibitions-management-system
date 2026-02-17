@@ -1,4 +1,8 @@
-import { MdEdit, MdDelete, MdCheck } from "react-icons/md";
+import {
+  IoCreateOutline,
+  IoTrashOutline,
+  IoCheckmarkCircleOutline,
+} from "react-icons/io5";
 import { RatingPreview } from "./RatingPreview";
 import styles from "../CreateSurvey.module.css";
 
@@ -31,7 +35,7 @@ export function QuestionItem({
             type="text"
             value={topic}
             onChange={(e) => onUpdateTopic(e.target.value)}
-            placeholder="Topic"
+            placeholder="หัวข้อคำถาม"
             className={styles.input}
           />
         ) : (
@@ -44,16 +48,32 @@ export function QuestionItem({
 
         <div className={styles.buttonGroup}>
           {isEditing ? (
-            <button onClick={onConfirm} className={styles.iconButtonOk}>
-              <MdCheck size={20} />
+            <button
+              onClick={onConfirm}
+              className={styles.iconButtonOk}
+              aria-label="ยืนยันคำถาม"
+              type="button"
+            >
+              <IoCheckmarkCircleOutline size={20} />
             </button>
           ) : (
-            <button onClick={onEdit} className={styles.iconButton}>
-              <MdEdit size={20} />
+            <button
+              onClick={onEdit}
+              className={styles.iconButton}
+              aria-label="แก้ไขคำถาม"
+              type="button"
+            >
+              <IoCreateOutline size={20} />
             </button>
           )}
-          <button onClick={onDelete} className={styles.iconButtonDelete}>
-            <MdDelete size={20} />
+
+          <button
+            onClick={onDelete}
+            className={styles.iconButtonDelete}
+            aria-label="ลบคำถาม"
+            type="button"
+          >
+            <IoTrashOutline size={20} />
           </button>
         </div>
       </div>
