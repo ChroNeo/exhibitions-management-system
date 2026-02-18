@@ -6,17 +6,18 @@ interface RatingPreviewProps {
 
 export function RatingPreview({ questionId }: RatingPreviewProps) {
   return (
-    <div className={styles.ratingContainer}>
+    <div className={styles.ratingPreview} aria-label="ตัวอย่างคะแนน 1 ถึง 5">
       {[1, 2, 3, 4, 5].map((rating) => (
-        <label key={rating} className={styles.ratingOption}>
+        <label key={rating} className={styles.ratingPill} aria-disabled="true">
           <input
             type="radio"
-            name={`question-${questionId}`}
+            name={`preview-${questionId}`}
             value={rating}
             disabled
-            className={styles.radioInput}
+            className={styles.ratingInput}
+            tabIndex={-1}
           />
-          <span className={styles.ratingLabel}>{rating}</span>
+          <span className={styles.ratingValue}>{rating}</span>
         </label>
       ))}
     </div>

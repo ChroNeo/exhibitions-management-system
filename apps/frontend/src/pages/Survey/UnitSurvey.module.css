@@ -4,23 +4,18 @@
   padding: 28px 16px 48px;
 }
 
-.shell {
+.container {
   max-width: 920px;
   margin: 0 auto;
 }
 
 .header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 10px;
-}
-
-.titleWrap {
-  display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-bottom: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .title {
@@ -44,19 +39,8 @@
   margin: 14px 0 18px;
 }
 
-.card {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 24px;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
-  overflow: hidden;
-}
-
-.form {
-  padding: 22px;
-}
-
-.statusCard {
+/* Status */
+.statusMessage {
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
@@ -82,8 +66,14 @@
 }
 
 .errorIcon {
-  font-size: 44px;
-  margin-bottom: 10px;
+  font-size: 70px;
+  color: #dc2626;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 8px 20px rgba(220, 38, 38, 0.35));
+}
+
+.errorTitle {
+  margin: 0 0 6px;
 }
 
 .errorMessage {
@@ -91,18 +81,33 @@
   margin: 10px 0 18px;
 }
 
-.primaryBtn {
+.retryButton {
   padding: 10px 16px;
   border-radius: 12px;
   border: 0;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 800;
   background: #1976d2;
   color: white;
 }
 
-.primaryBtn:hover {
+.retryButton:hover {
   filter: brightness(0.95);
+}
+
+/* Form Card */
+.form {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+  padding: 22px;
+}
+
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .questionCard {
@@ -110,37 +115,17 @@
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
   padding: 16px 16px 18px;
-  margin-bottom: 14px;
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
 }
 
-.questionHead {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.qIndex {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-  color: #0b2a6f;
-  background: rgba(25, 118, 210, 0.14);
-  border: 1px solid rgba(25, 118, 210, 0.22);
-  flex: 0 0 auto;
-}
-
 .questionTitle {
-  margin: 2px 0 0;
+  margin: 0 0 12px;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 900;
   color: #0f172a;
 }
 
+/* Rating = circle pills */
 .ratingRow {
   display: flex;
   gap: 12px;
@@ -148,7 +133,7 @@
   flex-wrap: wrap;
 }
 
-.ratingPill {
+.ratingChip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -168,7 +153,7 @@
   border-radius: 999px;
   display: grid;
   place-items: center;
-  font-weight: 800;
+  font-weight: 900;
   border: 2px solid rgba(15, 23, 42, 0.18);
   background: rgba(255, 255, 255, 0.85);
   color: #0f172a;
@@ -179,7 +164,7 @@
     border-color 0.12s ease;
 }
 
-.ratingPill:hover .ratingValue {
+.ratingChip:hover .ratingValue {
   transform: translateY(-1px);
   box-shadow: 0 10px 18px rgba(15, 23, 42, 0.1);
 }
@@ -195,8 +180,8 @@
   box-shadow: 0 12px 24px rgba(25, 118, 210, 0.18);
 }
 
-.commentSection {
-  margin-top: 18px;
+/* Comment */
+.commentCard {
   background: rgba(255, 255, 255, 0.75);
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
@@ -204,14 +189,14 @@
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
 }
 
-.sectionTitle {
+.commentTitle {
   margin: 0 0 10px;
   font-size: 18px;
   font-weight: 900;
   color: #0f172a;
 }
 
-.textarea {
+.commentTextarea {
   width: 100%;
   min-height: 110px;
   padding: 12px 12px;
@@ -223,18 +208,15 @@
   outline: none;
 }
 
-.textarea:focus {
+.commentTextarea:focus {
   border-color: rgba(25, 118, 210, 0.55);
   box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.16);
 }
 
-.actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 18px;
-}
-
-.submitBtn {
+/* Primary button */
+.primaryButton {
+  width: fit-content;
+  align-self: center;
   padding: 12px 34px;
   border-radius: 14px;
   border: 0;
@@ -250,42 +232,103 @@
     box-shadow 0.12s ease;
 }
 
-.submitBtn:hover {
+.primaryButton:hover {
   transform: translateY(-1px);
   filter: brightness(0.97);
   box-shadow: 0 18px 34px rgba(25, 118, 210, 0.28);
 }
 
-.submitBtn:disabled {
+.primaryButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
 }
 
-.noQuestions {
+/* Success */
+.successMessage {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+  padding: 28px 20px;
   text-align: center;
-  padding: 10px 0;
+}
+
+.successIcon {
+  font-size: 80px;
+  color: #16a34a;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 8px 20px rgba(22, 163, 74, 0.35));
+}
+
+.successTitle {
+  margin: 0 0 8px;
+  font-weight: 1000;
+  color: #0f172a;
+}
+
+.successDescription {
+  margin: 0 0 18px;
   color: rgba(15, 23, 42, 0.7);
   font-weight: 700;
 }
 
-/* Icon Wrapper */
-.iconWrapperError {
-  width: 90px;
-  height: 90px;
-  margin: 0 auto 14px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(220, 38, 38, 0.12);
-  box-shadow: 0 12px 30px rgba(220, 38, 38, 0.18);
+/* Empty */
+.emptyMessage {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  padding: 26px;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
-.iconError {
-  font-size: 56px;
-  color: #dc2626;
+.emptyIcon {
+  font-size: 44px;
+  margin-bottom: 10px;
+}
+
+.emptyTitle {
+  margin: 0 0 14px;
+  color: #0f172a;
+}
+
+.headerRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.backBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.75);
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 0.12s ease,
+    background-color 0.15s ease;
+}
+
+.backBtn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.backBtn:active {
+  transform: translateY(0px) scale(0.99);
+}
+
+.backBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.18);
 }
 
 /* Responsive */
@@ -302,5 +345,8 @@
   .ratingValue {
     width: 42px;
     height: 42px;
+  }
+  .primaryButton {
+    width: 100%;
   }
 }

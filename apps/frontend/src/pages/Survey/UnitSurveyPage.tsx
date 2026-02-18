@@ -6,7 +6,8 @@ import Swal from "sweetalert2";
 import { submitSurveyLiff } from "../../api/survey";
 import { isLiffMockEnabled } from "../../hooks/useLiff";
 import { useUnitSurveyLiff } from "./hooks";
-import styles from "./UnitList.module.css";
+import styles from "./UnitSurvey.module.css";
+import { IoCheckmarkCircle, IoCloseCircle, IoArrowBack } from "react-icons/io5";
 
 interface SurveyAnswer {
   qt_id: number;
@@ -72,8 +73,8 @@ export default function UnitSurveyPage() {
       if (unansweredCount > 0) {
         Swal.fire({
           icon: "warning",
-          title: "Incomplete Survey",
-          text: `Please answer all questions. ${unansweredCount} question(s) remaining.`,
+          title: "แบบสอบถามยังไม่ครบถ้วน",
+          text: `กรุณาตอบคำถามให้ครบทุกข้อ. ยังเหลืออีก ${unansweredCount} ข้อที่ยังไม่ได้ตอบ.`,
         });
         return;
       }
@@ -82,7 +83,6 @@ export default function UnitSurveyPage() {
     setSubmitState({ status: "submitting" });
 
     try {
-      // Submit the survey with unit_id
       await submitSurveyLiff({
         exhibition_id: Number(exhibitionId),
         unit_id: Number(unitId),
@@ -95,7 +95,6 @@ export default function UnitSurveyPage() {
 
       setSubmitState({ status: "idle" });
 
-      // Show success message with SweetAlert2
       const result = await Swal.fire({
         icon: "success",
         title: "ขอบคุณสำหรับความคิดเห็นของคุณ!",
@@ -141,12 +140,22 @@ export default function UnitSurveyPage() {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Unit Survey</h1>
-          <p className={styles.subtitle}>
-            กรุณาประเมินความพึงพอใจของท่านต่อบูธนี้
-          </p>
-          <div className={styles.divider} />
+        <div className={styles.headerRow}>
+          <button
+            type="button"
+            className={styles.backBtn}
+            onClick={() => navigate(`/survey/unit-list?ex_id=${exhibitionId}`)}
+            aria-label="ย้อนกลับ"
+          >
+            <IoArrowBack />
+          </button>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Unit Survey</h1>
+            <p className={styles.subtitle}>
+              กรุณาประเมินความพึงพอใจของท่านต่อบูธนี้
+            </p>
+            <div className={styles.divider} />
+          </div>
         </div>
 
         {state.status === "initializing" && (
@@ -172,7 +181,9 @@ export default function UnitSurveyPage() {
 
         {state.status === "error" && (
           <div className={styles.statusMessage}>
-            <div className={styles.errorIcon}>🚫</div>
+            <div className={styles.errorIcon}>
+              <IoCloseCircle />
+            </div>
             <h3 className={styles.errorTitle}>Error</h3>
             <p className={styles.errorMessage}>{state.message}</p>
             <button onClick={refetch} className={styles.retryButton}>
@@ -185,7 +196,9 @@ export default function UnitSurveyPage() {
           <>
             {state.data.isCompleted ? (
               <div className={styles.successMessage}>
-                <div className={styles.successIcon}>✅</div>
+                <div className={styles.successIcon}>
+                  <IoCheckmarkCircle />
+                </div>
                 <h2 className={styles.successTitle}>
                   ขอบคุณสำหรับความคิดเห็นของคุณ!
                 </h2>
