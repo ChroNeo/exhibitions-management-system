@@ -20,7 +20,7 @@ import {
 
 const RICH_MENU_IDS = {
   STAFF: "richmenu-2912b2d76754fbfa073a4a8fc2f82b34", // ใส่ ID เมนู Staff
-  MEMBER: "richmenu-b3ba8b7701691b4facbfa0267bc203ee", // ใส่ ID เมนู Member (ถ้ามี)
+  MEMBER: "richmenu-105e3b56020a5d67fd5b09d40e154c84", // ใส่ ID เมนู Member (ถ้ามี)
 };
 export async function handleMessageCommand(
   replyToken: string,

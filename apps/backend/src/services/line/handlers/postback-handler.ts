@@ -10,7 +10,7 @@ import type { LineConfig, LineMessage } from "../types.js";
 
 const RICH_MENU_IDS = {
   STAFF: "richmenu-2912b2d76754fbfa073a4a8fc2f82b34",
-  MEMBER: "richmenu-b3ba8b7701691b4facbfa0267bc203ee",
+  MEMBER: "richmenu-105e3b56020a5d67fd5b09d40e154c84",
 };
 
 const LIFF_REGISTRATION_ID = "2008498720-KaJrlZBN";
@@ -135,7 +135,9 @@ async function handleEnterExhibition(
     await linkRichMenuToUser(userId, richMenuId, config);
     await setCurrentExhibition(userId, exhibitionId);
   } catch (err) {
+    console.log("🚀 ~ handleEnterExhibition ~ err:", err);
     log.error({ err }, "Failed to link rich menu for exhibition entry");
+
     await replyToLineMessage(
       replyToken,
       [{ type: "text", text: "เกิดข้อผิดพลาดในการเข้าร่วมนิทรรศการ" }],
