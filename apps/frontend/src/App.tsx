@@ -11,6 +11,8 @@ import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
 import HomePage from "./pages/Homepage/HomePage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import NewsPage from "./pages/News/NewsPage";
+import NewsDetailPage from "./pages/PublicNews/NewsDetailPage";
+import PublicNewsPage from "./pages/PublicNews/PublicNewsPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
 import CreateSurveyPage from "./pages/Survey/CreateSurveyPage";
@@ -26,6 +28,11 @@ export default function App() {
     <Routes>
       {/* หน้าแรก = Home */}
       <Route path="/" element={<HomePage />} />
+
+      {/* ข่าวสารสำหรับผู้ใช้ทั่วไป */}
+      <Route path="/news" element={<PublicNewsPage />} />
+      <Route path="/news/detail/:id" element={<NewsDetailPage />} />
+      <Route path="/news/:exhibitionId" element={<PublicNewsPage />} />
 
       {/* Exhibitions */}
       <Route path="/exhibitions" element={<ExhibitionPage />} />
