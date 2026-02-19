@@ -10,8 +10,6 @@ import path from "node:path";
 import { z } from "zod";
 // --- Import Controllers ---
 import adminController from "./controller/admin-controller.js";
-import adminDashboardController from "./controller/admin-dashboard-controller.js";
-import adminVisitorController from "./controller/admin-visitor-controller.js";
 import authController from "./controller/auth-controller.js";
 import certificateTemplateController from "./controller/certificate-template-controller.js";
 import exhibitionsController from "./controller/exhibitions-controller.js";
@@ -137,6 +135,10 @@ await app.register(swagger, {
         name: "Admin",
         description: "Admin panel: user and system management.",
       },
+      {
+        name: "Dashboard",
+        description: "Dashboard",
+      },
     ],
   },
   // 4. สำคัญมาก! ต้องใส่บรรทัดนี้เพื่อให้ Swagger อ่าน Zod Schema ออก
@@ -203,9 +205,7 @@ app.register(lineController, { prefix: "/line" });
 app.register(ticketController, { prefix: "/api/v1/ticket" });
 app.register(surveyController, { prefix: "/api/v1/surveys" });
 app.register(certificateTemplateController, { prefix: "/api/v1/exhibitions" });
-app.register(adminController, { prefix: "/api/v1/admin/users" });
-app.register(adminDashboardController, { prefix: "/api/v1/admin/dashboard" });
-app.register(adminVisitorController, { prefix: "/api/v1/admin/visitors" });
+app.register(adminController, { prefix: "/api/v1/admin" });
 app.register(newsController, { prefix: "/api/v1/news" });
 
 // Start Server
