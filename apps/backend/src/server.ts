@@ -32,6 +32,7 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
+import dashboardController from "./controller/dashboard-controller.js";
 import newsController from "./controller/news-controller.js";
 import surveyController from "./controller/survey-controller.js";
 
@@ -207,6 +208,7 @@ app.register(surveyController, { prefix: "/api/v1/surveys" });
 app.register(certificateTemplateController, { prefix: "/api/v1/exhibitions" });
 app.register(adminController, { prefix: "/api/v1/admin" });
 app.register(newsController, { prefix: "/api/v1/news" });
+app.register(dashboardController, { prefix: "/api/v1/dashboard" });
 
 // Start Server
 const port = Number(process.env.PORT || 3001);
