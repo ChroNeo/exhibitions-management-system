@@ -1,4 +1,4 @@
-import { DashboardResponse } from "../models/dashboard.model.js";
+import { DashboardResponse, OrgDashboardResponse } from "../models/dashboard.model.js";
 import { safeQuery } from "../services/dbconn.js";
 
 export async function getStaffDashboard(
@@ -93,4 +93,129 @@ export async function getStaffDashboard(
   };
   console.log(JSON.stringify(result, null, 2));
   return result;
+}
+
+export async function getOrgDashboard(
+  exhibitionId: number,
+): Promise<OrgDashboardResponse> {
+  // KPI
+  const [kpi] = await safeQuery<any[]>(
+    `SELECT * FROM v_org_dashboard_kpis WHERE exhibition_id = ?`,
+    [exhibitionId],
+  );
+
+  // Demographics – gender
+  const genderRows = await safeQuery<any[]>(
+    `SELECT gender AS label, COUNT(*) AS value
+     FROM normal_users u
+     JOIN registrations r ON u.user_id = r.user_id
+     WHERE r.exhibition_id = ?
+     GROUP BY gender`,
+    [exhibitionId],
+  );
+
+  // Demographics – age groups
+  const ageRows = await safeQuery<any[]>(
+    `SELECT
+       CASE
+         WHEN TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) < 18 THEN 'ต่ำกว่า 18 ปี'
+         WHEN TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) BETWEEN 18 AND 24 THEN '18 - 24 ปี'
+         WHEN TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) BETWEEN 25 AND 34 THEN '25 - 34 ปี'
+         ELSE '35 ปีขึ้นไป'
+       END AS label,
+       COUNT(*) AS value
+     FROM normal_users u
+     JOIN registrations r ON u.user_id = r.user_id
+     WHERE r.exhibition_id = ? AND birthdate IS NOT NULL
+     GROUP BY label`,
+    [exhibitionId],
+  );
+
+  // Calculate percent for age groups
+  const totalAge = ageRows.reduce((sum: number, r: any) => sum + Number(r.value), 0);
+  const age_groups = ageRows.map((r: any) => ({
+    label: r.label,
+    value: Number(r.value),
+    percent: totalAge > 0 ? Math.round((Number(r.value) / totalAge) * 100) : 0,
+  }));
+
+  // Feedback breakdown (exhibition-level)
+  const feedbackRows = await safeQuery<any[]>(
+    `SELECT topic, score FROM v_org_exhibition_feedback_stats WHERE exhibition_id = ?`,
+    [exhibitionId],
+  );
+
+  // All units stats
+  const unitRows = await safeQuery<any[]>(
+    `SELECT id, name, type, checkins, IFNULL(rating, 0) AS rating
+     FROM v_org_unit_stats
+     WHERE exhibition_id = ?
+     ORDER BY checkins DESC`,
+    [exhibitionId],
+  );
+
+  // For each unit, fetch feedback details and recent comments in parallel
+  const all_units_stats = await Promise.all(
+    unitRows.map(async (unit: any) => {
+      const [feedbackDetails, commentRows] = await Promise.all([
+        safeQuery<any[]>(
+          `SELECT qt.content AS topic, ROUND(AVG(a.score), 2) AS score
+           FROM survey_submissions s
+           JOIN survey_answers a ON s.submission_id = a.submission_id
+           JOIN questions_template qt ON a.qt_id = qt.qt_id
+           WHERE s.unit_id = ?
+           GROUP BY qt.qt_id, qt.content`,
+          [unit.id],
+        ),
+        safeQuery<any[]>(
+          `SELECT comment
+           FROM survey_submissions
+           WHERE unit_id = ? AND comment IS NOT NULL AND comment != ''
+           ORDER BY created_at DESC
+           LIMIT 3`,
+          [unit.id],
+        ),
+      ]);
+
+      return {
+        id: unit.id,
+        name: unit.name,
+        type: unit.type,
+        checkins: Number(unit.checkins),
+        rating: Number(unit.rating),
+        feedback_details: feedbackDetails.map((f: any) => ({
+          topic: f.topic,
+          score: Number(f.score),
+        })),
+        recent_comments: commentRows.map((c: any) => c.comment),
+      };
+    }),
+  );
+
+  return {
+    status: "success" as const,
+    data: {
+      exhibition_info: {
+        id: kpi.exhibition_id,
+        title: kpi.title,
+        status: kpi.status,
+        location: kpi.location,
+      },
+      kpis: {
+        total_registrations: Number(kpi.total_registrations),
+        total_units: Number(kpi.total_units),
+        total_checkins: Number(kpi.total_checkins),
+        exhibition_avg_score: kpi.exhibition_avg_score !== null ? Number(kpi.exhibition_avg_score) : null,
+      },
+      demographics: {
+        gender: genderRows.map((r: any) => ({ label: r.label, value: Number(r.value) })),
+        age_groups,
+      },
+      feedback_breakdown: feedbackRows.map((r: any) => ({
+        topic: r.topic,
+        score: Number(r.score),
+      })),
+      all_units_stats,
+    },
+  };
 }

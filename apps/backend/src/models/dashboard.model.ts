@@ -48,3 +48,64 @@ export const DashboardResponseSchema = z.object({
 export type DashboardResponse = z.infer<typeof DashboardResponseSchema>;
 export type DashboardData = z.infer<typeof DashboardDataSchema>;
 export type FeedbackBreakdownItem = z.infer<typeof FeedbackBreakdownItemSchema>;
+
+// ─── Organizer Dashboard ───────────────────────────────────────────────────
+
+const OrgLabelValueSchema = z.object({
+  label: z.string(),
+  value: z.number().int(),
+});
+
+const OrgAgeGroupSchema = z.object({
+  label: z.string(),
+  value: z.number().int(),
+  percent: z.number(),
+});
+
+const OrgFeedbackTopicSchema = z.object({
+  topic: z.string(),
+  score: z.number(),
+});
+
+const OrgUnitFeedbackDetailSchema = z.object({
+  topic: z.string(),
+  score: z.number(),
+});
+
+const OrgUnitStatSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  type: z.string(),
+  checkins: z.number().int(),
+  rating: z.number(),
+  feedback_details: z.array(OrgUnitFeedbackDetailSchema),
+  recent_comments: z.array(z.string()),
+});
+
+const OrgDashboardDataSchema = z.object({
+  exhibition_info: z.object({
+    id: z.number().int(),
+    title: z.string(),
+    status: z.string(),
+    location: z.string(),
+  }),
+  kpis: z.object({
+    total_registrations: z.number().int(),
+    total_units: z.number().int(),
+    total_checkins: z.number().int(),
+    exhibition_avg_score: z.number().nullable(),
+  }),
+  demographics: z.object({
+    gender: z.array(OrgLabelValueSchema),
+    age_groups: z.array(OrgAgeGroupSchema),
+  }),
+  feedback_breakdown: z.array(OrgFeedbackTopicSchema),
+  all_units_stats: z.array(OrgUnitStatSchema),
+});
+
+export const OrgDashboardResponseSchema = z.object({
+  status: z.literal("success"),
+  data: OrgDashboardDataSchema,
+});
+
+export type OrgDashboardResponse = z.infer<typeof OrgDashboardResponseSchema>;
