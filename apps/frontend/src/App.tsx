@@ -21,6 +21,7 @@ import SurveySelectPage from "./pages/Survey/SurveySelectPage";
 import UnitListPage from "./pages/Survey/UnitListPage";
 import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import TicketPage from "./pages/Ticket/TicketPage";
+import OrgDashboardPage from "./pages/OrgDashboard/OrgDashboardPage";
 import UnitManageDetail from "./pages/Units/UnitManageDetail";
 
 export default function App() {
@@ -81,6 +82,9 @@ export default function App() {
       <Route path="/survey/answer" element={<ExhibitionSurveyPage />} />
       <Route path="/survey/units" element={<UnitSurveyPage />} />
       <Route path="/survey/unit-list" element={<UnitListPage />} />
+
+      {/* Organizer Dashboard */}
+      <Route path="/dashboard/organizer/:id" element={<OrgDashboardPage />} />
 
       {/* Admin Panel */}
       <Route
