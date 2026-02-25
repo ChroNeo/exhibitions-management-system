@@ -81,73 +81,8 @@
   flex-shrink: 0;
 }
 
-.dotGreen {
-  background: #22c55e;
-}
-
-.dotGray {
-  background: #94a3b8;
-}
-
-/* ── KPI Grid ────────────────────────────────────────────────────────────── */
-.kpiGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.kpiCard {
-  background: #fff;
-  border-radius: 14px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-  border: 1px solid #f1f5f9;
-}
-
-.kpiIcon {
-  width: 54px;
-  height: 54px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.kpiText {
-  min-width: 0;
-}
-
-.kpiTitle {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--muted, #64748b);
-  margin: 0 0 4px;
-}
-
-.kpiValue {
-  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
-  font-weight: 700;
-  color: var(--text, #1e293b);
-  margin: 0;
-  white-space: nowrap;
-}
-
-.kpiSub {
-  font-size: 0.72rem;
-  color: var(--muted, #94a3b8);
-  margin: 3px 0 0;
-}
-
-/* KPI colour variants */
-.kpi_blue .kpiIcon  { background: #eff6ff; color: #3b82f6; }
-.kpi_indigo .kpiIcon { background: #eef2ff; color: #6366f1; }
-.kpi_emerald .kpiIcon { background: #ecfdf5; color: #10b981; }
-.kpi_amber .kpiIcon  { background: #fffbeb; color: #f59e0b; }
+.dotGreen { background: #22c55e; }
+.dotGray  { background: #94a3b8; }
 
 /* ── Mid section (demographics + feedback) ───────────────────────────────── */
 .midGrid {
@@ -171,6 +106,7 @@
   padding: 20px 24px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
   border: 1px solid #f1f5f9;
+  margin-bottom: 24px;
 }
 
 .cardTitle {
@@ -183,110 +119,10 @@
   gap: 8px;
 }
 
-/* ── Gender bar ──────────────────────────────────────────────────────────── */
-.genderBar {
-  display: flex;
-  height: 12px;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 14px;
-}
-
-.genderSegment {
-  transition: width 0.4s ease;
-}
-
-.genderMale   { background: #3b82f6; }
-.genderFemale { background: #ec4899; }
-.genderOther  { background: #a855f7; }
-
-.genderLegend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 20px;
-  font-size: 0.82rem;
-  color: var(--text, #1e293b);
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.legendDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-/* ── Progress bars ───────────────────────────────────────────────────────── */
-.progressList {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.progressItem {
-  /* single progress bar container */
-}
-
-.progressHeader {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  gap: 8px;
-}
-
-.progressLabel {
-  font-size: 0.83rem;
-  font-weight: 500;
-  color: var(--text, #334155);
-  flex: 1;
-  min-width: 0;
-}
-
-.progressValue {
-  font-size: 0.83rem;
-  font-weight: 700;
-  color: var(--text, #334155);
-  white-space: nowrap;
-}
-
-.progressTrack {
-  width: 100%;
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.4s ease;
-}
-
-/* fill colours */
-.fillGreen  { background: #10b981; }
-.fillAmber  { background: #f59e0b; }
-.fillRed    { background: #ef4444; }
-.fillIndigo { background: #6366f1; }
-.fillBlue   { background: #3b82f6; }
-
 /* ── Feedback card ───────────────────────────────────────────────────────── */
 .feedbackCard {
   display: flex;
   flex-direction: column;
-}
-
-.feedbackGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px 32px;
-  flex: 1;
 }
 
 .scoreLegend {
@@ -301,71 +137,24 @@
   justify-content: flex-end;
 }
 
-/* ── Units table ─────────────────────────────────────────────────────────── */
-.tableWrapper {
-  overflow-x: auto;
-  margin-top: 4px;
-  border-radius: 8px;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.table th {
-  text-align: left;
-  padding: 12px 16px;
-  background: var(--base, #224177);
-  color: #fff;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.thCenter { text-align: center !important; }
-.thRight  { text-align: right !important; }
-.tdCenter { text-align: center; color: var(--muted, #94a3b8); font-size: 0.85rem; }
-.tdRight  { text-align: right; font-weight: 600; color: var(--text, #1e293b); }
-.tdSub    { font-size: 0.78rem; font-weight: 400; color: var(--muted, #94a3b8); }
-
-.clickableRow {
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.clickableRow:hover td {
-  background: #f0f4ff;
-}
-
-.clickableRow:hover .unitName {
-  color: var(--brand, #2e4f8b);
-}
-
-.unitName {
-  font-weight: 500;
-  color: var(--text, #1e293b);
-  transition: color 0.1s;
-}
-
-.ratingCell {
-  display: inline-flex;
+/* ── Shared legend ───────────────────────────────────────────────────────── */
+.legendItem {
+  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-.starFilled { color: #f59e0b; fill: #f59e0b; }
-.starEmpty  { color: #cbd5e1; fill: #cbd5e1; }
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.fillGreen  { background: #10b981; }
+.fillAmber  { background: #f59e0b; }
+.fillRed    { background: #ef4444; }
 
 /* ── Type badges ─────────────────────────────────────────────────────────── */
 .typeBadge {
@@ -407,176 +196,22 @@
   text-align: center;
 }
 
-/* ── Back button ─────────────────────────────────────────────────────────── */
-.backBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #fff;
-  color: var(--muted, #64748b);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  margin-bottom: 24px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.backBtn:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
-  color: var(--brand, #2e4f8b);
-}
-
-/* ── Unit detail ─────────────────────────────────────────────────────────── */
-.unitHeader {
-  margin-bottom: 24px;
-}
-
-.unitMeta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.unitId {
-  font-size: 0.82rem;
-  color: var(--muted, #94a3b8);
-}
-
-.unitTitle {
-  font-size: clamp(1.2rem, 3vw, 1.7rem);
-  font-weight: 700;
-  color: var(--text, #1e293b);
-  margin: 0;
-}
-
-/* ── Two-column layout (unit detail) ─────────────────────────────────────── */
-.twoCol {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.commentList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.commentItem {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-size: 0.88rem;
-  color: var(--text, #334155);
-  font-style: italic;
-  line-height: 1.5;
-}
-
-/* ── Mobile accordion cards ──────────────────────────────────────────────── */
-.mobileCards {
-  display: none;
-}
-
-.mobileCard {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  margin-bottom: 8px;
-  overflow: hidden;
-}
-
-.mobileCardHeader {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 13px 14px;
-  cursor: pointer;
-  list-style: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text, #1e293b);
-}
-
-.mobileCardHeader::-webkit-details-marker {
-  display: none;
-}
-
-.mobileCardRank {
-  font-size: 0.8rem;
-  color: var(--muted, #94a3b8);
-  width: 20px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.mobileCardName {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mobileCard[open] .chevronIcon {
-  transform: rotate(180deg);
-}
-
-.mobileCardBody {
-  padding: 0 14px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 0.86rem;
-}
-
-.mobileCardRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.mobileCardLabel {
-  font-weight: 600;
-  color: var(--muted, #64748b);
-  font-size: 0.82rem;
-}
-
-.mobileDetailBtn {
-  margin-top: 6px;
+/* ── Chart wrappers ──────────────────────────────────────────────────────── */
+.chartWrapper {
+  position: relative;
+  height: 260px;
   width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  background: var(--brand, #2e4f8b);
-  color: #fff;
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
 }
 
-.mobileDetailBtn:hover {
-  opacity: 0.85;
+.chartWrapperLarge {
+  position: relative;
+  height: 340px;
+  width: 100%;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
-
-/* Large tablet */
 @media (max-width: 1100px) {
-  .kpiGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .midGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .feedbackGrid {
     grid-template-columns: 1fr;
   }
 
@@ -585,7 +220,6 @@
   }
 }
 
-/* Tablet */
 @media (max-width: 768px) {
   .page {
     padding: 16px 16px;
@@ -598,42 +232,5 @@
 
   .exhibitionSelector {
     min-width: 0;
-  }
-
-  .twoCol {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Mobile: swap table for accordion */
-@media (max-width: 640px) {
-  .kpiGrid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .kpiCard {
-    padding: 14px;
-    gap: 12px;
-  }
-
-  .kpiIcon {
-    width: 42px;
-    height: 42px;
-  }
-
-  .tableWrapper {
-    display: none;
-  }
-
-  .mobileCards {
-    display: block;
-    margin-top: 8px;
-  }
-}
-
-@media (max-width: 420px) {
-  .kpiGrid {
-    grid-template-columns: 1fr;
   }
 }

@@ -1,0 +1,53 @@
+/* ── Progress bars ───────────────────────────────────────────────────────── */
+.progressList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.progressItem {
+  /* single progress bar container */
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  gap: 8px;
+}
+
+.progressLabel {
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: var(--text, #334155);
+  flex: 1;
+  min-width: 0;
+}
+
+.progressValue {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--text, #334155);
+  white-space: nowrap;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* fill colours */
+.fillGreen  { background: #10b981; }
+.fillAmber  { background: #f59e0b; }
+.fillRed    { background: #ef4444; }
+.fillIndigo { background: #6366f1; }
+.fillBlue   { background: #3b82f6; }

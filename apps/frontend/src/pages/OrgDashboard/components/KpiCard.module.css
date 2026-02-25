@@ -1,0 +1,89 @@
+/* ── KPI Grid ────────────────────────────────────────────────────────────── */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpiCard {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  border: 1px solid #f1f5f9;
+}
+
+.kpiIcon {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpiText {
+  min-width: 0;
+}
+
+.kpiTitle {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted, #64748b);
+  margin: 0 0 4px;
+}
+
+.kpiValue {
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  font-weight: 700;
+  color: var(--text, #1e293b);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.kpiSub {
+  font-size: 0.72rem;
+  color: var(--muted, #94a3b8);
+  margin: 3px 0 0;
+}
+
+/* KPI colour variants */
+.kpi_blue .kpiIcon   { background: #eff6ff; color: #3b82f6; }
+.kpi_indigo .kpiIcon { background: #eef2ff; color: #6366f1; }
+.kpi_emerald .kpiIcon { background: #ecfdf5; color: #10b981; }
+.kpi_amber .kpiIcon  { background: #fffbeb; color: #f59e0b; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .kpiCard {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .kpiIcon {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 420px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+}

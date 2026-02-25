@@ -1,182 +1,15 @@
-import {
-  Activity,
-  ArrowLeft,
-  ChevronDown,
-  ListFilter,
-  MessageCircle,
-  MessageSquare,
-  QrCode,
-  Star,
-  Tent,
-  Users,
-} from "lucide-react";
+import { Activity, ChevronDown, ListFilter, MessageSquare, QrCode, Star, Tent, Users } from "lucide-react";
 import { useState } from "react";
+import { Bar, Doughnut, Radar } from "react-chartjs-2";
 import { useParams } from "react-router-dom";
 import type { OrgUnitStat } from "../../api/dashboardApi";
+import "./ChartSetup";
 import styles from "./OrgDashboardPage.module.css";
+import { KpiCard } from "./components/KpiCard";
+import { OrgDashboardSkeleton } from "./components/OrgDashboardSkeleton";
+import { UnitDetail } from "./components/UnitDetail";
+import { UnitsTable } from "./components/UnitsTable";
 import { useOrgDashboard } from "./hooks/useOrgDashboard";
-
-// ── Gender colours (consistent palette, not from API) ─────────────────────
-const GENDER_COLORS: Record<string, string> = {
-  ชาย: styles.genderMale,
-  male: styles.genderMale,
-  หญิง: styles.genderFemale,
-  female: styles.genderFemale,
-};
-function genderColorClass(label: string) {
-  return GENDER_COLORS[label] ?? styles.genderOther;
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────
-
-interface KpiCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  colorKey: "blue" | "indigo" | "emerald" | "amber";
-  subtitle?: string;
-}
-function KpiCard({ title, value, icon: Icon, colorKey, subtitle }: KpiCardProps) {
-  return (
-    <div className={`${styles.kpiCard} ${styles[`kpi_${colorKey}`]}`}>
-      <div className={styles.kpiIcon}>
-        <Icon size={28} />
-      </div>
-      <div className={styles.kpiText}>
-        <p className={styles.kpiTitle}>{title}</p>
-        <h3 className={styles.kpiValue}>{value}</h3>
-        {subtitle && <p className={styles.kpiSub}>{subtitle}</p>}
-      </div>
-    </div>
-  );
-}
-
-interface ProgressBarProps {
-  label: string;
-  value: number;
-  max: number;
-  suffix?: string;
-  colorClass?: string;
-}
-function ProgressBar({ label, value, max, suffix = "", colorClass }: ProgressBarProps) {
-  const pct = Math.min(100, Math.max(0, (value / max) * 100));
-  const barClass = colorClass ?? scoreColorClass(value);
-  return (
-    <div className={styles.progressItem}>
-      <div className={styles.progressHeader}>
-        <span className={styles.progressLabel}>{label}</span>
-        <span className={styles.progressValue}>
-          {value}
-          {suffix}
-        </span>
-      </div>
-      <div className={styles.progressTrack}>
-        <div
-          className={`${styles.progressFill} ${barClass}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function scoreColorClass(score: number) {
-  if (score >= 4.5) return styles.fillGreen;
-  if (score >= 4.0) return styles.fillAmber;
-  return styles.fillRed;
-}
-
-// ── Unit drill-down view ──────────────────────────────────────────────────
-
-interface UnitDetailProps {
-  unit: OrgUnitStat;
-  onBack: () => void;
-}
-function UnitDetail({ unit, onBack }: UnitDetailProps) {
-  return (
-    <div className={styles.page}>
-      <button className={styles.backBtn} onClick={onBack} type="button">
-        <ArrowLeft size={18} />
-        กลับไปหน้าภาพรวมงาน
-      </button>
-
-      <header className={styles.unitHeader}>
-        <div className={styles.unitMeta}>
-          <span
-            className={`${styles.typeBadge} ${
-              unit.type === "activity" ? styles.typeActivity : styles.typeBooth
-            }`}
-          >
-            {unit.type === "activity" ? "กิจกรรม (Activity)" : "บูธ (Booth)"}
-          </span>
-          <span className={styles.unitId}>Unit ID: {unit.id}</span>
-        </div>
-        <h1 className={styles.unitTitle}>{unit.name}</h1>
-      </header>
-
-      <div className={styles.kpiGrid}>
-        <KpiCard
-          title="ยอด Check-in ของบูธนี้"
-          value={unit.checkins.toLocaleString()}
-          icon={QrCode}
-          colorKey="emerald"
-        />
-        <KpiCard
-          title="คะแนนประเมิน (Rating)"
-          value={`${unit.rating.toFixed(2)} / 5`}
-          icon={Star}
-          colorKey="amber"
-        />
-      </div>
-
-      <div className={styles.twoCol}>
-        {/* Score breakdown */}
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>
-            <Activity size={18} className={styles.iconIndigo} />
-            รายละเอียดคะแนนรายข้อ
-          </h2>
-          <div className={styles.progressList}>
-            {unit.feedback_details.length > 0 ? (
-              unit.feedback_details.map((item, idx) => (
-                <ProgressBar
-                  key={idx}
-                  label={item.topic}
-                  value={item.score}
-                  max={5}
-                  suffix=" ดาว"
-                />
-              ))
-            ) : (
-              <p className={styles.empty}>ยังไม่มีข้อมูลคะแนน</p>
-            )}
-          </div>
-        </div>
-
-        {/* Recent comments */}
-        <div className={styles.card}>
-          <h2 className={styles.cardTitle}>
-            <MessageCircle size={18} className={styles.iconPink} />
-            ความคิดเห็นล่าสุดจากผู้เข้าร่วม
-          </h2>
-          <div className={styles.commentList}>
-            {unit.recent_comments.length > 0 ? (
-              unit.recent_comments.map((c, idx) => (
-                <div key={idx} className={styles.commentItem}>
-                  "{c}"
-                </div>
-              ))
-            ) : (
-              <p className={styles.empty}>ยังไม่มีความคิดเห็น</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Main dashboard page ───────────────────────────────────────────────────
 
 export default function OrgDashboardPage() {
   const { id } = useParams<{ id: string }>();
@@ -185,11 +18,7 @@ export default function OrgDashboardPage() {
   const [selectedUnit, setSelectedUnit] = useState<OrgUnitStat | null>(null);
 
   if (isLoading) {
-    return (
-      <div className={styles.page}>
-        <p className={styles.stateMsg}>กำลังโหลดข้อมูล...</p>
-      </div>
-    );
+    return <OrgDashboardSkeleton />;
   }
 
   if (error || !data) {
@@ -206,8 +35,106 @@ export default function OrgDashboardPage() {
     return <UnitDetail unit={selectedUnit} onBack={() => setSelectedUnit(null)} />;
   }
 
-  const totalGender = data.demographics.gender.reduce((s, g) => s + g.value, 0);
-  const maxAge = Math.max(...data.demographics.age_groups.map((a) => a.value), 1);
+  // ── Chart data ──────────────────────────────────────────────────────────
+
+  const GENDER_PALETTE = ["#3b82f6", "#f472b6", "#94a3b8", "#a78bfa"];
+
+  const genderChartData = {
+    labels: data.demographics.gender.map((g) => g.label),
+    datasets: [
+      {
+        data: data.demographics.gender.map((g) => g.value),
+        backgroundColor: GENDER_PALETTE.slice(0, data.demographics.gender.length),
+        borderWidth: 2,
+        borderColor: "#fff",
+      },
+    ],
+  };
+
+  const ageChartData = {
+    labels: data.demographics.age_groups.map((a) => a.label),
+    datasets: [
+      {
+        label: "จำนวน (คน)",
+        data: data.demographics.age_groups.map((a) => a.value),
+        backgroundColor: "#6366f1cc",
+        borderColor: "#6366f1",
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const radarChartData = {
+    labels: data.feedback_breakdown.map((f) => f.topic),
+    datasets: [
+      {
+        label: "คะแนนเฉลี่ย",
+        data: data.feedback_breakdown.map((f) => f.score),
+        backgroundColor: "#3b82f622",
+        borderColor: "#3b82f6",
+        pointBackgroundColor: "#3b82f6",
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const unitsBarData = {
+    labels: data.all_units_stats.map((u) => u.name),
+    datasets: [
+      {
+        label: "Check-in (ครั้ง)",
+        data: data.all_units_stats.map((u) => u.checkins),
+        backgroundColor: "#10b981cc",
+        borderColor: "#10b981",
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const barChartOptions = (label: string) => ({
+    indexAxis: "y" as const,
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx: { parsed: { x: number | null } }) =>
+            ` ${(ctx.parsed.x ?? 0).toLocaleString()} ${label}`,
+        },
+      },
+    },
+    scales: {
+      x: { beginAtZero: true, grid: { color: "#e2e8f020" } },
+      y: { ticks: { font: { size: 12 } } },
+    },
+  });
+
+  const radarOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        beginAtZero: true,
+        max: 5,
+        ticks: { stepSize: 1, font: { size: 11 } },
+        pointLabels: { font: { size: 12 } },
+      },
+    },
+    plugins: { legend: { display: false } },
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: "bottom" as const, labels: { padding: 16, font: { size: 13 } } },
+    },
+  };
+
+  const unitsBarHeight = Math.max(200, data.all_units_stats.length * 36);
 
   return (
     <div className={styles.page}>
@@ -223,9 +150,7 @@ export default function OrgDashboardPage() {
             <p className={styles.selectorTitle}>
               <span
                 className={`${styles.statusDot} ${
-                  data.exhibition_info.status === "ongoing"
-                    ? styles.dotGreen
-                    : styles.dotGray
+                  data.exhibition_info.status === "ongoing" ? styles.dotGreen : styles.dotGray
                 }`}
               />
               {data.exhibition_info.title}
@@ -271,77 +196,38 @@ export default function OrgDashboardPage() {
 
       {/* Demographics + Feedback */}
       <div className={styles.midGrid}>
-        {/* Demographics column */}
         <div className={styles.demoColumn}>
-          {/* Gender */}
+          {/* Gender – Doughnut */}
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>
               <Users size={18} className={styles.iconMuted} />
               ข้อมูลผู้เข้าร่วมงาน (เพศ)
             </h2>
-            <div className={styles.genderBar}>
-              {data.demographics.gender.map((g, idx) => (
-                <div
-                  key={idx}
-                  className={`${styles.genderSegment} ${genderColorClass(g.label)}`}
-                  style={{
-                    width: totalGender > 0 ? `${(g.value / totalGender) * 100}%` : "0%",
-                  }}
-                  title={`${g.label}: ${g.value}`}
-                />
-              ))}
-            </div>
-            <div className={styles.genderLegend}>
-              {data.demographics.gender.map((g, idx) => (
-                <div key={idx} className={styles.legendItem}>
-                  <span
-                    className={`${styles.legendDot} ${genderColorClass(g.label)}`}
-                  />
-                  <span>
-                    {g.label} ({g.value.toLocaleString()})
-                  </span>
-                </div>
-              ))}
+            <div className={styles.chartWrapper}>
+              <Doughnut data={genderChartData} options={doughnutOptions} />
             </div>
           </div>
 
-          {/* Age groups */}
+          {/* Age groups – horizontal Bar */}
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>
               <Activity size={18} className={styles.iconMuted} />
               ช่วงอายุ (Age Groups)
             </h2>
-            <div className={styles.progressList}>
-              {data.demographics.age_groups.map((age, idx) => (
-                <ProgressBar
-                  key={idx}
-                  label={age.label}
-                  value={age.value}
-                  max={maxAge}
-                  suffix=" คน"
-                  colorClass={styles.fillIndigo}
-                />
-              ))}
+            <div className={styles.chartWrapper}>
+              <Bar data={ageChartData} options={barChartOptions("คน")} />
             </div>
           </div>
         </div>
 
-        {/* Feedback breakdown */}
+        {/* Feedback – Radar */}
         <div className={`${styles.card} ${styles.feedbackCard}`}>
           <h2 className={styles.cardTitle}>
             <MessageSquare size={18} className={styles.iconBlue} />
             เจาะลึกคะแนนประเมินภาพรวมงาน (Exhibition Feedback)
           </h2>
-          <div className={styles.feedbackGrid}>
-            {data.feedback_breakdown.map((item, idx) => (
-              <ProgressBar
-                key={idx}
-                label={item.topic}
-                value={item.score}
-                max={5}
-                suffix=" ดาว"
-              />
-            ))}
+          <div className={styles.chartWrapperLarge}>
+            <Radar data={radarChartData} options={radarOptions} />
           </div>
           <div className={styles.scoreLegend}>
             <div className={styles.legendItem}>
@@ -360,102 +246,24 @@ export default function OrgDashboardPage() {
         </div>
       </div>
 
+      {/* Check-ins per unit – horizontal Bar */}
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>
+          <QrCode size={18} className={styles.iconIndigo} />
+          ยอด Check-in รายบูธและกิจกรรม
+        </h2>
+        <div style={{ height: unitsBarHeight }}>
+          <Bar data={unitsBarData} options={barChartOptions("ครั้ง")} />
+        </div>
+      </div>
+
       {/* All units table */}
       <div className={styles.card}>
         <h2 className={styles.cardTitle}>
           <ListFilter size={18} className={styles.iconIndigo} />
           สถิติรายบูธและกิจกรรมทั้งหมด
         </h2>
-
-        {/* Desktop table */}
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th className={styles.thCenter}>ลำดับ</th>
-                <th>ชื่อกิจกรรม / บูธ</th>
-                <th>ประเภท</th>
-                <th className={styles.thRight}>ยอด Check-in</th>
-                <th className={styles.thRight}>คะแนน (Rating)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.all_units_stats.map((unit, idx) => (
-                <tr
-                  key={unit.id}
-                  className={styles.clickableRow}
-                  onClick={() => setSelectedUnit(unit)}
-                >
-                  <td className={styles.tdCenter}>{idx + 1}</td>
-                  <td className={styles.unitName}>{unit.name}</td>
-                  <td>
-                    <span
-                      className={`${styles.typeBadge} ${
-                        unit.type === "activity"
-                          ? styles.typeActivity
-                          : styles.typeBooth
-                      }`}
-                    >
-                      {unit.type === "activity" ? "กิจกรรม" : "บูธ"}
-                    </span>
-                  </td>
-                  <td className={styles.tdRight}>
-                    <strong>{unit.checkins.toLocaleString()}</strong>
-                    <span className={styles.tdSub}> ครั้ง</span>
-                  </td>
-                  <td className={styles.tdRight}>
-                    <span className={styles.ratingCell}>
-                      {unit.rating.toFixed(2)}
-                      <Star
-                        size={14}
-                        className={
-                          unit.rating >= 4.5 ? styles.starFilled : styles.starEmpty
-                        }
-                      />
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile accordion cards */}
-        <div className={styles.mobileCards}>
-          {data.all_units_stats.map((unit, idx) => (
-            <details key={unit.id} className={styles.mobileCard}>
-              <summary className={styles.mobileCardHeader}>
-                <span className={styles.mobileCardRank}>{idx + 1}</span>
-                <span className={styles.mobileCardName}>{unit.name}</span>
-                <span
-                  className={`${styles.typeBadge} ${
-                    unit.type === "activity" ? styles.typeActivity : styles.typeBooth
-                  }`}
-                >
-                  {unit.type === "activity" ? "กิจกรรม" : "บูธ"}
-                </span>
-                <ChevronDown size={16} className={styles.chevronIcon} />
-              </summary>
-              <div className={styles.mobileCardBody}>
-                <div className={styles.mobileCardRow}>
-                  <span className={styles.mobileCardLabel}>Check-in</span>
-                  <span>{unit.checkins.toLocaleString()} ครั้ง</span>
-                </div>
-                <div className={styles.mobileCardRow}>
-                  <span className={styles.mobileCardLabel}>Rating</span>
-                  <span>{unit.rating.toFixed(2)} / 5</span>
-                </div>
-                <button
-                  type="button"
-                  className={styles.mobileDetailBtn}
-                  onClick={() => setSelectedUnit(unit)}
-                >
-                  ดูรายละเอียด
-                </button>
-              </div>
-            </details>
-          ))}
-        </div>
+        <UnitsTable units={data.all_units_stats} onSelectUnit={setSelectedUnit} />
       </div>
     </div>
   );
