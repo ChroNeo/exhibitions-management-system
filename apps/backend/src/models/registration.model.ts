@@ -35,11 +35,11 @@ export const RegistrationInputSchema = z
 export const RegistrationResponseSchema = z.object({
   user: z.object({
     user_id: z.number().int().positive(),
-    role: z.enum(["user", "staff"]),
   }),
   registration: z.object({
     registration_id: z.number().int().positive(),
     exhibition_id: z.number().int().positive(),
+    role: z.enum(["visitor", "staff"]),
   }),
   staff_linked: z
     .object({

@@ -101,7 +101,7 @@ export async function getRegistrationsByExhibition(
        u.full_name  AS user_name,
        u.email,
        u.phone,
-       u.role,
+       r.role,
        r.registered_at
      FROM registrations r
      JOIN normal_users u ON r.user_id = u.user_id
@@ -122,12 +122,10 @@ export async function getVisitors(): Promise<Visitor[]> {
        u.full_name,
        u.email,
        u.phone,
-       u.role,
        u.picture_url,
        COUNT(r.registration_id) AS registration_count
      FROM normal_users u
      LEFT JOIN registrations r ON u.user_id = r.user_id
-     WHERE u.role NOT IN ('admin', 'organizer') OR u.role IS NULL
      GROUP BY u.user_id
      ORDER BY u.full_name ASC`
   );
@@ -138,7 +136,7 @@ export async function getVisitorById(
 ): Promise<VisitorDetail | null> {
   const rows = await safeQuery<VisitorDetail[]>(
     `SELECT
-       user_id, full_name, email, phone, role, gender, birthdate, picture_url
+       user_id, full_name, email, phone, gender, birthdate, picture_url
      FROM normal_users
      WHERE user_id = ?`,
     [userId]

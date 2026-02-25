@@ -20,11 +20,11 @@ export type RegistrationPayload = {
 export type RegistrationResult = {
   user: {
     user_id: number;
-    role: "user" | "staff";
   };
   registration: {
     registration_id: number;
     exhibition_id: number;
+    role: RegistrationRole;
   };
   staff_linked?: {
     unit_id: number;
@@ -34,7 +34,6 @@ export type RegistrationResult = {
 
 type NormalUserRow = RowDataPacket & {
   user_id: number;
-  role: "user" | "staff";
 };
 
 type UnitRow = RowDataPacket & {
@@ -53,14 +52,11 @@ export async function registerForExhibition(
     await conn.beginTransaction();
 
     const [existingUsers] = await conn.query<NormalUserRow[]>(
-      "SELECT user_id,line_user_id, role FROM normal_users WHERE email = ? OR line_user_id = ? FOR UPDATE",
+      "SELECT user_id FROM normal_users WHERE email = ? OR line_user_id = ? FOR UPDATE",
       [payload.email, payload.line_user_id],
     );
 
-    const storedRole: "user" | "staff" =
-      payload.role === "staff" ? "staff" : "user";
     let userId: number;
-    let effectiveRole: "user" | "staff";
 
     if (!existingUsers.length) {
       const [insertUser] = await conn.query<ResultSetHeader>(
@@ -71,10 +67,9 @@ export async function registerForExhibition(
             birthdate,
             email,
             phone,
-            role,
             line_user_id
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?)
         `,
         [
           payload.full_name,
@@ -82,16 +77,13 @@ export async function registerForExhibition(
           payload.birthdate ?? null,
           payload.email,
           payload.phone ?? null,
-          storedRole,
           payload.line_user_id ?? null,
         ],
       );
       userId = insertUser.insertId;
-      effectiveRole = storedRole;
     } else {
       const existing = existingUsers[0];
       userId = existing.user_id;
-      effectiveRole = storedRole === "staff" ? "staff" : existing.role;
       await conn.query<ResultSetHeader>(
         `
           UPDATE normal_users
@@ -100,7 +92,6 @@ export async function registerForExhibition(
               birthdate = ?,
               phone = ?,
               email = ?,
-              role = ?,
               line_user_id = COALESCE(?, line_user_id)
           WHERE user_id = ?
         `,
@@ -110,7 +101,6 @@ export async function registerForExhibition(
           payload.birthdate ?? null,
           payload.phone ?? null,
           payload.email ?? null,
-          effectiveRole,
           payload.line_user_id ?? null,
           userId,
         ],
@@ -119,11 +109,11 @@ export async function registerForExhibition(
 
     const [registrationInsert] = await conn.query<ResultSetHeader>(
       `
-        INSERT INTO registrations (exhibition_id, user_id)
-        VALUES (?, ?)
-        ON DUPLICATE KEY UPDATE registered_at = registered_at
+        INSERT INTO registrations (exhibition_id, user_id, role)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE role = VALUES(role), registered_at = registered_at
       `,
-      [payload.exhibition_id, userId],
+      [payload.exhibition_id, userId, payload.role],
     );
 
     let registrationId = registrationInsert.insertId;
@@ -148,7 +138,7 @@ export async function registerForExhibition(
     }
 
     let staffLinked: RegistrationResult["staff_linked"];
-    if (storedRole === "staff") {
+    if (payload.role === "staff") {
       if (!payload.unit_code) {
         throw new AppError(
           "unit_code required for staff registration",
@@ -193,10 +183,11 @@ export async function registerForExhibition(
     await conn.commit();
 
     return {
-      user: { user_id: userId, role: effectiveRole },
+      user: { user_id: userId },
       registration: {
         registration_id: registrationId,
         exhibition_id: payload.exhibition_id,
+        role: payload.role,
       },
       ...(staffLinked ? { staff_linked: staffLinked } : {}),
     };

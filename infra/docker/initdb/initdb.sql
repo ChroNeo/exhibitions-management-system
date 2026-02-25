@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Jan 26, 2026 at 06:45 AM
--- Server version: 8.4.7
--- PHP Version: 8.3.29
+-- Generation Time: Feb 25, 2026 at 02:02 PM
+-- Server version: 8.4.8
+-- PHP Version: 8.3.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -65,23 +65,6 @@ INSERT INTO `certificate_templates` (`template_id`, `exhibition_id`, `background
 -- --------------------------------------------------------
 
 --
--- Table structure for table `exhibition_announcements`
---
-
-CREATE TABLE `exhibition_announcements` (
-  `announcement_id` int NOT NULL,
-  `exhibition_id` int NOT NULL COMMENT 'Links to a specific exhibition',
-  `topic` varchar(255) NOT NULL COMMENT 'The headline',
-  `description` text COMMENT 'The main content',
-  `image_url` varchar(2048) DEFAULT NULL COMMENT 'Path or URL to the picture',
-  `is_active` tinyint(1) DEFAULT '1' COMMENT '1 = Show, 0 = Hide (Soft delete)',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `exhibitions`
 --
 
@@ -111,12 +94,12 @@ CREATE TABLE `exhibitions` (
 --
 
 INSERT INTO `exhibitions` (`exhibition_id`, `exhibition_code`, `title`, `description`, `description_delta`, `start_date`, `end_date`, `location`, `organizer_name`, `picture_path`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`, `archived_at`, `exhibition_set_id`, `unit_set_id`) VALUES
-(1, 'EX202501', 'Future Tech Expo 2026', '<p><strong>สัมผัสนวัตกรรม</strong> AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก</p>', '{\"ops\": [{\"insert\": \"สัมผัสนวัตกรรม\", \"attributes\": {\"bold\": true}}, {\"insert\": \" AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก\\n\"}]}', '2026-02-09 19:00:00', '2026-06-12 20:00:00', 'BITEC Bangna, Hall 98', 'Tech Pioneer Group', NULL, 'ongoing', 1, NULL, '2025-09-15 15:06:36', '2026-01-25 17:13:17', NULL, 103, 104),
+(1, 'EX202501', 'Future Tech Expo 2026', '<p><strong>สัมผัสนวัตกรรม</strong> AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก</p>', '{\"ops\": [{\"insert\": \"สัมผัสนวัตกรรม\", \"attributes\": {\"bold\": true}}, {\"insert\": \" AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก\\n\"}]}', '2026-02-09 12:00:00', '2026-06-12 13:00:00', 'BITEC Bangna, Hall 98', 'Tech Pioneer Group', 'uploads/exhibitions/EXP1770806725736.jpg', 'ongoing', 1, NULL, '2025-09-15 15:06:36', '2026-02-11 10:45:25', NULL, 103, 104),
 (3, 'EX202503', 'Green Future Week', 'งานสิ่งแวดล้อมและพลังงานสะอาด', NULL, '2025-10-05 02:00:00', '2025-10-09 11:00:00', 'Khon Kaen Hall', 'Mai Organizer', NULL, 'ended', 1, NULL, '2025-09-15 15:06:36', '2025-10-24 18:54:55', NULL, NULL, NULL),
 (5, 'EX202401', 'Modern Art Showcase 2011', 'A curated selection of contemporary pieces from emerging artists.', NULL, '2024-08-30 02:00:00', '2024-09-13 10:00:00', 'Gallery Hall A', 'City Arts Council', NULL, 'ended', 42, NULL, '2025-09-25 13:07:39', '2025-10-24 18:59:55', NULL, NULL, NULL),
 (8, 'EX202404', 'Modern Art Showcase 2024', 'A curated selection of contemporary pieces.', NULL, '2024-08-31 20:00:00', '2024-09-15 04:00:00', 'Gallery Hall A', 'City Arts Council', NULL, 'draft', 42, NULL, '2025-09-25 13:35:02', '2025-09-26 06:33:20', NULL, NULL, NULL),
 (12, 'EX202505', 're', 'test', NULL, '2025-09-25 09:05:00', '2025-09-26 09:05:00', 'test', 'test', NULL, 'draft', 1, NULL, '2025-09-25 23:05:55', '2025-09-26 06:33:27', NULL, NULL, NULL),
-(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ "Smart Tech Expo 2025" ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ "อนาคตของการอยู่อาศัย" และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', NULL, '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', NULL, 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL, NULL, NULL),
+(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ \"Smart Tech Expo 2025\" ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ \"อนาคตของการอยู่อาศัย\" และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', NULL, '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', NULL, 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL, NULL, NULL),
 (15, 'EX202507', 'test', 'test', NULL, '2025-10-31 04:57:00', '2025-11-08 04:57:00', 'test', 'test', NULL, 'ended', 1, NULL, '2025-10-02 19:27:19', '2025-12-31 09:19:55', NULL, NULL, NULL),
 (16, 'EX202508', 'test', '<p>this is the test <strong>wow this is the bold wow za 007 </strong></p>', NULL, '2025-10-21 04:57:00', '2025-10-21 04:57:00', 'test', 'asdf', NULL, 'ended', 1, NULL, '2025-10-24 18:57:43', '2025-10-24 20:49:32', NULL, NULL, NULL),
 (17, 'EX202509', 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', '2025-10-27 15:51:00', '2028-05-29 15:51:00', 'test', 'test', NULL, 'ongoing', 2, NULL, '2025-12-31 09:51:48', '2026-01-25 18:14:04', NULL, 105, 106),
@@ -147,6 +130,32 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `exhibition_announcements`
+--
+
+CREATE TABLE `exhibition_announcements` (
+  `announcement_id` int NOT NULL,
+  `exhibition_id` int NOT NULL COMMENT 'Links to a specific exhibition',
+  `topic` varchar(255) NOT NULL COMMENT 'The headline',
+  `description` text COMMENT 'The main content',
+  `image_url` varchar(2048) DEFAULT NULL COMMENT 'Path or URL to the picture',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '1 = Show, 0 = Hide (Soft delete)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `exhibition_announcements`
+--
+
+INSERT INTO `exhibition_announcements` (`announcement_id`, `exhibition_id`, `topic`, `description`, `image_url`, `is_active`, `created_at`, `updated_at`) VALUES
+(7, 1, 'test', 'test', 'uploads/news/NEWS1770891167809.jpg', 1, '2026-02-12 10:12:48', '2026-02-12 10:18:39'),
+(8, 1, 'test2', 'test2', 'uploads/news/NEWS1770891602610.png', 1, '2026-02-12 10:20:02', '2026-02-12 10:20:02'),
+(9, 1, 'อัปเดตระบบความปลอดภัยประจำเดือนกุมภาพันธ์', 'เราได้ทำการอัปเดตระบบความปลอดภัยครั้งสำคัญประจำเดือนกุมภาพันธ์ 2026 การอัปเดตนี้รวมถึงการแก้ไขช่องโหว่ที่อาจเกิดขึ้นและปรับปรุงประสิทธิภาพโดยรวมของระบบ ผู้ใช้งานอาจพบการเปลี่ยนแปลงเล็กน้อยในหน้าเข้าสู่ระบบ ซึ่งเป็นส่วนหนึ่งของมาตรการยืนยันตัวตนแบบใหม่ของเรา ทีมงานขอขอบคุณที่ไว้วางใจใช้บริการของเราเสมอมา หากพบปัญหาในการใช้งาน กรุณาติดต่อฝ่ายสนับสนุนทันที', 'uploads/news/NEWS1771063478193.jpg', 1, '2026-02-14 10:04:38', '2026-02-14 10:04:38');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `normal_users`
 --
 
@@ -161,25 +170,28 @@ CREATE TABLE `normal_users` (
   `email` varchar(255) DEFAULT NULL,
   `phone` varchar(30) DEFAULT NULL,
   `last_synced_at` timestamp NULL DEFAULT NULL,
-  `role` enum('user','staff') DEFAULT 'user',
   `current_exhibition_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Seed data for table `normal_users`
+-- Dumping data for table `normal_users`
 --
 
-INSERT INTO `normal_users` (`user_id`, `line_user_id`, `full_name`, `gender`, `birthdate`, `username`, `picture_url`, `email`, `phone`, `role`, `current_exhibition_id`) VALUES
-(1,  'U0001', 'สมชาย ใจดี',       'male',   '1990-05-15', 'somchai',  NULL, 'somchai@example.com',  '0812345671', 'user',  1),
-(2,  'U0002', 'สมหญิง รักสวย',    'female', '1992-03-22', 'somying',  NULL, 'somying@example.com',  '0812345672', 'user',  1),
-(3,  'U0003', 'วิชัย สตาฟ',       'male',   '1988-11-10', 'wichai',   NULL, 'wichai@example.com',   '0812345673', 'staff', NULL),
-(4,  'U0004', 'นารี สตาฟ',        'female', '1995-07-01', 'naree',    NULL, 'naree@example.com',    '0812345674', 'staff', NULL),
-(5,  'U0005', 'ประยุทธ์ ทดสอบ',   'male',   '1985-01-30', 'prayuth',  NULL, 'prayuth@example.com',  '0812345675', 'user',  1),
-(13, 'U0013', 'ทดสอบ สิบสาม',     'male',   '1991-06-18', 'test13',   NULL, 'test13@example.com',   '0812345683', 'user',  1),
-(14, 'U0014', 'ทดสอบ สิบสี่',     'female', '1993-09-25', 'test14',   NULL, 'test14@example.com',   '0812345684', 'user',  1),
-(15, 'U0015', 'ทดสอบ สิบห้า',     'male',   '1994-02-14', 'test15',   NULL, 'test15@example.com',   '0812345685', 'user',  17),
-(16, 'U0016', 'ทดสอบ สิบหก',      'female', '1996-12-05', 'test16',   NULL, 'test16@example.com',   '0812345686', 'user',  1),
-(17, 'U0017', 'ทดสอบ สิบเจ็ด',    'male',   '1997-08-20', 'test17',   NULL, 'test17@example.com',   '0812345687', 'user',  1);
+INSERT INTO `normal_users` (`user_id`, `line_user_id`, `full_name`, `gender`, `birthdate`, `username`, `picture_url`, `email`, `phone`, `last_synced_at`, `current_exhibition_id`) VALUES
+(1, 'U0001', 'สมชาย ใจดี', 'male', '1990-05-15', 'somchai', NULL, 'somchai@example.com', '0812345671', NULL, 1),
+(2, 'U0002', 'สมหญิง รักสวย', 'female', '1992-03-22', 'somying', NULL, 'somying@example.com', '0812345672', NULL, 1),
+(3, 'U0003', 'วิชัย สตาฟ', 'male', '1988-11-10', 'wichai', NULL, 'wichai@example.com', '0812345673', NULL, NULL),
+(4, 'U0004', 'นารี สตาฟ', 'female', '1995-07-01', 'naree', NULL, 'naree@example.com', '0812345674', NULL, NULL),
+(5, 'U0005', 'ประยุทธ์ ทดสอบ', 'male', '1985-01-30', 'prayuth', NULL, 'prayuth@example.com', '0812345675', NULL, 1),
+(13, 'U0013', 'ทดสอบ สิบสาม', 'male', '1991-06-18', 'test13', NULL, 'test13@example.com', '0812345683', NULL, 1),
+(14, 'U0014', 'ทดสอบ สิบสี่', 'female', '1993-09-25', 'test14', NULL, 'test14@example.com', '0812345684', NULL, 1),
+(15, 'U0015', 'ทดสอบ สิบห้า', 'male', '1994-02-14', 'test15', NULL, 'test15@example.com', '0812345685', NULL, 17),
+(16, 'U0016', 'ทดสอบ สิบหก', 'female', '1996-12-05', 'test16', NULL, 'test16@example.com', '0812345686', NULL, 1),
+(17, 'U0017', 'ทดสอบ สิบเจ็ด', 'male', '1997-08-20', 'test17', NULL, 'test17@example.com', '0812345687', NULL, 1),
+(18, 'Ue9761b5cc006f2b8c7d0897e8b272c61', '279 ยงศักดิ์ (Neo)', 'male', '2026-02-03', '279neo', 'https://sprofile.line-scdn.net/0h3enF8LH7bEpDP3IYHEISdDNvbyBgTjVYbVlxJXQ3Z3kpWi1Oa1BwfyU6Oyp9BytPOFwgLiQ7MHJhWWhyZhknLw12VxMGVFF5DiJfeQ1iLn4mS3NZCyA_KQFbeRIgbFVXJAlUcSNLdz8rZF9-CAcjRxhfaH58T1JbEWgAHEYNAsksPRsfblgqKX44M3L2', 'test@gmail.com', '0952909471', '2026-02-25 13:55:00', 1),
+(22, 'Ub4cf78728db86411aad7edcc1da9d55b', '65200123 ณัฐวัฒน์', 'male', '2010-02-12', '65200123', 'https://sprofile.line-scdn.net/0heL-djeviOmMAHS0TR35EHHBNOQkjbGNxL3wnBmFNN1E7JXs2L31xUWIdZ1Q1JXUxJClwUTAfZ1EMDk0FHkvGVwctZ1I8JHg9K3p9jQ', 'kjahhisi.jj@gmail.com', '5681992778', '2026-02-18 07:50:52', 17);
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `organizer_users`
@@ -200,8 +212,8 @@ CREATE TABLE `organizer_users` (
 --
 
 INSERT INTO `organizer_users` (`user_id`, `username`, `password_hash`, `email`, `last_synced_at`, `role`, `last_login_at`) VALUES
-(1, 'admin01', '$2a$12$G6hlqoz6yKviU4Oult3lgOSkiw0aP7urh3gKW9dCF6XP5QS6EiFNy', 'admin01@example.com', NULL, 'admin', NULL),
-(2, 'org_john', '$2a$12$D5ahB2w4pMDgxxy9dWPWUeQJBuFrjbILYxaA645cb7HpqbKxAB3Mi', 'john@expo.com', NULL, 'organizer', NULL);
+(1, 'admin01', '$2a$12$G6hlqoz6yKviU4Oult3lgOSkiw0aP7urh3gKW9dCF6XP5QS6EiFNy', 'admin01@example.com', NULL, 'admin', '2026-02-14 10:29:58'),
+(2, 'org_john', '$2a$12$D5ahB2w4pMDgxxy9dWPWUeQJBuFrjbILYxaA645cb7HpqbKxAB3Mi', 'john@expo.com', NULL, 'organizer', '2026-02-14 07:42:46');
 
 -- --------------------------------------------------------
 
@@ -255,30 +267,80 @@ INSERT INTO `questions_template` (`qt_id`, `content`, `category`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `question_sets`
+--
+
+CREATE TABLE `question_sets` (
+  `set_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `is_master` tinyint(1) DEFAULT '0' COMMENT '1=แม่แบบกลาง, 0=ของงานเฉพาะ',
+  `type` enum('EXHIBITION','UNIT') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `question_sets`
+--
+
+INSERT INTO `question_sets` (`set_id`, `name`, `is_master`, `type`) VALUES
+(1, 'Master Exhibition Standard', 1, 'EXHIBITION'),
+(2, 'Master Unit Standard', 1, 'UNIT'),
+(3, 'Master Unit: Service Mind (เน้นการบริการ)', 1, 'UNIT'),
+(4, 'Master Unit: Knowledge & Innovation (เน้นความรู้/นวัตกรรม)', 1, 'UNIT'),
+(5, 'Master Unit: Activity & Fun (เน้นความสนุก/กิจกรรม)', 1, 'UNIT'),
+(6, 'Master Exh: Facilities & Logistics (สถานที่และความสะดวก)', 1, 'EXHIBITION'),
+(7, 'Master Exh: Overall Experience (ความพึงพอใจภาพรวม)', 1, 'EXHIBITION'),
+(101, 'Set for AI Expo (Exhibition)', 0, 'EXHIBITION'),
+(102, 'Set for AI Expo (Unit)', 0, 'UNIT'),
+(103, 'Questions for Exhibition EX202501 (EXHIBITION)', 0, 'EXHIBITION'),
+(104, 'Questions for Exhibition EX202501 (UNIT)', 0, 'UNIT'),
+(105, 'Questions for Exhibition EX202509 (EXHIBITION)', 0, 'EXHIBITION'),
+(106, 'Questions for Exhibition EX202509 (UNIT)', 0, 'UNIT');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `registrations`
+--
+
+CREATE TABLE `registrations` (
+  `registration_id` int NOT NULL,
+  `exhibition_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `role` enum('visitor','staff') NOT NULL DEFAULT 'visitor',
+  `registered_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `registrations`
+--
+
+INSERT INTO `registrations` (`registration_id`, `exhibition_id`, `user_id`, `role`, `registered_at`) VALUES
+(1, 1, 1, 'visitor', '2025-10-20 14:30:00'),
+(2, 1, 2, 'visitor', '2025-10-22 16:00:00'),
+(3, 1, 13, 'visitor', '2025-10-20 10:04:26'),
+(4, 1, 14, 'visitor', '2025-10-20 10:20:43'),
+(5, 17, 15, 'visitor', '2026-01-03 04:31:56'),
+(6, 1, 15, 'visitor', '2026-01-03 06:05:57'),
+(7, 1, 16, 'visitor', '2026-01-05 08:39:52'),
+(10, 1, 17, 'visitor', '2026-01-05 09:45:33'),
+(11, 17, 18, 'staff', '2026-02-14 08:08:43'),
+(16, 1, 18, 'staff', '2026-02-14 08:17:22'),
+(17, 17, 22, 'visitor', '2026-02-14 09:07:35');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `set_question_mapping`
 --
 
 CREATE TABLE `set_question_mapping` (
   `set_id` int NOT NULL,
   `qt_id` int NOT NULL,
-  `sort_order` int DEFAULT 0
+  `sort_order` int DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `set_question_mapping`
--- Master set 1 (Master Exhibition Standard): qt 1,2
--- Master set 2 (Master Unit Standard): qt 3,4
--- Master set 3 (Master Unit: Service Mind): qt 5,6,7,8
--- Master set 4 (Master Unit: Knowledge & Innovation): qt 9,10,11,12
--- Master set 5 (Master Unit: Activity & Fun): qt 13,14,15,16
--- Master set 6 (Master Exh: Facilities & Logistics): qt 17,18,19,20,21
--- Master set 7 (Master Exh: Overall Experience): qt 22,23,24,25
--- Set 101 (AI Expo Exhibition): qt 1,2,26
--- Set 102 (AI Expo Unit): qt 3,4
--- Set 103 (EX202501 Exhibition): qt 1,2,1,2,1,27,28
--- Set 104 (EX202501 Unit): qt 5,6,7,8,30,31
--- Set 105 (EX202509 Exhibition): qt 29
--- Set 106 (EX202509 Unit): qt 5,6,7,8,29
 --
 
 INSERT INTO `set_question_mapping` (`set_id`, `qt_id`, `sort_order`) VALUES
@@ -332,65 +394,6 @@ INSERT INTO `set_question_mapping` (`set_id`, `qt_id`, `sort_order`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `question_sets`
---
-
-CREATE TABLE `question_sets` (
-  `set_id` int NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `is_master` tinyint(1) DEFAULT '0' COMMENT '1=แม่แบบกลาง, 0=ของงานเฉพาะ',
-  `type` enum('EXHIBITION','UNIT') NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `question_sets`
---
-
-INSERT INTO `question_sets` (`set_id`, `name`, `is_master`, `type`) VALUES
-(1, 'Master Exhibition Standard', 1, 'EXHIBITION'),
-(2, 'Master Unit Standard', 1, 'UNIT'),
-(3, 'Master Unit: Service Mind (เน้นการบริการ)', 1, 'UNIT'),
-(4, 'Master Unit: Knowledge & Innovation (เน้นความรู้/นวัตกรรม)', 1, 'UNIT'),
-(5, 'Master Unit: Activity & Fun (เน้นความสนุก/กิจกรรม)', 1, 'UNIT'),
-(6, 'Master Exh: Facilities & Logistics (สถานที่และความสะดวก)', 1, 'EXHIBITION'),
-(7, 'Master Exh: Overall Experience (ความพึงพอใจภาพรวม)', 1, 'EXHIBITION'),
-(101, 'Set for AI Expo (Exhibition)', 0, 'EXHIBITION'),
-(102, 'Set for AI Expo (Unit)', 0, 'UNIT'),
-(103, 'Questions for Exhibition EX202501 (EXHIBITION)', 0, 'EXHIBITION'),
-(104, 'Questions for Exhibition EX202501 (UNIT)', 0, 'UNIT'),
-(105, 'Questions for Exhibition EX202509 (EXHIBITION)', 0, 'EXHIBITION'),
-(106, 'Questions for Exhibition EX202509 (UNIT)', 0, 'UNIT');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `registrations`
---
-
-CREATE TABLE `registrations` (
-  `registration_id` int NOT NULL,
-  `exhibition_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `registered_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `registrations`
---
-
-INSERT INTO `registrations` (`registration_id`, `exhibition_id`, `user_id`, `registered_at`) VALUES
-(1, 1, 1, '2025-10-20 14:30:00'),
-(2, 1, 2, '2025-10-22 16:00:00'),
-(3, 1, 13, '2025-10-20 10:04:26'),
-(4, 1, 14, '2025-10-20 10:20:43'),
-(5, 17, 15, '2026-01-03 04:31:56'),
-(6, 1, 15, '2026-01-03 06:05:57'),
-(7, 1, 16, '2026-01-05 08:39:52'),
-(10, 1, 17, '2026-01-05 09:45:33');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `survey_answers`
 --
 
@@ -409,7 +412,13 @@ CREATE TABLE `survey_answers` (
 INSERT INTO `survey_answers` (`answer_id`, `submission_id`, `set_id`, `qt_id`, `score`) VALUES
 (1, 1001, 101, 1, 5),
 (2, 1001, 101, 2, 4),
-(3, 1001, 101, 26, 5);
+(3, 1001, 101, 26, 5),
+(61, 1018, 106, 5, 5),
+(62, 1018, 106, 6, 5),
+(63, 1018, 106, 7, 4),
+(64, 1018, 106, 8, 5),
+(65, 1018, 106, 29, 5),
+(66, 1019, 105, 29, 4);
 
 -- --------------------------------------------------------
 
@@ -432,7 +441,9 @@ CREATE TABLE `survey_submissions` (
 
 INSERT INTO `survey_submissions` (`submission_id`, `exhibition_id`, `unit_id`, `user_id`, `comment`, `created_at`) VALUES
 (1001, 99, NULL, 5, 'งานจัดดีมากครับ แอร์เย็น', '2026-01-06 08:41:26'),
-(1002, 99, 5, 5, 'พี่สต๊าฟอธิบายงงๆ นิดนึง', '2026-01-06 08:41:46');
+(1002, 99, 5, 5, 'พี่สต๊าฟอธิบายงงๆ นิดนึง', '2026-01-06 08:41:46'),
+(1018, 17, 19, 13, 'พี่วิชัยบริการดีมาก อธิบายเข้าใจง่ายสุดๆ', '2026-02-18 07:12:53'),
+(1019, 17, NULL, 22, NULL, '2026-02-18 07:51:16');
 
 -- --------------------------------------------------------
 
@@ -523,7 +534,9 @@ CREATE TABLE `units_checkins` (
 
 INSERT INTO `units_checkins` (`checkin_id`, `exhibition_id`, `user_id`, `unit_id`, `checkin_at`) VALUES
 (1, 17, 15, 19, '2025-11-01 10:05:00'),
-(9, 17, 15, 20, '2025-11-01 10:05:00');
+(9, 17, 15, 20, '2025-11-01 10:05:00'),
+(10, 17, 22, 20, '2026-02-14 09:07:44'),
+(12, 17, 13, 19, '2026-02-18 07:12:53');
 
 -- --------------------------------------------------------
 
@@ -545,7 +558,7 @@ INSERT INTO `unit_staffs` (`unit_id`, `staff_user_id`) VALUES
 (20, 4),
 (3, 5),
 (3, 14),
-(1, 16);
+(2, 18);
 
 -- --------------------------------------------------------
 
@@ -572,19 +585,19 @@ CREATE TABLE `v_certificate_templates` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_exhibitions` (
-`archived_at` timestamp
-,`created_at` timestamp
-,`description` mediumtext
-,`end_date` datetime
+`exhibition_id` int
 ,`exhibition_code` varchar(20)
-,`exhibition_id` int
+,`title` varchar(255)
+,`description` mediumtext
+,`start_date` datetime
+,`end_date` datetime
 ,`location` varchar(255)
 ,`organizer_name` varchar(255)
 ,`picture_path` varchar(500)
-,`start_date` datetime
 ,`status` enum('draft','published','ongoing','ended','archived')
-,`title` varchar(255)
+,`created_at` timestamp
 ,`updated_at` timestamp
+,`archived_at` timestamp
 );
 
 -- --------------------------------------------------------
@@ -594,15 +607,15 @@ CREATE TABLE `v_exhibitions` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_exhibition_feedback` (
-`comment` text
-,`created_at` timestamp
+`submission_id` int
 ,`exhibition_id` int
 ,`exhibition_name` varchar(255)
-,`question_topic` text
-,`score` int
-,`submission_id` int
 ,`user_id` int
 ,`user_name` varchar(255)
+,`question_topic` text
+,`score` int
+,`comment` text
+,`created_at` timestamp
 );
 
 -- --------------------------------------------------------
@@ -612,8 +625,8 @@ CREATE TABLE `v_exhibition_feedback` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_exhibition_with_registrations` (
-`exhibition_code` varchar(20)
-,`exhibition_id` int
+`exhibition_id` int
+,`exhibition_code` varchar(20)
 ,`title` varchar(255)
 ,`total_registrations` bigint
 );
@@ -625,19 +638,63 @@ CREATE TABLE `v_exhibition_with_registrations` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_my_event_surveys` (
-`end_date` datetime
-,`exhibition_code` varchar(20)
-,`exhibition_id` int
-,`exhibition_set_id` int
-,`location` varchar(255)
-,`picture_path` varchar(500)
-,`registered_at` timestamp
+`user_id` int
 ,`registration_id` int
-,`start_date` datetime
-,`status` enum('draft','published','ongoing','ended','archived')
-,`survey_completed` int
+,`exhibition_id` int
 ,`title` varchar(255)
-,`user_id` int
+,`exhibition_code` varchar(20)
+,`location` varchar(255)
+,`start_date` datetime
+,`end_date` datetime
+,`picture_path` varchar(500)
+,`status` enum('draft','published','ongoing','ended','archived')
+,`exhibition_set_id` int
+,`registered_at` timestamp
+,`survey_completed` int
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_org_dashboard_kpis`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_org_dashboard_kpis` (
+`exhibition_id` int
+,`title` varchar(255)
+,`status` enum('draft','published','ongoing','ended','archived')
+,`location` varchar(255)
+,`total_registrations` bigint
+,`total_units` bigint
+,`total_checkins` bigint
+,`exhibition_avg_score` decimal(13,2)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_org_exhibition_feedback_stats`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_org_exhibition_feedback_stats` (
+`exhibition_id` int
+,`topic` text
+,`score` decimal(13,2)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_org_unit_stats`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_org_unit_stats` (
+`exhibition_id` int
+,`id` int
+,`name` varchar(255)
+,`type` enum('activity','booth')
+,`checkins` bigint
+,`rating` decimal(13,2)
 );
 
 -- --------------------------------------------------------
@@ -647,11 +704,54 @@ CREATE TABLE `v_my_event_surveys` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_registrations` (
-`exhibition_code` varchar(20)
+`registration_id` int
+,`exhibition_code` varchar(20)
 ,`exhibition_title` varchar(255)
-,`registered_at` timestamp
-,`registration_id` int
 ,`user_name` varchar(255)
+,`registered_at` timestamp
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_staff_dashboard_question_scores`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_staff_dashboard_question_scores` (
+`staff_user_id` int
+,`unit_id` int
+,`unit_name` varchar(255)
+,`qt_id` int
+,`question_topic` text
+,`response_count` bigint
+,`average_score` decimal(10,2)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_staff_dashboard_stats`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_staff_dashboard_stats` (
+`staff_user_id` int
+,`unit_id` int
+,`unit_code` varchar(30)
+,`unit_name` varchar(255)
+,`unit_type` enum('activity','booth')
+,`description` mediumtext
+,`description_delta` json
+,`poster_url` varchar(500)
+,`detail_pdf_url` varchar(500)
+,`starts_at` datetime
+,`ends_at` datetime
+,`exhibition_id` int
+,`exhibition_title` varchar(255)
+,`exhibition_location` varchar(255)
+,`exhibition_status` enum('draft','published','ongoing','ended','archived')
+,`total_visitors` bigint
+,`total_reviews` bigint
+,`average_score` decimal(13,2)
 );
 
 -- --------------------------------------------------------
@@ -661,11 +761,11 @@ CREATE TABLE `v_registrations` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_stats_score_by_question` (
-`average_score` decimal(13,2)
-,`exhibition_name` varchar(255)
+`exhibition_name` varchar(255)
 ,`target_name` varchar(255)
 ,`topic` text
 ,`total_voters` bigint
+,`average_score` decimal(13,2)
 );
 
 -- --------------------------------------------------------
@@ -675,17 +775,17 @@ CREATE TABLE `v_stats_score_by_question` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_units_by_exhibition` (
-`ends_at` datetime
-,`exhibition_code` varchar(20)
-,`exhibition_id` int
-,`exhibition_title` varchar(255)
-,`poster_url` varchar(500)
-,`staff_names` text
-,`starts_at` datetime
+`unit_id` int
 ,`unit_code` varchar(30)
-,`unit_id` int
 ,`unit_name` varchar(255)
 ,`unit_type` enum('activity','booth')
+,`poster_url` varchar(500)
+,`starts_at` datetime
+,`ends_at` datetime
+,`exhibition_id` int
+,`exhibition_code` varchar(20)
+,`exhibition_title` varchar(255)
+,`staff_names` text
 );
 
 -- --------------------------------------------------------
@@ -695,13 +795,13 @@ CREATE TABLE `v_units_by_exhibition` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_units_checkins` (
-`checkin_at` timestamp
-,`checkin_id` int
+`checkin_id` int
 ,`exhibition_code` varchar(20)
 ,`exhibition_title` varchar(255)
+,`user_name` varchar(255)
 ,`unit_code` varchar(30)
 ,`unit_name` varchar(255)
-,`user_name` varchar(255)
+,`checkin_at` timestamp
 );
 
 -- --------------------------------------------------------
@@ -711,17 +811,17 @@ CREATE TABLE `v_units_checkins` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_unit_feedback` (
-`comment` text
-,`created_at` timestamp
+`submission_id` int
 ,`exhibition_id` int
 ,`exhibition_name` varchar(255)
-,`question_topic` text
-,`score` int
-,`submission_id` int
 ,`unit_id` int
 ,`unit_name` varchar(255)
 ,`user_id` int
 ,`user_name` varchar(255)
+,`question_topic` text
+,`score` int
+,`comment` text
+,`created_at` timestamp
 );
 
 -- --------------------------------------------------------
@@ -731,15 +831,15 @@ CREATE TABLE `v_unit_feedback` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_user_exhibition_checkin_status` (
-`exhibition_code` varchar(20)
-,`exhibition_id` int
+`exhibition_id` int
+,`exhibition_code` varchar(20)
 ,`exhibition_title` varchar(255)
-,`is_checked_in` int
-,`unit_code` varchar(30)
 ,`unit_id` int
+,`unit_code` varchar(30)
 ,`unit_name` varchar(255)
 ,`unit_type` enum('activity','booth')
 ,`user_id` int
+,`is_checked_in` int
 );
 
 --
@@ -760,13 +860,6 @@ ALTER TABLE `certificate_templates`
   ADD KEY `idx_ct_exhibition` (`exhibition_id`);
 
 --
--- Indexes for table `exhibition_announcements`
---
-ALTER TABLE `exhibition_announcements`
-  ADD PRIMARY KEY (`announcement_id`),
-  ADD KEY `fk_announce_exhibition` (`exhibition_id`);
-
---
 -- Indexes for table `exhibitions`
 --
 ALTER TABLE `exhibitions`
@@ -774,6 +867,13 @@ ALTER TABLE `exhibitions`
   ADD UNIQUE KEY `uq_exhibition_code` (`exhibition_code`),
   ADD KEY `fk_exh_exhibition_set` (`exhibition_set_id`),
   ADD KEY `fk_exh_unit_set` (`unit_set_id`);
+
+--
+-- Indexes for table `exhibition_announcements`
+--
+ALTER TABLE `exhibition_announcements`
+  ADD PRIMARY KEY (`announcement_id`),
+  ADD KEY `fk_announce_exhibition` (`exhibition_id`);
 
 --
 -- Indexes for table `normal_users`
@@ -799,13 +899,6 @@ ALTER TABLE `questions_template`
   ADD PRIMARY KEY (`qt_id`);
 
 --
--- Indexes for table `set_question_mapping`
---
-ALTER TABLE `set_question_mapping`
-  ADD PRIMARY KEY (`set_id`, `qt_id`),
-  ADD KEY `fk_sqm_qt` (`qt_id`);
-
---
 -- Indexes for table `question_sets`
 --
 ALTER TABLE `question_sets`
@@ -820,12 +913,19 @@ ALTER TABLE `registrations`
   ADD KEY `fk_reg_user` (`user_id`);
 
 --
+-- Indexes for table `set_question_mapping`
+--
+ALTER TABLE `set_question_mapping`
+  ADD PRIMARY KEY (`set_id`,`qt_id`),
+  ADD KEY `fk_sqm_qt` (`qt_id`);
+
+--
 -- Indexes for table `survey_answers`
 --
 ALTER TABLE `survey_answers`
   ADD PRIMARY KEY (`answer_id`),
   ADD KEY `fk_ans_sub` (`submission_id`),
-  ADD KEY `fk_ans_mapping` (`set_id`, `qt_id`);
+  ADD KEY `fk_ans_mapping` (`set_id`,`qt_id`);
 
 --
 -- Indexes for table `survey_submissions`
@@ -873,22 +973,22 @@ ALTER TABLE `certificate_templates`
   MODIFY `template_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `exhibition_announcements`
---
-ALTER TABLE `exhibition_announcements`
-  MODIFY `announcement_id` int NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `exhibitions`
 --
 ALTER TABLE `exhibitions`
   MODIFY `exhibition_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=100;
 
 --
+-- AUTO_INCREMENT for table `exhibition_announcements`
+--
+ALTER TABLE `exhibition_announcements`
+  MODIFY `announcement_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
 -- AUTO_INCREMENT for table `normal_users`
 --
 ALTER TABLE `normal_users`
-  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `organizer_users`
@@ -912,19 +1012,19 @@ ALTER TABLE `question_sets`
 -- AUTO_INCREMENT for table `registrations`
 --
 ALTER TABLE `registrations`
-  MODIFY `registration_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `registration_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `survey_answers`
 --
 ALTER TABLE `survey_answers`
-  MODIFY `answer_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+  MODIFY `answer_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT for table `survey_submissions`
 --
 ALTER TABLE `survey_submissions`
-  MODIFY `submission_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1018;
+  MODIFY `submission_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1020;
 
 --
 -- AUTO_INCREMENT for table `units`
@@ -936,7 +1036,7 @@ ALTER TABLE `units`
 -- AUTO_INCREMENT for table `units_checkins`
 --
 ALTER TABLE `units_checkins`
-  MODIFY `checkin_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `checkin_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 -- --------------------------------------------------------
 
@@ -986,11 +1086,56 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_my_ev
 -- --------------------------------------------------------
 
 --
+-- Structure for view `v_org_dashboard_kpis`
+--
+DROP TABLE IF EXISTS `v_org_dashboard_kpis`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_dashboard_kpis`  AS SELECT `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `title`, `e`.`status` AS `status`, `e`.`location` AS `location`, (select count(0) from `registrations` `r` where (`r`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_registrations`, (select count(0) from `units` `u` where (`u`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_units`, (select count(0) from `units_checkins` `uc` where (`uc`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_checkins`, (select round(avg(`a`.`score`),2) from (`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) where ((`s`.`exhibition_id` = `e`.`exhibition_id`) and (`s`.`unit_id` is null))) AS `exhibition_avg_score` FROM `exhibitions` AS `e` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_org_exhibition_feedback_stats`
+--
+DROP TABLE IF EXISTS `v_org_exhibition_feedback_stats`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_exhibition_feedback_stats`  AS SELECT `s`.`exhibition_id` AS `exhibition_id`, `qt`.`content` AS `topic`, round(avg(`a`.`score`),2) AS `score` FROM ((`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is null) GROUP BY `s`.`exhibition_id`, `qt`.`qt_id`, `qt`.`content` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_org_unit_stats`
+--
+DROP TABLE IF EXISTS `v_org_unit_stats`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_unit_stats`  AS SELECT `u`.`exhibition_id` AS `exhibition_id`, `u`.`unit_id` AS `id`, `u`.`unit_name` AS `name`, `u`.`unit_type` AS `type`, (select count(0) from `units_checkins` `uc` where (`uc`.`unit_id` = `u`.`unit_id`)) AS `checkins`, (select round(avg(`a`.`score`),2) from (`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) where (`s`.`unit_id` = `u`.`unit_id`)) AS `rating` FROM `units` AS `u` ;
+
+-- --------------------------------------------------------
+
+--
 -- Structure for view `v_registrations`
 --
 DROP TABLE IF EXISTS `v_registrations`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_registrations`  AS SELECT `r`.`registration_id` AS `registration_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `u`.`full_name` AS `user_name`, `r`.`registered_at` AS `registered_at` FROM ((`registrations` `r` join `exhibitions` `e` on((`r`.`exhibition_id` = `e`.`exhibition_id`))) join `normal_users` `u` on((`r`.`user_id` = `u`.`user_id`))) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_staff_dashboard_question_scores`
+--
+DROP TABLE IF EXISTS `v_staff_dashboard_question_scores`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_staff_dashboard_question_scores`  AS SELECT `us`.`staff_user_id` AS `staff_user_id`, `u`.`unit_id` AS `unit_id`, `u`.`unit_name` AS `unit_name`, `qt`.`qt_id` AS `qt_id`, `qt`.`content` AS `question_topic`, count(`a`.`score`) AS `response_count`, cast(avg(`a`.`score`) as decimal(10,2)) AS `average_score` FROM ((((`unit_staffs` `us` join `units` `u` on((`us`.`unit_id` = `u`.`unit_id`))) join `survey_submissions` `s` on((`u`.`unit_id` = `s`.`unit_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) GROUP BY `us`.`staff_user_id`, `u`.`unit_id`, `u`.`unit_name`, `qt`.`qt_id`, `qt`.`content` ORDER BY `average_score` DESC ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_staff_dashboard_stats`
+--
+DROP TABLE IF EXISTS `v_staff_dashboard_stats`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_staff_dashboard_stats`  AS SELECT `us`.`staff_user_id` AS `staff_user_id`, `u`.`unit_id` AS `unit_id`, `u`.`unit_code` AS `unit_code`, `u`.`unit_name` AS `unit_name`, `u`.`unit_type` AS `unit_type`, `u`.`description` AS `description`, `u`.`description_delta` AS `description_delta`, `u`.`poster_url` AS `poster_url`, `u`.`detail_pdf_url` AS `detail_pdf_url`, `u`.`starts_at` AS `starts_at`, `u`.`ends_at` AS `ends_at`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_title`, `e`.`location` AS `exhibition_location`, `e`.`status` AS `exhibition_status`, coalesce(`checkin_stats`.`total_visitors`,0) AS `total_visitors`, coalesce(`review_stats`.`review_count`,0) AS `total_reviews`, coalesce(round(`review_stats`.`avg_score`,2),0.00) AS `average_score` FROM ((((`unit_staffs` `us` join `units` `u` on((`us`.`unit_id` = `u`.`unit_id`))) join `exhibitions` `e` on((`u`.`exhibition_id` = `e`.`exhibition_id`))) left join (select `units_checkins`.`unit_id` AS `unit_id`,count(`units_checkins`.`checkin_id`) AS `total_visitors` from `units_checkins` group by `units_checkins`.`unit_id`) `checkin_stats` on((`u`.`unit_id` = `checkin_stats`.`unit_id`))) left join (select `s`.`unit_id` AS `unit_id`,count(distinct `s`.`submission_id`) AS `review_count`,avg(`a`.`score`) AS `avg_score` from (`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) where (`s`.`unit_id` is not null) group by `s`.`unit_id`) `review_stats` on((`u`.`unit_id` = `review_stats`.`unit_id`))) ;
 
 -- --------------------------------------------------------
 
@@ -1055,13 +1200,6 @@ ALTER TABLE `exhibition_announcements`
   ADD CONSTRAINT `fk_announce_exhibition` FOREIGN KEY (`exhibition_id`) REFERENCES `exhibitions` (`exhibition_id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `set_question_mapping`
---
-ALTER TABLE `set_question_mapping`
-  ADD CONSTRAINT `fk_sqm_set` FOREIGN KEY (`set_id`) REFERENCES `question_sets` (`set_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_sqm_qt` FOREIGN KEY (`qt_id`) REFERENCES `questions_template` (`qt_id`);
-
---
 -- Constraints for table `registrations`
 --
 ALTER TABLE `registrations`
@@ -1069,10 +1207,17 @@ ALTER TABLE `registrations`
   ADD CONSTRAINT `fk_reg_user` FOREIGN KEY (`user_id`) REFERENCES `normal_users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `set_question_mapping`
+--
+ALTER TABLE `set_question_mapping`
+  ADD CONSTRAINT `fk_sqm_qt` FOREIGN KEY (`qt_id`) REFERENCES `questions_template` (`qt_id`),
+  ADD CONSTRAINT `fk_sqm_set` FOREIGN KEY (`set_id`) REFERENCES `question_sets` (`set_id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `survey_answers`
 --
 ALTER TABLE `survey_answers`
-  ADD CONSTRAINT `fk_ans_mapping` FOREIGN KEY (`set_id`, `qt_id`) REFERENCES `set_question_mapping` (`set_id`, `qt_id`),
+  ADD CONSTRAINT `fk_ans_mapping` FOREIGN KEY (`set_id`,`qt_id`) REFERENCES `set_question_mapping` (`set_id`, `qt_id`),
   ADD CONSTRAINT `fk_ans_sub` FOREIGN KEY (`submission_id`) REFERENCES `survey_submissions` (`submission_id`) ON DELETE CASCADE;
 
 --
@@ -1129,5 +1274,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-

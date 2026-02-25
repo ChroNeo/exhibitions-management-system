@@ -71,7 +71,6 @@ export const VisitorSchema = z.object({
   full_name: z.string().nullable(),
   email: z.string().nullable(),
   phone: z.string().nullable(),
-  role: z.string().nullable(),
   picture_url: z.string().nullable(),
   registration_count: z.number(),
 });
@@ -83,7 +82,6 @@ export const VisitorDetailSchema = z.object({
   full_name: z.string().nullable(),
   email: z.string().nullable(),
   phone: z.string().nullable(),
-  role: z.string().nullable(),
   gender: z.string().nullable(),
   birthdate: z.string().nullable(),
   picture_url: z.string().nullable(),

@@ -6,10 +6,5 @@ export const UserDropdownOptionSchema = z.object({
   label: z.string().min(1),
 });
 
-export const ListUsersQuerySchema = z.object({
-  role: z.enum(["staff", "user"]).optional(),
-});
-
 // Type exports (inferred from Zod schemas)
 export type UserDropdownOption = z.infer<typeof UserDropdownOptionSchema>;
-export type ListUsersQuery = z.infer<typeof ListUsersQuerySchema>;
