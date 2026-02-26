@@ -55,13 +55,14 @@ export async function createAnnouncement(
   const result = await safeQuery<ResultSetHeader>(
     `
       INSERT INTO exhibition_announcements
-        (exhibition_id, topic, description, image_url, is_active)
-      VALUES (?, ?, ?, ?, ?);
+        (exhibition_id, topic, description, description_delta, image_url, is_active)
+      VALUES (?, ?, ?, ?, ?, ?);
     `,
     [
       payload.exhibition_id,
       payload.topic,
       payload.description,
+      payload.description_delta ?? null,
       payload.image_url,
       payload.is_active,
     ],

@@ -26,6 +26,7 @@ export async function createNews(
   fd.append("exhibition_id", String(rest.exhibition_id));
   fd.append("topic", rest.topic);
   if (rest.description) fd.append("description", rest.description);
+  if (rest.description_delta) fd.append("description_delta", rest.description_delta);
   fd.append("is_active", String(rest.is_active ?? 1));
   if (file) fd.append("image_url", file);
 
@@ -44,6 +45,8 @@ export async function updateNews(
   if (rest.topic !== undefined) fd.append("topic", rest.topic);
   if (rest.description !== undefined)
     fd.append("description", rest.description ?? "");
+  if (rest.description_delta !== undefined)
+    fd.append("description_delta", rest.description_delta ?? "");
   if (rest.is_active !== undefined)
     fd.append("is_active", String(rest.is_active));
   if (file) fd.append("image_url", file);

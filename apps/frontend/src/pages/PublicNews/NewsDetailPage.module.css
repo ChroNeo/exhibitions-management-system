@@ -170,3 +170,20 @@
   line-height: 1.8;
   white-space: pre-wrap;
 }
+
+.quillViewer :global(.ql-toolbar) {
+  display: none;
+}
+
+.quillViewer :global(.ql-container),
+.quillViewer :global(.ql-container.ql-snow) {
+  border: none !important;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.quillViewer :global(.ql-editor) {
+  padding: 0;
+  line-height: 1.8;
+  color: #4b5563;
+}

@@ -138,6 +138,7 @@ CREATE TABLE `exhibition_announcements` (
   `exhibition_id` int NOT NULL COMMENT 'Links to a specific exhibition',
   `topic` varchar(255) NOT NULL COMMENT 'The headline',
   `description` text COMMENT 'The main content',
+  `description_delta` text COMMENT 'Quill Delta JSON for rich text content',
   `image_url` varchar(2048) DEFAULT NULL COMMENT 'Path or URL to the picture',
   `is_active` tinyint(1) DEFAULT '1' COMMENT '1 = Show, 0 = Hide (Soft delete)',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,

@@ -99,6 +99,7 @@ export default async function newsController(fastify: FastifyInstance) {
           exhibition_id: Number(fields.exhibition_id),
           topic: fields.topic,
           description: fields.description || null,
+          description_delta: fields.description_delta || null,
           image_url: files.image_url?.publicPath ?? null,
           is_active: fields.is_active ? Number(fields.is_active) : 1,
         });
@@ -156,6 +157,7 @@ export default async function newsController(fastify: FastifyInstance) {
         if (fields.exhibition_id) raw.exhibition_id = Number(fields.exhibition_id);
         if (fields.topic) raw.topic = fields.topic;
         if (fields.description !== undefined) raw.description = fields.description || null;
+        if (fields.description_delta !== undefined) raw.description_delta = fields.description_delta || null;
         if (fields.is_active) raw.is_active = Number(fields.is_active);
         if (files.image_url?.publicPath) {
           raw.image_url = files.image_url.publicPath;

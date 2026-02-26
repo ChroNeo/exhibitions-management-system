@@ -47,10 +47,9 @@ export async function upsertLineUserProfile(profile: LineProfileRecord): Promise
         full_name,
         username,
         picture_url,
-        last_synced_at,
-        role
+        last_synced_at
       )
-      VALUES (?, ?, ?, ?, NOW(), 'user')
+      VALUES (?, ?, ?, ?, NOW())
     `,
     [profile.line_user_id, normalizedName, sanitizedUsername, profile.picture_url ?? null]
   );
@@ -137,9 +136,9 @@ export async function findExhibitionForLine(
 }
 
 export async function findUserByLineId(lineUserId: string): Promise<{ userId: number; role: string } | null> {
-  const rows = await safeQuery<{ user_id: number; role: string }[]>(
+  const rows = await safeQuery<{ user_id: number }[]>(
     `
-      SELECT user_id, role
+      SELECT user_id
       FROM normal_users
       WHERE line_user_id = ?
       LIMIT 1
@@ -147,13 +146,18 @@ export async function findUserByLineId(lineUserId: string): Promise<{ userId: nu
     [lineUserId]
   );
 
-  if (rows.length) {
-    return {
-      userId: rows[0].user_id,
-      role: rows[0].role
-    };
-  }
-  return null;
+  if (!rows.length) return null;
+
+  const userId = rows[0].user_id;
+
+  // Derive role from registrations: staff if the user has any staff registration
+  const staffRows = await safeQuery<{ cnt: number }[]>(
+    `SELECT COUNT(*) AS cnt FROM registrations WHERE user_id = ? AND role = 'staff' LIMIT 1`,
+    [userId]
+  );
+  const role = staffRows[0].cnt > 0 ? "staff" : "user";
+
+  return { userId, role };
 }
 
 export type ExhibitionWithUnitsRow = {
@@ -205,9 +209,8 @@ export async function findRegistrationByUserAndExhibition(
 ): Promise<{ role: string; title: string } | null> {
   const rows = await safeQuery<{ role: string; title: string }[]>(
     `
-      SELECT nu.role, e.title
+      SELECT r.role, e.title
       FROM registrations r
-      JOIN normal_users nu ON nu.user_id = r.user_id
       JOIN exhibitions e ON e.exhibition_id = r.exhibition_id
       WHERE r.user_id = ? AND r.exhibition_id = ?
       LIMIT 1

@@ -4,6 +4,7 @@ export const AnnouncementSchema = z.object({
   exhibition_id: z.number(),
   topic: z.string(),
   description: z.string().nullable(),
+  description_delta: z.string().nullable(),
   image_url: z.string().nullable(),
   is_active: z.number().nullable(),
   created_at: z.string().nullable(),
@@ -14,6 +15,7 @@ export const AnnoucncementsPayload = z.object({
   exhibition_id: z.number(),
   topic: z.string(),
   description: z.string().nullable(),
+  description_delta: z.string().nullable().optional(),
   image_url: z.string().nullable(),
   is_active: z.number().nullable(),
 });

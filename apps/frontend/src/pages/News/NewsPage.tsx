@@ -2,18 +2,45 @@ import {
   ArrowLeft,
   Camera,
   Image as ImageIcon,
+  Pencil,
   Plus,
   Send,
   Trash2,
   X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import { toFileUrl } from "../../utils/url";
+import { initializeRichTextEditor } from "../../utils/quill";
+import type { Quill as QuillType } from "../../utils/quill";
+import type { TextChangeHandler } from "quill";
+import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
 import styles from "./NewsPage.module.css";
-import { useCreateNews, useDeleteNews, useNewsList } from "./hooks/useNews";
+import {
+  useCreateNews,
+  useDeleteNews,
+  useNewsList,
+  useUpdateNews,
+} from "./hooks/useNews";
+import type { NewsLists } from "../../types/news";
+
+type FormData = {
+  title: string;
+  description: string;
+  description_delta: string;
+  image: File | null;
+  imagePreview: string | null;
+};
+
+const EMPTY_FORM: FormData = {
+  title: "",
+  description: "",
+  description_delta: "",
+  image: null,
+  imagePreview: null,
+};
 
 export default function NewsPage() {
   const { exhibitionId } = useParams<{ exhibitionId: string }>();
@@ -21,85 +48,141 @@ export default function NewsPage() {
   const exId = Number(exhibitionId);
   const { data: newsList = [] } = useNewsList(exId);
   const createNewsMutation = useCreateNews(exId);
+  const updateNewsMutation = useUpdateNews(exId);
   const deleteNewsMutation = useDeleteNews(exId);
 
-  // State สำหรับฟอร์มปัจจุบัน
-  const [formData, setFormData] = useState<{
-    title: string;
-    description: string;
-    image: File | null;
-    imagePreview: string | null;
-  }>({
-    title: "",
-    description: "",
-    image: null,
-    imagePreview: null,
-  });
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const quillElRef = useRef<HTMLDivElement | null>(null);
+  const quillRef = useRef<QuillType | null>(null);
 
-  // จัดการการเปลี่ยนข้อมูลใน Input
+  // Init Quill editor
+  useEffect(() => {
+    if (!quillElRef.current || quillRef.current) return;
+
+    const { quill, cleanup } = initializeRichTextEditor({
+      container: quillElRef.current,
+      placeholder: "รายละเอียดข่าวสาร (Optional)...",
+    });
+
+    const handleTextChange: TextChangeHandler = (_d, _o, source) => {
+      if (source !== "user") return;
+      const deltaString = JSON.stringify(quill.getContents());
+      const plainText = quill.getText().trim();
+      setFormData((prev) =>
+        prev.description_delta === deltaString
+          ? prev
+          : { ...prev, description_delta: deltaString, description: plainText },
+      );
+    };
+
+    quill.on("text-change", handleTextChange);
+    quillRef.current = quill;
+
+    return () => {
+      quill.off("text-change", handleTextChange);
+      quillRef.current = null;
+      cleanup();
+    };
+  }, []);
+
+  const resetForm = () => {
+    setFormData(EMPTY_FORM);
+    setEditingId(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    quillRef.current?.setContents([] as any, "silent");
+  };
+
+  const handleEdit = (news: NewsLists) => {
+    setEditingId(news.announcement_id);
+    setFormData({
+      title: news.topic,
+      description: news.description ?? "",
+      description_delta: news.description_delta ?? "",
+      image: null,
+      imagePreview: news.image_url ? toFileUrl(news.image_url) : null,
+    });
+    // Hydrate Quill with existing delta
+    if (quillRef.current) {
+      const deltaObj = toDeltaObject(news.description_delta);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      quillRef.current.setContents(deltaObj as any, "silent");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // จัดการการอัปโหลดรูปภาพ
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
       setFormData((prev) => ({
         ...prev,
         image: file,
-        imagePreview: imageUrl,
+        imagePreview: URL.createObjectURL(file),
       }));
     }
   };
 
-  // ล้างรูปภาพที่เลือก
   const removeImage = () => {
-    setFormData((prev) => ({
-      ...prev,
-      image: null,
-      imagePreview: null,
-    }));
+    setFormData((prev) => ({ ...prev, image: null, imagePreview: null }));
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // บันทึกข่าวสาร
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formData.title || !formData.imagePreview) return;
+    if (!formData.title) return;
 
-    createNewsMutation.mutate(
-      {
-        exhibition_id: exId,
-        topic: formData.title,
-        description: formData.description || null,
-        is_active: 1,
-        file: formData.image ?? undefined,
-      },
-      {
-        onSuccess: () => {
-          setFormData({
-            title: "",
-            description: "",
-            image: null,
-            imagePreview: null,
-          });
-          if (fileInputRef.current) fileInputRef.current.value = "";
+    if (editingId !== null) {
+      // Edit mode — image is optional (keep existing if not changed)
+      updateNewsMutation.mutate(
+        {
+          id: editingId,
+          data: {
+            topic: formData.title,
+            description: formData.description || null,
+            description_delta: toDeltaString(formData.description_delta) || null,
+            file: formData.image ?? undefined,
+          },
         },
-      },
-    );
+        {
+          onSuccess: async () => {
+            resetForm();
+            await Swal.fire({
+              title: "แก้ไขข่าวสำเร็จ",
+              icon: "success",
+              confirmButtonText: "ตกลง",
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          },
+        },
+      );
+    } else {
+      // Create mode — image required
+      if (!formData.imagePreview) return;
+      createNewsMutation.mutate(
+        {
+          exhibition_id: exId,
+          topic: formData.title,
+          description: formData.description || null,
+          description_delta: toDeltaString(formData.description_delta) || null,
+          is_active: 1,
+          file: formData.image ?? undefined,
+        },
+        { onSuccess: () => resetForm() },
+      );
+    }
   };
 
-  // ลบข่าวสาร
   const handleDelete = async (id: number) => {
     const result = await Swal.fire({
       title: "ยืนยันการลบข่าวนี้หรือไม่?",
@@ -116,6 +199,7 @@ export default function NewsPage() {
 
     try {
       await deleteNewsMutation.mutateAsync(id);
+      if (editingId === id) resetForm();
       await Swal.fire({
         title: "ลบข่าวสำเร็จ",
         icon: "success",
@@ -130,9 +214,13 @@ export default function NewsPage() {
     }
   };
 
+  const isEditing = editingId !== null;
+  const isSubmitDisabled = isEditing
+    ? !formData.title
+    : !formData.title || !formData.imagePreview;
+
   return (
     <div className={styles.page}>
-      {/* Navbar */}
       <HeaderBar />
       <main className={styles.main}>
         <div className={styles.backRow}>
@@ -147,20 +235,38 @@ export default function NewsPage() {
           <h1 className={styles.pageTitle}>ข่าวสารและประกาศ</h1>
         </div>
         <div className={styles.grid}>
-          {/* ส่วนฟอร์มสร้างข่าว (Left Column) */}
+          {/* Left Column — Form */}
           <div>
-            <div className={styles.formCard}>
+            <div className={`${styles.formCard} ${isEditing ? styles.formCardEditing : ""}`}>
               <div className={styles.formHeader}>
                 <h2 className={styles.formHeaderTitle}>
-                  <Plus className={styles.iconSm} /> สร้างข่าวสารใหม่
+                  {isEditing ? (
+                    <><Pencil className={styles.iconSm} /> แก้ไขข่าวสาร</>
+                  ) : (
+                    <><Plus className={styles.iconSm} /> สร้างข่าวสารใหม่</>
+                  )}
                 </h2>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className={styles.cancelEditBtn}
+                    title="ยกเลิกการแก้ไข"
+                  >
+                    <X className={styles.iconXs} /> ยกเลิก
+                  </button>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} className={styles.formBody}>
-                {/* Image Upload Area */}
+                {/* Image Upload */}
                 <div className={styles.uploadGroup}>
                   <label className={styles.label}>
-                    รูปภาพประกอบ <span className={styles.required}>*</span>
+                    รูปภาพประกอบ{" "}
+                    {!isEditing && <span className={styles.required}>*</span>}
+                    {isEditing && (
+                      <span className={styles.labelHint}> (เว้นว่างเพื่อคงรูปเดิม)</span>
+                    )}
                   </label>
 
                   {!formData.imagePreview ? (
@@ -223,34 +329,29 @@ export default function NewsPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="description" className={styles.labelSmall}>
-                      รายละเอียดสั้นๆ (Optional)
+                    <label className={styles.labelSmall}>
+                      รายละเอียด (Optional)
                     </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows={3}
-                      placeholder="ใส่รายละเอียดเล็กน้อย เพราะเนื้อหาหลักอยู่ในรูปภาพ..."
-                      className={styles.textarea}
-                    />
+                    <div className={styles.editorWrap}>
+                      <div ref={quillElRef} />
+                    </div>
                   </div>
                 </div>
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={!formData.title || !formData.imagePreview}
-                  className={styles.submitBtn}
+                  disabled={isSubmitDisabled}
+                  className={`${styles.submitBtn} ${isEditing ? styles.submitBtnEdit : ""}`}
                 >
-                  <Send className={styles.iconXs} /> โพสต์ข่าวสาร
+                  <Send className={styles.iconXs} />
+                  {isEditing ? "บันทึกการแก้ไข" : "โพสต์ข่าวสาร"}
                 </button>
               </form>
             </div>
           </div>
 
-          {/* ส่วนแสดงผล (Right Column - Feed) */}
+          {/* Right Column — Feed */}
           <div className={styles.feedColumn}>
             <div className={styles.feedHeader}>
               <h2 className={styles.feedTitle}>
@@ -269,15 +370,24 @@ export default function NewsPage() {
                 </div>
               ) : (
                 newsList.map((news) => (
-                  <div key={news.announcement_id} className={styles.newsCard}>
-                    {/* ส่วนรูปภาพ - เน้นใหญ่ตามโจทย์ */}
+                  <div
+                    key={news.announcement_id}
+                    className={`${styles.newsCard} ${editingId === news.announcement_id ? styles.newsCardActive : ""}`}
+                  >
                     <div className={styles.newsImageWrap}>
                       <img
                         src={toFileUrl(news.image_url)}
                         alt={news.topic}
                         className={styles.newsImage}
                       />
-                      <div className={styles.newsDeleteWrap}>
+                      <div className={styles.newsActionsWrap}>
+                        <button
+                          onClick={() => handleEdit(news)}
+                          className={styles.newsEditBtn}
+                          title="แก้ไขข่าว"
+                        >
+                          <Pencil className={styles.iconXs} />
+                        </button>
                         <button
                           onClick={() => handleDelete(news.announcement_id)}
                           className={styles.newsDeleteBtn}
@@ -288,7 +398,6 @@ export default function NewsPage() {
                       </div>
                     </div>
 
-                    {/* ส่วนเนื้อหา */}
                     <div className={styles.newsContent}>
                       <div className={styles.newsMeta}>
                         <span className={styles.newsTag}>News Update</span>

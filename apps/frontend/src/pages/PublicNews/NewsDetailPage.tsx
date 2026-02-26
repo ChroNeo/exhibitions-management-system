@@ -1,9 +1,42 @@
 import { ArrowLeft, Calendar, Newspaper } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import { toFileUrl } from "../../utils/url";
+import { toDeltaObject } from "../../utils/quillDelta";
 import styles from "./NewsDetailPage.module.css";
 import { useAllNews } from "./hooks/useAllNews";
+import Quill from "quill";
+
+function QuillViewer({ delta }: { delta: string }) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    // Create a fresh mount target each time
+    const mountEl = document.createElement("div");
+    wrapper.innerHTML = "";
+    wrapper.appendChild(mountEl);
+
+    const quill = new Quill(mountEl, {
+      theme: "snow",
+      readOnly: true,
+      modules: { toolbar: false },
+    });
+    quill.setContents(
+      toDeltaObject(delta) as Parameters<typeof quill.setContents>[0],
+      "silent",
+    );
+
+    return () => {
+      wrapper.innerHTML = "";
+    };
+  }, [delta]);
+
+  return <div ref={wrapperRef} className={styles.quillViewer} />;
+}
 
 export default function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -58,9 +91,11 @@ export default function NewsDetailPage() {
 
               <h1 className={styles.title}>{news.topic}</h1>
 
-              {news.description && (
+              {news.description_delta ? (
+                <QuillViewer delta={news.description_delta} />
+              ) : news.description ? (
                 <p className={styles.description}>{news.description}</p>
-              )}
+              ) : null}
             </div>
           </article>
         )}
