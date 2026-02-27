@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa6";
 
-import AddInline from "../../components/AddInline/AddInline";
+import FloatingButton from "../../components/FloatingButton/FloatingButton";
 import styles from "./UnitManageList.module.css";
 import UnitExhibitionCard, {
   type UnitCardItem,
@@ -174,8 +174,7 @@ export default function UnitManageList({
             </div>
           )}
           {shouldShowActions && (
-            <AddInline
-              variant="floating"
+            <FloatingButton
               label="เพิ่มกิจกรรม"
               ariaLabel="เพิ่มกิจกรรม"
               onClick={handleAdd}

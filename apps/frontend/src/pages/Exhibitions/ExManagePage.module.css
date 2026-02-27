@@ -33,33 +33,6 @@
   margin-top: 4px;
 }
 
-.addBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--brand);
-  color: #fff;
-  border: none;
-  padding: 11px 22px;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: var(--transition);
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(46, 79, 139, 0.25);
-}
-
-.addBtn:hover {
-  background: var(--base);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(46, 79, 139, 0.35);
-}
-
-.addBtn:active {
-  transform: translateY(0);
-}
 
 /* ── Stats Bar ── */
 
@@ -206,35 +179,6 @@
   font-size: 15px;
 }
 
-/* ── FAB (mobile only) ── */
-
-.fab {
-  display: none;
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 150;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--brand);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 20px rgba(46, 79, 139, 0.4);
-  cursor: pointer;
-  transition: var(--transition);
-  align-items: center;
-  justify-content: center;
-}
-
-.fab:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 28px rgba(46, 79, 139, 0.5);
-}
-
-.fab:active {
-  transform: scale(0.97);
-}
 
 /* ══════════════════════════════════════
    Modal – Add Exhibition
@@ -651,14 +595,6 @@
 /* ── Responsive ── */
 
 @media (max-width: 900px) {
-  .desktopAdd {
-    display: none;
-  }
-
-  .fab {
-    display: flex;
-  }
-
   .statsBar {
     gap: 8px;
   }
@@ -726,14 +662,6 @@
   .grid {
     margin-top: 18px;
     padding-bottom: 100px;
-  }
-
-  .fab {
-    bottom: 20px;
-    right: 20px;
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
   }
 
   /* Modal mobile: slide up from bottom */

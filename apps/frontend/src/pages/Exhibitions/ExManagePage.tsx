@@ -1,14 +1,9 @@
-import { Plus, Search, X } from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Search, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import ExhibitionList from "../../components/exhibition/ExhibitionList";
+import FloatingButton from "../../components/FloatingButton/FloatingButton";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import {
   useAuthStatus,
@@ -16,13 +11,13 @@ import {
   useDeleteExhibition,
   useExhibitions,
 } from "../../hooks";
-import { useCreateExhibition } from "./hooks";
-import { toApiDateTime } from "../../utils/date";
 import type { Exhibition } from "../../types/exhibition";
+import { toApiDateTime } from "../../utils/date";
 import styles from "./ExManagePage.module.css";
+import { useCreateExhibition } from "./hooks";
 
 const STATUS_OPTIONS = [
-  { value: "", label: "ทุกสถานะ" },
+  { value: "", label: "ทั้งหมด" },
   { value: "draft", label: "ร่าง" },
   { value: "published", label: "เผยแพร่" },
   { value: "ongoing", label: "กำลังจัด" },
@@ -131,7 +126,10 @@ export default function ExhibitionPage() {
   }, []);
 
   const updateForm = useCallback(
-    <K extends keyof typeof EMPTY_FORM>(key: K, value: (typeof EMPTY_FORM)[K]) => {
+    <K extends keyof typeof EMPTY_FORM>(
+      key: K,
+      value: (typeof EMPTY_FORM)[K],
+    ) => {
       setModalForm((prev) => ({ ...prev, [key]: value }));
     },
     [],
@@ -284,16 +282,6 @@ export default function ExhibitionPage() {
               จัดการและติดตามนิทรรศการทั้งหมดของคุณ
             </p>
           </div>
-          {isAuthenticated && (
-            <button
-              type="button"
-              className={`${styles.addBtn} ${styles.desktopAdd}`}
-              onClick={openAddModal}
-            >
-              <Plus size={16} />
-              เพิ่มนิทรรศการ
-            </button>
-          )}
         </div>
 
         {/* Stats bar */}
@@ -362,16 +350,12 @@ export default function ExhibitionPage() {
         </div>
       </div>
 
-      {/* FAB for mobile */}
       {isAuthenticated && (
-        <button
-          type="button"
-          className={styles.fab}
+        <FloatingButton
+          label="เพิ่มนิทรรศการ"
+          ariaLabel="เพิ่มนิทรรศการ"
           onClick={openAddModal}
-          aria-label="เพิ่มนิทรรศการ"
-        >
-          <Plus size={24} />
-        </button>
+        />
       )}
 
       {/* ── Add Exhibition Modal ── */}
@@ -539,9 +523,7 @@ export default function ExhibitionPage() {
                       <rect x="1" y="3" width="18" height="14" rx="2" />
                     </svg>
                   </div>
-                  <div className={styles.uploadText}>
-                    คลิกหรือลากไฟล์มาวาง
-                  </div>
+                  <div className={styles.uploadText}>คลิกหรือลากไฟล์มาวาง</div>
                   <div className={styles.uploadHint}>
                     JPG, PNG, WEBP — สูงสุด 5MB
                   </div>
