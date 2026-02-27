@@ -192,6 +192,30 @@ export async function getExhibitionsWithUnitsForUser(userId: number): Promise<Ex
   return rows;
 }
 
+export async function getExhibitionUnitsForUser(
+  userId: number,
+  exhibitionId: number,
+): Promise<ExhibitionWithUnitsRow[]> {
+  const rows = await safeQuery<ExhibitionWithUnitsRow[]>(
+    `
+      SELECT
+        exhibition_id,
+        exhibition_code,
+        exhibition_title,
+        unit_id,
+        unit_code,
+        unit_name,
+        unit_type,
+        is_checked_in
+      FROM v_user_exhibition_checkin_status
+      WHERE user_id = ? AND exhibition_id = ?
+      ORDER BY unit_id
+    `,
+    [userId, exhibitionId],
+  );
+  return rows;
+}
+
 export async function getExhibitionIdByCode(code: string): Promise<number | null> {
   const normalized = code?.trim().toUpperCase();
   if (!normalized) return null;

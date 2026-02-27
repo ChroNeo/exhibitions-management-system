@@ -3,7 +3,8 @@ import {
   clearCurrentExhibition,
   findExhibitionForLine,
   findUserByLineId,
-  getExhibitionsWithUnitsForUser,
+  getCurrentExhibitionByLineId,
+  getExhibitionUnitsForUser,
   getUpcomingExhibitionsForLine,
 } from "../../../queries/line-query.js";
 import {
@@ -264,8 +265,11 @@ async function sendCertificateMessage(
   config: LineConfig,
   log: FastifyBaseLogger,
 ): Promise<void> {
-  // Step 1: Find the user by LINE ID
-  const user = await findUserByLineId(userId);
+  // Step 1: Fetch user and current exhibition in parallel
+  const [user, currentExhibitionId] = await Promise.all([
+    findUserByLineId(userId),
+    getCurrentExhibitionByLineId(userId),
+  ]);
 
   if (!user) {
     await sendLineTexts(
@@ -277,16 +281,30 @@ async function sendCertificateMessage(
     return;
   }
 
-  // Step 2: Get exhibitions and units for this user
-  const exhibitionsWithUnits = await getExhibitionsWithUnitsForUser(
+  if (!currentExhibitionId) {
+    await sendLineTexts(
+      replyToken,
+      [
+        "ยังไม่ได้เลือกงานปัจจุบัน",
+        "กรุณาเลือกงานก่อนขอดูสถานะเกียรติบัตร",
+      ],
+      config,
+      log,
+    );
+    return;
+  }
+
+  // Step 2: Fetch only units for the current exhibition
+  const exhibitionsWithUnits = await getExhibitionUnitsForUser(
     user.userId,
+    currentExhibitionId,
   );
 
   if (!exhibitionsWithUnits.length) {
     await sendLineTexts(
       replyToken,
       [
-        "คุณยังไม่ได้ลงทะเบียนเข้าร่วมงานใดๆ",
+        "ไม่พบข้อมูลการลงทะเบียนสำหรับงานปัจจุบัน",
         "กรุณาลงทะเบียนเข้าร่วมงานก่อนขอเกียรติบัตร",
       ],
       config,
