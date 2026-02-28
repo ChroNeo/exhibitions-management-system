@@ -1,14 +1,21 @@
+import liff from "@line/liff";
 import { ArrowLeft } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { FaEdit, FaClipboardList, FaCertificate, FaBullhorn } from "react-icons/fa";
-import { FiTrash2 } from "react-icons/fi";
-import Swal from "sweetalert2";
 import type QuillType from "quill";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FaBullhorn,
+  FaCertificate,
+  FaClipboardList,
+  FaEdit,
+} from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { useNavigate, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 import type { ExhibitionFormValues } from "../../components/exhibition/detail_form/ExhibitionForm";
 import ExhibitionForm from "../../components/exhibition/detail_form/ExhibitionForm";
-import ExhibitionDetailCard from "../../components/exhibition/ExhibitionDetailCard";
 import type { EditFormState } from "../../components/exhibition/ExhibitionDetailCard";
+import ExhibitionDetailCard from "../../components/exhibition/ExhibitionDetailCard";
+import cardStyles from "../../components/exhibition/ExhibitionDetailCard.module.css";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import NotFound from "../../components/NotFound";
 import SurveyManageModal from "../../components/SurveyManageModal/SurveyManageModal";
@@ -21,12 +28,11 @@ import {
 import type { Exhibition } from "../../types/exhibition";
 import type { Mode } from "../../types/mode";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
-import { toFileUrl } from "../../utils/url";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject } from "../../utils/quillDelta";
+import { toFileUrl } from "../../utils/url";
 import UnitManageList from "../Units/UnitManageList";
 import styles from "./ExManageDetail.module.css";
-import cardStyles from "../../components/exhibition/ExhibitionDetailCard.module.css";
 import { useCreateExhibition, useUpdateExhibition } from "./hooks";
 
 const DEFAULT_STATUS = "draft";
@@ -46,7 +52,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
-
+  const [isInClient, setIsInClient] = useState(false);
   // ── Inline edit state ──
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<EditFormState | null>(null);
@@ -72,6 +78,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     } else {
       Swal.close();
     }
+    setIsInClient(liff.isInClient());
   }, [isLoading]);
 
   const { mutateAsync: createExh } = useCreateExhibition();
@@ -188,21 +195,16 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   }, [imagePreview]);
 
   const handleFieldChange = useCallback((field: string, value: string) => {
-    setEditForm((prev) =>
-      prev ? { ...prev, [field]: value } : prev
-    );
+    setEditForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   }, []);
 
-  const handleFileChange = useCallback(
-    (file: File | undefined) => {
-      setEditForm((prev) => (prev ? { ...prev, file } : prev));
-      setImagePreview((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return file ? URL.createObjectURL(file) : undefined;
-      });
-    },
-    []
-  );
+  const handleFileChange = useCallback((file: File | undefined) => {
+    setEditForm((prev) => (prev ? { ...prev, file } : prev));
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return file ? URL.createObjectURL(file) : undefined;
+    });
+  }, []);
 
   const handleInlineSave = useCallback(async () => {
     if (!id || !editForm) return;
@@ -413,9 +415,12 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
           <div className={styles.container}>
             <div className={styles.title}>
               <div className={styles.titleLeft}>
-                <button onClick={handlePanelBack}>
-                  <ArrowLeft size={24} />
-                </button>
+                {!isInClient && (
+                  <button onClick={handlePanelBack}>
+                    <ArrowLeft size={24} />
+                  </button>
+                )}
+
                 <h1>{pageTitle}</h1>
               </div>
             </div>
@@ -462,9 +467,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     onCancelEdit={handleCancelInlineEdit}
                     actionBar={viewActionBar}
                   />
-                  {!isEditing && id && (
-                    <UnitManageList mode={mode} embedded />
-                  )}
+                  {!isEditing && id && <UnitManageList mode={mode} embedded />}
                 </>
               ) : null}
             </div>
