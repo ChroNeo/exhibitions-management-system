@@ -9,7 +9,7 @@ import {
   FaEdit,
 } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import type { ExhibitionFormValues } from "../../components/exhibition/detail_form/ExhibitionForm";
 import ExhibitionForm from "../../components/exhibition/detail_form/ExhibitionForm";
@@ -50,6 +50,7 @@ type ExManageDetailProps = { mode?: Mode };
 export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [isInClient, setIsInClient] = useState(false);
@@ -184,6 +185,13 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     setIsEditing(true);
   }, [data]);
 
+  // ── Auto-start edit when ?edit=true ──
+  useEffect(() => {
+    if (searchParams.get("edit") === "true" && data && !isEditing) {
+      handleStartEdit();
+    }
+  }, [searchParams, data, isEditing, handleStartEdit]);
+
   const handleCancelInlineEdit = useCallback(() => {
     setIsEditing(false);
     setEditForm(null);
@@ -192,7 +200,10 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       setImagePreview(undefined);
     }
     quillRef.current = null;
-  }, [imagePreview]);
+    if (searchParams.get("edit") === "true") {
+      navigate(`/exhibitions/${id}`, { replace: true });
+    }
+  }, [imagePreview, searchParams, navigate, id]);
 
   const handleFieldChange = useCallback((field: string, value: string) => {
     setEditForm((prev) => (prev ? { ...prev, [field]: value } : prev));
@@ -354,8 +365,10 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     navigate("/exhibitions");
   };
 
+  const isReadOnlyView = searchParams.get("view") === "true";
+
   // ── Action bar buttons for view mode ──
-  const viewActionBar = hasAuthToken ? (
+  const viewActionBar = hasAuthToken && !isReadOnlyView ? (
     <>
       <button
         type="button"
@@ -467,7 +480,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     onCancelEdit={handleCancelInlineEdit}
                     actionBar={viewActionBar}
                   />
-                  {!isEditing && id && <UnitManageList mode={mode} embedded />}
+                  {id && <UnitManageList mode={mode} embedded />}
                 </>
               ) : null}
             </div>

@@ -228,11 +228,11 @@ export default function ExhibitionPage() {
   }, [modalOpen, closeModal]);
 
   const handleSelect = (id: string) => {
-    navigate(`/exhibitions/${id}`);
+    navigate(`/exhibitions/${id}?view=true`);
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/exhibitions/${id}`);
+    navigate(`/exhibitions/${id}?edit=true`);
   };
 
   const handleDelete = async (id: string) => {
