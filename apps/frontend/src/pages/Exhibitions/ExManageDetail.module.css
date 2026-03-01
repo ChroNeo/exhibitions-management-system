@@ -1,7 +1,7 @@
 .title {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       margin-bottom: 1.5rem;
 }
 
@@ -12,7 +12,6 @@
 .titleLeft {
       display: flex;
       align-items: center;
-      gap: 1rem;
 }
 
 .titleLeft button {
