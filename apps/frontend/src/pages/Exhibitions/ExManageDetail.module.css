@@ -1,7 +1,6 @@
 .title {
       display: flex;
       align-items: center;
-      justify-content: center;
       margin-bottom: 1.5rem;
 }
 
@@ -36,4 +35,17 @@
       font-weight: 700;
       color: #1e293b;
       margin: 0;
+}
+
+@media (max-width: 600px) {
+  .titleLeft {
+    position: relative;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .titleLeft button {
+    position: absolute;
+    left: 0;
+  }
 }
