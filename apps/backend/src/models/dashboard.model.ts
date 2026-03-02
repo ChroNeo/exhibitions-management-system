@@ -86,6 +86,7 @@ const OrgDashboardDataSchema = z.object({
   exhibition_info: z.object({
     id: z.number().int(),
     title: z.string(),
+    description: z.string().nullable(),
     status: z.string(),
     location: z.string(),
   }),
@@ -100,6 +101,7 @@ const OrgDashboardDataSchema = z.object({
     age_groups: z.array(OrgAgeGroupSchema),
   }),
   feedback_breakdown: z.array(OrgFeedbackTopicSchema),
+  recent_comments: z.array(z.string()),
   all_units_stats: z.array(OrgUnitStatSchema),
 });
 

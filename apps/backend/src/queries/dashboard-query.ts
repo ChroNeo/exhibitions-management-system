@@ -149,6 +149,16 @@ export async function getOrgDashboard(
     [exhibitionId],
   );
 
+  // Recent comments for the exhibition overall (unit_id IS NULL)
+  const exhibitionCommentRows = await safeQuery<any[]>(
+    `SELECT comment
+     FROM survey_submissions
+     WHERE exhibition_id = ? AND unit_id IS NULL AND comment IS NOT NULL AND comment != ''
+     ORDER BY created_at DESC
+     LIMIT 5`,
+    [exhibitionId],
+  );
+
   // All units stats
   const unitRows = await safeQuery<any[]>(
     `SELECT id, name, type, checkins, IFNULL(rating, 0) AS rating
@@ -202,6 +212,7 @@ export async function getOrgDashboard(
       exhibition_info: {
         id: kpi.exhibition_id,
         title: kpi.title,
+        description: kpi.description ?? null,
         status: kpi.status,
         location: kpi.location,
       },
@@ -219,6 +230,7 @@ export async function getOrgDashboard(
         topic: r.topic,
         score: Number(r.score),
       })),
+      recent_comments: exhibitionCommentRows.map((c: any) => c.comment),
       all_units_stats,
     },
   };
