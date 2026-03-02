@@ -49,7 +49,50 @@ export interface OrgDashboardData {
   all_units_stats: OrgUnitStat[];
 }
 
+// ── Staff Dashboard Types ───────────────────────────────────────────────────
+
+export interface StaffDashboardData {
+  staff_info: { id: number; name: string };
+  unit_detail: {
+    id: number;
+    code: string;
+    name: string;
+    type: "activity" | "booth" | string;
+    description: string;
+    poster_url: string;
+    detail_pdf_url: string;
+    schedule: { starts_at: string; ends_at: string };
+  };
+  exhibition_context: {
+    id: number;
+    title: string;
+    location: string;
+    status: "ongoing" | "draft" | "closed" | string;
+  };
+  stats: {
+    total_checkins: number;
+    total_reviews: number;
+    average_rating: number;
+  };
+  feedback_breakdown: Array<{
+    qt_id: number;
+    topic: string;
+    score: number;
+    response_count: number;
+  }>;
+}
+
 // ── API ────────────────────────────────────────────────────────────────────
+
+export async function getStaffDashboard(
+  exId: number,
+  unitId: number
+): Promise<StaffDashboardData> {
+  const res = await api.get<{ status: string; data: StaffDashboardData }>(
+    `/dashboard/staff/${exId}/${unitId}`
+  );
+  return res.data.data;
+}
 
 export async function getOrgDashboard(
   exhibitionId: number

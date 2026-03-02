@@ -7,18 +7,22 @@ import { getStaffDashboard, getOrgDashboard } from "../queries/dashboard-query.j
 export default async function dashboardController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
   app.get(
-    "/staff/:id",
+    "/staff/:ex_id/:unit_id",
     {
       // onRequest: [requireLiffAuth],
       schema: {
         tags: ["Dashboard"],
-        summary: "get the Staff Dashbaord data",
-        params: z.object({ id: z.coerce.number().int() }),
+        summary: "get the Staff Dashboard data",
+        params: z.object({
+          ex_id: z.coerce.number().int(),
+          unit_id: z.coerce.number().int(),
+        }),
         response: { 200: DashboardResponseSchema },
       },
     },
     async (request) => {
-      const result = await getStaffDashboard(request.params.id);
+      const { ex_id, unit_id } = request.params;
+      const result = await getStaffDashboard(ex_id, unit_id);
       return result;
     },
   );

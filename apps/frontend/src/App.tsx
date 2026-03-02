@@ -23,6 +23,7 @@ import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import TicketPage from "./pages/Ticket/TicketPage";
 import OrgDashboardPage from "./pages/OrgDashboard/OrgDashboardPage";
 import UnitManageDetail from "./pages/Units/UnitManageDetail";
+import UnitDashboardPage from "./pages/UnitDashboard/UnitDashboardPage";
 
 export default function App() {
   return (
@@ -112,6 +113,7 @@ export default function App() {
           </AdminGuard>
         }
       />
+      <Route path="/dashboard/staff/:ex_id/:id" element={<UnitDashboardPage />} />
 
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />
