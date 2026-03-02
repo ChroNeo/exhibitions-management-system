@@ -1,8 +1,10 @@
 import { DashboardResponse, OrgDashboardResponse } from "../models/dashboard.model.js";
+import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
 
 export async function getStaffDashboard(
-  staffUserId: number,
+  exId: number,
+  unitId: number,
 ): Promise<DashboardResponse> {
   const [main] = await safeQuery<any[]>(
     `
@@ -36,11 +38,14 @@ export async function getStaffDashboard(
 
     FROM v_staff_dashboard_stats v
     JOIN normal_users nu ON v.staff_user_id = nu.user_id
-    WHERE v.staff_user_id = ?
+    WHERE v.exhibition_id = ?
+      AND v.unit_id = ?
     LIMIT 1;
     `,
-    [staffUserId],
+    [exId, unitId],
   );
+
+  if (!main) throw new AppError("Staff not found", 404, "NOT_FOUND");
 
   const feedback = await safeQuery<any[]>(
     `
@@ -50,10 +55,9 @@ export async function getStaffDashboard(
       CAST(average_score AS DECIMAL(10,2)) AS score,
       response_count
     FROM v_staff_dashboard_question_scores
-    WHERE staff_user_id = ?
-      AND unit_id = ?;
+    WHERE unit_id = ?;
     `,
-    [staffUserId, main.unit_id],
+    [unitId],
   );
 
   const result = {
