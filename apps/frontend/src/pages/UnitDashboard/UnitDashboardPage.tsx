@@ -7,10 +7,11 @@ import styles from "./UnitDashboardPage.module.css";
 
 export default function UnitDashboardPage() {
   const nav = useNavigate();
-  const { unitId } = useParams<{ unitId: string }>();
-  const id = Number(unitId ?? 0);
+  const { ex_id, id } = useParams<{ ex_id: string; id: string }>();
+  const exId = Number(ex_id ?? 0);
+  const unitId = Number(id ?? 0);
 
-  const { data, isLoading, error } = useUnitDashboard(id);
+  const { data, isLoading, error } = useUnitDashboard(exId, unitId);
 
   if (isLoading) return <div className={styles.page}>Loading...</div>;
   if (error || !data)
@@ -20,7 +21,7 @@ export default function UnitDashboardPage() {
       </div>
     );
 
-  const d = data.data;
+  const d = data;
 
   return (
     <div className={styles.page}>

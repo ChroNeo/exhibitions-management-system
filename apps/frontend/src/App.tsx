@@ -113,7 +113,7 @@ export default function App() {
           </AdminGuard>
         }
       />
-      <Route path="/units/:unitId/dashboard" element={<UnitDashboardPage />} />
+      <Route path="/dashboard/staff/:ex_id/:id" element={<UnitDashboardPage />} />
 
       {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />
