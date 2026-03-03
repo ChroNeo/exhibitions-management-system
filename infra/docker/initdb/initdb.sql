@@ -663,6 +663,7 @@ CREATE TABLE `v_my_event_surveys` (
 CREATE TABLE `v_org_dashboard_kpis` (
 `exhibition_id` int
 ,`title` varchar(255)
+,`description` mediumtext
 ,`status` enum('draft','published','ongoing','ended','archived')
 ,`location` varchar(255)
 ,`total_registrations` bigint
@@ -1091,7 +1092,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_my_ev
 --
 DROP TABLE IF EXISTS `v_org_dashboard_kpis`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_dashboard_kpis`  AS SELECT `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `title`, `e`.`status` AS `status`, `e`.`location` AS `location`, (select count(0) from `registrations` `r` where (`r`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_registrations`, (select count(0) from `units` `u` where (`u`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_units`, (select count(0) from `units_checkins` `uc` where (`uc`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_checkins`, (select round(avg(`a`.`score`),2) from (`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) where ((`s`.`exhibition_id` = `e`.`exhibition_id`) and (`s`.`unit_id` is null))) AS `exhibition_avg_score` FROM `exhibitions` AS `e` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_dashboard_kpis`  AS SELECT `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `title`, `e`.`status` AS `status`, `e`.`location` AS `location`, `e`.`description` AS `description`, (select count(0) from `registrations` `r` where (`r`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_registrations`, (select count(0) from `units` `u` where (`u`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_units`, (select count(0) from `units_checkins` `uc` where (`uc`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_checkins`, (select round(avg(`a`.`score`),2) from (`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) where ((`s`.`exhibition_id` = `e`.`exhibition_id`) and (`s`.`unit_id` is null))) AS `exhibition_avg_score` FROM `exhibitions` AS `e` ;
 
 -- --------------------------------------------------------
 
