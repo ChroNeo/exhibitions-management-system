@@ -2,6 +2,21 @@ import { DashboardResponse, OrgDashboardResponse } from "../models/dashboard.mod
 import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
 
+export async function getStaffUnitByUserId(
+  userId: number,
+): Promise<{ ex_id: number; unit_id: number }> {
+  const [row] = await safeQuery<Array<{ unit_id: number; exhibition_id: number }>>(
+    `SELECT us.unit_id, u.exhibition_id
+     FROM unit_staffs us
+     JOIN units u ON us.unit_id = u.unit_id
+     WHERE us.staff_user_id = ?
+     LIMIT 1`,
+    [userId],
+  );
+  if (!row) throw new AppError("No unit assigned to this staff", 404, "NO_UNIT_ASSIGNED");
+  return { ex_id: row.exhibition_id, unit_id: row.unit_id };
+}
+
 export async function getStaffDashboard(
   exId: number,
   unitId: number,

@@ -9,7 +9,7 @@ import { linkRichMenuToUser, replyToLineMessage } from "../client.js";
 import type { LineConfig, LineMessage } from "../types.js";
 
 const RICH_MENU_IDS = {
-  STAFF: "richmenu-2912b2d76754fbfa073a4a8fc2f82b34",
+  STAFF: "richmenu-0fd067f1629b1eb3ddffd0d619aa0f6c",
   MEMBER: "richmenu-105e3b56020a5d67fd5b09d40e154c84",
 };
 

@@ -20,7 +20,7 @@ import {
 } from "../utils/message-formatter.js";
 
 const RICH_MENU_IDS = {
-  STAFF: "richmenu-2912b2d76754fbfa073a4a8fc2f82b34", // ใส่ ID เมนู Staff
+  STAFF: "richmenu-0fd067f1629b1eb3ddffd0d619aa0f6c", // ใส่ ID เมนู Staff
   MEMBER: "richmenu-105e3b56020a5d67fd5b09d40e154c84", // ใส่ ID เมนู Member (ถ้ามี)
 };
 export async function handleMessageCommand(
@@ -284,10 +284,7 @@ async function sendCertificateMessage(
   if (!currentExhibitionId) {
     await sendLineTexts(
       replyToken,
-      [
-        "ยังไม่ได้เลือกงานปัจจุบัน",
-        "กรุณาเลือกงานก่อนขอดูสถานะเกียรติบัตร",
-      ],
+      ["ยังไม่ได้เลือกงานปัจจุบัน", "กรุณาเลือกงานก่อนขอดูสถานะเกียรติบัตร"],
       config,
       log,
     );
