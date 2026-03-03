@@ -1,110 +1,28 @@
-.card {
+/* Staff row spans full width when present alongside other items */
+.staffItem {
+  grid-column: 1 / -1;
+}
+
+.pdfButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 16px;
   background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #c7571f;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.header {
-  display: flex;
-  gap: 24px;
-  align-items: stretch;
-}
-
-.thumbnail {
-  flex: 0 0 auto;
-  min-width: 240px;
-  max-width: 340px;
-  aspect-ratio: 16 / 9;
-  /* border-radius: 14px; */
-  overflow: hidden;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  background: #f1f5f9;
-  align-self: stretch;
-  display: flex;
-}
-
-.thumbnail img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.meta {
-  flex: 1 1 auto;
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-}
-
-.title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.metaRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  color: #1f2937;
-  font-size: 15px;
-}
-
-.metaIcon {
-  width: 20px;
-  height: 20px;
-  color: #1d4ed8;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.description {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.7;
-  color: #111827;
-  white-space: pre-wrap;
-  tab-size: 4;
-}
-
-.footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-  }
-
-  .thumbnail {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-  }
-
-  .title {
-    font-size: 20px;
-  }
-
-  .metaRow {
-    font-size: 14px;
-  }
-}
-@media (max-width: 640px) {
-  .card {
-    padding: 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .thumbnail {
-    aspect-ratio: 16 / 9;
-  }
+.pdfButton:hover {
+  background: #fff7ed;
+  border-color: #de6424;
+  color: #c7571f;
 }

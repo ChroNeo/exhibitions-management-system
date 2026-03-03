@@ -11,14 +11,18 @@ import type { ReactNode, ChangeEvent, MutableRefObject } from "react";
 import { useNavigate } from "react-router-dom";
 import type QuillType from "quill";
 import Swal from "sweetalert2";
-import styles from "../exhibition/detail_form/ExManageForm.module.css";
+import { MdOutlineCalendarToday } from "react-icons/md";
+import { LuClock, LuCamera } from "react-icons/lu";
+import { FiUser } from "react-icons/fi";
+import { BsTag } from "react-icons/bs";
+import { FaRegFilePdf } from "react-icons/fa6";
+import cardStyles from "../exhibition/ExhibitionDetailCard.module.css";
+import formStyles from "../exhibition/detail_form/ExManageForm.module.css";
 import unitStyles from "./UnitForm.module.css";
 import Select, { type MultiValue, type StylesConfig } from "react-select";
-import FormButtons from "../DetailButton/FormButtons";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
 import { useUserOptions } from "../../pages/Exhibitions/hooks";
-import { FaRegFilePdf } from "react-icons/fa6";
 
 export type UnitFormValues = {
   name: string;
@@ -641,233 +645,228 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   };
 
   const renderedFooter =
-    footer !== undefined ? (
-      footer
-    ) : (
-      <div className={styles.ex_actions}>
-        <FormButtons
-          onConfirm={() => formRef.current?.requestSubmit()}
-          onCancel={() => navigate(-1)}
-        />
+    footer !== undefined ? footer : (
+      <div className={`${cardStyles.actionBar} ${cardStyles.actionBarEditing}`}>
+        <span className={`${cardStyles.actionBarLabel} ${cardStyles.actionBarEditingLabel}`}>
+          {mode === "create" ? "กำลังสร้างกิจกรรมใหม่" : "กำลังอยู่ในโหมดแก้ไข"}
+        </span>
+        <div className={cardStyles.actionBarButtons}>
+          <button
+            type="button"
+            className={cardStyles.cancelBtn}
+            onClick={() => navigate(-1)}
+            disabled={isSubmitting}
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="submit"
+            className={cardStyles.saveBtn}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "กำลังบันทึก..." : mode === "create" ? "สร้างกิจกรรม" : "บันทึกการเปลี่ยนแปลง"}
+          </button>
+        </div>
       </div>
     );
 
   return (
-    <form ref={setFormRef} className={styles.formRoot} onSubmit={handleSubmit}>
-      <div className={styles.ex_card}>
-        <div className={`${styles.ex_group} ${styles.ex_name}`}>
-          <label className={styles.ex_label}>ชื่อกิจกรรม</label>
-          <input
-            className={styles.ex_input}
-            type="text"
-            placeholder="เช่น Robotics Lab Demo"
-            value={form.name}
-            onChange={(e) => update("name", e.target.value)}
-            required
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className={`${styles.ex_group} ${styles.ex_location}`}>
-          <label className={styles.ex_label}>ประเภทกิจกรรม</label>
-          <Select<UnitTypeOption>
-            classNamePrefix="unitTypeSelect"
-            options={unit_types}
-            value={unit_types.find((option) => option.value === form.type)}
-            onChange={(selectedOption) =>
-              update(
-                "type",
-                (selectedOption as UnitTypeOption)
-                  ?.value as UnitFormValues["type"]
-              )
-            }
-            isDisabled={isSubmitting}
-            placeholder="เลือกประเภทกิจกรรม"
-            styles={unitTypeSelectStyles}
-            menuPortalTarget={
-              typeof document !== "undefined" ? document.body : undefined
-            }
-            menuPosition="fixed"
-          />
-        </div>
-
-        <div className={`${styles.ex_group} ${styles.ex_date}`}>
-          <label className={styles.ex_label}>ช่วงเวลา</label>
-          <div className={styles.ex_dates}>
-            <input
-              className={styles.ex_input}
-              type="datetime-local"
-              value={form.starts_at}
-              onChange={(e) => update("starts_at", e.target.value)}
-              required
-              disabled={isSubmitting}
-            />
-            <input
-              className={styles.ex_input}
-              type="datetime-local"
-              value={form.ends_at}
-              onChange={(e) => update("ends_at", e.target.value)}
-              required
-              disabled={isSubmitting}
-            />
-          </div>
-        </div>
-
-        <div className={`${styles.ex_group} ${styles.ex_organizer}`}>
-          <label className={styles.ex_label}>
-            เลือกผู้ดูแล (เลือกได้หลายคน)
-          </label>
-          <Select
-            classNamePrefix="unitStaffSelect"
-            options={staffSelectOptions}
-            value={selectedStaffOptions}
-            isLoading={isStaffLoading}
-            isClearable
-            isMulti
-            isDisabled={isSubmitting}
-            closeMenuOnSelect={false}
-            placeholder="เลือกผู้ดูแล"
-            noOptionsMessage={() => "ไม่พบผู้ใช้"}
-            styles={staffSelectStyles}
-            onChange={handleStaffChange}
-            menuPortalTarget={
-              typeof document !== "undefined" ? document.body : undefined
-            }
-            menuPosition="fixed"
-          />
-          {isStaffLoading && (
-            <p className={styles.ex_fileName} aria-live="polite">
-              กำลังโหลดรายชื่อผู้ดูแล...
-            </p>
-          )}
-          {!isStaffLoading && staffSelectOptions.length === 0 && (
-            <p className={styles.ex_fileName} role="note">
-              ยังไม่มีผู้ใช้ที่สามารถเลือกได้
-            </p>
-          )}
-        </div>
-
-        <div className={`${styles.ex_group} ${styles.ex_file}`}>
-          <label className={styles.ex_label}>อัปโหลดโปสเตอร์ (ถ้ามี)</label>
-          <input
-            id="unit-poster-input"
-            type="file"
-            accept="image/*"
-            ref={posterInputRef}
-            onChange={(e) => update("file", e.target.files?.[0])}
-            disabled={isSubmitting}
-            style={{ display: "none" }}
-          />
-          <div className={unitStyles.posterUploadContainer}>
-            <label
-              htmlFor="unit-poster-input"
-              className={unitStyles.posterUploadLabel}
-              data-submitting={isSubmitting}
-            >
-              {posterPreviewUrl ? (
-                <img
-                  src={posterPreviewUrl}
-                  alt="Poster preview"
-                  className={unitStyles.posterPreviewImage}
-                />
-              ) : (
-                <div className={unitStyles.posterPlaceholder}>
-                  <svg
-                    className={unitStyles.posterPlaceholderIcon}
-                    width="80"
-                    height="80"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21 15 16 10 5 21" />
-                  </svg>
-                  <p className={unitStyles.posterPlaceholderText}>
-                    คลิกเพื่ออัปโหลดรูปภาพ
-                  </p>
-                </div>
-              )}
-            </label>
-            {posterPreviewUrl && canSubmit && (
-              <button
-                type="button"
-                onClick={handlePosterRemove}
-                disabled={isSubmitting}
-                className={unitStyles.posterRemoveButton}
-                aria-label="ลบโปสเตอร์"
-              >
-                &times;
-              </button>
-            )}
-          </div>
-          {displayedPosterName !== "ยังไม่ได้เลือกไฟล์" && posterPreviewUrl && (
-            <p
-              className={`${styles.ex_fileName} ${unitStyles.posterFileName}`}
-              aria-live="polite"
-            >
-              {displayedPosterName}
-            </p>
-          )}
-        </div>
-
-        <div className={`${styles.ex_group} ${styles.ex_file}`}>
-          <label className={styles.ex_label} htmlFor="unit-detail-pdf-input">
-            อัปโหลดไฟล์รายละเอียด (PDF)
-          </label>
-          <input
-            id="unit-detail-pdf-input"
-            className={styles.ex_input}
-            type="file"
-            accept="application/pdf"
-            ref={detailPdfInputRef}
-            onChange={handleDetailPdfChange}
-            disabled={isSubmitting}
-          />
-          {detailPdfBadgeName ? (
-            <div className={styles.ex_fileBadge} aria-live="polite">
-              <FaRegFilePdf
-                className={styles.ex_fileBadgeIcon}
-                aria-hidden="true"
+    <form ref={setFormRef} className={unitStyles.formRoot} onSubmit={handleSubmit}>
+      <section className={`${cardStyles.card} ${cardStyles.editing}`}>
+        <div className={cardStyles.layout}>
+          {/* Left: Poster image */}
+          <div className={cardStyles.imageSection}>
+            {posterPreviewUrl && (
+              <img
+                src={posterPreviewUrl}
+                alt="Poster preview"
+                className={cardStyles.image}
               />
-              <span className={styles.ex_fileBadgeName}>
-                {detailPdfBadgeName}
-              </span>
-              {canSubmit ? (
-                <button
-                  type="button"
-                  className={styles.ex_fileBadgeRemove}
-                  onClick={handleDetailPdfRemove}
+            )}
+            <div className={cardStyles.imageOverlay}>
+              <div className={cardStyles.imageOverlayCard}>
+                <input
+                  id="unit-poster-input"
+                  type="file"
+                  accept="image/*"
+                  ref={posterInputRef}
+                  onChange={(e) => update("file", e.target.files?.[0])}
                   disabled={isSubmitting}
-                  aria-label="ลบไฟล์รายละเอียด"
-                >
-                  &times;
-                </button>
-              ) : null}
+                  className={cardStyles.fileInput}
+                />
+                <span className={cardStyles.imageOverlayLabel}>
+                  {posterPreviewUrl ? "เปลี่ยนรูปโปสเตอร์" : "อัปโหลดโปสเตอร์"}
+                </span>
+                <p className={cardStyles.imageOverlayHint}>
+                  <LuCamera size={12} /> เลือกรูปภาพที่ต้องการแสดง
+                </p>
+                {posterPreviewUrl && (
+                  <button
+                    type="button"
+                    onClick={handlePosterRemove}
+                    disabled={isSubmitting}
+                    className={unitStyles.posterRemoveButton}
+                    style={{ marginTop: 8, width: "100%", borderRadius: 6, height: 28, fontSize: 13 }}
+                  >
+                    ลบโปสเตอร์
+                  </button>
+                )}
+              </div>
             </div>
-          ) : (
-            <p className={styles.ex_fileName} aria-live="polite">
-              ยังไม่ได้เลือกไฟล์
-            </p>
-          )}
-        </div>
+          </div>
 
-        <div className={`${styles.ex_group} ${styles.ex_details}`}>
-          <label className={styles.ex_label}>รายละเอียด</label>
-          <div
-            className={styles.ex_editor}
-            data-readonly={isSubmitting ? "true" : "false"}
-          >
-            <div ref={quillElRef} aria-label="รายละเอียดกิจกรรม" />
+          {/* Right: Fields */}
+          <div className={cardStyles.content}>
+            {/* Title */}
+            <div className={cardStyles.titleBlock}>
+              <label className={cardStyles.editLabel}>ชื่อกิจกรรม</label>
+              <input
+                type="text"
+                className={`${cardStyles.editInput} ${cardStyles.editInputTitle}`}
+                placeholder="เช่น Robotics Lab Demo"
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <hr className={cardStyles.divider} />
+
+            {/* Info grid */}
+            <div className={cardStyles.infoGrid}>
+              {/* Date range */}
+              <div className={cardStyles.infoItem}>
+                <div className={`${cardStyles.iconframe} ${cardStyles.iconBlue}`}>
+                  <MdOutlineCalendarToday size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className={cardStyles.infoLabel}>ช่วงเวลา</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+                    <input
+                      type="datetime-local"
+                      className={cardStyles.editInput}
+                      value={form.starts_at}
+                      onChange={(e) => update("starts_at", e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                    />
+                    <input
+                      type="datetime-local"
+                      className={cardStyles.editInput}
+                      value={form.ends_at}
+                      onChange={(e) => update("ends_at", e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Type */}
+              <div className={cardStyles.infoItem}>
+                <div className={`${cardStyles.iconframe} ${cardStyles.iconGreen}`}>
+                  <BsTag size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className={cardStyles.infoLabel}>ประเภทกิจกรรม</p>
+                  <div style={{ marginTop: 4 }}>
+                    <Select<UnitTypeOption>
+                      classNamePrefix="unitTypeSelect"
+                      options={unit_types}
+                      value={unit_types.find((o) => o.value === form.type)}
+                      onChange={(sel) =>
+                        update("type", (sel as UnitTypeOption)?.value as UnitFormValues["type"])
+                      }
+                      isDisabled={isSubmitting}
+                      placeholder="เลือกประเภท"
+                      styles={unitTypeSelectStyles}
+                      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+                      menuPosition="fixed"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Staff */}
+              <div className={`${cardStyles.infoItem} ${cardStyles.infoFull}`}>
+                <div className={`${cardStyles.iconframe} ${cardStyles.iconRed}`}>
+                  <FiUser size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className={cardStyles.infoLabel}>ผู้ดูแล</p>
+                  <div style={{ marginTop: 4 }}>
+                    <Select
+                      classNamePrefix="unitStaffSelect"
+                      options={staffSelectOptions}
+                      value={selectedStaffOptions}
+                      isLoading={isStaffLoading}
+                      isClearable
+                      isMulti
+                      isDisabled={isSubmitting}
+                      closeMenuOnSelect={false}
+                      placeholder="เลือกผู้ดูแล"
+                      noOptionsMessage={() => "ไม่พบผู้ใช้"}
+                      styles={staffSelectStyles}
+                      onChange={handleStaffChange}
+                      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+                      menuPosition="fixed"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Detail PDF */}
+              <div className={`${cardStyles.infoItem} ${cardStyles.infoFull}`}>
+                <div className={`${cardStyles.iconframe} ${cardStyles.iconOrange}`}>
+                  <LuClock size={20} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className={cardStyles.infoLabel}>ไฟล์รายละเอียด (PDF)</p>
+                  <div style={{ marginTop: 4 }}>
+                    <input
+                      id="unit-detail-pdf-input"
+                      className={cardStyles.editInput}
+                      type="file"
+                      accept="application/pdf"
+                      ref={detailPdfInputRef}
+                      onChange={handleDetailPdfChange}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  {detailPdfBadgeName ? (
+                    <div className={formStyles.ex_fileBadge} aria-live="polite" style={{ marginTop: 6 }}>
+                      <FaRegFilePdf className={formStyles.ex_fileBadgeIcon} aria-hidden="true" />
+                      <span className={formStyles.ex_fileBadgeName}>{detailPdfBadgeName}</span>
+                      <button
+                        type="button"
+                        className={formStyles.ex_fileBadgeRemove}
+                        onClick={handleDetailPdfRemove}
+                        disabled={isSubmitting}
+                        aria-label="ลบไฟล์รายละเอียด"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className={`${cardStyles.descBox} ${cardStyles.descBoxEditing}`}>
+              <h3 className={cardStyles.descTitle}>
+                รายละเอียด <span className={cardStyles.descEditHint}>(แก้ไข)</span>
+              </h3>
+              <div className={cardStyles.editorWrap}>
+                <div ref={quillElRef} aria-label="รายละเอียดกิจกรรม" />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {canSubmit && renderedFooter}
+        {canSubmit && renderedFooter}
+      </section>
     </form>
   );
 });

@@ -1,8 +1,12 @@
-﻿import { useMemo, useState } from "react";
+import liff from "@line/liff";
+import { ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 
+import cardStyles from "../../components/exhibition/ExhibitionDetailCard.module.css";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
-import Panel from "../../components/Panel/Panel";
 import UnitDetailCard from "../../components/unit/UnitDetailCard";
 import UnitForm, { type UnitFormValues } from "../../components/unit/UnitForm";
 import { useDeleteUnit, useAuthStatus } from "../../hooks";
@@ -11,6 +15,7 @@ import type { Mode } from "../../types/mode";
 import type { UnitCreatePayload } from "../../types/units";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
 import Swal from "sweetalert2";
+import styles from "./UnitManageDetail.module.css";
 
 type UnitManageDetailProps = { mode?: Mode };
 
@@ -80,6 +85,7 @@ export default function UnitManageDetail({
   }>();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStatus();
+  const [isInClient, setIsInClient] = useState(false);
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -88,6 +94,10 @@ export default function UnitManageDetail({
   const deleteUnitMutation = useDeleteUnit();
 
   const { data, isLoading, isError } = useUnit(exhibitionId, unitId);
+
+  useEffect(() => {
+    setIsInClient(liff.isInClient());
+  }, []);
 
   const isSubmitting =
     createUnitMutation.isPending ||
@@ -348,32 +358,62 @@ export default function UnitManageDetail({
   const isCreateMode = mode === "create";
   const isEditMode = mode === "edit";
 
+  const viewActionBar = isAuthenticated ? (
+    <>
+      <button
+        type="button"
+        className={cardStyles.toolBtn}
+        onClick={handleEdit}
+      >
+        <FaEdit size={16} />
+        แก้ไข
+      </button>
+      <button
+        type="button"
+        className={`${cardStyles.toolBtn} ${cardStyles.toolBtnDanger}`}
+        onClick={handleDelete}
+      >
+        <FiTrash2 size={16} />
+        ลบ
+      </button>
+    </>
+  ) : undefined;
+
   return (
     <div>
       <HeaderBar
         active="exhibition_unit"
         onLoginClick={() => navigate("/login")}
       />
-      <div className="container">
-        <Panel title={title} onBack={handleBack}>
+      <div className={styles.container}>
+        <div className={styles.title}>
+          <div className={styles.titleLeft}>
+            {!isInClient && (
+              <button onClick={handleBack}>
+                <ArrowLeft size={24} />
+              </button>
+            )}
+            <h1>{title}</h1>
+          </div>
+        </div>
+
+        <div>
           {isViewMode && isLoading && <div>กำลังโหลดกิจกรรม...</div>}
           {isViewMode && isError && <div>ไม่สามารถโหลดข้อมูลกิจกรรมได้</div>}
 
           {isViewMode && !isLoading && !isError && data && (
-            <div className="cardWrap">
-              <UnitDetailCard
-                title={data.name}
-                dateText={dateText}
-                timeText={timeText}
-                typeText={translateType(data.type)}
-                staffText={staffText}
-                description={descriptionPlain}
-                descriptionHtml={descriptionHtml}
-                posterUrl={data.posterUrl}
-                onEdit={isAuthenticated ? handleEdit : undefined}
-                onDelete={isAuthenticated ? handleDelete : undefined}
-              />
-            </div>
+            <UnitDetailCard
+              title={data.name}
+              dateText={dateText}
+              timeText={timeText}
+              typeText={translateType(data.type)}
+              staffText={staffText}
+              description={descriptionPlain}
+              descriptionHtml={descriptionHtml}
+              posterUrl={data.posterUrl}
+              detailPdfUrl={data.detailPdfUrl}
+              actionBar={viewActionBar}
+            />
           )}
 
           {isCreateMode && (
@@ -425,7 +465,7 @@ export default function UnitManageDetail({
               )}
             </>
           )}
-        </Panel>
+        </div>
       </div>
     </div>
   );
