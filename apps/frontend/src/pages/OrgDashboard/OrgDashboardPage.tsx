@@ -155,6 +155,12 @@ export default function OrgDashboardPage() {
               />
               {data.exhibition_info.title}
             </p>
+            {data.exhibition_info.description && (
+              <p
+                className={styles.selectorDesc}
+                dangerouslySetInnerHTML={{ __html: data.exhibition_info.description }}
+              />
+            )}
           </div>
           <ChevronDown size={18} className={styles.chevronIcon} />
         </div>
@@ -244,6 +250,26 @@ export default function OrgDashboardPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Exhibition-level recent comments */}
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>
+          <MessageSquare size={18} className={styles.iconBlue} />
+          ความคิดเห็นภาพรวมงาน (Exhibition Comments)
+        </h2>
+        {data.recent_comments.length === 0 ? (
+          <p className={styles.empty}>ยังไม่มีความคิดเห็น</p>
+        ) : (
+          <ul className={styles.commentList}>
+            {data.recent_comments.map((c, i) => (
+              <li key={i} className={styles.commentItem}>
+                <span className={styles.commentDot} />
+                {c}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Check-ins per unit – horizontal Bar */}

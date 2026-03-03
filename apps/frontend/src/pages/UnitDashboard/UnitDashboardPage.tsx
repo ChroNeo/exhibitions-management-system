@@ -1,8 +1,10 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { MessageSquare, QrCode, Star, Users } from "lucide-react";
+import { Radar } from "react-chartjs-2";
+import { useNavigate, useParams } from "react-router-dom";
+import "../../pages/OrgDashboard/ChartSetup";
+import { KpiCard } from "../OrgDashboard/components/KpiCard";
+import { UnitDashboardSkeleton } from "./components/UnitDashboardSkeleton";
 import { useUnitDashboard } from "./hooks/useUnitDashboard";
-import { KpiCard } from "./components/KpiCard";
-import { FaUsers, FaStar, FaClipboardCheck } from "react-icons/fa";
-import { MdRateReview } from "react-icons/md";
 import styles from "./UnitDashboardPage.module.css";
 
 export default function UnitDashboardPage() {
@@ -13,154 +15,221 @@ export default function UnitDashboardPage() {
 
   const { data, isLoading, error } = useUnitDashboard(exId, unitId);
 
-  if (isLoading) return <div className={styles.page}>Loading...</div>;
-  if (error || !data)
+  if (isLoading) return <UnitDashboardSkeleton />;
+
+  if (error || !data) {
     return (
       <div className={styles.page}>
-        โหลดไม่ได้: {(error as Error)?.message ?? "unknown error"}
+        <p className={styles.stateMsg}>
+          ไม่สามารถโหลดข้อมูลได้: {(error as Error)?.message ?? "unknown error"}
+        </p>
       </div>
     );
+  }
 
   const d = data;
 
+  const radarChartData = {
+    labels: d.feedback_breakdown.map((f) => f.topic),
+    datasets: [
+      {
+        label: "คะแนนเฉลี่ย",
+        data: d.feedback_breakdown.map((f) => f.score),
+        backgroundColor: "#3b82f622",
+        borderColor: "#3b82f6",
+        pointBackgroundColor: "#3b82f6",
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const radarOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        beginAtZero: true,
+        max: 5,
+        ticks: { stepSize: 1, font: { size: 11 } },
+        pointLabels: { font: { size: 12 } },
+      },
+    },
+    plugins: { legend: { display: false } },
+  };
+
+  const statusLabel: Record<string, string> = {
+    ongoing: "กำลังจัดงาน",
+    draft: "ร่าง",
+    published: "เผยแพร่",
+    ended: "สิ้นสุดแล้ว",
+    archived: "เก็บถาวร",
+  };
+
   return (
     <div className={styles.page}>
-      <div className={styles.shell}>
-        {/* Sidebar */}
-        <aside className={styles.sidebar}>
-          <div className={styles.brand}>
-            <div className={styles.brandLogo}>EX</div>
-            <div>Unit Dashboard</div>
+      {/* Header */}
+      <header className={styles.header}>
+        <div>
+          <h1 className={styles.pageTitle}>Staff Dashboard</h1>
+          <p className={styles.pageSubtitle}>ภาพรวมสถิติบูธและกิจกรรม</p>
+        </div>
+        <div className={styles.unitSelector}>
+          <div className={styles.selectorInner}>
+            <p className={styles.selectorLabel}>{d.exhibition_context.title}</p>
+            <p className={styles.selectorTitle}>
+              <span
+                className={`${styles.statusDot} ${
+                  d.exhibition_context.status === "ongoing"
+                    ? styles.dotGreen
+                    : styles.dotGray
+                }`}
+              />
+              {d.unit_detail.name}
+            </p>
           </div>
+          <span className={styles.typeBadge}>
+            {d.unit_detail.type === "activity" ? "กิจกรรม" : "บูธ"}
+          </span>
+        </div>
+      </header>
 
-          <div className={styles.sideSectionTitle}>UNIT</div>
-          <div className={styles.nav}>
-            <div className={styles.navItem}>
-              <div>
-                <strong>{d.unit_detail.code}</strong>
-                <div>
-                  <span>{d.unit_detail.type}</span>
-                </div>
+      {/* KPIs */}
+      <div className={styles.kpiGrid}>
+        <KpiCard
+          title="Check-in ทั้งหมด"
+          value={d.stats.total_checkins.toLocaleString()}
+          icon={QrCode}
+          colorKey="blue"
+          subtitle="ผู้เข้าร่วมที่สแกนแล้ว"
+        />
+        <KpiCard
+          title="รีวิวทั้งหมด"
+          value={d.stats.total_reviews.toLocaleString()}
+          icon={MessageSquare}
+          colorKey="emerald"
+        />
+        <KpiCard
+          title="คะแนนเฉลี่ย"
+          value={`${d.stats.average_rating} / 5`}
+          icon={Star}
+          colorKey="amber"
+        />
+        <KpiCard
+          title="เจ้าหน้าที่"
+          value={d.staff_info.name}
+          icon={Users}
+          colorKey="indigo"
+        />
+      </div>
+
+      {/* Feedback Radar */}
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>
+          <MessageSquare size={18} className={styles.iconBlue} />
+          เจาะลึกคะแนนประเมิน (Feedback Breakdown)
+        </h2>
+        <div className={styles.chartWrapperLarge}>
+          <Radar data={radarChartData} options={radarOptions} />
+        </div>
+        <div className={styles.scoreLegend}>
+          <div className={styles.legendItem}>
+            <span className={`${styles.legendDot} ${styles.fillGreen}`} />
+            ยอดเยี่ยม (4.5 – 5.0)
+          </div>
+          <div className={styles.legendItem}>
+            <span className={`${styles.legendDot} ${styles.fillAmber}`} />
+            ปานกลาง (4.0 – 4.4)
+          </div>
+          <div className={styles.legendItem}>
+            <span className={`${styles.legendDot} ${styles.fillRed}`} />
+            ต้องปรับปรุง (&lt; 4.0)
+          </div>
+        </div>
+      </div>
+
+      {/* Feedback list */}
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>
+          <Star size={18} className={styles.iconMuted} />
+          คะแนนรายหัวข้อ
+        </h2>
+        <ul className={styles.list}>
+          {d.feedback_breakdown.map((x) => (
+            <li key={x.qt_id} className={styles.item}>
+              <div className={styles.itemLeft}>
+                <div className={styles.topic}>{x.topic}</div>
+                <div className={styles.metaRow}>{x.response_count} คน</div>
               </div>
-            </div>
-          </div>
+              <div className={styles.score}>⭐ {x.score}</div>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-          <div className={styles.sideSectionTitle}>EVENT</div>
-          <div className={styles.nav}>
-            <div className={styles.navItem}>
-              <div>
-                <strong>{d.exhibition_context.title}</strong>
-                <div>
-                  <span>{d.exhibition_context.location}</span>
-                </div>
-              </div>
-            </div>
+      {/* Unit info */}
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>
+          <QrCode size={18} className={styles.iconIndigo} />
+          ข้อมูลบูธ / กิจกรรม
+        </h2>
+        <div className={styles.infoGrid}>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>รหัส</span>
+            <span>{d.unit_detail.code}</span>
           </div>
-
-          <button className={styles.sideBtn} onClick={() => nav(-1)}>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>ประเภท</span>
+            <span
+              className={`${styles.typeBadge} ${
+                d.unit_detail.type === "activity"
+                  ? styles.typeActivity
+                  : styles.typeBooth
+              }`}
+            >
+              {d.unit_detail.type === "activity" ? "กิจกรรม" : "บูธ"}
+            </span>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>งาน</span>
+            <span>{d.exhibition_context.title}</span>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>สถานที่</span>
+            <span>{d.exhibition_context.location}</span>
+          </div>
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>สถานะงาน</span>
+            <span>
+              {statusLabel[d.exhibition_context.status] ??
+                d.exhibition_context.status}
+            </span>
+          </div>
+        </div>
+        <div className={styles.actionRow}>
+          {d.unit_detail.poster_url && (
+            <a
+              className={styles.actionBtn}
+              href={d.unit_detail.poster_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              🖼️ Poster
+            </a>
+          )}
+          {d.unit_detail.detail_pdf_url && (
+            <a
+              className={styles.actionBtn}
+              href={d.unit_detail.detail_pdf_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              📄 PDF
+            </a>
+          )}
+          <button className={styles.backBtn} onClick={() => nav(-1)}>
             ← ย้อนกลับ
           </button>
-        </aside>
-
-        {/* Main */}
-        <main className={styles.main}>
-          {/* Topbar */}
-          <div className={styles.topbar}>
-            <div className={styles.titleBlock}>
-              <h1>{d.unit_detail.name}</h1>
-              <div className={styles.subtitle}>
-                {d.exhibition_context.title} • {d.exhibition_context.location}
-              </div>
-            </div>
-
-            <div className={styles.actions}>
-              <a
-                className={styles.actionBtn}
-                href={d.unit_detail.poster_url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                🖼️ Poster
-              </a>
-              <a
-                className={styles.actionBtn}
-                href={d.unit_detail.detail_pdf_url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                📄 PDF
-              </a>
-            </div>
-          </div>
-
-          {/* KPI */}
-          <section className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3>Overview</h3>
-            </div>
-            <div className={styles.cardBody}>
-              <div className={styles.kpiGrid}>
-                {/* ใบแรกทำให้เด่นด้วย wrapper */}
-                <div
-                  className={styles.heroKpi}
-                  style={{ borderRadius: 18, padding: 2 }}
-                >
-                  <KpiCard
-                    title="Check-in"
-                    value={d.stats.total_checkins.toLocaleString()}
-                    icon={FaClipboardCheck}
-                    colorKey="blue"
-                    subtitle="ผู้เข้าร่วมทั้งหมด"
-                  />
-                </div>
-
-                <KpiCard
-                  title="Reviews"
-                  value={d.stats.total_reviews.toLocaleString()}
-                  icon={MdRateReview}
-                  colorKey="emerald"
-                />
-                <KpiCard
-                  title="Avg Rating"
-                  value={`${d.stats.average_rating} / 5`}
-                  icon={FaStar}
-                  colorKey="amber"
-                />
-                <KpiCard
-                  title="Staff"
-                  value={d.staff_info.name}
-                  icon={FaUsers}
-                  colorKey="indigo"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Breakdown */}
-          <section className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3>Feedback breakdown</h3>
-              <span style={{ opacity: 0.7, fontSize: 12 }}>
-                {d.stats.total_reviews} รีวิว
-              </span>
-            </div>
-            <div className={styles.cardBody}>
-              <ul className={styles.list}>
-                {d.feedback_breakdown.map((x) => (
-                  <li key={x.qt_id} className={styles.item}>
-                    <div className={styles.itemLeft}>
-                      <div className={styles.topic}>{x.topic}</div>
-                      <div className={styles.metaRow}>
-                        {x.response_count} คนตอบ
-                      </div>
-                    </div>
-                    <div className={styles.score}>⭐ {x.score}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        </main>
+        </div>
       </div>
     </div>
   );

@@ -32,6 +32,7 @@ export interface OrgDashboardData {
   exhibition_info: {
     id: number;
     title: string;
+    description: string | null;
     status: string;
     location: string;
   };
@@ -46,6 +47,7 @@ export interface OrgDashboardData {
     age_groups: OrgAgeGroup[];
   };
   feedback_breakdown: OrgFeedbackTopic[];
+  recent_comments: string[];
   all_units_stats: OrgUnitStat[];
 }
 
