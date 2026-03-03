@@ -1,4 +1,5 @@
 import api from "./client";
+import liffClient from "./liffClient";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -92,6 +93,23 @@ export async function getStaffDashboard(
 ): Promise<StaffDashboardData> {
   const res = await api.get<{ status: string; data: StaffDashboardData }>(
     `/dashboard/staff/${exId}/${unitId}`
+  );
+  return res.data.data;
+}
+
+export async function getStaffDashboardLiff(
+  exId: number,
+  unitId: number
+): Promise<StaffDashboardData> {
+  const res = await liffClient.get<{ status: string; data: StaffDashboardData }>(
+    `/dashboard/staff/${exId}/${unitId}`
+  );
+  return res.data.data;
+}
+
+export async function getStaffUnitMe(): Promise<{ ex_id: number; unit_id: number }> {
+  const res = await liffClient.get<{ status: string; data: { ex_id: number; unit_id: number } }>(
+    `/dashboard/staff/me`
   );
   return res.data.data;
 }

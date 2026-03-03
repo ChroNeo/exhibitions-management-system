@@ -1,33 +1,39 @@
 import { MessageSquare, QrCode, Star, Users } from "lucide-react";
 import { Radar } from "react-chartjs-2";
-import { useNavigate, useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import "../../pages/OrgDashboard/ChartSetup";
 import { KpiCard } from "../OrgDashboard/components/KpiCard";
 import { UnitDashboardSkeleton } from "./components/UnitDashboardSkeleton";
-import { useUnitDashboard } from "./hooks/useUnitDashboard";
+import { useUnitDashboardLiff } from "./hooks/useUnitDashboardLiff";
 import styles from "./UnitDashboardPage.module.css";
 
 export default function UnitDashboardPage() {
-  const nav = useNavigate();
-  const { ex_id, id } = useParams<{ ex_id: string; id: string }>();
-  const exId = Number(ex_id ?? 0);
-  const unitId = Number(id ?? 0);
+  const [searchParams] = useSearchParams();
+  const exId = searchParams.get("ex_id");
+  const unitId = searchParams.get("unit_id");
 
-  const { data, isLoading, error } = useUnitDashboard(exId, unitId);
+  const { state, refetch } = useUnitDashboardLiff({ exId, unitId });
 
-  if (isLoading) return <UnitDashboardSkeleton />;
+  if (state.status === "initializing" || state.status === "not_logged_in") {
+    return <UnitDashboardSkeleton />;
+  }
 
-  if (error || !data) {
+  if (state.status === "loading") {
+    return <UnitDashboardSkeleton />;
+  }
+
+  if (state.status === "error") {
     return (
       <div className={styles.page}>
-        <p className={styles.stateMsg}>
-          ไม่สามารถโหลดข้อมูลได้: {(error as Error)?.message ?? "unknown error"}
-        </p>
+        <p className={styles.stateMsg}>{state.message}</p>
+        <button onClick={refetch}>ลองใหม่</button>
       </div>
     );
   }
 
-  const d = data;
+  if (state.status !== "success") return null;
+
+  const d = state.data;
 
   const radarChartData = {
     labels: d.feedback_breakdown.map((f) => f.topic),
@@ -226,9 +232,6 @@ export default function UnitDashboardPage() {
               📄 PDF
             </a>
           )}
-          <button className={styles.backBtn} onClick={() => nav(-1)}>
-            ← ย้อนกลับ
-          </button>
         </div>
       </div>
     </div>
