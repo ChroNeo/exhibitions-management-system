@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { Activity, ChevronDown, ListFilter, MessageSquare, QrCode, Star, Tent, Users } from "lucide-react";
 import { useState } from "react";
 import { Bar, Doughnut, Radar } from "react-chartjs-2";
@@ -158,7 +159,7 @@ export default function OrgDashboardPage() {
             {data.exhibition_info.description && (
               <p
                 className={styles.selectorDesc}
-                dangerouslySetInnerHTML={{ __html: data.exhibition_info.description }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.exhibition_info.description) }}
               />
             )}
           </div>

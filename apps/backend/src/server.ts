@@ -1,4 +1,5 @@
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import multipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
 import swagger from "@fastify/swagger";
@@ -38,6 +39,11 @@ import surveyController from "./controller/survey-controller.js";
 
 dotenv.config();
 
+// Guard: LIFF mock mode must not be enabled in production
+if (process.env.LIFF_MOCK === "true" && process.env.NODE_ENV === "production") {
+  throw new Error("LIFF_MOCK=true is not allowed in production");
+}
+
 // สร้าง instance หลัก
 const fastify = Fastify();
 
@@ -52,12 +58,18 @@ const app = fastify.withTypeProvider<ZodTypeProvider>();
 app.setErrorHandler((error, _request, reply) => {
   app.log.error(error);
   if (error instanceof AppError) {
-    return reply.status(error.status).send({
+    const response: Record<string, unknown> = {
       message: error.message,
       status: error.status,
       code: error.code,
-      details: error.details,
-    });
+    };
+    if (process.env.NODE_ENV !== "production") {
+      response.details = error.details;
+    }
+    return reply.status(error.status).send(response);
+  }
+  if (process.env.NODE_ENV === "production") {
+    return reply.status(500).send({ message: "Internal Server Error" });
   }
   reply.send(error);
 });
@@ -71,15 +83,25 @@ await app.register(fastifyRawBody, {
   runFirst: true,
 });
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : ["http://localhost:5173"];
+
+const allowedHeaders = ["Content-Type", "Authorization"];
+if (process.env.NODE_ENV !== "production") {
+  allowedHeaders.push("ngrok-skip-browser-warning", "X-Mock-Line-User-Id");
+}
+
 await app.register(cors, {
-  origin: true,
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "ngrok-skip-browser-warning",
-    "X-Mock-Line-User-Id",
-  ],
+  allowedHeaders,
+});
+
+await app.register(rateLimit, {
+  global: true,
+  max: 100,
+  timeWindow: "1 minute",
 });
 
 await app.register(multipart, {

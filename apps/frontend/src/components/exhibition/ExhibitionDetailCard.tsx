@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { useState, useEffect, useCallback } from "react";
 import type { RefObject, ReactNode } from "react";
 import { IoLocationOutline, IoPersonOutline } from "react-icons/io5";
@@ -310,7 +311,7 @@ export default function ExhibitionDetailCard({
               <h3 className={styles.descTitle}>รายละเอียด</h3>
               <div
                 className={styles.descContent}
-                dangerouslySetInnerHTML={{ __html: descriptionHtml ?? "" }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(descriptionHtml ?? "") }}
               />
             </div>
           ) : hasDescriptionText ? (

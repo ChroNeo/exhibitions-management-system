@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import type { ReactNode } from "react";
 import { useState, useCallback, useEffect } from "react";
 import { MdOutlineCalendarToday } from "react-icons/md";
@@ -141,7 +142,7 @@ export default function UnitDetailCard({
               {hasDescriptionHtml ? (
                 <div
                   className={cardStyles.descContent}
-                  dangerouslySetInnerHTML={{ __html: descriptionHtml ?? "" }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(descriptionHtml ?? "") }}
                 />
               ) : hasDescriptionText ? (
                 <p className={cardStyles.descContent}>{description}</p>

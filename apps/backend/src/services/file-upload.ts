@@ -6,6 +6,16 @@ import { Writable } from "node:stream";
 import type { MultipartFile, MultipartValue } from "@fastify/multipart";
 import type { FastifyRequest, FastifyBaseLogger } from "fastify";
 import { fileURLToPath } from "node:url";
+import { AppError } from "../errors.js";
+
+const ALLOWED_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"]);
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+]);
 
 export interface SaveMultipartFileOptions {
   /** Absolute directory where the file should be stored */
@@ -31,9 +41,27 @@ export async function saveMultipartFile(
 ): Promise<SavedMultipartFile> {
   await mkdir(targetDir, { recursive: true });
   const originalName = sanitizeFilename(part.filename ?? fallbackName);
-  const extension = path.extname(originalName);
+  const extension = path.extname(originalName).toLowerCase();
+
+  if (!ALLOWED_EXTENSIONS.has(extension)) {
+    if (!part.file.readableEnded) part.file.resume();
+    throw new AppError(
+      `File type '${extension}' is not allowed. Allowed types: ${[...ALLOWED_EXTENSIONS].join(", ")}`,
+      400,
+      "INVALID_FILE_TYPE"
+    );
+  }
+
+  if (part.mimetype && !ALLOWED_MIME_TYPES.has(part.mimetype)) {
+    if (!part.file.readableEnded) part.file.resume();
+    throw new AppError(
+      `MIME type '${part.mimetype}' is not allowed`,
+      400,
+      "INVALID_FILE_TYPE"
+    );
+  }
   const timestamp = Date.now();
-  const prefix = filenamePrefix ?? (extension.toLowerCase() === ".pdf" ? "EXP_PDF" : "EXP");
+  const prefix = filenamePrefix ?? (extension === ".pdf" ? "EXP_PDF" : "EXP");
   const filename = `${prefix}${timestamp}${extension}`;
   const absolutePath = path.join(targetDir, filename);
   await pipeline(part.file, createWriteStream(absolutePath));

@@ -8,7 +8,7 @@ export const SignInSchema = z.object({
 
 export const RegisterSchema = z.object({
   username: z.string().min(3, "username must be at least 3 characters"),
-  password: z.string().min(6, "password must be at least 6 characters"),
+  password: z.string().min(8, "password must be at least 8 characters"),
   email: z.union([
     z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "email must be valid"),
     z.null()

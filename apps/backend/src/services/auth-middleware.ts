@@ -92,9 +92,10 @@ export async function optionalAuth(
 }
 
 /**
- * Check if LIFF mock mode is enabled (for development/testing)
+ * Check if LIFF mock mode is enabled (for development/testing only)
  */
 function isLiffMockEnabled(): boolean {
+  if (process.env.NODE_ENV === "production") return false;
   return process.env.LIFF_MOCK === 'true';
 }
 
@@ -102,13 +103,13 @@ function isLiffMockEnabled(): boolean {
  * Middleware to authenticate LINE LIFF users
  * Verifies LIFF ID token and adds user data to req.lineUser
  *
- * In mock mode (LIFF_MOCK=true), accepts X-Mock-Line-User-Id header instead of LIFF token
+ * In mock mode (LIFF_MOCK=true, non-production only), accepts X-Mock-Line-User-Id header instead of LIFF token
  */
 export async function requireLiffAuth(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  // Check for mock mode
+  // Check for mock mode (development only)
   if (isLiffMockEnabled()) {
     const mockUserId = request.headers['x-mock-line-user-id'];
 

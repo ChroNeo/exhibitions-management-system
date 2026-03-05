@@ -7,17 +7,22 @@ const liffClient = axios.create({
   timeout: 10000,
 });
 
+const isDev = import.meta.env.DEV;
+
 // Request interceptor to add LIFF ID token or mock header
 liffClient.interceptors.request.use(
   (config) => {
-    // If mock mode is enabled, use mock header instead of LIFF token
+    // Mock mode is only allowed in development
     if (isLiffMockEnabled()) {
+      if (!isDev) {
+        return Promise.reject(new Error('LIFF Mock mode is not allowed in production'));
+      }
       const mockUserId = getMockLineUserId();
       if (!mockUserId) {
         return Promise.reject(new Error('LIFF Mock mode enabled but VITE_MOCK_LINE_USER_ID is not set'));
       }
       config.headers['X-Mock-Line-User-Id'] = mockUserId;
-      config.headers['ngrok-skip-browser-warning'] = 'true';
+      if (isDev) config.headers['ngrok-skip-browser-warning'] = 'true';
       return config;
     }
 
@@ -27,7 +32,7 @@ liffClient.interceptors.request.use(
     }
 
     config.headers.Authorization = `Bearer ${idToken}`;
-    config.headers['ngrok-skip-browser-warning'] = 'true';
+    if (isDev) config.headers['ngrok-skip-browser-warning'] = 'true';
 
     return config;
   },

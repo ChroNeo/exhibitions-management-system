@@ -36,7 +36,7 @@ export default async function dashboardController(fastify: FastifyInstance) {
   app.get(
     "/staff/:ex_id/:unit_id",
     {
-      // onRequest: [requireLiffAuth],
+      preHandler: requireLiffAuth,
       schema: {
         tags: ["Dashboard"],
         summary: "get the Staff Dashboard data",
@@ -57,7 +57,7 @@ export default async function dashboardController(fastify: FastifyInstance) {
   app.get(
     "/organizer/:id",
     {
-      // onRequest: [requireLiffAuth],
+      preHandler: requireLiffAuth,
       schema: {
         tags: ["Dashboard"],
         summary: "get the Organizer Dashboard data",
@@ -66,7 +66,14 @@ export default async function dashboardController(fastify: FastifyInstance) {
       },
     },
     async (request) => {
-      const result = await getOrgDashboard(request.params.id);
+      const exhibitionId = request.params.id;
+      const currentUserId = request.lineUser!.user_id;
+      const ids = await getStaffUnitByUserId(currentUserId);
+      if (ids.ex_id !== exhibitionId) {
+        const { AppError } = await import("../errors.js");
+        throw new AppError("Not authorized to view this dashboard", 403, "FORBIDDEN");
+      }
+      const result = await getOrgDashboard(exhibitionId);
       return result;
     },
   );
