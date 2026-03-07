@@ -1,9 +1,12 @@
 ﻿// แปลงข้อมูล API -> UI type
 import type { Exhibition, ExhibitionApi } from "../types/exhibition";
-import { fmtDateRangeTH } from "../utils/date";
-import { toFileUrl } from "../utils/url";
-import { ensureQuillDeltaString, extractPlainTextDescription } from "../utils/text";
 import { loadAuth } from "../utils/authStorage";
+import { fmtDateRangeTH } from "../utils/date";
+import {
+  ensureQuillDeltaString,
+  extractPlainTextDescription,
+} from "../utils/text";
+import { toFileUrl } from "../utils/url";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
 
@@ -28,6 +31,8 @@ export type ExhibitionCreatePayload = {
   location?: string;
   status?: string;
   file?: File;
+  detailPdfFile?: File;
+  detailPdfRemoved?: boolean;
   // created_by is now extracted from JWT token, not sent in payload
 };
 
@@ -41,6 +46,8 @@ export type ExhibitionUpdatePayload = {
   description_delta?: string;
   status?: string;
   file?: File;
+  detailPdfFile?: File;
+  detailPdfRemoved?: boolean;
 };
 
 function mapToExhibition(x: ExhibitionApi): Exhibition {
@@ -57,13 +64,14 @@ function mapToExhibition(x: ExhibitionApi): Exhibition {
     descriptionHtml: x.description ?? "",
     descriptionDelta,
     location: x.location ?? "",
-    coverUrl: toFileUrl(x.picture_path),      // เพื่อรองรับ field ที่ backend ส่งมาเพิ่มในอนาคต
+    coverUrl: toFileUrl(x.picture_path),
     dateText: fmtDateRangeTH(x.start_date, x.end_date),
     isPinned: false,
     start_date: x.start_date,
     end_date: x.end_date,
     organizer_name: x.organizer_name ?? "",
-    picture_path:  x.picture_path ?? "",
+    picture_path: x.picture_path ?? "",
+    detailPdfUrl: toFileUrl(x.detail_pdf_url),
   };
 }
 
@@ -74,7 +82,9 @@ export async function fetchExhibitions(): Promise<Exhibition[]> {
   return data.map(mapToExhibition);
 }
 
-export async function fetchExhibitionById(id: string | number): Promise<Exhibition> {
+export async function fetchExhibitionById(
+  id: string | number,
+): Promise<Exhibition> {
   const res = await fetch(`${BASE}/exhibitions/${id}`);
   if (!res.ok) throw new Error("ไม่พบข้อมูลนิทรรศการ");
   const json = await res.json();
@@ -83,11 +93,13 @@ export async function fetchExhibitionById(id: string | number): Promise<Exhibiti
   return mapToExhibition(data);
 }
 
-export async function createExhibition(payload: ExhibitionCreatePayload): Promise<Exhibition> {
+export async function createExhibition(
+  payload: ExhibitionCreatePayload,
+): Promise<Exhibition> {
   const endpoint = `${BASE}/exhibitions`;
-  const { file, ...rest } = payload;
+  const { file, detailPdfFile, detailPdfRemoved, ...rest } = payload;
 
-  if (file) {
+  if (file || detailPdfFile) {
     const fd = new FormData();
     const appendString = (key: string, value: string | undefined) => {
       if (value === undefined) return;
@@ -103,7 +115,8 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
     appendString("description_delta", rest.description_delta);
     appendString("status", rest.status);
     // created_by is extracted from JWT token on backend
-    fd.append("picture_path", file);
+    if (file) fd.append("picture_path", file);
+    if (detailPdfFile) fd.append("detail_pdf_url", detailPdfFile);
 
     const res = await fetch(endpoint, {
       method: "POST",
@@ -125,7 +138,8 @@ export async function createExhibition(payload: ExhibitionCreatePayload): Promis
   };
 
   if (rest.location !== undefined) jsonPayload.location = rest.location;
-  if (rest.description !== undefined) jsonPayload.description = rest.description;
+  if (rest.description !== undefined)
+    jsonPayload.description = rest.description;
   if (rest.description_delta !== undefined) {
     jsonPayload.description_delta = rest.description_delta;
   }
@@ -158,9 +172,9 @@ export async function updateExhibitionApi(
   body: ExhibitionUpdatePayload,
 ): Promise<Exhibition> {
   const endpoint = `${BASE}/exhibitions/${id}`;
-  const { file, ...rest } = body;
+  const { file, detailPdfFile, detailPdfRemoved, ...rest } = body;
 
-  if (file) {
+  if (file || detailPdfFile || detailPdfRemoved) {
     const fd = new FormData();
     const appendString = (key: string, value: string | undefined) => {
       if (value === undefined) return;
@@ -175,7 +189,9 @@ export async function updateExhibitionApi(
     appendString("description", rest.description);
     appendString("description_delta", rest.description_delta);
     appendString("status", rest.status);
-    fd.append("picture_path", file);
+    if (file) fd.append("picture_path", file);
+    if (detailPdfFile) fd.append("detail_pdf_url", detailPdfFile);
+    if (detailPdfRemoved && !detailPdfFile) fd.append("detail_pdf_url", "");
 
     const res = await fetch(endpoint, {
       method: "PUT",
@@ -193,8 +209,10 @@ export async function updateExhibitionApi(
   if (rest.start_date !== undefined) jsonPayload.start_date = rest.start_date;
   if (rest.end_date !== undefined) jsonPayload.end_date = rest.end_date;
   if (rest.location !== undefined) jsonPayload.location = rest.location;
-  if (rest.organizer_name !== undefined) jsonPayload.organizer_name = rest.organizer_name;
-  if (rest.description !== undefined) jsonPayload.description = rest.description;
+  if (rest.organizer_name !== undefined)
+    jsonPayload.organizer_name = rest.organizer_name;
+  if (rest.description !== undefined)
+    jsonPayload.description = rest.description;
   if (rest.description_delta !== undefined) {
     jsonPayload.description_delta = rest.description_delta;
   }

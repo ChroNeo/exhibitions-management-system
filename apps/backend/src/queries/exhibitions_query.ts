@@ -1,11 +1,11 @@
 import type { ResultSetHeader } from "mysql2";
+import { AppError } from "../errors.js";
 import type {
   AddExhibitionPayload,
-  UpdateExhibitionPayload,
   ExhibitionStatus,
+  UpdateExhibitionPayload,
 } from "../models/exhibition.model.js";
 import { EXHIBITION_STATUSES } from "../models/exhibition.model.js";
-import { AppError } from "../errors.js";
 import { safeQuery } from "../services/dbconn.js";
 
 const EXHIBITION_SELECT_BASE = `
@@ -20,6 +20,7 @@ const EXHIBITION_SELECT_BASE = `
     v.location,
     v.organizer_name,
     v.picture_path,
+    e.detail_pdf_url,
     v.status,
     e.created_by,
     e.updated_by,
@@ -48,7 +49,7 @@ export async function getExhibitionById(id: string | number): Promise<any> {
       WHERE v.exhibition_id = ?
       LIMIT 1
     `,
-    [id]
+    [id],
   );
   if (!rows.length) {
     throw new AppError("exhibition not found", 404, "NOT_FOUND");
@@ -56,11 +57,13 @@ export async function getExhibitionById(id: string | number): Promise<any> {
   return rows[0];
 }
 
-export async function addExhibitions(payload: AddExhibitionPayload): Promise<any> {
+export async function addExhibitions(
+  payload: AddExhibitionPayload,
+): Promise<any> {
   const result = await safeQuery<ResultSetHeader>(
     `INSERT INTO exhibitions
-      (exhibition_code, title, description, description_delta, start_date, end_date, location, organizer_name, picture_path, status, created_by, updated_by)
-     VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
+      (exhibition_code, title, description, description_delta, start_date, end_date, location, organizer_name, picture_path, detail_pdf_url, status, created_by, updated_by)
+     VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
     [
       payload.title,
       payload.description || null,
@@ -70,9 +73,10 @@ export async function addExhibitions(payload: AddExhibitionPayload): Promise<any
       payload.location || null,
       payload.organizer_name,
       payload.picture_path || null,
+      payload.detail_pdf_url || null,
       payload.status || "draft",
       payload.created_by,
-    ]
+    ],
   );
 
   const [newExhibition] = await safeQuery<any[]>(
@@ -81,7 +85,7 @@ export async function addExhibitions(payload: AddExhibitionPayload): Promise<any
       WHERE v.exhibition_id = ?
       LIMIT 1
     `,
-    [result.insertId]
+    [result.insertId],
   );
 
   return newExhibition;
@@ -89,7 +93,7 @@ export async function addExhibitions(payload: AddExhibitionPayload): Promise<any
 
 export async function updateExhibition(
   id: string | number,
-  payload: UpdateExhibitionPayload
+  payload: UpdateExhibitionPayload,
 ): Promise<any> {
   if (!/^\d+$/.test(String(id))) {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
@@ -114,7 +118,7 @@ export async function updateExhibition(
       throw new AppError(
         `${field} is required when provided`,
         400,
-        "VALIDATION_ERROR"
+        "VALIDATION_ERROR",
       );
     }
   }
@@ -128,6 +132,7 @@ export async function updateExhibition(
     "location",
     "organizer_name",
     "picture_path",
+    "detail_pdf_url",
     "status",
   ];
 
@@ -162,7 +167,8 @@ export async function updateExhibition(
       field === "description" ||
       field === "description_delta" ||
       field === "location" ||
-      field === "picture_path"
+      field === "picture_path" ||
+      field === "detail_pdf_url"
     ) {
       updates.push(`${column} = ?`);
       params.push(value ?? null);
@@ -178,7 +184,7 @@ export async function updateExhibition(
 
   const result = await safeQuery<ResultSetHeader>(
     `UPDATE exhibitions SET ${updates.join(", ")} WHERE exhibition_id = ?`,
-    [...params, id]
+    [...params, id],
   );
 
   if (!result.affectedRows) {
@@ -191,7 +197,7 @@ export async function updateExhibition(
       WHERE v.exhibition_id = ?
       LIMIT 1
     `,
-    [id]
+    [id],
   );
 
   return updated;
@@ -204,7 +210,7 @@ export async function deleteExhibition(id: string | number): Promise<void> {
 
   const result = await safeQuery<ResultSetHeader>(
     `DELETE FROM exhibitions WHERE exhibition_id = ?`,
-    [id]
+    [id],
   );
 
   if (!result.affectedRows) {

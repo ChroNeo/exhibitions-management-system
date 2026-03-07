@@ -102,31 +102,40 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       : "รายละเอียดนิทรรศการ";
 
   // ── Create mode form values ──
-  const { initialValues, initialFileName } = useMemo(() => {
-    if (!data || mode === "create") {
-      return { initialValues: undefined, initialFileName: undefined };
-    }
-    const ex = data as Exhibition;
-    const picturePath = ex.picture_path ?? "";
-    const fileName = picturePath
-      ? picturePath.split("/").pop() || picturePath
-      : undefined;
+  const { initialValues, initialFileName, initialDetailPdfName } =
+    useMemo(() => {
+      if (!data || mode === "create") {
+        return {
+          initialValues: undefined,
+          initialFileName: undefined,
+          initialDetailPdfName: undefined,
+        };
+      }
+      const ex = data as Exhibition;
+      const picturePath = ex.picture_path ?? "";
+      const fileName = picturePath
+        ? picturePath.split("/").pop() || picturePath
+        : undefined;
+      const detailPdfName = ex.detailPdfUrl
+        ? ex.detailPdfUrl.split("/").pop() || ex.detailPdfUrl
+        : undefined;
 
-    return {
-      initialValues: {
-        title: ex.title ?? "",
-        start_date: toInputDateTime(toISO(ex.start_date) ?? null),
-        end_date: toInputDateTime(toISO(ex.end_date) ?? null),
-        location: ex.location ?? "",
-        organizer_name: ex.organizer_name ?? "",
-        description: ex.descriptionHtml ?? "",
-        description_delta: ex.descriptionDelta ?? "",
-        status: ex.status ?? DEFAULT_STATUS,
-        file: undefined,
-      },
-      initialFileName: fileName,
-    };
-  }, [data, mode]);
+      return {
+        initialValues: {
+          title: ex.title ?? "",
+          start_date: toInputDateTime(toISO(ex.start_date) ?? null),
+          end_date: toInputDateTime(toISO(ex.end_date) ?? null),
+          location: ex.location ?? "",
+          organizer_name: ex.organizer_name ?? "",
+          description: ex.descriptionHtml ?? "",
+          description_delta: ex.descriptionDelta ?? "",
+          status: ex.status ?? DEFAULT_STATUS,
+          file: undefined,
+        },
+        initialFileName: fileName,
+        initialDetailPdfName: detailPdfName,
+      };
+    }, [data, mode]);
 
   // ── Quill lifecycle ──
   useEffect(() => {
@@ -217,6 +226,23 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     });
   }, []);
 
+  const handlePdfFileChange = useCallback((file: File | undefined) => {
+    setEditForm((prev) =>
+      prev ? { ...prev, detailPdfFile: file, detailPdfRemoved: false } : prev,
+    );
+  }, []);
+
+  const handlePdfFileRemove = useCallback(() => {
+    setEditForm((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        detailPdfFile: undefined,
+        detailPdfRemoved: prev.detailPdfFile ? false : true,
+      };
+    });
+  }, []);
+
   const handleInlineSave = useCallback(async () => {
     if (!id || !editForm) return;
 
@@ -234,6 +260,10 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       description_delta: deltaStr,
       status: editForm.status || DEFAULT_STATUS,
       ...(editForm.file ? { file: editForm.file } : {}),
+      ...(editForm.detailPdfFile
+        ? { detailPdfFile: editForm.detailPdfFile }
+        : {}),
+      detailPdfRemoved: editForm.detailPdfRemoved,
     };
 
     try {
@@ -320,6 +350,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       description_delta: v.description_delta,
       status: DEFAULT_STATUS,
       ...(v.file ? { file: v.file } : {}),
+      ...(v.detailPdfFile ? { detailPdfFile: v.detailPdfFile } : {}),
     };
 
     try {
@@ -368,54 +399,55 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const isReadOnlyView = searchParams.get("view") === "true";
 
   // ── Action bar buttons for view mode ──
-  const viewActionBar = hasAuthToken && !isReadOnlyView ? (
-    <>
-      <button
-        type="button"
-        className={cardStyles.toolBtn}
-        onClick={handleStartEdit}
-      >
-        <FaEdit size={16} />
-        แก้ไข
-      </button>
-      <button
-        type="button"
-        className={cardStyles.toolBtn}
-        onClick={() => setShowSurveyModal(true)}
-      >
-        <FaClipboardList size={16} />
-        จัดการแบบสอบถาม
-      </button>
-      {id && (
+  const viewActionBar =
+    hasAuthToken && !isReadOnlyView ? (
+      <>
         <button
           type="button"
           className={cardStyles.toolBtn}
-          onClick={() => navigate(`/exhibitions/${id}/certificate`)}
+          onClick={handleStartEdit}
         >
-          <FaCertificate size={16} />
-          จัดการใบประกาศ
+          <FaEdit size={16} />
+          แก้ไข
         </button>
-      )}
-      {id && (
         <button
           type="button"
           className={cardStyles.toolBtn}
-          onClick={() => navigate(`/exhibitions/${id}/news`)}
+          onClick={() => setShowSurveyModal(true)}
         >
-          <FaBullhorn size={16} />
-          ประกาศข่าวสาร
+          <FaClipboardList size={16} />
+          จัดการแบบสอบถาม
         </button>
-      )}
-      <button
-        type="button"
-        className={`${cardStyles.toolBtn} ${cardStyles.toolBtnDanger}`}
-        onClick={handleDelete}
-      >
-        <FiTrash2 size={16} />
-        ลบ
-      </button>
-    </>
-  ) : undefined;
+        {id && (
+          <button
+            type="button"
+            className={cardStyles.toolBtn}
+            onClick={() => navigate(`/exhibitions/${id}/certificate`)}
+          >
+            <FaCertificate size={16} />
+            จัดการใบประกาศ
+          </button>
+        )}
+        {id && (
+          <button
+            type="button"
+            className={cardStyles.toolBtn}
+            onClick={() => navigate(`/exhibitions/${id}/news`)}
+          >
+            <FaBullhorn size={16} />
+            ประกาศข่าวสาร
+          </button>
+        )}
+        <button
+          type="button"
+          className={`${cardStyles.toolBtn} ${cardStyles.toolBtnDanger}`}
+          onClick={handleDelete}
+        >
+          <FiTrash2 size={16} />
+          ลบ
+        </button>
+      </>
+    ) : undefined;
 
   return (
     <div>
@@ -446,6 +478,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     exhibitionId={id}
                     initialValues={initialValues}
                     initialFileName={initialFileName}
+                    initialDetailPdfName={initialDetailPdfName}
                     readOnly={false}
                     onSubmit={handleCreateSubmit}
                     preferDraft
@@ -462,6 +495,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     description={descriptionPlain}
                     descriptionHtml={descriptionHtml}
                     imageUrl={toFileUrl(data.picture_path || "")}
+                    detailPdfUrl={data.detailPdfUrl}
                     status={
                       data.status
                         ? (STATUS_LABELS[data.status] ?? data.status)
@@ -473,9 +507,12 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                     isEditing={isEditing}
                     editForm={editForm ?? undefined}
                     imagePreview={imagePreview}
+                    initialDetailPdfName={initialDetailPdfName}
                     quillContainerRef={quillContainerRef}
                     onFieldChange={handleFieldChange}
                     onFileChange={handleFileChange}
+                    onPdfFileChange={handlePdfFileChange}
+                    onPdfFileRemove={handlePdfFileRemove}
                     onSave={handleInlineSave}
                     onCancelEdit={handleCancelInlineEdit}
                     actionBar={viewActionBar}

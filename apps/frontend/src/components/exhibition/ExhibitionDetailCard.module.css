@@ -63,6 +63,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -124,10 +125,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.4;
   }
@@ -382,6 +385,30 @@
   tab-size: 4;
 }
 
+.pdfButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #c7571f;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.pdfButton:hover {
+  background: #fff7ed;
+  border-color: #de6424;
+  color: #c7571f;
+}
+
 /* ── Quill editor wrapper ── */
 .editorWrap {
   border-radius: 8px;
@@ -509,7 +536,7 @@
   align-items: center;
   gap: 6px;
   padding: 10px 24px;
-  background: #2563eb;
+  background: var(--brand);
   color: #fff;
   border: none;
   border-radius: 10px;

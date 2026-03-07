@@ -12,6 +12,7 @@ export type Exhibition = {
   dateText: string;
   location: string;
   coverUrl?: string;
+  detailPdfUrl?: string;
   isPinned?: boolean;
 };
 
@@ -26,4 +27,5 @@ export interface ExhibitionApi {
   organizer_name: string;
   status: string;
   picture_path?: string | null;
+  detail_pdf_url?: string | null;
 }

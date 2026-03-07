@@ -1,13 +1,14 @@
 import DOMPurify from "dompurify";
-import { useState, useEffect, useCallback } from "react";
-import type { RefObject, ReactNode } from "react";
-import { IoLocationOutline, IoPersonOutline } from "react-icons/io5";
-import { LuBadgeCheck, LuClock } from "react-icons/lu";
-import { MdOutlineCalendarToday } from "react-icons/md";
-import { LuCamera } from "react-icons/lu";
 import { X } from "lucide-react";
+import type { ReactNode, RefObject } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { FaRegFilePdf } from "react-icons/fa6";
+import { IoLocationOutline, IoPersonOutline } from "react-icons/io5";
+import { LuBadgeCheck, LuCamera, LuClock } from "react-icons/lu";
+import { MdOutlineCalendarToday } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { toThaiDate, toThaiTimeRange } from "../../utils/dateFormat";
+import formStyles from "./detail_form/ExManageForm.module.css";
 import styles from "./ExhibitionDetailCard.module.css";
 
 const STATUS_OPTIONS = [
@@ -26,6 +27,8 @@ export type EditFormState = {
   organizer_name: string;
   status: string;
   file?: File;
+  detailPdfFile?: File;
+  detailPdfRemoved?: boolean;
 };
 
 type Props = {
@@ -40,15 +43,19 @@ type Props = {
   description?: string;
   descriptionHtml?: string;
   imageUrl?: string;
+  detailPdfUrl?: string;
   status?: string;
   registerLink?: string;
   // Edit mode
   isEditing?: boolean;
   editForm?: EditFormState;
   imagePreview?: string;
+  initialDetailPdfName?: string;
   quillContainerRef?: RefObject<HTMLDivElement | null>;
   onFieldChange?: (field: string, value: string) => void;
   onFileChange?: (file: File | undefined) => void;
+  onPdfFileChange?: (file: File | undefined) => void;
+  onPdfFileRemove?: () => void;
   onSave?: () => void;
   onCancelEdit?: () => void;
   // Action bar (view mode)
@@ -67,14 +74,18 @@ export default function ExhibitionDetailCard({
   description,
   descriptionHtml,
   imageUrl,
+  detailPdfUrl,
   status,
   registerLink,
   isEditing = false,
   editForm,
   imagePreview,
+  initialDetailPdfName,
   quillContainerRef,
   onFieldChange,
   onFileChange,
+  onPdfFileChange,
+  onPdfFileRemove,
   onSave,
   onCancelEdit,
   actionBar,
@@ -172,7 +183,10 @@ export default function ExhibitionDetailCard({
             )}
 
             <div className={styles.organizer}>
-              <IoPersonOutline size={16} style={isEditing ? { color: "#3b82f6" } : undefined} />
+              <IoPersonOutline
+                size={16}
+                style={isEditing ? { color: "#3b82f6" } : undefined}
+              />
               {isEditing && editForm ? (
                 <input
                   type="text"
@@ -201,7 +215,14 @@ export default function ExhibitionDetailCard({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p className={styles.infoLabel}>วันที่จัดงาน</p>
                 {isEditing && editForm ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                      marginTop: 4,
+                    }}
+                  >
                     <input
                       type="datetime-local"
                       className={styles.editInput}
@@ -254,9 +275,7 @@ export default function ExhibitionDetailCard({
                   <select
                     className={styles.editSelect}
                     value={editForm.status}
-                    onChange={(e) =>
-                      onFieldChange?.("status", e.target.value)
-                    }
+                    onChange={(e) => onFieldChange?.("status", e.target.value)}
                     style={{ marginTop: 4 }}
                   >
                     {STATUS_OPTIONS.map((o) => (
@@ -297,29 +316,81 @@ export default function ExhibitionDetailCard({
 
           {/* Description */}
           {isEditing ? (
-            <div className={`${styles.descBox} ${styles.descBoxEditing}`}>
-              <h3 className={styles.descTitle}>
-                รายละเอียด{" "}
-                <span className={styles.descEditHint}>(แก้ไข)</span>
-              </h3>
-              <div className={styles.editorWrap}>
-                <div ref={quillContainerRef} />
+            <>
+              <div className={`${styles.descBox} ${styles.descBoxEditing}`}>
+                <h3 className={styles.descTitle}>
+                  รายละเอียด{" "}
+                  <span className={styles.descEditHint}>(แก้ไข)</span>
+                </h3>
+                <div className={styles.editorWrap}>
+                  <div ref={quillContainerRef} />
+                </div>
               </div>
-            </div>
-          ) : hasDescriptionHtml ? (
+              <div className={styles.descBox} style={{ marginTop: 16 }}>
+                <h3 className={styles.descTitle}>
+                  ไฟล์รายละเอียด PDF{" "}
+                  <span className={styles.descEditHint}>(ถ้ามี)</span>
+                </h3>
+                <div style={{ marginTop: 4 }}>
+                  <input
+                    className={styles.editInput}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => onPdfFileChange?.(e.target.files?.[0])}
+                  />
+                </div>
+                {(editForm?.detailPdfFile ||
+                  (initialDetailPdfName && !editForm?.detailPdfRemoved)) && (
+                  <div
+                    className={formStyles.ex_fileBadge}
+                    aria-live="polite"
+                    style={{ marginTop: 6 }}
+                  >
+                    <FaRegFilePdf
+                      className={formStyles.ex_fileBadgeIcon}
+                      aria-hidden="true"
+                    />
+                    <span className={formStyles.ex_fileBadgeName}>
+                      {editForm?.detailPdfFile?.name || initialDetailPdfName}
+                    </span>
+                    <button
+                      type="button"
+                      className={formStyles.ex_fileBadgeRemove}
+                      onClick={onPdfFileRemove}
+                      aria-label="ลบไฟล์รายละเอียด"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : hasDescriptionHtml || hasDescriptionText || detailPdfUrl ? (
             <div className={styles.descBox}>
               <h3 className={styles.descTitle}>รายละเอียด</h3>
-              <div
-                className={styles.descContent}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(descriptionHtml ?? "") }}
-              />
+              {hasDescriptionHtml ? (
+                <div
+                  className={styles.descContent}
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(descriptionHtml ?? ""),
+                  }}
+                />
+              ) : hasDescriptionText ? (
+                <p className={styles.descContent}>{description}</p>
+              ) : null}
+              {detailPdfUrl && (
+                <a
+                  href={detailPdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.pdfButton}
+                >
+                  <FaRegFilePdf size={16} />
+                  เปิดไฟล์รายละเอียด (PDF)
+                </a>
+              )}
             </div>
-          ) : hasDescriptionText ? (
-            <div className={styles.descBox}>
-              <h3 className={styles.descTitle}>รายละเอียด</h3>
-              <p className={styles.descContent}>{description}</p>
-            </div>
-          ) : isEditing ? null : null}
+          ) : null}
 
           {/* Register CTA - view only */}
           {!isEditing && registerLink && (
@@ -335,7 +406,9 @@ export default function ExhibitionDetailCard({
       {/* Bottom action bar */}
       {isEditing ? (
         <div className={`${styles.actionBar} ${styles.actionBarEditing}`}>
-          <span className={`${styles.actionBarLabel} ${styles.actionBarEditingLabel}`}>
+          <span
+            className={`${styles.actionBarLabel} ${styles.actionBarEditingLabel}`}
+          >
             กำลังอยู่ในโหมดแก้ไข
           </span>
           <div className={styles.actionBarButtons}>
@@ -346,11 +419,7 @@ export default function ExhibitionDetailCard({
             >
               ยกเลิก
             </button>
-            <button
-              type="button"
-              className={styles.saveBtn}
-              onClick={onSave}
-            >
+            <button type="button" className={styles.saveBtn} onClick={onSave}>
               บันทึกการเปลี่ยนแปลง
             </button>
           </div>

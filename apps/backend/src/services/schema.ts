@@ -13,27 +13,56 @@ const schemas = [
       exhibition_id: { type: "integer", example: 42 },
       exhibition_code: { type: "string", example: "EXH-042" },
       title: { type: "string", example: "Tech Innovation Expo" },
-      description: { type: ["string", "null"], example: "Annual technology showcase." },
+      description: {
+        type: ["string", "null"],
+        example: "Annual technology showcase.",
+      },
       description_delta: {
         anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Annual technology showcase.\n" }] },
       },
-      start_date: { type: "string", format: "date-time", example: "2024-05-01T09:00:00Z" },
-      end_date: { type: "string", format: "date-time", example: "2024-05-05T17:00:00Z" },
-      location: { type: ["string", "null"], example: "Hall A, Bangkok Convention Centre" },
+      start_date: {
+        type: "string",
+        format: "date-time",
+        example: "2024-05-01T09:00:00Z",
+      },
+      end_date: {
+        type: "string",
+        format: "date-time",
+        example: "2024-05-05T17:00:00Z",
+      },
+      location: {
+        type: ["string", "null"],
+        example: "Hall A, Bangkok Convention Centre",
+      },
       organizer_name: { type: "string", example: "Innovate Co." },
-      picture_path: { type: ["string", "null"], example: "uploads/exhibitions/exh-042.jpg" },
+      picture_path: {
+        type: ["string", "null"],
+        example: "uploads/exhibitions/exh-042.jpg",
+      },
+      detail_pdf_url: {
+        type: ["string", "null"],
+        example: "uploads/exhibitions/EXH_PDF1234567890.pdf",
+      },
       status: { type: ["string", "null"], example: "published" },
       created_by: { type: ["integer", "null"], example: 7 },
     },
-    required: ["exhibition_id", "title", "start_date", "end_date", "organizer_name"],
+    required: [
+      "exhibition_id",
+      "title",
+      "start_date",
+      "end_date",
+      "organizer_name",
+    ],
     examples: [
       {
         exhibition_id: 42,
         exhibition_code: "EXH-042",
         title: "Tech Innovation Expo",
         description: "Annual technology showcase.",
-        description_delta: { ops: [{ insert: "Annual technology showcase.\n" }] },
+        description_delta: {
+          ops: [{ insert: "Annual technology showcase.\n" }],
+        },
         start_date: "2024-05-01T09:00:00Z",
         end_date: "2024-05-05T17:00:00Z",
         location: "Hall A, Bangkok Convention Centre",
@@ -51,8 +80,15 @@ const schemas = [
       unit_id: { type: "integer", example: 105 },
       exhibition_id: { type: "integer", example: 42 },
       unit_name: { type: "string", example: "AI Playground" },
-      unit_type: { type: "string", enum: ["booth", "activity"], example: "booth" },
-      description: { type: ["string", "null"], example: "Interactive demos of AI gadgets." },
+      unit_type: {
+        type: "string",
+        enum: ["booth", "activity"],
+        example: "booth",
+      },
+      description: {
+        type: ["string", "null"],
+        example: "Interactive demos of AI gadgets.",
+      },
       description_delta: {
         anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Interactive demos of AI gadgets.\n" }] },
@@ -67,10 +103,24 @@ const schemas = [
         items: { type: "string" },
         example: ["คุณสมชาย", "คุณศิริพร"],
       },
-      poster_url: { type: ["string", "null"], example: "uploads/units/ai-playground.png" },
-      detail_pdf_url: { type: ["string", "null"], example: "uploads/units/EXP_PDF1234567890.pdf" },
-      starts_at: { type: ["string", "null"], format: "date-time", example: "2024-05-01T10:00:00Z" },
-      ends_at: { type: ["string", "null"], format: "date-time", example: "2024-05-01T18:00:00Z" },
+      poster_url: {
+        type: ["string", "null"],
+        example: "uploads/units/ai-playground.png",
+      },
+      detail_pdf_url: {
+        type: ["string", "null"],
+        example: "uploads/units/EXP_PDF1234567890.pdf",
+      },
+      starts_at: {
+        type: ["string", "null"],
+        format: "date-time",
+        example: "2024-05-01T10:00:00Z",
+      },
+      ends_at: {
+        type: ["string", "null"],
+        format: "date-time",
+        example: "2024-05-01T18:00:00Z",
+      },
     },
     required: ["unit_id", "exhibition_id", "unit_name", "unit_type"],
     examples: [
@@ -80,7 +130,9 @@ const schemas = [
         unit_name: "AI Playground",
         unit_type: "booth",
         description: "Interactive demos of AI gadgets.",
-        description_delta: { ops: [{ insert: "Interactive demos of AI gadgets.\n" }] },
+        description_delta: {
+          ops: [{ insert: "Interactive demos of AI gadgets.\n" }],
+        },
         staff_user_ids: [13, 27],
         staff_names: ["คุณสมชาย", "คุณศิริพร"],
         poster_url: "uploads/units/ai-playground.png",
@@ -108,19 +160,46 @@ const schemas = [
   {
     $id: "CreateExhibitionInput",
     type: "object",
-    required: ["title", "start_date", "end_date", "organizer_name", "created_by"],
+    required: [
+      "title",
+      "start_date",
+      "end_date",
+      "organizer_name",
+      "created_by",
+    ],
     properties: {
       title: { type: "string", example: "Tech Innovation Expo" },
-      description: { type: ["string", "null"], example: "Annual technology showcase." },
+      description: {
+        type: ["string", "null"],
+        example: "Annual technology showcase.",
+      },
       description_delta: {
         anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Annual technology showcase.\n" }] },
       },
-      start_date: { type: "string", format: "date-time", example: "2024-05-01T09:00:00Z" },
-      end_date: { type: "string", format: "date-time", example: "2024-05-05T17:00:00Z" },
-      location: { type: ["string", "null"], example: "Hall A, Bangkok Convention Centre" },
+      start_date: {
+        type: "string",
+        format: "date-time",
+        example: "2024-05-01T09:00:00Z",
+      },
+      end_date: {
+        type: "string",
+        format: "date-time",
+        example: "2024-05-05T17:00:00Z",
+      },
+      location: {
+        type: ["string", "null"],
+        example: "Hall A, Bangkok Convention Centre",
+      },
       organizer_name: { type: "string", example: "Innovate Co." },
-      picture_path: { type: ["string", "null"], example: "uploads/exhibitions/exh-042.jpg" },
+      picture_path: {
+        type: ["string", "null"],
+        example: "uploads/exhibitions/exh-042.jpg",
+      },
+      detail_pdf_url: {
+        type: ["string", "null"],
+        example: "uploads/exhibitions/EXH_PDF1234567890.pdf",
+      },
       status: {
         type: "string",
         enum: ["draft", "published", "ongoing", "ended", "archived"],
@@ -132,12 +211,15 @@ const schemas = [
       {
         title: "Tech Innovation Expo",
         description: "Annual technology showcase.",
-        description_delta: { ops: [{ insert: "Annual technology showcase.\n" }] },
+        description_delta: {
+          ops: [{ insert: "Annual technology showcase.\n" }],
+        },
         start_date: "2024-05-01T09:00:00Z",
         end_date: "2024-05-05T17:00:00Z",
         location: "Hall A, Bangkok Convention Centre",
         organizer_name: "Innovate Co.",
         picture_path: "uploads/exhibitions/exh-042.jpg",
+        detail_pdf_url: "uploads/exhibitions/EXH_PDF1234567890.pdf",
         status: "published",
         created_by: 7,
       },
@@ -153,11 +235,26 @@ const schemas = [
         anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Updated description\n" }] },
       },
-      start_date: { type: "string", format: "date-time", example: "2024-05-02T09:00:00Z" },
-      end_date: { type: "string", format: "date-time", example: "2024-05-06T17:00:00Z" },
+      start_date: {
+        type: "string",
+        format: "date-time",
+        example: "2024-05-02T09:00:00Z",
+      },
+      end_date: {
+        type: "string",
+        format: "date-time",
+        example: "2024-05-06T17:00:00Z",
+      },
       location: { type: ["string", "null"], example: "Hall B" },
       organizer_name: { type: "string", example: "Innovate Co." },
-      picture_path: { type: ["string", "null"], example: "uploads/exhibitions/exh-042-updated.jpg" },
+      picture_path: {
+        type: ["string", "null"],
+        example: "uploads/exhibitions/exh-042-updated.jpg",
+      },
+      detail_pdf_url: {
+        type: ["string", "null"],
+        example: "uploads/exhibitions/EXH_PDF_updated.pdf",
+      },
       status: {
         type: "string",
         enum: ["draft", "published", "ongoing", "ended", "archived"],
@@ -174,6 +271,7 @@ const schemas = [
         location: "Hall B",
         organizer_name: "Innovate Co.",
         picture_path: "uploads/exhibitions/exh-042-updated.jpg",
+        detail_pdf_url: "uploads/exhibitions/EXH_PDF_updated.pdf",
         status: "ongoing",
       },
     ],
@@ -184,8 +282,15 @@ const schemas = [
     required: ["unit_name", "unit_type"],
     properties: {
       unit_name: { type: "string", example: "AI Playground" },
-      unit_type: { type: "string", enum: ["booth", "activity"], example: "booth" },
-      description: { type: ["string", "null"], example: "Hands-on AI demo area." },
+      unit_type: {
+        type: "string",
+        enum: ["booth", "activity"],
+        example: "booth",
+      },
+      description: {
+        type: ["string", "null"],
+        example: "Hands-on AI demo area.",
+      },
       description_delta: {
         anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Hands-on AI demo area.\n" }] },
@@ -196,10 +301,24 @@ const schemas = [
         description: "List of staff user IDs assigned to this unit",
         example: [13, 27],
       },
-      poster_url: { type: ["string", "null"], example: "uploads/units/ai-playground.png" },
-      detail_pdf_url: { type: ["string", "null"], example: "uploads/units/EXP_PDF1234567890.pdf" },
-      starts_at: { type: ["string", "null"], format: "date-time", example: "2024-05-01T10:00:00Z" },
-      ends_at: { type: ["string", "null"], format: "date-time", example: "2024-05-01T18:00:00Z" },
+      poster_url: {
+        type: ["string", "null"],
+        example: "uploads/units/ai-playground.png",
+      },
+      detail_pdf_url: {
+        type: ["string", "null"],
+        example: "uploads/units/EXP_PDF1234567890.pdf",
+      },
+      starts_at: {
+        type: ["string", "null"],
+        format: "date-time",
+        example: "2024-05-01T10:00:00Z",
+      },
+      ends_at: {
+        type: ["string", "null"],
+        format: "date-time",
+        example: "2024-05-01T18:00:00Z",
+      },
     },
     additionalProperties: false,
     examples: [
@@ -221,8 +340,15 @@ const schemas = [
     type: "object",
     properties: {
       unit_name: { type: "string", example: "AI Playground" },
-      unit_type: { type: "string", enum: ["booth", "activity"], example: "activity" },
-      description: { type: ["string", "null"], example: "Hands-on AI demo area." },
+      unit_type: {
+        type: "string",
+        enum: ["booth", "activity"],
+        example: "activity",
+      },
+      description: {
+        type: ["string", "null"],
+        example: "Hands-on AI demo area.",
+      },
       description_delta: {
         anyOf: [quillDeltaSchema, { type: "string" }, { type: "null" }],
         example: { ops: [{ insert: "Hands-on AI demo area.\n" }] },
@@ -232,10 +358,24 @@ const schemas = [
         items: { type: "integer" },
         example: [13, 27],
       },
-      poster_url: { type: ["string", "null"], example: "uploads/units/ai-playground.png" },
-      detail_pdf_url: { type: ["string", "null"], example: "uploads/units/EXP_PDF1234567890.pdf" },
-      starts_at: { type: ["string", "null"], format: "date-time", example: "2024-05-02T10:00:00Z" },
-      ends_at: { type: ["string", "null"], format: "date-time", example: "2024-05-02T18:00:00Z" },
+      poster_url: {
+        type: ["string", "null"],
+        example: "uploads/units/ai-playground.png",
+      },
+      detail_pdf_url: {
+        type: ["string", "null"],
+        example: "uploads/units/EXP_PDF1234567890.pdf",
+      },
+      starts_at: {
+        type: ["string", "null"],
+        format: "date-time",
+        example: "2024-05-02T10:00:00Z",
+      },
+      ends_at: {
+        type: ["string", "null"],
+        format: "date-time",
+        example: "2024-05-02T18:00:00Z",
+      },
     },
     additionalProperties: false,
     examples: [
@@ -361,12 +501,28 @@ const schemas = [
       exhibition_id: { type: "integer", example: 1 },
       user_id: { type: "integer", example: 13 },
       ticket_code: { type: "string", example: "TKT-EX202501-00001" },
-      ticket_type: { type: "string", enum: ["visitor", "staff", "vip"], example: "visitor" },
-      issued_at: { type: "string", format: "date-time", example: "2025-10-20T14:30:00Z" },
+      ticket_type: {
+        type: "string",
+        enum: ["visitor", "staff", "vip"],
+        example: "visitor",
+      },
+      issued_at: {
+        type: "string",
+        format: "date-time",
+        example: "2025-10-20T14:30:00Z",
+      },
       is_used: { type: "boolean", example: false },
       used_at: { type: ["string", "null"], format: "date-time", example: null },
     },
-    required: ["ticket_id", "exhibition_id", "user_id", "ticket_code", "ticket_type", "issued_at", "is_used"],
+    required: [
+      "ticket_id",
+      "exhibition_id",
+      "user_id",
+      "ticket_code",
+      "ticket_type",
+      "issued_at",
+      "is_used",
+    ],
     examples: [
       {
         ticket_id: 1,
@@ -386,13 +542,21 @@ const schemas = [
     properties: {
       ticket_id: { type: "integer", example: 1 },
       ticket_code: { type: "string", example: "TKT-EX202501-00001" },
-      ticket_type: { type: "string", enum: ["visitor", "staff", "vip"], example: "visitor" },
+      ticket_type: {
+        type: "string",
+        enum: ["visitor", "staff", "vip"],
+        example: "visitor",
+      },
       exhibition_id: { type: "integer", example: 1 },
       exhibition_code: { type: "string", example: "EX202501" },
       exhibition_title: { type: "string", example: "Smart Tech Expo 2025" },
       user_id: { type: "integer", example: 13 },
       user_name: { type: "string", example: "สมชาย ใจดี" },
-      issued_at: { type: "string", format: "date-time", example: "2025-10-20T14:30:00Z" },
+      issued_at: {
+        type: "string",
+        format: "date-time",
+        example: "2025-10-20T14:30:00Z",
+      },
       is_used: { type: "boolean", example: false },
       used_at: { type: ["string", "null"], format: "date-time", example: null },
     },
@@ -431,7 +595,11 @@ const schemas = [
     properties: {
       exhibition_id: { type: "integer", minimum: 1, example: 1 },
       user_id: { type: "integer", minimum: 1, example: 13 },
-      ticket_type: { type: "string", enum: ["visitor", "staff", "vip"], example: "visitor" },
+      ticket_type: {
+        type: "string",
+        enum: ["visitor", "staff", "vip"],
+        example: "visitor",
+      },
     },
     additionalProperties: false,
     examples: [
@@ -449,8 +617,10 @@ const schemas = [
     properties: {
       qr_token: {
         type: "string",
-        description: "JWT token containing user registration data for QR code display",
-        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEzLCJleHMiOlsxLDJdLCJpYXQiOjE3MDMxMDAwMDAsImV4cCI6MTcwMzEwMDMwMH0.signature",
+        description:
+          "JWT token containing user registration data for QR code display",
+        example:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEzLCJleHMiOlsxLDJdLCJpYXQiOjE3MDMxMDAwMDAsImV4cCI6MTcwMzEwMDMwMH0.signature",
       },
       expires_in: {
         type: "integer",
@@ -460,7 +630,8 @@ const schemas = [
     },
     examples: [
       {
-        qr_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEzLCJleHMiOlsxLDJdLCJpYXQiOjE3MDMxMDAwMDAsImV4cCI6MTcwMzEwMDMwMH0.signature",
+        qr_token:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEzLCJleHMiOlsxLDJdLCJpYXQiOjE3MDMxMDAwMDAsImV4cCI6MTcwMzEwMDMwMH0.signature",
         expires_in: 300,
       },
     ],

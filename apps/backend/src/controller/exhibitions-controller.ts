@@ -1,23 +1,28 @@
-import {
-  getExhibitionsList,
-  getExhibitionById,
-  addExhibitions,
-  updateExhibition,
-  deleteExhibition,
-} from "../queries/exhibitions_query.js";
-import type { AddExhibitionPayload } from "../models/exhibition.model.js";
-import type { FastifyReply, FastifyRequest } from "fastify";
-import type { FastifyInstance } from "fastify";
-import { AppError } from "../errors.js";
-import { removeUploadedFile } from "../services/file-upload.js";
-import {
-  parseMultipartPayload,
-  buildUpdatePayload,
-} from "../services/exhibitions-payload-builder.js";
-import { z } from "zod";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { CreateExhibitionSchema, ExhibitionSchema, UpdateExhibitionSchema, AddExhibitionPayloadSchema, UpdateExhibitionPayloadSchema } from "../models/exhibition.model.js";
+import { z } from "zod";
+import { AppError } from "../errors.js";
+import type { AddExhibitionPayload } from "../models/exhibition.model.js";
+import {
+  AddExhibitionPayloadSchema,
+  CreateExhibitionSchema,
+  ExhibitionSchema,
+  UpdateExhibitionPayloadSchema,
+  UpdateExhibitionSchema,
+} from "../models/exhibition.model.js";
+import {
+  addExhibitions,
+  deleteExhibition,
+  getExhibitionById,
+  getExhibitionsList,
+  updateExhibition,
+} from "../queries/exhibitions_query.js";
 import { requireOrganizerAuth } from "../services/auth-middleware.js";
+import {
+  buildUpdatePayload,
+  parseMultipartPayload,
+} from "../services/exhibitions-payload-builder.js";
+import { removeUploadedFile } from "../services/file-upload.js";
 
 export default async function exhibitionsController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -35,7 +40,7 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
     },
     async () => {
       return await getExhibitionsList();
-    }
+    },
   );
 
   app.get(
@@ -54,7 +59,7 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
     },
     async (req: FastifyRequest<{ Params: { id: string } }>) => {
       return await getExhibitionById(req.params.id);
-    }
+    },
   );
   app.post(
     "/",
@@ -91,16 +96,16 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
       });
       if (!result.success) {
         throw new AppError(
-          "Validation failed",    
-          400,                   
-          "VALIDATION_ERROR",       
-          z.treeifyError(result.error)
+          "Validation failed",
+          400,
+          "VALIDATION_ERROR",
+          z.treeifyError(result.error),
         );
       }
       const exhibition = await addExhibitions(result.data);
       reply.code(201);
       return exhibition;
-    }
+    },
   );
 
   app.put(
@@ -124,6 +129,7 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
 
       const existingExhibition = await getExhibitionById(id);
       const previousPicturePath = existingExhibition?.picture_path ?? null;
+      const previousPdfPath = existingExhibition?.detail_pdf_url ?? null;
 
       const payload = req.isMultipart()
         ? await parseMultipartPayload(req, "update")
@@ -136,19 +142,25 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
           "Validation failed",
           400,
           "VALIDATION_ERROR",
-          z.treeifyError(result.error)
+          z.treeifyError(result.error),
         );
       }
 
       const exhibition = await updateExhibition(id, result.data);
 
-      // Delete old file if a new one was uploaded
-      if (previousPicturePath && previousPicturePath !== exhibition.picture_path) {
+      // Delete old files if new ones were uploaded
+      if (
+        previousPicturePath &&
+        previousPicturePath !== exhibition.picture_path
+      ) {
         await removeUploadedFile(previousPicturePath, req.log);
+      }
+      if (previousPdfPath && previousPdfPath !== exhibition.detail_pdf_url) {
+        await removeUploadedFile(previousPdfPath, req.log);
       }
 
       return exhibition;
-    }
+    },
   );
   app.delete(
     "/:id",
@@ -167,8 +179,13 @@ export default async function exhibitionsController(fastify: FastifyInstance) {
     },
     async (req: FastifyRequest, reply: FastifyReply) => {
       const { id } = req.params as { id: string };
+      const existingExhibition = await getExhibitionById(id);
       await deleteExhibition(id);
+      await Promise.all([
+        removeUploadedFile(existingExhibition?.picture_path ?? null, req.log),
+        removeUploadedFile(existingExhibition?.detail_pdf_url ?? null, req.log),
+      ]);
       reply.code(204).send();
-    }
+    },
   );
 }
