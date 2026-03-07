@@ -1,4 +1,6 @@
+import { ChevronRight, FileText, Settings2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
 import { useSurveyQuestions } from "../../pages/Survey/hooks";
 import styles from "./SurveyManageModal.module.css";
 
@@ -7,7 +9,10 @@ interface SurveyManageModalProps {
   onClose: () => void;
 }
 
-export default function SurveyManageModal({ exhibitionId, onClose }: SurveyManageModalProps) {
+export default function SurveyManageModal({
+  exhibitionId,
+  onClose,
+}: SurveyManageModalProps) {
   const navigate = useNavigate();
 
   // Check if surveys exist
@@ -25,7 +30,8 @@ export default function SurveyManageModal({ exhibitionId, onClose }: SurveyManag
   const hasUnitSurvey = unitSurveys && unitSurveys.length > 0;
 
   const handleCreateOrEdit = (type: "EXHIBITION" | "UNIT") => {
-    const hasSurvey = type === "EXHIBITION" ? hasExhibitionSurvey : hasUnitSurvey;
+    const hasSurvey =
+      type === "EXHIBITION" ? hasExhibitionSurvey : hasUnitSurvey;
 
     if (hasSurvey) {
       // Edit mode
@@ -39,47 +45,87 @@ export default function SurveyManageModal({ exhibitionId, onClose }: SurveyManag
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 className={styles.title}>จัดการแบบสอบถาม</h2>
+        <div className={styles.header}>
+          <div className={styles.headerIcon}>
+            <Settings2 size={24} className={styles.headerIconSvg} />
+          </div>
+          <h2 className={styles.headerTitle}>จัดการแบบสอบถาม</h2>
+          <p className={styles.headerSubtitle}>
+            เลือกแบบสอบถามที่คุณต้องการจัดการหรือแก้ไข
+          </p>
+        </div>
 
-        <div className={styles.buttonGroup}>
+        <div className={styles.actions}>
           <button
-            className={styles.surveyButton}
+            className={styles.cardButton}
             onClick={() => handleCreateOrEdit("EXHIBITION")}
+            type="button"
           >
-            <div className={styles.buttonContent}>
-              <span className={styles.buttonTitle}>
-                {hasExhibitionSurvey ? "แก้ไข" : "สร้าง"}แบบสอบถามนิทรรศการ
-              </span>
-              <span className={styles.buttonSubtitle}>
-                สำหรับประเมินความพึงพอใจนิทรรศการ
-              </span>
+            <div className={styles.cardMain}>
+              <div className={`${styles.cardIcon} ${styles.cardIconBlue}`}>
+                <FileText size={20} />
+              </div>
+              <div className={styles.cardText}>
+                <h3 className={styles.cardTitle}>
+                  {hasExhibitionSurvey ? "แก้ไข" : "สร้าง"}แบบสอบถามนิทรรศการ
+                </h3>
+                <p className={styles.cardSubtitle}>
+                  สำหรับประเมินความพึงพอใจนิทรรศการ
+                </p>
+              </div>
             </div>
-            {hasExhibitionSurvey && (
-              <span className={styles.badge}>มีแล้ว</span>
-            )}
+
+            <div className={styles.cardRight}>
+              {hasExhibitionSurvey && (
+                <span className={styles.badge}>
+                  <span className={styles.badgeDot} />
+                  มีแล้ว
+                </span>
+              )}
+              <ChevronRight size={20} className={styles.chevron} />
+            </div>
           </button>
 
           <button
-            className={styles.surveyButton}
+            className={styles.cardButton}
             onClick={() => handleCreateOrEdit("UNIT")}
+            type="button"
           >
-            <div className={styles.buttonContent}>
-              <span className={styles.buttonTitle}>
-                {hasUnitSurvey ? "แก้ไข" : "สร้าง"}แบบสอบถามบูธ
-              </span>
-              <span className={styles.buttonSubtitle}>
-                สำหรับประเมินแต่ละบูธในนิทรรศการ
-              </span>
+            <div className={styles.cardMain}>
+              <div className={`${styles.cardIcon} ${styles.cardIconPurple}`}>
+                <FileText size={20} />
+              </div>
+              <div className={styles.cardText}>
+                <h3 className={styles.cardTitle}>
+                  {hasUnitSurvey ? "แก้ไข" : "สร้าง"}แบบสอบถามบูธ
+                </h3>
+                <p className={styles.cardSubtitle}>
+                  สำหรับประเมินแต่ละบูธในนิทรรศการ
+                </p>
+              </div>
             </div>
-            {hasUnitSurvey && (
-              <span className={styles.badge}>มีแล้ว</span>
-            )}
+
+            <div className={styles.cardRight}>
+              {hasUnitSurvey && (
+                <span className={styles.badge}>
+                  <span className={styles.badgeDot} />
+                  มีแล้ว
+                </span>
+              )}
+              <ChevronRight size={20} className={styles.chevron} />
+            </div>
           </button>
         </div>
 
-        <button className={styles.closeButton} onClick={onClose}>
-          ปิด
-        </button>
+        <div className={styles.footer}>
+          <button
+            className={styles.closeButton}
+            onClick={onClose}
+            type="button"
+          >
+            ปิด
+          </button>
+        </div>
       </div>
     </div>
   );
