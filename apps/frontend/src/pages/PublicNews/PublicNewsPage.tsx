@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import type { UnitApi } from "../../types/units";
 import { toFileUrl } from "../../utils/url";
-import styles from "./PublicNewsPage.module.css";
 import { useAllNewsLiff } from "./hooks/useAllNews";
+import styles from "./PublicNewsPage.module.css";
+import { PublicNewsPageSkeleton } from "./PublicNewsPageSkeleton";
 
 function getMinutesUntil(startsAt: string | undefined): number {
   if (!startsAt) return 0;
@@ -77,9 +78,9 @@ export default function PublicNewsPage() {
         </div>
 
         {state.status === "initializing" || state.status === "loading" ? (
-          <div className={styles.loading}>กำลังโหลด...</div>
+          <PublicNewsPageSkeleton />
         ) : state.status === "not_logged_in" ? (
-          <div className={styles.loading}>กำลังเข้าสู่ระบบ LINE...</div>
+          <PublicNewsPageSkeleton />
         ) : state.status === "error" ? (
           <div className={styles.empty}>
             <Newspaper className={styles.emptyIcon} />
