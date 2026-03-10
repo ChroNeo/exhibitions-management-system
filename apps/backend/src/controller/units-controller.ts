@@ -1,21 +1,30 @@
-import type {
-  FastifyInstance,
-  FastifyReply,
-  FastifyRequest,
-} from "fastify";
-import { addUnit, deleteUnit, getUnitsByExhibitionId, getUnitsById, updateUnit } from "../queries/units-query.js";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
+import { AppError } from "../errors.js";
+import {
+  AddUnitPayloadSchema,
+  CreateUnitSchema,
+  UnitSchema,
+  UpdateUnitPayloadSchema,
+  UpdateUnitSchema,
+} from "../models/unit.model.js";
+import {
+  addUnit,
+  deleteUnit,
+  getUnitsByExhibitionId,
+  getUnitsById,
+  getUpcomingUnits,
+  updateUnit,
+} from "../queries/units-query.js";
+import { requireOrganizerAuth } from "../services/auth-middleware.js";
 import { removeUploadedFile } from "../services/file-upload.js";
 import {
-  parseMultipartPayload,
   buildCreatePayload,
-  parseMultipartUpdatePayload,
   buildUpdatePayload,
+  parseMultipartPayload,
+  parseMultipartUpdatePayload,
 } from "../services/units-payload-builder.js";
-import { z } from "zod";
-import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { CreateUnitSchema, UpdateUnitSchema, UnitSchema, AddUnitPayloadSchema, UpdateUnitPayloadSchema } from "../models/unit.model.js";
-import { requireOrganizerAuth } from "../services/auth-middleware.js";
-import { AppError } from "../errors.js";
 
 export default async function unitsController(fastify: FastifyInstance) {
   await fastify.register(
@@ -38,7 +47,35 @@ export default async function unitsController(fastify: FastifyInstance) {
         },
         async (req: FastifyRequest<{ Params: { ex_id: string } }>) => {
           return await getUnitsByExhibitionId(req.params.ex_id);
-        }
+        },
+      );
+
+      app.get(
+        "/units/upcoming",
+        {
+          schema: {
+            tags: ["Units"],
+            summary: "Get units starting within N minutes",
+            params: z.object({
+              ex_id: z.string().regex(/^\d+$/),
+            }),
+            querystring: z.object({
+              minutes: z.string().regex(/^\d+$/).optional(),
+            }),
+            response: {
+              200: z.array(UnitSchema),
+            },
+          },
+        },
+        async (
+          req: FastifyRequest<{
+            Params: { ex_id: string };
+            Querystring: { minutes?: string };
+          }>,
+        ) => {
+          const minutes = req.query.minutes ? Number(req.query.minutes) : 30;
+          return await getUpcomingUnits(req.params.ex_id, minutes);
+        },
       );
 
       app.get(
@@ -56,9 +93,11 @@ export default async function unitsController(fastify: FastifyInstance) {
             },
           },
         },
-        async (req: FastifyRequest<{ Params: { ex_id: string; id: string } }>) => {
+        async (
+          req: FastifyRequest<{ Params: { ex_id: string; id: string } }>,
+        ) => {
           return await getUnitsById(req.params.ex_id, req.params.id);
-        }
+        },
       );
 
       app.post(
@@ -81,7 +120,9 @@ export default async function unitsController(fastify: FastifyInstance) {
           const { ex_id } = req.params as { ex_id: string };
 
           const payload = req.isMultipart()
-            ? await parseMultipartPayload(req as FastifyRequest<{ Params: { ex_id: string } }>)
+            ? await parseMultipartPayload(
+                req as FastifyRequest<{ Params: { ex_id: string } }>,
+              )
             : buildCreatePayload(ex_id, req.body);
 
           // Validate with Zod
@@ -91,14 +132,14 @@ export default async function unitsController(fastify: FastifyInstance) {
               "Validation failed",
               400,
               "VALIDATION_ERROR",
-              z.treeifyError(result.error)
+              z.treeifyError(result.error),
             );
           }
 
           const unit = await addUnit(result.data);
           reply.code(201);
           return unit;
-        }
+        },
       );
 
       app.put(
@@ -125,7 +166,11 @@ export default async function unitsController(fastify: FastifyInstance) {
           const previousPosterPath = existingUnit?.poster_url ?? null;
 
           const payload = req.isMultipart()
-            ? await parseMultipartUpdatePayload(req as FastifyRequest<{ Params: { ex_id: string; id: string } }>)
+            ? await parseMultipartUpdatePayload(
+                req as FastifyRequest<{
+                  Params: { ex_id: string; id: string };
+                }>,
+              )
             : buildUpdatePayload(req.body);
 
           // Validate with Zod
@@ -135,7 +180,7 @@ export default async function unitsController(fastify: FastifyInstance) {
               "Validation failed",
               400,
               "VALIDATION_ERROR",
-              z.treeifyError(result.error)
+              z.treeifyError(result.error),
             );
           }
 
@@ -148,7 +193,7 @@ export default async function unitsController(fastify: FastifyInstance) {
           }
           reply.code(200);
           return unit;
-        }
+        },
       );
 
       app.delete(
@@ -176,9 +221,9 @@ export default async function unitsController(fastify: FastifyInstance) {
             removeUploadedFile(existingUnit?.detail_pdf_url ?? null, req.log),
           ]);
           reply.code(204).send();
-        }
+        },
       );
     },
-    { prefix: "/:ex_id" }
+    { prefix: "/:ex_id" },
   );
 }

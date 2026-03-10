@@ -1,9 +1,66 @@
-import { Calendar, ChevronRight, Clock, Newspaper } from "lucide-react";
+import { Bell, Clock, Newspaper, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
+import type { UnitApi } from "../../types/units";
 import { toFileUrl } from "../../utils/url";
 import styles from "./PublicNewsPage.module.css";
 import { useAllNewsLiff } from "./hooks/useAllNews";
+
+function getMinutesUntil(startsAt: string | undefined): number {
+  if (!startsAt) return 0;
+  const start = new Date(startsAt.replace(" ", "T"));
+  return Math.max(1, Math.ceil((start.getTime() - Date.now()) / 60000));
+}
+
+function formatStartTime(startsAt: string | undefined): string {
+  if (!startsAt) return "-";
+  const timePart = startsAt.split(" ")[1] ?? "";
+  return timePart.slice(0, 5);
+}
+
+function UpcomingUnitCard({
+  unit,
+  onClick,
+}: {
+  unit: UnitApi;
+  onClick: () => void;
+}) {
+  const minutesLeft = getMinutesUntil(unit.starts_at);
+  const staffNames = Array.isArray(unit.staff_names)
+    ? unit.staff_names.filter(Boolean)
+    : [];
+
+  return (
+    <div className={styles.upcomingCard} onClick={onClick}>
+      <div className={styles.upcomingCardHeader}>
+        <span className={styles.urgentBadge}>
+          <Bell size={11} />
+          เริ่มใน {minutesLeft} นาที
+        </span>
+        <span className={styles.typeBadge}>
+          {unit.unit_type === "booth" ? "บูธ" : "กิจกรรม"}
+        </span>
+      </div>
+
+      <h3 className={styles.upcomingUnitName}>{unit.unit_name}</h3>
+
+      {unit.description && (
+        <p className={styles.upcomingDesc}>{unit.description}</p>
+      )}
+
+      <div className={styles.upcomingMeta}>
+        <Clock size={13} />
+        <span>เริ่ม {formatStartTime(unit.starts_at)} น.</span>
+        {staffNames.length > 0 && (
+          <>
+            <Users size={13} className={styles.upcomingMetaSep} />
+            <span>{staffNames.slice(0, 2).join(", ")}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function PublicNewsPage() {
   const navigate = useNavigate();
@@ -27,75 +84,88 @@ export default function PublicNewsPage() {
           <div className={styles.empty}>
             <Newspaper className={styles.emptyIcon} />
             <p className={styles.emptyText}>{state.message}</p>
-            <button type="button" onClick={refetch}>ลองใหม่</button>
+            <button type="button" onClick={refetch}>
+              ลองใหม่
+            </button>
           </div>
-        ) : state.data.length === 0 ? (
+        ) : state.data.news.length === 0 &&
+          state.data.upcomingUnits.length === 0 ? (
           <div className={styles.empty}>
             <Newspaper className={styles.emptyIcon} />
             <p className={styles.emptyText}>ยังไม่มีข่าวสารในขณะนี้</p>
           </div>
         ) : (
-          <div className={styles.grid}>
-            {state.data.map((news) => {
-              const [datePart, timePart] = news.created_at?.split(" ") ?? [];
+          <>
+            {state.data.upcomingUnits.length > 0 && (
+              <section className={styles.upcomingSection}>
+                <div className={styles.upcomingHeader}>
+                  <Bell className={styles.upcomingIcon} />
+                  <h2 className={styles.upcomingTitle}>
+                    กำลังจะเริ่มเร็วๆ นี้
+                  </h2>
+                  <span className={styles.upcomingCount}>
+                    {state.data.upcomingUnits.length} รายการ
+                  </span>
+                </div>
+                <div className={styles.upcomingGrid}>
+                  {state.data.upcomingUnits.map((unit) => (
+                    <UpcomingUnitCard
+                      key={unit.unit_id}
+                      unit={unit}
+                      onClick={() =>
+                        navigate(
+                          `/exhibitions/${unit.exhibition_id}/unit/${unit.unit_id}`,
+                        )
+                      }
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
 
-              return (
-                <div
-                  key={news.announcement_id}
-                  className={styles.card}
-                  onClick={() =>
-                    navigate(`/news/detail/${news.announcement_id}`)
-                  }
-                >
-                  {/* Image */}
-                  <div className={styles.imageWrap}>
-                    <div className={styles.imagePlaceholder} />
-                    {news.image_url && (
-                      <img
-                        src={toFileUrl(news.image_url)}
-                        alt={news.topic}
-                        className={styles.image}
-                      />
-                    )}
-                    <div className={styles.badgeWrap}>
-                      <span className={styles.badge}>News</span>
-                    </div>
-                  </div>
+            {state.data.news.length > 0 && (
+              <div className={styles.grid}>
+                {state.data.news.map((news) => {
+                  const [datePart] = news.created_at?.split(" ") ?? [];
 
-                  {/* Content */}
-                  <div className={styles.content}>
-                    {news.created_at && (
-                      <div className={styles.meta}>
-                        {datePart && (
-                          <span className={styles.metaItem}>
-                            <Calendar className={styles.metaIcon} />
-                            {datePart}
-                          </span>
-                        )}
-                        {timePart && (
-                          <span className={styles.metaItem}>
-                            <Clock className={styles.metaIcon} />
-                            {timePart}
-                          </span>
+                  return (
+                    <div
+                      key={news.announcement_id}
+                      className={styles.newsCard}
+                      onClick={() =>
+                        navigate(`/news/detail/${news.announcement_id}`)
+                      }
+                    >
+                      <div className={styles.newsImageWrap}>
+                        {news.image_url && (
+                          <img
+                            src={toFileUrl(news.image_url)}
+                            alt={news.topic}
+                            className={styles.newsImage}
+                          />
                         )}
                       </div>
-                    )}
 
-                    <h3 className={styles.cardTitle}>{news.topic}</h3>
+                      <div className={styles.newsContent}>
+                        <div className={styles.newsMeta}>
+                          <span className={styles.newsTag}>ประกาศ</span>
+                          {datePart && (
+                            <span className={styles.newsDate}>{datePart}</span>
+                          )}
+                        </div>
 
-                    {news.description && (
-                      <p className={styles.cardDesc}>{news.description}</p>
-                    )}
+                        <h3 className={styles.newsTitle}>{news.topic}</h3>
 
-                    <div className={styles.readMore}>
-                      <span>อ่านเพิ่มเติม</span>
-                      <ChevronRight className={styles.readMoreIcon} />
+                        {news.description && (
+                          <p className={styles.newsDesc}>{news.description}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

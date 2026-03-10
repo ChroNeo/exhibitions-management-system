@@ -117,128 +117,250 @@
   }
 }
 
-/* ── Card ── */
+/* ── News Card ── */
 
-.card {
+.newsCard {
   background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
-  border: 1px solid #f1f5f9;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  border: 1px solid #f3f4f6;
   overflow: hidden;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  transition: box-shadow 0.3s, transform 0.3s;
+  transition: box-shadow 0.2s;
 }
 
-.card:hover {
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
-  transform: translateY(-4px);
+.newsCard:hover {
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
 }
 
-/* ── Card Image ── */
-
-.imageWrap {
+.newsImageWrap {
   position: relative;
-  height: 12rem;
-  overflow: hidden;
-  background: #e2e8f0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #f3f4f6;
 }
 
-.imagePlaceholder {
-  position: absolute;
-  inset: 0;
-  background: #e2e8f0;
-}
-
-.image {
-  position: relative;
+.newsImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.7s;
 }
 
-.card:hover .image {
-  transform: scale(1.1);
-}
+/* ── News Content ── */
 
-/* ── Badge on Image ── */
-
-.badgeWrap {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-}
-
-.badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #4f46e5;
-  background: rgb(255 255 255 / 0.92);
-  padding: 0.3rem 0.75rem;
-  border-radius: 9999px;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.08);
-}
-
-/* ── Card Content ── */
-
-.content {
+.newsContent {
   padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
 }
 
-/* ── Meta (date + time) ── */
-
-.meta {
+.newsMeta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
 }
 
-.metaItem {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.newsTag {
   font-size: 0.75rem;
-  color: #64748b;
+  font-weight: 500;
+  color: #4f46e5;
+  background: #eef2ff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
 }
 
-.metaIcon {
-  width: 0.875rem;
-  height: 0.875rem;
+.newsDate {
+  font-size: 0.75rem;
+  color: #9ca3af;
 }
 
-/* ── Title ── */
-
-.cardTitle {
+.newsTitle {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 0.5rem;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.newsDesc {
+  color: #4b5563;
+  font-size: 0.875rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.4;
-  transition: color 0.2s;
 }
 
-.card:hover .cardTitle {
-  color: #4f46e5;
+/* ── Upcoming Section ── */
+
+.upcomingSection {
+  margin-bottom: 2.5rem;
+  background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%);
+  border: 1.5px solid #fde68a;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.upcomingHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 1.25rem;
+}
+
+.upcomingIcon {
+  width: 1.375rem;
+  height: 1.375rem;
+  color: #d97706;
+  flex-shrink: 0;
+  animation: bellRing 2.5s ease-in-out infinite;
+}
+
+@keyframes bellRing {
+
+  0%,
+  90%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  92% {
+    transform: rotate(-15deg);
+  }
+
+  96% {
+    transform: rotate(15deg);
+  }
+}
+
+.upcomingTitle {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0;
+}
+
+.upcomingCount {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+}
+
+/* ── Upcoming Grid ── */
+
+.upcomingGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .upcomingGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .upcomingGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── Upcoming Card ── */
+
+.upcomingCard {
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid #fde68a;
+  padding: 1.125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.upcomingCard:hover {
+  box-shadow: 0 4px 18px rgba(217, 119, 6, 0.16);
+  transform: translateY(-2px);
+}
+
+/* ── Card Header Row ── */
+
+.upcomingCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Urgent Badge ── */
+
+.urgentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: #d97706;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  animation: pulseBadge 2s ease-in-out infinite;
+  letter-spacing: 0.01em;
+}
+
+@keyframes pulseBadge {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.5);
+  }
+
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 0 5px rgba(217, 119, 6, 0);
+  }
+}
+
+/* ── Type Badge ── */
+
+.typeBadge {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* ── Unit Name ── */
+
+.upcomingUnitName {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ── Description ── */
 
-.cardDesc {
-  color: #64748b;
-  font-size: 0.875rem;
-  margin: 0 0 1rem;
+.upcomingDesc {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -247,26 +369,18 @@
   flex-grow: 1;
 }
 
-/* ── Read More ── */
+/* ── Meta Row ── */
 
-.readMore {
+.upcomingMeta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding-top: 1rem;
-  border-top: 1px solid #f1f5f9;
-  color: #4f46e5;
-  font-size: 0.875rem;
-  font-weight: 500;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
   margin-top: auto;
+  flex-wrap: wrap;
 }
 
-.readMoreIcon {
-  width: 1rem;
-  height: 1rem;
-  transition: transform 0.2s;
-}
-
-.card:hover .readMoreIcon {
-  transform: translateX(4px);
+.upcomingMetaSep {
+  margin-left: 0.25rem;
 }

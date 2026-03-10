@@ -1,6 +1,12 @@
 import type { ResultSetHeader } from "mysql2";
 import { AppError } from "../errors.js";
-import type { AddUnitPayload, UnitRowBase, UnitRowWithStaff, UnitStaffRow, UpdateUnitPayload } from "../models/unit.model.js";
+import type {
+  AddUnitPayload,
+  UnitRowBase,
+  UnitRowWithStaff,
+  UnitStaffRow,
+  UpdateUnitPayload,
+} from "../models/unit.model.js";
 import { safeQuery } from "../services/dbconn.js";
 
 const UNIT_FIELDS = `
@@ -28,8 +34,14 @@ function normaliseStaffIds(staffIds?: number[] | null): number[] | undefined {
   return Array.from(new Set(cleaned));
 }
 
-async function replaceUnitStaffs(unitId: number, staffIds: number[]): Promise<void> {
-  await safeQuery<ResultSetHeader>(`DELETE FROM unit_staffs WHERE unit_id = ?`, [unitId]);
+async function replaceUnitStaffs(
+  unitId: number,
+  staffIds: number[],
+): Promise<void> {
+  await safeQuery<ResultSetHeader>(
+    `DELETE FROM unit_staffs WHERE unit_id = ?`,
+    [unitId],
+  );
   if (!staffIds.length) {
     return;
   }
@@ -40,7 +52,7 @@ async function replaceUnitStaffs(unitId: number, staffIds: number[]): Promise<vo
   });
   await safeQuery<ResultSetHeader>(
     `INSERT INTO unit_staffs (unit_id, staff_user_id) VALUES ${values}`,
-    params
+    params,
   );
 }
 
@@ -65,7 +77,7 @@ async function attachStaff(rows: UnitRowBase[]): Promise<UnitRowWithStaff[]> {
         nu.full_name ASC,
         us.staff_user_id ASC
     `,
-    unitIds
+    unitIds,
   );
 
   const grouped = new Map<number, UnitStaffRow[]>();
@@ -91,7 +103,9 @@ async function attachStaff(rows: UnitRowBase[]): Promise<UnitRowWithStaff[]> {
   });
 }
 
-export async function getUnitsByExhibitionId(exId: string | number): Promise<UnitRowWithStaff[]> {
+export async function getUnitsByExhibitionId(
+  exId: string | number,
+): Promise<UnitRowWithStaff[]> {
   if (!/^\d+$/.test(String(exId))) {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
   }
@@ -104,7 +118,7 @@ export async function getUnitsByExhibitionId(exId: string | number): Promise<Uni
       WHERE u.exhibition_id = ?
       ORDER BY u.starts_at, u.unit_id
     `,
-    [exId]
+    [exId],
   );
 
   return attachStaff(rows);
@@ -126,7 +140,7 @@ export async function getUnitsById(
       WHERE u.exhibition_id = ? AND u.unit_id = ?
       LIMIT 1
     `,
-    [exId, unitId]
+    [exId, unitId],
   );
 
   if (!rows.length) {
@@ -136,7 +150,9 @@ export async function getUnitsById(
   return attachStaff(rows);
 }
 
-export async function addUnit(payload: AddUnitPayload): Promise<UnitRowWithStaff> {
+export async function addUnit(
+  payload: AddUnitPayload,
+): Promise<UnitRowWithStaff> {
   const result = await safeQuery<ResultSetHeader>(
     `INSERT INTO units
       (exhibition_id, unit_name, unit_type, description, description_delta, poster_url, detail_pdf_url, starts_at, ends_at)
@@ -151,7 +167,7 @@ export async function addUnit(payload: AddUnitPayload): Promise<UnitRowWithStaff
       payload.detail_pdf_url ?? null,
       payload.starts_at ?? null,
       payload.ends_at ?? null,
-    ]
+    ],
   );
 
   const staffIds = normaliseStaffIds(payload.staff_user_ids);
@@ -168,7 +184,7 @@ export async function addUnit(payload: AddUnitPayload): Promise<UnitRowWithStaff
       WHERE u.exhibition_id = ? AND u.unit_id = ?
       LIMIT 1
     `,
-    [payload.exhibition_id, result.insertId]
+    [payload.exhibition_id, result.insertId],
   );
 
   const unit = (await attachStaff(rows))[0];
@@ -182,7 +198,7 @@ export async function addUnit(payload: AddUnitPayload): Promise<UnitRowWithStaff
 export async function updateUnit(
   exId: string | number,
   unitId: string | number,
-  changes: UpdateUnitPayload
+  changes: UpdateUnitPayload,
 ): Promise<UnitRowWithStaff> {
   if (!/^\d+$/.test(String(exId)) || !/^\d+$/.test(String(unitId))) {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
@@ -200,14 +216,22 @@ export async function updateUnit(
     params.push(value);
   };
 
-  if (scalarChanges.unit_name !== undefined) push("unit_name", scalarChanges.unit_name);
-  if (scalarChanges.unit_type !== undefined) push("unit_type", scalarChanges.unit_type);
-  if (scalarChanges.description !== undefined) push("description", scalarChanges.description);
-  if (scalarChanges.description_delta !== undefined) push("description_delta", scalarChanges.description_delta);
-  if (scalarChanges.poster_url !== undefined) push("poster_url", scalarChanges.poster_url);
-  if (scalarChanges.detail_pdf_url !== undefined) push("detail_pdf_url", scalarChanges.detail_pdf_url);
-  if (scalarChanges.starts_at !== undefined) push("starts_at", scalarChanges.starts_at);
-  if (scalarChanges.ends_at !== undefined) push("ends_at", scalarChanges.ends_at);
+  if (scalarChanges.unit_name !== undefined)
+    push("unit_name", scalarChanges.unit_name);
+  if (scalarChanges.unit_type !== undefined)
+    push("unit_type", scalarChanges.unit_type);
+  if (scalarChanges.description !== undefined)
+    push("description", scalarChanges.description);
+  if (scalarChanges.description_delta !== undefined)
+    push("description_delta", scalarChanges.description_delta);
+  if (scalarChanges.poster_url !== undefined)
+    push("poster_url", scalarChanges.poster_url);
+  if (scalarChanges.detail_pdf_url !== undefined)
+    push("detail_pdf_url", scalarChanges.detail_pdf_url);
+  if (scalarChanges.starts_at !== undefined)
+    push("starts_at", scalarChanges.starts_at);
+  if (scalarChanges.ends_at !== undefined)
+    push("ends_at", scalarChanges.ends_at);
 
   const staffIds = normaliseStaffIds(staff_user_ids);
 
@@ -218,11 +242,15 @@ export async function updateUnit(
   if (assignments.length) {
     const result = await safeQuery<ResultSetHeader>(
       `UPDATE units SET ${assignments.join(", ")} WHERE exhibition_id = ? AND unit_id = ?`,
-      [...params, exId, unitId]
+      [...params, exId, unitId],
     );
 
     if (!result.affectedRows) {
-      throw new AppError("unit not found for this exhibition", 404, "NOT_FOUND");
+      throw new AppError(
+        "unit not found for this exhibition",
+        404,
+        "NOT_FOUND",
+      );
     }
   } else {
     const exists = await safeQuery<UnitRowBase[]>(
@@ -233,10 +261,14 @@ export async function updateUnit(
         WHERE u.exhibition_id = ? AND u.unit_id = ?
         LIMIT 1
       `,
-      [exId, unitId]
+      [exId, unitId],
     );
     if (!exists.length) {
-      throw new AppError("unit not found for this exhibition", 404, "NOT_FOUND");
+      throw new AppError(
+        "unit not found for this exhibition",
+        404,
+        "NOT_FOUND",
+      );
     }
   }
 
@@ -252,7 +284,7 @@ export async function updateUnit(
       WHERE u.exhibition_id = ? AND u.unit_id = ?
       LIMIT 1
     `,
-    [exId, unitId]
+    [exId, unitId],
   );
 
   const unit = (await attachStaff(rows))[0];
@@ -263,9 +295,34 @@ export async function updateUnit(
   return unit;
 }
 
+export async function getUpcomingUnits(
+  exId: string | number,
+  minutesAhead: number = 30,
+): Promise<UnitRowWithStaff[]> {
+  if (!/^\d+$/.test(String(exId))) {
+    throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
+  }
+
+  const rows = await safeQuery<UnitRowBase[]>(
+    `
+      SELECT
+        ${UNIT_FIELDS}
+      FROM units u
+      WHERE u.exhibition_id = ?
+        AND u.starts_at IS NOT NULL
+        AND u.starts_at > NOW()
+        AND u.starts_at <= DATE_ADD(NOW(), INTERVAL ? MINUTE)
+      ORDER BY u.starts_at ASC
+    `,
+    [exId, minutesAhead],
+  );
+
+  return attachStaff(rows);
+}
+
 export async function deleteUnit(
   exId: string | number,
-  unitId: string | number
+  unitId: string | number,
 ): Promise<void> {
   if (!/^\d+$/.test(String(exId)) || !/^\d+$/.test(String(unitId))) {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
@@ -273,7 +330,7 @@ export async function deleteUnit(
 
   const result = await safeQuery<ResultSetHeader>(
     `DELETE FROM units WHERE exhibition_id = ? AND unit_id = ?`,
-    [exId, unitId]
+    [exId, unitId],
   );
 
   if (!result.affectedRows) {
