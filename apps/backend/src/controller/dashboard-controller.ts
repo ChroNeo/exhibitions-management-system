@@ -1,8 +1,15 @@
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { DashboardResponseSchema, OrgDashboardResponseSchema } from "../models/dashboard.model.js";
-import { getStaffDashboard, getOrgDashboard, getStaffUnitByUserId } from "../queries/dashboard-query.js";
+import {
+  DashboardResponseSchema,
+  OrgDashboardResponseSchema,
+} from "../models/dashboard.model.js";
+import {
+  getOrgDashboard,
+  getStaffDashboard,
+  getStaffUnitByUserId,
+} from "../queries/dashboard-query.js";
 import { requireLiffAuth } from "../services/auth-middleware.js";
 
 export default async function dashboardController(fastify: FastifyInstance) {
@@ -14,7 +21,8 @@ export default async function dashboardController(fastify: FastifyInstance) {
       preHandler: requireLiffAuth,
       schema: {
         tags: ["Dashboard"],
-        summary: "Resolve ex_id and unit_id for the authenticated staff via LIFF",
+        summary:
+          "Resolve ex_id and unit_id for the authenticated staff via LIFF",
         response: {
           200: z.object({
             status: z.literal("success"),
@@ -36,7 +44,6 @@ export default async function dashboardController(fastify: FastifyInstance) {
   app.get(
     "/staff/:ex_id/:unit_id",
     {
-      preHandler: requireLiffAuth,
       schema: {
         tags: ["Dashboard"],
         summary: "get the Staff Dashboard data",
@@ -57,7 +64,6 @@ export default async function dashboardController(fastify: FastifyInstance) {
   app.get(
     "/organizer/:id",
     {
-      preHandler: requireLiffAuth,
       schema: {
         tags: ["Dashboard"],
         summary: "get the Organizer Dashboard data",
@@ -67,12 +73,6 @@ export default async function dashboardController(fastify: FastifyInstance) {
     },
     async (request) => {
       const exhibitionId = request.params.id;
-      const currentUserId = request.lineUser!.user_id;
-      const ids = await getStaffUnitByUserId(currentUserId);
-      if (ids.ex_id !== exhibitionId) {
-        const { AppError } = await import("../errors.js");
-        throw new AppError("Not authorized to view this dashboard", 403, "FORBIDDEN");
-      }
       const result = await getOrgDashboard(exhibitionId);
       return result;
     },

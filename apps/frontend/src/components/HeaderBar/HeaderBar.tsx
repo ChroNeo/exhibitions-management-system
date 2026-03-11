@@ -5,10 +5,11 @@ import { useAuthStatus, useAuthUser } from "../../hooks";
 import { clearAuth } from "../../utils/authStorage";
 import styles from "./HeaderBar.module.css";
 
-type TabId = "home" | "exhibition_unit" | "admin";
+type TabId = "home" | "exhibition_unit" | "dashboard" | "admin";
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "exhibition_unit", label: "นิทรรศการ & กิจกรรม" },
+  { id: "dashboard", label: "Dashboard" },
 ];
 
 export default function HeaderBar({
@@ -35,6 +36,7 @@ export default function HeaderBar({
     (id: TabId) => {
       if (id === "home") navigate("/");
       if (id === "exhibition_unit") navigate("/exhibitions");
+      if (id === "dashboard") navigate("/dashboard/selector");
       if (id === "admin") navigate("/admin");
       setMobileOpen(false);
     },

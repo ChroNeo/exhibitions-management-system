@@ -6,11 +6,13 @@ import UserManagementPage from "./pages/AdminPanel/UserManagementPage";
 import VisitorManagementPage from "./pages/AdminPanel/VisitorManagementPage";
 import CertificateDownloadPage from "./pages/Certificate/Certificate-Download-Page";
 import CertificatePage from "./pages/Certificate/CertificatePage";
+import DashboardSelectorPage from "./pages/DashboardSelector/DashboardSelectorPage";
 import ExManageDetail from "./pages/Exhibitions/ExManageDetail";
 import ExhibitionPage from "./pages/Exhibitions/ExManagePage";
 import HomePage from "./pages/Homepage/HomePage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import NewsPage from "./pages/News/NewsPage";
+import OrgDashboardPage from "./pages/OrgDashboard/OrgDashboardPage";
 import NewsDetailPage from "./pages/PublicNews/NewsDetailPage";
 import PublicNewsPage from "./pages/PublicNews/PublicNewsPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
@@ -21,9 +23,8 @@ import SurveySelectPage from "./pages/Survey/SurveySelectPage";
 import UnitListPage from "./pages/Survey/UnitListPage";
 import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import TicketPage from "./pages/Ticket/TicketPage";
-import OrgDashboardPage from "./pages/OrgDashboard/OrgDashboardPage";
-import UnitManageDetail from "./pages/Units/UnitManageDetail";
 import UnitDashboardPage from "./pages/UnitDashboard/UnitDashboardPage";
+import UnitManageDetail from "./pages/Units/UnitManageDetail";
 
 export default function App() {
   return (
@@ -85,6 +86,7 @@ export default function App() {
       <Route path="/survey/unit-list" element={<UnitListPage />} />
 
       {/* Organizer Dashboard */}
+      <Route path="/dashboard/selector" element={<DashboardSelectorPage />} />
       <Route path="/dashboard/organizer/:id" element={<OrgDashboardPage />} />
 
       {/* Admin Panel */}

@@ -1,8 +1,18 @@
 import DOMPurify from "dompurify";
-import { Activity, ChevronDown, ListFilter, MessageSquare, QrCode, Star, Tent, Users } from "lucide-react";
+import {
+  Activity,
+  ArrowLeft,
+  ChevronDown,
+  ListFilter,
+  MessageSquare,
+  QrCode,
+  Star,
+  Tent,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
 import { Bar, Doughnut, Radar } from "react-chartjs-2";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import type { OrgUnitStat } from "../../api/dashboardApi";
 import "./ChartSetup";
 import styles from "./OrgDashboardPage.module.css";
@@ -14,6 +24,7 @@ import { useOrgDashboard } from "./hooks/useOrgDashboard";
 
 export default function OrgDashboardPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const exhibitionId = Number(id ?? 0);
   const { data, isLoading, error } = useOrgDashboard(exhibitionId);
   const [selectedUnit, setSelectedUnit] = useState<OrgUnitStat | null>(null);
@@ -33,7 +44,13 @@ export default function OrgDashboardPage() {
   }
 
   if (selectedUnit) {
-    return <UnitDetail unit={selectedUnit} onBack={() => setSelectedUnit(null)} />;
+    return (
+      <UnitDetail
+        unit={selectedUnit}
+        exhibitionId={exhibitionId}
+        onBack={() => setSelectedUnit(null)}
+      />
+    );
   }
 
   // ── Chart data ──────────────────────────────────────────────────────────
@@ -45,7 +62,10 @@ export default function OrgDashboardPage() {
     datasets: [
       {
         data: data.demographics.gender.map((g) => g.value),
-        backgroundColor: GENDER_PALETTE.slice(0, data.demographics.gender.length),
+        backgroundColor: GENDER_PALETTE.slice(
+          0,
+          data.demographics.gender.length,
+        ),
         borderWidth: 2,
         borderColor: "#fff",
       },
@@ -131,7 +151,10 @@ export default function OrgDashboardPage() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: "bottom" as const, labels: { padding: 16, font: { size: 13 } } },
+      legend: {
+        position: "bottom" as const,
+        labels: { padding: 16, font: { size: 13 } },
+      },
     },
   };
 
@@ -142,6 +165,15 @@ export default function OrgDashboardPage() {
       {/* Header */}
       <header className={styles.header}>
         <div>
+          <button
+            type="button"
+            className={styles.backButton}
+            onClick={() => navigate("/dashboard/selector")}
+            title="กลับไปเลือกนิทรรศการ"
+          >
+            <ArrowLeft size={20} />
+            <span>เลือกนิทรรศการอื่น</span>
+          </button>
           <h1 className={styles.pageTitle}>Organizer Dashboard</h1>
           <p className={styles.pageSubtitle}>ภาพรวมสถิติการจัดงานนิทรรศการ</p>
         </div>
@@ -151,7 +183,9 @@ export default function OrgDashboardPage() {
             <p className={styles.selectorTitle}>
               <span
                 className={`${styles.statusDot} ${
-                  data.exhibition_info.status === "ongoing" ? styles.dotGreen : styles.dotGray
+                  data.exhibition_info.status === "ongoing"
+                    ? styles.dotGreen
+                    : styles.dotGray
                 }`}
               />
               {data.exhibition_info.title}
@@ -159,7 +193,9 @@ export default function OrgDashboardPage() {
             {data.exhibition_info.description && (
               <p
                 className={styles.selectorDesc}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.exhibition_info.description) }}
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(data.exhibition_info.description),
+                }}
               />
             )}
           </div>
@@ -290,7 +326,10 @@ export default function OrgDashboardPage() {
           <ListFilter size={18} className={styles.iconIndigo} />
           สถิติรายบูธและกิจกรรมทั้งหมด
         </h2>
-        <UnitsTable units={data.all_units_stats} onSelectUnit={setSelectedUnit} />
+        <UnitsTable
+          units={data.all_units_stats}
+          onSelectUnit={setSelectedUnit}
+        />
       </div>
     </div>
   );
