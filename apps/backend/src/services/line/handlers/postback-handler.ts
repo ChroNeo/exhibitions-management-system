@@ -7,6 +7,7 @@ import {
 } from "../../../queries/line-query.js";
 import { linkRichMenuToUser, replyToLineMessage } from "../client.js";
 import type { LineConfig, LineMessage } from "../types.js";
+import { HELP_TEXT, staff_Help_text } from "../utils/message-formatter.js";
 
 const RICH_MENU_IDS = {
   STAFF: "richmenu-0fd067f1629b1eb3ddffd0d619aa0f6c",
@@ -147,14 +148,37 @@ async function handleEnterExhibition(
   }
 
   const roleLabel = registration.role === "staff" ? " (Staff)" : "";
-  await replyToLineMessage(
-    replyToken,
-    [
-      {
-        type: "text",
-        text: `กำลังเข้าสู่ ${registration.title}${roleLabel}`,
+  const helpText = registration.role === "staff" ? staff_Help_text : HELP_TEXT;
+  const liffExhibitionId = process.env.VITE_LIFF_EXHIBITION;
+
+  const messages: LineMessage[] = [
+    {
+      type: "text",
+      text: `กำลังเข้าสู่ ${registration.title}${roleLabel}`,
+    },
+    {
+      type: "text",
+      text: helpText,
+    },
+  ];
+
+  if (liffExhibitionId) {
+    messages.push({
+      type: "template",
+      altText: "ดูรายละเอียดนิทรรศการ",
+      template: {
+        type: "buttons",
+        text: "คลิกเพื่อดูรายละเอียดนิทรรศการ",
+        actions: [
+          {
+            type: "uri",
+            label: "ดูรายละเอียดนิทรรศการ",
+            uri: `https://liff.line.me/${liffExhibitionId}?exhibitionId=${exhibitionId}`,
+          },
+        ],
       },
-    ],
-    config,
-  );
+    });
+  }
+
+  await replyToLineMessage(replyToken, messages, config);
 }

@@ -4,6 +4,7 @@ import {
   findExhibitionForLine,
   findUserByLineId,
   getCurrentExhibitionByLineId,
+  getExhibitionIdByCode,
   getExhibitionUnitsForUser,
   getUpcomingExhibitionsForLine,
 } from "../../../queries/line-query.js";
@@ -159,12 +160,43 @@ export async function handleMessageCommand(
       );
       return;
     }
-    await sendLineTexts(
-      replyToken,
-      [formatExhibitionDetail(exhibition)],
-      config,
-      log,
-    );
+
+    const exhibitionId = await getExhibitionIdByCode(code);
+    const liffExhibitionId = process.env.VITE_LIFF_EXHIBITION;
+
+    const messages: LineMessage[] = [
+      { type: "text", text: formatExhibitionDetail(exhibition) },
+    ];
+
+    if (exhibitionId && liffExhibitionId) {
+      messages.push({
+        type: "template",
+        altText: "ดูรายละเอียดนิทรรศการ",
+        template: {
+          type: "buttons",
+          text: "คลิกเพื่อดูรายละเอียดเพิ่มเติม",
+          actions: [
+            {
+              type: "uri",
+              label: "ดูรายละเอียดนิทรรศการ",
+              uri: `https://liff.line.me/${liffExhibitionId}?exhibitionId=${exhibitionId}`,
+            },
+          ],
+        },
+      });
+    }
+
+    try {
+      await replyToLineMessage(replyToken, messages, config);
+    } catch (err) {
+      log.error({ err }, "Failed to send exhibition detail with button");
+      await sendLineTexts(
+        replyToken,
+        [formatExhibitionDetail(exhibition)],
+        config,
+        log,
+      );
+    }
     return;
   }
 
@@ -232,15 +264,6 @@ function isHelpCommand(normalized: string): boolean {
     normalized.includes("เมนู")
   );
 }
-
-// function isProfileCommand(normalized: string): boolean {
-//   return (
-//     normalized === "profile" ||
-//     normalized.includes("profile") ||
-//     normalized.includes("โปรไฟล์")
-//   );
-// }
-
 function isListCommand(normalized: string): boolean {
   if (
     normalized.startsWith("list") ||
@@ -364,7 +387,8 @@ async function sendCertificateMessage(
 
   // Create Flex Messages for each exhibition
   const flexMessages: LineMessage[] = [];
-  const liffId = "2008498720-RBkBlvYH";
+  const liffCertificateId = process.env.VITE_LIFF_CERTIFICATE;
+  const liffExhibitionId = process.env.VITE_LIFF_EXHIBITION;
 
   for (const [exhibitionId, exhibition] of exhibitionsMap.entries()) {
     if (exhibition.units.length === 0) continue;
@@ -495,12 +519,12 @@ async function sendCertificateMessage(
                 ? {
                     type: "uri",
                     label: "🎓 รับเกียรติบัตร",
-                    uri: `https://liff.line.me/${liffId}?exhibitionId=${exhibitionId}&userId=${user.userId}`,
+                    uri: `https://liff.line.me/${liffCertificateId}?exhibitionId=${exhibitionId}&userId=${user.userId}`,
                   }
                 : {
                     type: "uri" as const,
                     label: "ดูรายชื่อกิจกรรมทั้งหมด",
-                    uri: `https://liff.line.me/2008498720-KaJrlZBN?exhibitionId=${exhibitionId}`,
+                    uri: `https://liff.line.me/${liffExhibitionId}?exhibitionId=${exhibitionId}`,
                   },
               style: isCompleted ? "primary" : "secondary",
               color: isCompleted ? "#06C755" : "#27ACB2",
