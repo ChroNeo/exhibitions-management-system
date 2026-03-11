@@ -14,9 +14,10 @@ import {
 } from "../../line/client.js";
 import type { LineConfig, LineMessage } from "../../line/types.js";
 import {
-  HELP_TEXT,
   buildExhibitionFlexCarousel,
   formatExhibitionDetail,
+  HELP_TEXT,
+  staff_Help_text,
 } from "../utils/message-formatter.js";
 
 const RICH_MENU_IDS = {
@@ -32,7 +33,9 @@ export async function handleMessageCommand(
 ): Promise<void> {
   const trimmed = messageText.trim();
   if (!trimmed) {
-    await sendLineTexts(replyToken, [HELP_TEXT], config, log);
+    const user = await findUserByLineId(userId);
+    const helpText = user?.role === "staff" ? staff_Help_text : HELP_TEXT;
+    await sendLineTexts(replyToken, [helpText], config, log);
     return;
   }
 
@@ -46,7 +49,11 @@ export async function handleMessageCommand(
         await linkRichMenuToUser(userId, RICH_MENU_IDS.STAFF, config);
         await sendLineTexts(
           replyToken,
-          ["ยืนยันตัวตน: Staff ✅", "เปลี่ยนเมนูเรียบร้อยครับ"],
+          [
+            "ยืนยันตัวตน: Staff ✅",
+            "เปลี่ยนเมนูเรียบร้อยครับ",
+            staff_Help_text,
+          ],
           config,
           log,
         );
@@ -105,7 +112,9 @@ export async function handleMessageCommand(
   }
 
   if (isHelpCommand(normalized)) {
-    await sendLineTexts(replyToken, [HELP_TEXT], config, log);
+    const user = await findUserByLineId(userId);
+    const helpText = user?.role === "staff" ? staff_Help_text : HELP_TEXT;
+    await sendLineTexts(replyToken, [helpText], config, log);
     return;
   }
   if (isListCommand(normalized)) {
@@ -159,9 +168,11 @@ export async function handleMessageCommand(
     return;
   }
 
+  const user = await findUserByLineId(userId);
+  const helpText = user?.role === "staff" ? staff_Help_text : HELP_TEXT;
   await sendLineTexts(
     replyToken,
-    [`ยังไม่เข้าใจข้อความ "${trimmed}"`, HELP_TEXT],
+    [`ยังไม่เข้าใจข้อความ "${trimmed}"`, helpText],
     config,
     log,
   );

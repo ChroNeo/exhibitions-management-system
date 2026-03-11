@@ -11,7 +11,9 @@ export type LineProfileRecord = {
   picture_url?: string | null;
 };
 
-export async function upsertLineUserProfile(profile: LineProfileRecord): Promise<number> {
+export async function upsertLineUserProfile(
+  profile: LineProfileRecord,
+): Promise<number> {
   const normalizedName = profile.display_name?.trim() || "LINE User";
   const sanitizedUsername = buildUsername(normalizedName);
   const rows = await safeQuery<LineUserRow[]>(
@@ -21,7 +23,7 @@ export async function upsertLineUserProfile(profile: LineProfileRecord): Promise
       WHERE line_user_id = ?
       LIMIT 1
     `,
-    [profile.line_user_id]
+    [profile.line_user_id],
   );
 
   if (rows.length) {
@@ -35,7 +37,7 @@ export async function upsertLineUserProfile(profile: LineProfileRecord): Promise
             last_synced_at = NOW()
         WHERE user_id = ?
       `,
-      [normalizedName, sanitizedUsername, profile.picture_url ?? null, userId]
+      [normalizedName, sanitizedUsername, profile.picture_url ?? null, userId],
     );
     return userId;
   }
@@ -51,19 +53,26 @@ export async function upsertLineUserProfile(profile: LineProfileRecord): Promise
       )
       VALUES (?, ?, ?, ?, NOW())
     `,
-    [profile.line_user_id, normalizedName, sanitizedUsername, profile.picture_url ?? null]
+    [
+      profile.line_user_id,
+      normalizedName,
+      sanitizedUsername,
+      profile.picture_url ?? null,
+    ],
   );
   return insertResult.insertId;
 }
 
-export async function markLineUserUnfollowed(lineUserId: string): Promise<void> {
+export async function markLineUserUnfollowed(
+  lineUserId: string,
+): Promise<void> {
   await safeQuery<ResultSetHeader>(
     `
       UPDATE normal_users
       SET last_synced_at = NOW()
       WHERE line_user_id = ?
     `,
-    [lineUserId]
+    [lineUserId],
   );
 }
 
@@ -84,9 +93,10 @@ export type LineExhibitionDetailRow = LineExhibitionSummaryRow & {
 };
 
 export async function getUpcomingExhibitionsForLine(
-  limit: number = 5
+  limit: number = 5,
 ): Promise<LineExhibitionSummaryRow[]> {
-  const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), 10) : 3;
+  const safeLimit =
+    Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), 10) : 3;
   const rows = await safeQuery<LineExhibitionSummaryRow[]>(
     `
       SELECT
@@ -103,13 +113,13 @@ export async function getUpcomingExhibitionsForLine(
       ORDER BY start_date ASC
       LIMIT ?
     `,
-    [safeLimit]
+    [safeLimit],
   );
   return rows;
 }
 
 export async function findExhibitionForLine(
-  exhibitionCode: string
+  exhibitionCode: string,
 ): Promise<LineExhibitionDetailRow | null> {
   const normalized = exhibitionCode?.trim().toUpperCase();
   if (!normalized) {
@@ -130,30 +140,47 @@ export async function findExhibitionForLine(
       WHERE exhibition_code = ?
       LIMIT 1
     `,
-    [normalized]
+    [normalized],
   );
   return rows.length ? rows[0] : null;
 }
 
-export async function findUserByLineId(lineUserId: string): Promise<{ userId: number; role: string } | null> {
-  const rows = await safeQuery<{ user_id: number }[]>(
+export async function findUserByLineId(
+  lineUserId: string,
+): Promise<{ userId: number; role: string } | null> {
+  const rows = await safeQuery<
+    { user_id: number; current_exhibition_id: number | null }[]
+  >(
     `
-      SELECT user_id
+      SELECT user_id, current_exhibition_id
       FROM normal_users
       WHERE line_user_id = ?
       LIMIT 1
     `,
-    [lineUserId]
+    [lineUserId],
   );
 
   if (!rows.length) return null;
 
   const userId = rows[0].user_id;
+  const currentExhibitionId = rows[0].current_exhibition_id;
 
-  // Derive role from registrations: staff if the user has any staff registration
+  // If user has a current exhibition, check role for that specific exhibition
+  if (currentExhibitionId) {
+    const registrationRows = await safeQuery<{ role: string }[]>(
+      `SELECT role FROM registrations WHERE user_id = ? AND exhibition_id = ? LIMIT 1`,
+      [userId, currentExhibitionId],
+    );
+
+    if (registrationRows.length) {
+      return { userId, role: registrationRows[0].role };
+    }
+  }
+
+  // Fallback: check if user has any staff registration
   const staffRows = await safeQuery<{ cnt: number }[]>(
     `SELECT COUNT(*) AS cnt FROM registrations WHERE user_id = ? AND role = 'staff' LIMIT 1`,
-    [userId]
+    [userId],
   );
   const role = staffRows[0].cnt > 0 ? "staff" : "user";
 
@@ -167,11 +194,13 @@ export type ExhibitionWithUnitsRow = {
   unit_id: number | null;
   unit_code: string | null;
   unit_name: string | null;
-  unit_type: 'activity' | 'booth' | null;
+  unit_type: "activity" | "booth" | null;
   is_checked_in: number;
 };
 
-export async function getExhibitionsWithUnitsForUser(userId: number): Promise<ExhibitionWithUnitsRow[]> {
+export async function getExhibitionsWithUnitsForUser(
+  userId: number,
+): Promise<ExhibitionWithUnitsRow[]> {
   const rows = await safeQuery<ExhibitionWithUnitsRow[]>(
     `
       SELECT
@@ -187,7 +216,7 @@ export async function getExhibitionsWithUnitsForUser(userId: number): Promise<Ex
       WHERE user_id = ?
       ORDER BY exhibition_id, unit_id
     `,
-    [userId]
+    [userId],
   );
   return rows;
 }
@@ -216,13 +245,15 @@ export async function getExhibitionUnitsForUser(
   return rows;
 }
 
-export async function getExhibitionIdByCode(code: string): Promise<number | null> {
+export async function getExhibitionIdByCode(
+  code: string,
+): Promise<number | null> {
   const normalized = code?.trim().toUpperCase();
   if (!normalized) return null;
 
   const rows = await safeQuery<{ exhibition_id: number }[]>(
     `SELECT exhibition_id FROM exhibitions WHERE exhibition_code = ? LIMIT 1`,
-    [normalized]
+    [normalized],
   );
   return rows.length ? rows[0].exhibition_id : null;
 }
