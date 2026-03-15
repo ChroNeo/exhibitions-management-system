@@ -1,22 +1,15 @@
-import type {
-  FastifyInstance,
-  FastifyReply,
-  FastifyRequest,
-} from "fastify";
+import type { FastifyInstance, FastifyReply } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { AppError } from "../errors.js";
-import { getLineConfig } from "../services/line/config.js";
-import { verifyLineSignature } from "../services/line/security.js";
-import { dispatchLineEvent } from "../services/line/dispatcher.js";
 import {
   LineWebhookPayloadSchema,
   LineWebhookResponseSchema,
   type LineWebhookPayload,
+  type RawBodyRequest,
 } from "../models/line.model.js";
-
-type RawBodyRequest = FastifyRequest & {
-  rawBody?: string | Buffer;
-};
+import { getLineConfig } from "../services/line/config.js";
+import { dispatchLineEvent } from "../services/line/dispatcher.js";
+import { verifyLineSignature } from "../services/line/security.js";
 
 export default async function lineController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -49,12 +42,16 @@ export default async function lineController(fastify: FastifyInstance) {
         throw new AppError(
           "rawBody is not available for LINE webhook",
           500,
-          "CONFIG_ERROR"
+          "CONFIG_ERROR",
         );
       }
 
       const config = getLineConfig();
-      const isValidSignature = verifyLineSignature(signatureHeader, req.rawBody, config);
+      const isValidSignature = verifyLineSignature(
+        signatureHeader,
+        req.rawBody,
+        config,
+      );
       if (!isValidSignature) {
         reply.code(401).send({ message: "invalid LINE signature" });
         return;
@@ -71,11 +68,11 @@ export default async function lineController(fastify: FastifyInstance) {
         events.map((event) =>
           dispatchLineEvent(event, config, app.log).catch((err) => {
             app.log.error({ err, event }, "failed to process LINE event");
-          })
-        )
+          }),
+        ),
       );
 
       reply.send({ ok: true });
-    }
+    },
   );
 }

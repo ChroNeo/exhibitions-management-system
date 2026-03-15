@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   DashboardResponseSchema,
   OrgDashboardResponseSchema,
+  StaffMeResponseSchema,
 } from "../models/dashboard.model.js";
 import {
   getOrgDashboard,
@@ -24,13 +25,7 @@ export default async function dashboardController(fastify: FastifyInstance) {
         summary:
           "Resolve ex_id and unit_id for the authenticated staff via LIFF",
         response: {
-          200: z.object({
-            status: z.literal("success"),
-            data: z.object({
-              ex_id: z.number(),
-              unit_id: z.number(),
-            }),
-          }),
+          200: StaffMeResponseSchema,
         },
       },
     },

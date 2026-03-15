@@ -1,10 +1,14 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import jwt from "jsonwebtoken";
-import { z } from "zod";
 import { AppError } from "../errors.js";
 import {
   CheckInResultSchema,
+  CheckInStatusQuerySchema,
+  CheckInStatusResponseSchema,
+  CheckedInUnitsQuerySchema,
+  CheckedInUnitsResponseSchema,
+  CurrentExhibitionResponseSchema,
   GetQrTokenQuerySchema,
   QrTokenResponseSchema,
   VerifyTicketBodySchema,
@@ -91,17 +95,9 @@ export default async function ticketController(fastify: FastifyInstance) {
       schema: {
         tags: ["Tickets"],
         summary: "Check if user has checked in to an exhibition",
-        querystring: z.object({
-          exhibition_id: z
-            .string()
-            .regex(/^\d+$/, "exhibition_id must be a number"),
-        }),
+        querystring: CheckInStatusQuerySchema,
         response: {
-          200: z.object({
-            checked_in: z.boolean(),
-            checkin_at: z.string().nullable(),
-            unit_id: z.number().nullable(),
-          }),
+          200: CheckInStatusResponseSchema,
         },
       },
     },
@@ -147,20 +143,9 @@ export default async function ticketController(fastify: FastifyInstance) {
       schema: {
         tags: ["Tickets"],
         summary: "Get all units that user has checked in to for an exhibition",
-        querystring: z.object({
-          exhibition_id: z
-            .string()
-            .regex(/^\d+$/, "exhibition_id must be a number"),
-        }),
+        querystring: CheckedInUnitsQuerySchema,
         response: {
-          200: z.array(
-            z.object({
-              unit_id: z.number(),
-              unit_name: z.string(),
-              checkin_at: z.string(),
-              survey_completed: z.boolean(),
-            }),
-          ),
+          200: CheckedInUnitsResponseSchema,
         },
       },
     },
@@ -200,9 +185,7 @@ export default async function ticketController(fastify: FastifyInstance) {
         tags: ["Tickets"],
         summary: "Get the user's current exhibition ID",
         response: {
-          200: z.object({
-            current_exhibition_id: z.number().nullable(),
-          }),
+          200: CurrentExhibitionResponseSchema,
         },
       },
     },

@@ -1,3 +1,4 @@
+import type { FastifyRequest } from "fastify";
 import { z } from "zod";
 
 // Zod Schemas for LINE Controller
@@ -38,3 +39,8 @@ export type LineEventMessage = z.infer<typeof LineEventMessageSchema>;
 export type LineEvent = z.infer<typeof LineEventSchema>;
 export type LineWebhookPayload = z.infer<typeof LineWebhookPayloadSchema>;
 export type LineWebhookResponse = z.infer<typeof LineWebhookResponseSchema>;
+
+// Additional types for LINE controller
+export type RawBodyRequest = FastifyRequest & {
+  rawBody?: string | Buffer;
+};

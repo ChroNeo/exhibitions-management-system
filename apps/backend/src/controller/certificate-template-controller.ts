@@ -5,7 +5,13 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { AppError } from "../errors.js";
 import {
+  CertificateDownloadErrorResponseSchema,
+  CertificateDownloadQuerySchema,
+  CertificateErrorResponseSchema,
+  CertificatePreviewResponseSchema,
   CertificateTemplateViewSchema,
+  CertificateUserParamsSchema,
+  ExhibitionIdParamSchema,
   type LayoutConfig,
 } from "../models/certificate-template.model.js";
 import {
@@ -46,16 +52,10 @@ export default async function certificateTemplateController(
       schema: {
         tags: ["Certificate"],
         summary: "Get certificate template for exhibition",
-        params: z.object({
-          exhibitionId: z.string().regex(/^\d+$/),
-        }),
+        params: ExhibitionIdParamSchema,
         response: {
           200: CertificateTemplateViewSchema,
-          404: z.object({
-            message: z.string(),
-            status: z.number(),
-            code: z.string(),
-          }),
+          404: CertificateErrorResponseSchema,
         },
       },
     },
@@ -87,9 +87,7 @@ export default async function certificateTemplateController(
           "Create certificate template for exhibition (with file upload)",
         description:
           "Upload background image/PDF for certificate template. Use multipart/form-data with 'file' field for the background and optional 'layout_config' JSON field.",
-        params: z.object({
-          exhibitionId: z.string().regex(/^\d+$/),
-        }),
+        params: ExhibitionIdParamSchema,
         consumes: ["multipart/form-data"],
         response: {
           201: CertificateTemplateViewSchema,
@@ -147,9 +145,7 @@ export default async function certificateTemplateController(
           "Update certificate template for exhibition (with optional file upload)",
         description:
           "Update certificate template. Use multipart/form-data with optional 'file' field for new background and/or 'layout_config' JSON field.",
-        params: z.object({
-          exhibitionId: z.string().regex(/^\d+$/),
-        }),
+        params: ExhibitionIdParamSchema,
         consumes: ["multipart/form-data"],
         response: {
           200: CertificateTemplateViewSchema,
@@ -221,9 +217,7 @@ export default async function certificateTemplateController(
       schema: {
         tags: ["Certificate"],
         summary: "Delete certificate template for exhibition",
-        params: z.object({
-          exhibitionId: z.string().regex(/^\d+$/),
-        }),
+        params: ExhibitionIdParamSchema,
         response: {
           204: z.null().describe("Certificate template deleted"),
         },
@@ -258,20 +252,10 @@ export default async function certificateTemplateController(
         summary: "Get certificate preview data for a user",
         description:
           "Returns certificate template data along with participant name for preview",
-        params: z.object({
-          exhibitionId: z.string().regex(/^\d+$/),
-          userId: z.string().regex(/^\d+$/),
-        }),
+        params: CertificateUserParamsSchema,
         response: {
-          200: z.object({
-            template: CertificateTemplateViewSchema,
-            participantName: z.string(),
-          }),
-          404: z.object({
-            message: z.string(),
-            status: z.number(),
-            code: z.string(),
-          }),
+          200: CertificatePreviewResponseSchema,
+          404: CertificateErrorResponseSchema,
         },
       },
     },
@@ -316,33 +300,13 @@ export default async function certificateTemplateController(
         summary: "Download generated certificate for a registration",
         description:
           "Generates a certificate image with participant name overlaid on the template background. Admin users can add ?skipValidation=true to bypass check-in requirements.",
-        params: z.object({
-          exhibitionId: z.string().regex(/^\d+$/),
-          userId: z.string().regex(/^\d+$/),
-        }),
-        querystring: z.object({
-          skipValidation: z.string().optional(),
-        }),
+        params: CertificateUserParamsSchema,
+        querystring: CertificateDownloadQuerySchema,
         produces: ["application/pdf"],
         response: {
           200: z.any().describe("Certificate image (PNG)"),
-          403: z.object({
-            message: z.string(),
-            status: z.number(),
-            code: z.string(),
-            details: z
-              .object({
-                total_units: z.number(),
-                checked_in_units: z.number(),
-                missing_units: z.number(),
-              })
-              .optional(),
-          }),
-          404: z.object({
-            message: z.string(),
-            status: z.number(),
-            code: z.string(),
-          }),
+          403: CertificateDownloadErrorResponseSchema,
+          404: CertificateErrorResponseSchema,
         },
       },
     },

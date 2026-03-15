@@ -45,9 +45,19 @@ export const DashboardResponseSchema = z.object({
   data: DashboardDataSchema,
 });
 
+// Staff dashboard "me" endpoint response schema
+export const StaffMeResponseSchema = z.object({
+  status: z.literal("success"),
+  data: z.object({
+    ex_id: z.number(),
+    unit_id: z.number(),
+  }),
+});
+
 export type DashboardResponse = z.infer<typeof DashboardResponseSchema>;
 export type DashboardData = z.infer<typeof DashboardDataSchema>;
 export type FeedbackBreakdownItem = z.infer<typeof FeedbackBreakdownItemSchema>;
+export type StaffMeResponse = z.infer<typeof StaffMeResponseSchema>;
 
 // ─── Organizer Dashboard ───────────────────────────────────────────────────
 
