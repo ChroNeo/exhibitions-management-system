@@ -1,43 +1,39 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
 import jwt from "jsonwebtoken";
+import { z } from "zod";
 import { AppError } from "../errors.js";
 import {
-  getUserTickets,
-  verifyAndCheckIn,
-} from "../queries/ticket-query.js";
-import { getCurrentExhibitionByLineId } from "../queries/line-query.js";
-import { requireLiffAuth } from "../services/auth-middleware.js";
-import {
-  UserTicketSchema,
+  CheckInResultSchema,
   GetQrTokenQuerySchema,
   QrTokenResponseSchema,
   VerifyTicketBodySchema,
-  CheckInResultSchema,
-  type GetQrTokenQuery,
-  type VerifyTicketBody,
 } from "../models/ticket.model.js";
+import { getCurrentExhibitionByLineId } from "../queries/line-query.js";
+import { verifyAndCheckIn } from "../queries/ticket-query.js";
+import { requireLiffAuth } from "../services/auth-middleware.js";
 import { safeQuery } from "../services/dbconn.js";
 
 export default async function ticketController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
 
-  app.get("/", {
-    preHandler: requireLiffAuth,
-    schema: {
-      tags: ["Tickets"],
-      summary: "Get all registered exhibitions for the user",
-      response: {
-        200: z.array(UserTicketSchema),
-      },
-    }
-  },
-    async (req, reply) => {
-      const tickets = await getUserTickets(req.lineUser!.user_id);
-      return reply.code(200).send(tickets);
-    }
-  );
+  // app.get(
+  //   "/",
+  //   {
+  //     preHandler: requireLiffAuth,
+  //     schema: {
+  //       tags: ["Tickets"],
+  //       summary: "Get all registered exhibitions for the user",
+  //       response: {
+  //         200: z.array(UserTicketSchema),
+  //       },
+  //     },
+  //   },
+  //   async (req, reply) => {
+  //     const tickets = await getUserTickets(req.lineUser!.user_id);
+  //     return reply.code(200).send(tickets);
+  //   },
+  // );
 
   // Generate QR token for authenticated user
   app.get(
@@ -55,19 +51,24 @@ export default async function ticketController(fastify: FastifyInstance) {
     },
     async (req, reply) => {
       const targetExhibitionId = Number(req.query.exhibition_id);
-      const hasTicket = req.lineUser!.exhibitions.includes(targetExhibitionId);
+      const hasRegistration =
+        req.lineUser!.exhibitions.includes(targetExhibitionId);
 
-      if (!hasTicket) {
-        throw new AppError("คุณไม่มีบัตรสำหรับเข้างานนี้ (Access Denied)", 403, "ACCESS_DENIED");
+      if (!hasRegistration) {
+        throw new AppError(
+          "คุณไม่มีการลงทะเบียนเข้างานนี้ (Access Denied)",
+          403,
+          "ACCESS_DENIED",
+        );
       }
 
       const jwtSecret = process.env.JWT_SECRET;
-      if (!jwtSecret) throw new AppError("JWT_SECRET missing", 500, "CONFIG_ERROR");
+      if (!jwtSecret)
+        throw new AppError("JWT_SECRET missing", 500, "CONFIG_ERROR");
 
       const qrTokenPayload = {
         uid: req.lineUser!.user_id,
         eid: targetExhibitionId,
-        type: "access"
       };
 
       const expiresIn = 300; // 5 minutes in seconds
@@ -79,7 +80,7 @@ export default async function ticketController(fastify: FastifyInstance) {
         qr_token: qrToken,
         expires_in: expiresIn,
       };
-    }
+    },
   );
 
   // Check if user has checked in to exhibition
@@ -91,7 +92,9 @@ export default async function ticketController(fastify: FastifyInstance) {
         tags: ["Tickets"],
         summary: "Check if user has checked in to an exhibition",
         querystring: z.object({
-          exhibition_id: z.string().regex(/^\d+$/, "exhibition_id must be a number"),
+          exhibition_id: z
+            .string()
+            .regex(/^\d+$/, "exhibition_id must be a number"),
         }),
         response: {
           200: z.object({
@@ -111,11 +114,15 @@ export default async function ticketController(fastify: FastifyInstance) {
          WHERE user_id = ? AND exhibition_id = ?
          ORDER BY checkin_at DESC
          LIMIT 1`,
-        [req.lineUser!.user_id, exhibitionId]
+        [req.lineUser!.user_id, exhibitionId],
       );
 
       if (rows.length === 0) {
-        throw new AppError("Registration not found", 404, "REGISTRATION_NOT_FOUND");
+        throw new AppError(
+          "Registration not found",
+          404,
+          "REGISTRATION_NOT_FOUND",
+        );
       }
 
       const checkedIn = rows[0].checkin_at !== null;
@@ -129,7 +136,7 @@ export default async function ticketController(fastify: FastifyInstance) {
         checkin_at: checkinAt,
         unit_id: unitId,
       };
-    }
+    },
   );
 
   // Get all units that user has checked in to for an exhibition
@@ -141,15 +148,19 @@ export default async function ticketController(fastify: FastifyInstance) {
         tags: ["Tickets"],
         summary: "Get all units that user has checked in to for an exhibition",
         querystring: z.object({
-          exhibition_id: z.string().regex(/^\d+$/, "exhibition_id must be a number"),
+          exhibition_id: z
+            .string()
+            .regex(/^\d+$/, "exhibition_id must be a number"),
         }),
         response: {
-          200: z.array(z.object({
-            unit_id: z.number(),
-            unit_name: z.string(),
-            checkin_at: z.string(),
-            survey_completed: z.boolean(),
-          })),
+          200: z.array(
+            z.object({
+              unit_id: z.number(),
+              unit_name: z.string(),
+              checkin_at: z.string(),
+              survey_completed: z.boolean(),
+            }),
+          ),
         },
       },
     },
@@ -169,16 +180,16 @@ export default async function ticketController(fastify: FastifyInstance) {
          JOIN units u ON uc.unit_id = u.unit_id
          WHERE uc.user_id = ? AND uc.exhibition_id = ? AND uc.checkin_at IS NOT NULL
          ORDER BY uc.checkin_at DESC`,
-        [req.lineUser!.user_id, exhibitionId]
+        [req.lineUser!.user_id, exhibitionId],
       );
 
-      return rows.map(row => ({
+      return rows.map((row) => ({
         unit_id: row.unit_id,
         unit_name: row.unit_name,
         checkin_at: new Date(row.checkin_at).toISOString(),
         survey_completed: row.survey_completed > 0,
       }));
-    }
+    },
   );
 
   app.get(
@@ -215,18 +226,23 @@ export default async function ticketController(fastify: FastifyInstance) {
           200: CheckInResultSchema,
           409: CheckInResultSchema,
         },
-      }
+      },
     },
     async (req, reply) => {
       const { token } = req.body;
       const secret = process.env.JWT_SECRET;
-      if (!secret) throw new AppError("JWT_SECRET missing", 500, "CONFIG_ERROR");
+      if (!secret)
+        throw new AppError("JWT_SECRET missing", 500, "CONFIG_ERROR");
 
       let payload: any;
       try {
         payload = jwt.verify(token, secret);
       } catch (err) {
-        throw new AppError("❌ QR Code ไม่ถูกต้องหรือหมดอายุ", 400, "INVALID_QR_TOKEN");
+        throw new AppError(
+          "❌ QR Code ไม่ถูกต้องหรือหมดอายุ",
+          400,
+          "INVALID_QR_TOKEN",
+        );
       }
 
       const { uid: visitorId, eid: exhibitionId } = payload;
@@ -240,9 +256,7 @@ export default async function ticketController(fastify: FastifyInstance) {
       if (!result.success) {
         return reply.code(409).send(result);
       }
-
       return result;
-    }
+    },
   );
 }
-

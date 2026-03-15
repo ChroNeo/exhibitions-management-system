@@ -1,8 +1,11 @@
-import type { FastifyRequest, FastifyReply } from "fastify";
-import { verifyJwt, type JwtPayload } from "./jwt.js";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { AppError } from "../errors.js";
+import {
+  getUserRegistrationsByLineId,
+  type UserRegistrationData,
+} from "../queries/users-query.js";
+import { verifyJwt, type JwtPayload } from "./jwt.js";
 import { verifyLiffIdToken } from "./line/security.js";
-import { getUserRegistrationsByLineId, type UserRegistrationData } from "../queries/ticket-query.js";
 
 // Extend Fastify request type to include user
 declare module "fastify" {
@@ -18,7 +21,7 @@ declare module "fastify" {
  */
 export async function requireOrganizerAuth(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const authHeader = request.headers.authorization;
 
@@ -31,7 +34,7 @@ export async function requireOrganizerAuth(
     throw new AppError(
       "Authorization header must be in format: Bearer <token>",
       401,
-      "UNAUTHORIZED"
+      "UNAUTHORIZED",
     );
   }
 
@@ -49,7 +52,7 @@ export async function requireOrganizerAuth(
     throw new AppError(
       "This endpoint requires organizer authentication",
       403,
-      "FORBIDDEN"
+      "FORBIDDEN",
     );
   }
 
@@ -63,7 +66,7 @@ export async function requireOrganizerAuth(
  */
 export async function optionalAuth(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const authHeader = request.headers.authorization;
 
@@ -96,7 +99,7 @@ export async function optionalAuth(
  */
 function isLiffMockEnabled(): boolean {
   if (process.env.NODE_ENV === "production") return false;
-  return process.env.LIFF_MOCK === 'true';
+  return process.env.LIFF_MOCK === "true";
 }
 
 /**
@@ -107,14 +110,14 @@ function isLiffMockEnabled(): boolean {
  */
 export async function requireLiffAuth(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   // Check for mock mode (development only)
   if (isLiffMockEnabled()) {
-    const mockUserId = request.headers['x-mock-line-user-id'];
+    const mockUserId = request.headers["x-mock-line-user-id"];
 
-    if (typeof mockUserId === 'string' && mockUserId) {
-      console.log('[LIFF Mock] Using mock LINE user ID:', mockUserId);
+    if (typeof mockUserId === "string" && mockUserId) {
+      console.log("[LIFF Mock] Using mock LINE user ID:", mockUserId);
 
       // Get user data from mock LINE ID
       const userData = await getUserRegistrationsByLineId(mockUserId);
@@ -130,7 +133,11 @@ export async function requireLiffAuth(
   const authHeader = request.headers.authorization;
 
   if (!authHeader) {
-    throw new AppError("Authorization header is required", 401, "MISSING_AUTH_HEADER");
+    throw new AppError(
+      "Authorization header is required",
+      401,
+      "MISSING_AUTH_HEADER",
+    );
   }
 
   const parts = authHeader.split(" ");
@@ -138,7 +145,7 @@ export async function requireLiffAuth(
     throw new AppError(
       "Authorization header must be in format: Bearer <token>",
       401,
-      "UNAUTHORIZED"
+      "UNAUTHORIZED",
     );
   }
 
