@@ -19,7 +19,6 @@ import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
 import CreateSurveyPage from "./pages/Survey/CreateSurveyPage";
 import ExhibitionSurveyPage from "./pages/Survey/ExhibitionSurveyPage";
-import SurveySelectPage from "./pages/Survey/SurveySelectPage";
 import UnitListPage from "./pages/Survey/UnitListPage";
 import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import TicketPage from "./pages/Ticket/TicketPage";
@@ -73,10 +72,9 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/ticket" element={<TicketPage />} />
-      <Route path="/scan" element={<VerifyTicketPage />} />
+      <Route path="/verify-ticket" element={<VerifyTicketPage />} />
 
       {/* Survey Routes */}
-      <Route path="/survey/exhibitions" element={<SurveySelectPage />} />
       <Route
         path="/survey/create/:exhibition_id"
         element={<CreateSurveyPage />}
