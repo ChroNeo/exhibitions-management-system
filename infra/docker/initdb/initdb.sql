@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Feb 25, 2026 at 02:02 PM
+-- Generation Time: Mar 15, 2026 at 08:02 AM
 -- Server version: 8.4.8
 -- PHP Version: 8.3.30
 
@@ -79,6 +79,7 @@ CREATE TABLE `exhibitions` (
   `location` varchar(255) DEFAULT NULL,
   `organizer_name` varchar(255) NOT NULL,
   `picture_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `detail_pdf_url` varchar(500) DEFAULT NULL,
   `status` enum('draft','published','ongoing','ended','archived') DEFAULT 'draft',
   `created_by` int NOT NULL,
   `updated_by` int DEFAULT NULL,
@@ -93,17 +94,17 @@ CREATE TABLE `exhibitions` (
 -- Dumping data for table `exhibitions`
 --
 
-INSERT INTO `exhibitions` (`exhibition_id`, `exhibition_code`, `title`, `description`, `description_delta`, `start_date`, `end_date`, `location`, `organizer_name`, `picture_path`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`, `archived_at`, `exhibition_set_id`, `unit_set_id`) VALUES
-(1, 'EX202501', 'Future Tech Expo 2026', '<p><strong>สัมผัสนวัตกรรม</strong> AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก</p>', '{\"ops\": [{\"insert\": \"สัมผัสนวัตกรรม\", \"attributes\": {\"bold\": true}}, {\"insert\": \" AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก\\n\"}]}', '2026-02-09 12:00:00', '2026-06-12 13:00:00', 'BITEC Bangna, Hall 98', 'Tech Pioneer Group', 'uploads/exhibitions/EXP1770806725736.jpg', 'ongoing', 1, NULL, '2025-09-15 15:06:36', '2026-02-11 10:45:25', NULL, 103, 104),
-(3, 'EX202503', 'Green Future Week', 'งานสิ่งแวดล้อมและพลังงานสะอาด', NULL, '2025-10-05 02:00:00', '2025-10-09 11:00:00', 'Khon Kaen Hall', 'Mai Organizer', NULL, 'ended', 1, NULL, '2025-09-15 15:06:36', '2025-10-24 18:54:55', NULL, NULL, NULL),
-(5, 'EX202401', 'Modern Art Showcase 2011', 'A curated selection of contemporary pieces from emerging artists.', NULL, '2024-08-30 02:00:00', '2024-09-13 10:00:00', 'Gallery Hall A', 'City Arts Council', NULL, 'ended', 42, NULL, '2025-09-25 13:07:39', '2025-10-24 18:59:55', NULL, NULL, NULL),
-(8, 'EX202404', 'Modern Art Showcase 2024', 'A curated selection of contemporary pieces.', NULL, '2024-08-31 20:00:00', '2024-09-15 04:00:00', 'Gallery Hall A', 'City Arts Council', NULL, 'draft', 42, NULL, '2025-09-25 13:35:02', '2025-09-26 06:33:20', NULL, NULL, NULL),
-(12, 'EX202505', 're', 'test', NULL, '2025-09-25 09:05:00', '2025-09-26 09:05:00', 'test', 'test', NULL, 'draft', 1, NULL, '2025-09-25 23:05:55', '2025-09-26 06:33:27', NULL, NULL, NULL),
-(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ \"Smart Tech Expo 2025\" ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ \"อนาคตของการอยู่อาศัย\" และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', NULL, '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', NULL, 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL, NULL, NULL),
-(15, 'EX202507', 'test', 'test', NULL, '2025-10-31 04:57:00', '2025-11-08 04:57:00', 'test', 'test', NULL, 'ended', 1, NULL, '2025-10-02 19:27:19', '2025-12-31 09:19:55', NULL, NULL, NULL),
-(16, 'EX202508', 'test', '<p>this is the test <strong>wow this is the bold wow za 007 </strong></p>', NULL, '2025-10-21 04:57:00', '2025-10-21 04:57:00', 'test', 'asdf', NULL, 'ended', 1, NULL, '2025-10-24 18:57:43', '2025-10-24 20:49:32', NULL, NULL, NULL),
-(17, 'EX202509', 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', '2025-10-27 15:51:00', '2028-05-29 15:51:00', 'test', 'test', NULL, 'ongoing', 2, NULL, '2025-12-31 09:51:48', '2026-01-25 18:14:04', NULL, 105, 106),
-(99, 'EX202601', 'AI Technology Expo 2026', NULL, NULL, '2026-01-01 00:00:00', '2026-01-10 00:00:00', NULL, 'test', NULL, 'ended', 1, NULL, '2026-01-06 08:39:03', '2026-01-10 07:34:55', NULL, 101, 102);
+INSERT INTO `exhibitions` (`exhibition_id`, `exhibition_code`, `title`, `description`, `description_delta`, `start_date`, `end_date`, `location`, `organizer_name`, `picture_path`, `detail_pdf_url`, `status`, `created_by`, `updated_by`, `created_at`, `updated_at`, `archived_at`, `exhibition_set_id`, `unit_set_id`) VALUES
+(1, 'EX202501', 'Future Tech Expo 2026', '<p><strong>สัมผัสนวัตกรรม</strong> AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก</p>', '{\"ops\": [{\"insert\": \"สัมผัสนวัตกรรม\", \"attributes\": {\"bold\": true}}, {\"insert\": \" AI และหุ่นยนต์แห่งอนาคต พบกับ Gadget ล่าสุดจากบริษัทยักษ์ใหญ่ทั่วโลก\\n\"}]}', '2026-02-08 22:00:00', '2026-06-11 23:00:00', 'BITEC Bangna, Hall 98', 'Tech Pioneer Group', 'uploads/exhibitions/EXP1772573045755.png', 'uploads/exhibitions/EXP_PDF1772903343328.pdf', 'ongoing', 1, NULL, '2025-09-15 15:06:36', '2026-03-07 17:09:03', NULL, 103, 104),
+(3, 'EX202503', 'Green Future Week', 'งานสิ่งแวดล้อมและพลังงานสะอาด', NULL, '2025-10-05 02:00:00', '2025-10-09 11:00:00', 'Khon Kaen Hall', 'Mai Organizer', NULL, NULL, 'ended', 1, NULL, '2025-09-15 15:06:36', '2025-10-24 18:54:55', NULL, NULL, NULL),
+(5, 'EX202401', 'Modern Art Showcase 2011', 'A curated selection of contemporary pieces from emerging artists.', NULL, '2024-08-30 02:00:00', '2024-09-13 10:00:00', 'Gallery Hall A', 'City Arts Council', NULL, NULL, 'ended', 42, NULL, '2025-09-25 13:07:39', '2025-10-24 18:59:55', NULL, NULL, NULL),
+(8, 'EX202404', 'Modern Art Showcase 2024', 'A curated selection of contemporary pieces.', NULL, '2024-08-31 20:00:00', '2024-09-15 04:00:00', 'Gallery Hall A', 'City Arts Council', NULL, NULL, 'draft', 42, NULL, '2025-09-25 13:35:02', '2025-09-26 06:33:20', NULL, NULL, NULL),
+(12, 'EX202505', 're', 'test', NULL, '2025-09-25 09:05:00', '2025-09-26 09:05:00', 'test', 'test', NULL, NULL, 'draft', 1, NULL, '2025-09-25 23:05:55', '2025-09-26 06:33:27', NULL, NULL, NULL),
+(14, 'EX202506', 'ทดสอบการแก้ไข21', 'นิทรรศการ \"Smart Tech Expo 2025\" ถูกออกแบบมาให้เป็นพื้นที่แห่งการบรรจบกันของเทคโนโลยี นวัตกรรม และความคิดสร้างสรรค์จากทั่วโลก ผู้เข้าชมจะได้พบกับบูธสตาร์ตอัปด้าน AI ที่นำเสนอแอปพลิเคชันอัจฉริยะซึ่งสามารถเรียนรู้พฤติกรรมผู้ใช้และปรับตัวได้ทันที นิทรรศการหุ่นยนต์ที่ผสานความสามารถด้านวิศวกรรมกับศิลปะการเคลื่อนไหวราวกับมีชีวิตจริง โซน IoT ที่จำลองบ้านอัจฉริยะทั้งหลังให้ผู้ชมได้สัมผัสประสบการณ์ \"อนาคตของการอยู่อาศัย\" และเวิร์กช็อปด้าน Cybersecurity ที่จะพาคุณลงลึกถึงการป้องกันภัยในโลกดิจิทัล', NULL, '2025-09-20 10:35:00', '2025-09-21 15:35:00', NULL, 'test', NULL, NULL, 'draft', 1, NULL, '2025-09-25 23:35:24', '2025-10-09 09:25:46', NULL, NULL, NULL),
+(15, 'EX202507', 'test', 'test', NULL, '2025-10-31 04:57:00', '2025-11-08 04:57:00', 'test', 'test', NULL, NULL, 'ended', 1, NULL, '2025-10-02 19:27:19', '2025-12-31 09:19:55', NULL, NULL, NULL),
+(16, 'EX202508', 'test', '<p>this is the test <strong>wow this is the bold wow za 007 </strong></p>', NULL, '2025-10-21 04:57:00', '2025-10-21 04:57:00', 'test', 'asdf', NULL, NULL, 'ended', 1, NULL, '2025-10-24 18:57:43', '2025-10-24 20:49:32', NULL, NULL, NULL),
+(17, 'EX202509', 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', '2025-10-27 15:51:00', '2028-05-29 15:51:00', 'test', 'test', NULL, NULL, 'ongoing', 2, NULL, '2025-12-31 09:51:48', '2026-01-25 18:14:04', NULL, 105, 106),
+(99, 'EX202601', 'AI Technology Expo 2026', NULL, NULL, '2026-01-01 00:00:00', '2026-01-10 00:00:00', NULL, 'test', NULL, NULL, 'ended', 1, NULL, '2026-01-06 08:39:03', '2026-01-10 07:34:55', NULL, 101, 102);
 
 --
 -- Triggers `exhibitions`
@@ -149,10 +150,11 @@ CREATE TABLE `exhibition_announcements` (
 -- Dumping data for table `exhibition_announcements`
 --
 
-INSERT INTO `exhibition_announcements` (`announcement_id`, `exhibition_id`, `topic`, `description`, `image_url`, `is_active`, `created_at`, `updated_at`) VALUES
-(7, 1, 'test', 'test', 'uploads/news/NEWS1770891167809.jpg', 1, '2026-02-12 10:12:48', '2026-02-12 10:18:39'),
-(8, 1, 'test2', 'test2', 'uploads/news/NEWS1770891602610.png', 1, '2026-02-12 10:20:02', '2026-02-12 10:20:02'),
-(9, 1, 'อัปเดตระบบความปลอดภัยประจำเดือนกุมภาพันธ์', 'เราได้ทำการอัปเดตระบบความปลอดภัยครั้งสำคัญประจำเดือนกุมภาพันธ์ 2026 การอัปเดตนี้รวมถึงการแก้ไขช่องโหว่ที่อาจเกิดขึ้นและปรับปรุงประสิทธิภาพโดยรวมของระบบ ผู้ใช้งานอาจพบการเปลี่ยนแปลงเล็กน้อยในหน้าเข้าสู่ระบบ ซึ่งเป็นส่วนหนึ่งของมาตรการยืนยันตัวตนแบบใหม่ของเรา ทีมงานขอขอบคุณที่ไว้วางใจใช้บริการของเราเสมอมา หากพบปัญหาในการใช้งาน กรุณาติดต่อฝ่ายสนับสนุนทันที', 'uploads/news/NEWS1771063478193.jpg', 1, '2026-02-14 10:04:38', '2026-02-14 10:04:38');
+INSERT INTO `exhibition_announcements` (`announcement_id`, `exhibition_id`, `topic`, `description`, `description_delta`, `image_url`, `is_active`, `created_at`, `updated_at`) VALUES
+(7, 1, 'test', 'test', NULL, 'uploads/news/NEWS1770891167809.jpg', 1, '2026-02-12 10:12:48', '2026-02-12 10:18:39'),
+(8, 1, 'test2', 'test2', NULL, 'uploads/news/NEWS1770891602610.png', 1, '2026-02-12 10:20:02', '2026-02-12 10:20:02'),
+(9, 1, 'อัปเดตระบบความปลอดภัยประจำเดือนกุมภาพันธ์', 'เราได้ทำการอัปเดตระบบความปลอดภัยครั้งสำคัญประจำเดือนกุมภาพันธ์ 2026 การอัปเดตนี้รวมถึงการแก้ไขช่องโหว่ที่อาจเกิดขึ้นและปรับปรุงประสิทธิภาพโดยรวมของระบบ ผู้ใช้งานอาจพบการเปลี่ยนแปลงเล็กน้อยในหน้าเข้าสู่ระบบ ซึ่งเป็นส่วนหนึ่งของมาตรการยืนยันตัวตนแบบใหม่ของเรา ทีมงานขอขอบคุณที่ไว้วางใจใช้บริการของเราเสมอมา หากพบปัญหาในการใช้งาน กรุณาติดต่อฝ่ายสนับสนุนทันที', NULL, 'uploads/news/NEWS1771063478193.jpg', 1, '2026-02-14 10:04:38', '2026-02-14 10:04:38'),
+(10, 17, 'test', 'ทดสอบ uploads ข่าวสาร', '{\"ops\":[{\"insert\":\"ทดสอบ uploads ข่าวสาร\\n\"}]}', 'uploads/news/NEWS1773159753996.jpg', 1, '2026-03-10 16:22:34', '2026-03-10 16:22:34');
 
 -- --------------------------------------------------------
 
@@ -189,8 +191,8 @@ INSERT INTO `normal_users` (`user_id`, `line_user_id`, `full_name`, `gender`, `b
 (15, 'U0015', 'ทดสอบ สิบห้า', 'male', '1994-02-14', 'test15', NULL, 'test15@example.com', '0812345685', NULL, 17),
 (16, 'U0016', 'ทดสอบ สิบหก', 'female', '1996-12-05', 'test16', NULL, 'test16@example.com', '0812345686', NULL, 1),
 (17, 'U0017', 'ทดสอบ สิบเจ็ด', 'male', '1997-08-20', 'test17', NULL, 'test17@example.com', '0812345687', NULL, 1),
-(18, 'Ue9761b5cc006f2b8c7d0897e8b272c61', '279 ยงศักดิ์ (Neo)', 'male', '2026-02-03', '279neo', 'https://sprofile.line-scdn.net/0h3enF8LH7bEpDP3IYHEISdDNvbyBgTjVYbVlxJXQ3Z3kpWi1Oa1BwfyU6Oyp9BytPOFwgLiQ7MHJhWWhyZhknLw12VxMGVFF5DiJfeQ1iLn4mS3NZCyA_KQFbeRIgbFVXJAlUcSNLdz8rZF9-CAcjRxhfaH58T1JbEWgAHEYNAsksPRsfblgqKX44M3L2', 'test@gmail.com', '0952909471', '2026-02-25 13:55:00', 1),
-(22, 'Ub4cf78728db86411aad7edcc1da9d55b', '65200123 ณัฐวัฒน์', 'male', '2010-02-12', '65200123', 'https://sprofile.line-scdn.net/0heL-djeviOmMAHS0TR35EHHBNOQkjbGNxL3wnBmFNN1E7JXs2L31xUWIdZ1Q1JXUxJClwUTAfZ1EMDk0FHkvGVwctZ1I8JHg9K3p9jQ', 'kjahhisi.jj@gmail.com', '5681992778', '2026-02-18 07:50:52', 17);
+(18, 'Ue9761b5cc006f2b8c7d0897e8b272c61', '279 ยงศักดิ์ (Neo)', 'male', '2026-02-03', '279neo', 'https://sprofile.line-scdn.net/0h3enF8LH7bEpDP3IYHEISdDNvbyBgTjVYbVlxJXQ3Z3kpWi1Oa1BwfyU6Oyp9BytPOFwgLiQ7MHJhWWhyZhknLw12VxMGVFF5DiJfeQ1iLn4mS3NZCyA_KQFbeRIgbFVXJAlUcSNLdz8rZF9-CAcjRxhfaH58T1JbEWgAHEYNAsksPRsfblgqKX44M3L2', 'test@gmail.com', '0952909471', '2026-03-14 05:05:26', 17),
+(22, 'Ub4cf78728db86411aad7edcc1da9d55b', '65200123 ณัฐวัฒน์', 'male', '2010-02-12', '65200123', 'https://sprofile.line-scdn.net/0heL-djeviOmMAHS0TR35EHHBNOQkjbGNxL3wnBmFNN1E7JXs2L31xUWIdZ1Q1JXUxJClwUTAfZ1EMDk0FHkvGVwctZ1I8JHg9K3p9jQ', 'kjahhisi.jj@gmail.com', '5681992778', '2026-03-13 08:03:43', NULL);
 
 -- --------------------------------------------------------
 
@@ -213,7 +215,7 @@ CREATE TABLE `organizer_users` (
 --
 
 INSERT INTO `organizer_users` (`user_id`, `username`, `password_hash`, `email`, `last_synced_at`, `role`, `last_login_at`) VALUES
-(1, 'admin01', '$2a$12$G6hlqoz6yKviU4Oult3lgOSkiw0aP7urh3gKW9dCF6XP5QS6EiFNy', 'admin01@example.com', NULL, 'admin', '2026-02-14 10:29:58'),
+(1, 'admin01', '$2a$12$G6hlqoz6yKviU4Oult3lgOSkiw0aP7urh3gKW9dCF6XP5QS6EiFNy', 'admin01@example.com', NULL, 'admin', '2026-03-11 17:48:00'),
 (2, 'org_john', '$2a$12$D5ahB2w4pMDgxxy9dWPWUeQJBuFrjbILYxaA645cb7HpqbKxAB3Mi', 'john@expo.com', NULL, 'organizer', '2026-02-14 07:42:46');
 
 -- --------------------------------------------------------
@@ -324,7 +326,7 @@ INSERT INTO `registrations` (`registration_id`, `exhibition_id`, `user_id`, `rol
 (6, 1, 15, 'visitor', '2026-01-03 06:05:57'),
 (7, 1, 16, 'visitor', '2026-01-05 08:39:52'),
 (10, 1, 17, 'visitor', '2026-01-05 09:45:33'),
-(11, 17, 18, 'staff', '2026-02-14 08:08:43'),
+(11, 17, 18, 'visitor', '2026-02-14 08:08:43'),
 (16, 1, 18, 'staff', '2026-02-14 08:17:22'),
 (17, 17, 22, 'visitor', '2026-02-14 09:07:35');
 
@@ -486,7 +488,7 @@ INSERT INTO `units` (`unit_id`, `unit_code`, `exhibition_id`, `unit_name`, `desc
 (17, 'EX20250301', 3, 'ทดสอบเพิ่มกิจกรรม', 'resrasl;dfka;sdlfkasdf', NULL, 'activity', NULL, NULL, '2025-10-19 22:44:00', '2025-10-22 22:44:00', NULL),
 (18, 'EX20250302', 3, 'test', 'test', NULL, 'activity', NULL, NULL, '2025-10-20 18:46:00', '2025-10-29 18:46:00', NULL),
 (19, 'EX20250901', 17, 'test', '<p>test</p>', '{\"ops\": [{\"insert\": \"test\\n\"}]}', 'activity', NULL, NULL, '2025-12-11 20:00:00', '2025-12-31 20:00:00', NULL),
-(20, 'EX20250902', 17, 'tes2', '<p>testa</p>', '{\"ops\": [{\"insert\": \"testa\\n\"}]}', 'booth', NULL, NULL, '2025-12-30 05:29:00', '2026-01-22 05:29:00', NULL);
+(20, 'EX20250902', 17, 'tes2', '<p>testa</p>', '{\"ops\": [{\"insert\": \"testa\\n\"}]}', 'booth', 'uploads/units/EXP1772572222581.jpg', 'uploads/units/EXP_PDF1772572259981.pdf', '2026-03-11 01:00:00', '2026-05-20 11:29:00', NULL);
 
 --
 -- Triggers `units`
@@ -564,24 +566,6 @@ INSERT INTO `unit_staffs` (`unit_id`, `staff_user_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `v_certificate_templates`
--- (See below for the actual view)
---
-CREATE TABLE `v_certificate_templates` (
-`template_id` int
-,`exhibition_id` int
-,`exhibition_code` varchar(20)
-,`exhibition_title` varchar(255)
-,`organizer_name` varchar(255)
-,`background_url` varchar(500)
-,`layout_config` json
-,`created_at` timestamp
-,`updated_at` timestamp
-);
-
--- --------------------------------------------------------
-
---
 -- Stand-in structure for view `v_exhibitions`
 -- (See below for the actual view)
 --
@@ -590,34 +574,22 @@ CREATE TABLE `v_exhibitions` (
 ,`exhibition_code` varchar(20)
 ,`title` varchar(255)
 ,`description` mediumtext
+,`description_delta` json
 ,`start_date` datetime
 ,`end_date` datetime
 ,`location` varchar(255)
 ,`organizer_name` varchar(255)
 ,`picture_path` varchar(500)
+,`detail_pdf_url` varchar(500)
 ,`status` enum('draft','published','ongoing','ended','archived')
 ,`created_at` timestamp
 ,`updated_at` timestamp
 ,`archived_at` timestamp
+,`exhibition_set_id` int
+,`unit_set_id` int
 );
 
 -- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_exhibition_feedback`
--- (See below for the actual view)
---
-CREATE TABLE `v_exhibition_feedback` (
-`submission_id` int
-,`exhibition_id` int
-,`exhibition_name` varchar(255)
-,`user_id` int
-,`user_name` varchar(255)
-,`question_topic` text
-,`score` int
-,`comment` text
-,`created_at` timestamp
-);
 
 -- --------------------------------------------------------
 
@@ -626,10 +598,12 @@ CREATE TABLE `v_exhibition_feedback` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_exhibition_with_registrations` (
-`exhibition_id` int
-,`exhibition_code` varchar(20)
+`exhibition_code` varchar(20)
+,`exhibition_id` int
 ,`title` varchar(255)
 ,`total_registrations` bigint
+,`total_units` bigint
+,`total_checkins` bigint
 );
 
 -- --------------------------------------------------------
@@ -650,6 +624,7 @@ CREATE TABLE `v_my_event_surveys` (
 ,`picture_path` varchar(500)
 ,`status` enum('draft','published','ongoing','ended','archived')
 ,`exhibition_set_id` int
+,`unit_set_id` int
 ,`registered_at` timestamp
 ,`survey_completed` int
 );
@@ -662,10 +637,13 @@ CREATE TABLE `v_my_event_surveys` (
 --
 CREATE TABLE `v_org_dashboard_kpis` (
 `exhibition_id` int
+,`exhibition_code` varchar(20)
 ,`title` varchar(255)
-,`description` mediumtext
 ,`status` enum('draft','published','ongoing','ended','archived')
 ,`location` varchar(255)
+,`description` mediumtext
+,`start_date` datetime
+,`end_date` datetime
 ,`total_registrations` bigint
 ,`total_units` bigint
 ,`total_checkins` bigint
@@ -680,168 +658,18 @@ CREATE TABLE `v_org_dashboard_kpis` (
 --
 CREATE TABLE `v_org_exhibition_feedback_stats` (
 `exhibition_id` int
+,`qt_id` int
 ,`topic` text
 ,`score` decimal(13,2)
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_org_unit_stats`
--- (See below for the actual view)
---
-CREATE TABLE `v_org_unit_stats` (
-`exhibition_id` int
-,`id` int
-,`name` varchar(255)
-,`type` enum('activity','booth')
-,`checkins` bigint
-,`rating` decimal(13,2)
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_registrations`
--- (See below for the actual view)
---
-CREATE TABLE `v_registrations` (
-`registration_id` int
-,`exhibition_code` varchar(20)
-,`exhibition_title` varchar(255)
-,`user_name` varchar(255)
-,`registered_at` timestamp
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_staff_dashboard_question_scores`
--- (See below for the actual view)
---
-CREATE TABLE `v_staff_dashboard_question_scores` (
-`staff_user_id` int
-,`unit_id` int
-,`unit_name` varchar(255)
-,`qt_id` int
-,`question_topic` text
 ,`response_count` bigint
-,`average_score` decimal(10,2)
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_staff_dashboard_stats`
--- (See below for the actual view)
---
-CREATE TABLE `v_staff_dashboard_stats` (
-`staff_user_id` int
-,`unit_id` int
-,`unit_code` varchar(30)
-,`unit_name` varchar(255)
-,`unit_type` enum('activity','booth')
-,`description` mediumtext
-,`description_delta` json
-,`poster_url` varchar(500)
-,`detail_pdf_url` varchar(500)
-,`starts_at` datetime
-,`ends_at` datetime
 ,`exhibition_id` int
 ,`exhibition_title` varchar(255)
-,`exhibition_location` varchar(255)
-,`exhibition_status` enum('draft','published','ongoing','ended','archived')
-,`total_visitors` bigint
-,`total_reviews` bigint
-,`average_score` decimal(13,2)
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_stats_score_by_question`
--- (See below for the actual view)
---
-CREATE TABLE `v_stats_score_by_question` (
-`exhibition_name` varchar(255)
-,`target_name` varchar(255)
-,`topic` text
-,`total_voters` bigint
-,`average_score` decimal(13,2)
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_units_by_exhibition`
--- (See below for the actual view)
---
-CREATE TABLE `v_units_by_exhibition` (
-`unit_id` int
-,`unit_code` varchar(30)
-,`unit_name` varchar(255)
-,`unit_type` enum('activity','booth')
-,`poster_url` varchar(500)
-,`starts_at` datetime
-,`ends_at` datetime
-,`exhibition_id` int
-,`exhibition_code` varchar(20)
-,`exhibition_title` varchar(255)
-,`staff_names` text
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_units_checkins`
--- (See below for the actual view)
---
-CREATE TABLE `v_units_checkins` (
-`checkin_id` int
-,`exhibition_code` varchar(20)
-,`exhibition_title` varchar(255)
-,`user_name` varchar(255)
-,`unit_code` varchar(30)
-,`unit_name` varchar(255)
-,`checkin_at` timestamp
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_unit_feedback`
--- (See below for the actual view)
---
-CREATE TABLE `v_unit_feedback` (
-`submission_id` int
-,`exhibition_id` int
-,`exhibition_name` varchar(255)
-,`unit_id` int
-,`unit_name` varchar(255)
-,`user_id` int
-,`user_name` varchar(255)
-,`question_topic` text
-,`score` int
-,`comment` text
-,`created_at` timestamp
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `v_user_exhibition_checkin_status`
--- (See below for the actual view)
---
-CREATE TABLE `v_user_exhibition_checkin_status` (
-`exhibition_id` int
-,`exhibition_code` varchar(20)
-,`exhibition_title` varchar(255)
-,`unit_id` int
-,`unit_code` varchar(30)
-,`unit_name` varchar(255)
-,`unit_type` enum('activity','booth')
-,`user_id` int
 ,`is_checked_in` int
+,`unit_code` varchar(30)
+,`unit_id` int
+,`unit_name` varchar(255)
+,`unit_type` enum('activity','booth')
+,`user_id` int
 );
 
 --
@@ -984,7 +812,7 @@ ALTER TABLE `exhibitions`
 -- AUTO_INCREMENT for table `exhibition_announcements`
 --
 ALTER TABLE `exhibition_announcements`
-  MODIFY `announcement_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `announcement_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `normal_users`
@@ -1042,13 +870,6 @@ ALTER TABLE `units_checkins`
 
 -- --------------------------------------------------------
 
---
--- Structure for view `v_certificate_templates`
---
-DROP TABLE IF EXISTS `v_certificate_templates`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_certificate_templates`  AS SELECT `ct`.`template_id` AS `template_id`, `ct`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `e`.`organizer_name` AS `organizer_name`, `ct`.`background_url` AS `background_url`, `ct`.`layout_config` AS `layout_config`, `ct`.`created_at` AS `created_at`, `ct`.`updated_at` AS `updated_at` FROM (`certificate_templates` `ct` join `exhibitions` `e` on((`ct`.`exhibition_id` = `e`.`exhibition_id`))) ;
-
 -- --------------------------------------------------------
 
 --
@@ -1056,16 +877,25 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_certi
 --
 DROP TABLE IF EXISTS `v_exhibitions`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhibitions`  AS SELECT `e`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `title`, `e`.`description` AS `description`, `e`.`start_date` AS `start_date`, `e`.`end_date` AS `end_date`, `e`.`location` AS `location`, `e`.`organizer_name` AS `organizer_name`, `e`.`picture_path` AS `picture_path`, `e`.`status` AS `status`, `e`.`created_at` AS `created_at`, `e`.`updated_at` AS `updated_at`, `e`.`archived_at` AS `archived_at` FROM `exhibitions` AS `e` ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `v_exhibition_feedback`
---
-DROP TABLE IF EXISTS `v_exhibition_feedback`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhibition_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `u`.`user_id` AS `user_id`, `u`.`full_name` AS `user_name`, `qt`.`content` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM ((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `normal_users` `u` on((`s`.`user_id` = `u`.`user_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is null) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhibitions`  AS SELECT 
+  `e`.`exhibition_id` AS `exhibition_id`,
+  `e`.`exhibition_code` AS `exhibition_code`,
+  `e`.`title` AS `title`,
+  `e`.`description` AS `description`,
+  `e`.`description_delta` AS `description_delta`,
+  `e`.`start_date` AS `start_date`,
+  `e`.`end_date` AS `end_date`,
+  `e`.`location` AS `location`,
+  `e`.`organizer_name` AS `organizer_name`,
+  `e`.`picture_path` AS `picture_path`,
+  `e`.`detail_pdf_url` AS `detail_pdf_url`,
+  `e`.`status` AS `status`,
+  `e`.`created_at` AS `created_at`,
+  `e`.`updated_at` AS `updated_at`,
+  `e`.`archived_at` AS `archived_at`,
+  `e`.`exhibition_set_id` AS `exhibition_set_id`,
+  `e`.`unit_set_id` AS `unit_set_id`
+FROM `exhibitions` AS `e` ;
 
 -- --------------------------------------------------------
 
@@ -1083,7 +913,26 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhib
 --
 DROP TABLE IF EXISTS `v_my_event_surveys`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_my_event_surveys`  AS SELECT `r`.`user_id` AS `user_id`, `r`.`registration_id` AS `registration_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `title`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`location` AS `location`, `e`.`start_date` AS `start_date`, `e`.`end_date` AS `end_date`, `e`.`picture_path` AS `picture_path`, `e`.`status` AS `status`, `e`.`exhibition_set_id` AS `exhibition_set_id`, `r`.`registered_at` AS `registered_at`, (case when (`ss`.`submission_id` is not null) then 1 else 0 end) AS `survey_completed` FROM ((`registrations` `r` join `exhibitions` `e` on((`r`.`exhibition_id` = `e`.`exhibition_id`))) left join `survey_submissions` `ss` on(((`ss`.`user_id` = `r`.`user_id`) and (`ss`.`exhibition_id` = `r`.`exhibition_id`) and (`ss`.`unit_id` is null)))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_my_event_surveys`  AS SELECT 
+  `r`.`user_id` AS `user_id`,
+  `r`.`registration_id` AS `registration_id`,
+  `e`.`exhibition_id` AS `exhibition_id`,
+  `e`.`title` AS `title`,
+  `e`.`exhibition_code` AS `exhibition_code`,
+  `e`.`location` AS `location`,
+  `e`.`start_date` AS `start_date`,
+  `e`.`end_date` AS `end_date`,
+  `e`.`picture_path` AS `picture_path`,
+  `e`.`status` AS `status`,
+  `e`.`exhibition_set_id` AS `exhibition_set_id`,
+  `e`.`unit_set_id` AS `unit_set_id`,
+  `r`.`registered_at` AS `registered_at`,
+  CASE WHEN `ss`.`submission_id` IS NOT NULL THEN 1 ELSE 0 END AS `survey_completed`
+FROM `registrations` `r`
+JOIN `exhibitions` `e` ON `r`.`exhibition_id` = `e`.`exhibition_id`
+LEFT JOIN `survey_submissions` `ss` ON `ss`.`user_id` = `r`.`user_id` 
+  AND `ss`.`exhibition_id` = `r`.`exhibition_id` 
+  AND `ss`.`unit_id` IS NULL ;
 
 -- --------------------------------------------------------
 
@@ -1092,7 +941,27 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_my_ev
 --
 DROP TABLE IF EXISTS `v_org_dashboard_kpis`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_dashboard_kpis`  AS SELECT `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `title`, `e`.`status` AS `status`, `e`.`location` AS `location`, `e`.`description` AS `description`, (select count(0) from `registrations` `r` where (`r`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_registrations`, (select count(0) from `units` `u` where (`u`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_units`, (select count(0) from `units_checkins` `uc` where (`uc`.`exhibition_id` = `e`.`exhibition_id`)) AS `total_checkins`, (select round(avg(`a`.`score`),2) from (`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) where ((`s`.`exhibition_id` = `e`.`exhibition_id`) and (`s`.`unit_id` is null))) AS `exhibition_avg_score` FROM `exhibitions` AS `e` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_dashboard_kpis`  AS SELECT 
+  `e`.`exhibition_id` AS `exhibition_id`,
+  `e`.`exhibition_code` AS `exhibition_code`,
+  `e`.`title` AS `title`,
+  `e`.`status` AS `status`,
+  `e`.`location` AS `location`,
+  `e`.`description` AS `description`,
+  `e`.`start_date` AS `start_date`,
+  `e`.`end_date` AS `end_date`,
+  COALESCE(COUNT(DISTINCT `r`.`registration_id`), 0) AS `total_registrations`,
+  COALESCE(COUNT(DISTINCT `u`.`unit_id`), 0) AS `total_units`,
+  COALESCE(COUNT(DISTINCT `uc`.`checkin_id`), 0) AS `total_checkins`,
+  ROUND(AVG(CASE WHEN `s`.`unit_id` IS NULL THEN `a`.`score` ELSE NULL END), 2) AS `exhibition_avg_score`
+FROM `exhibitions` `e`
+LEFT JOIN `registrations` `r` ON `r`.`exhibition_id` = `e`.`exhibition_id`
+LEFT JOIN `units` `u` ON `u`.`exhibition_id` = `e`.`exhibition_id`
+LEFT JOIN `units_checkins` `uc` ON `uc`.`exhibition_id` = `e`.`exhibition_id`
+LEFT JOIN `survey_submissions` `s` ON `s`.`exhibition_id` = `e`.`exhibition_id`
+LEFT JOIN `survey_answers` `a` ON `s`.`submission_id` = `a`.`submission_id`
+GROUP BY `e`.`exhibition_id`, `e`.`exhibition_code`, `e`.`title`, `e`.`status`, 
+  `e`.`location`, `e`.`description`, `e`.`start_date`, `e`.`end_date` ;
 
 -- --------------------------------------------------------
 
@@ -1101,7 +970,17 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_d
 --
 DROP TABLE IF EXISTS `v_org_exhibition_feedback_stats`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_exhibition_feedback_stats`  AS SELECT `s`.`exhibition_id` AS `exhibition_id`, `qt`.`content` AS `topic`, round(avg(`a`.`score`),2) AS `score` FROM ((`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is null) GROUP BY `s`.`exhibition_id`, `qt`.`qt_id`, `qt`.`content` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_exhibition_feedback_stats`  AS SELECT 
+  `s`.`exhibition_id` AS `exhibition_id`,
+  `qt`.`qt_id` AS `qt_id`,
+  `qt`.`content` AS `topic`,
+  ROUND(AVG(`a`.`score`), 2) AS `score`,
+  COUNT(`a`.`score`) AS `response_count`
+FROM `survey_submissions` `s`
+JOIN `survey_answers` `a` ON `s`.`submission_id` = `a`.`submission_id`
+JOIN `questions_template` `qt` ON `a`.`qt_id` = `qt`.`qt_id`
+WHERE `s`.`unit_id` IS NULL
+GROUP BY `s`.`exhibition_id`, `qt`.`qt_id`, `qt`.`content` ;
 
 -- --------------------------------------------------------
 
@@ -1110,16 +989,19 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_e
 --
 DROP TABLE IF EXISTS `v_org_unit_stats`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_unit_stats`  AS SELECT `u`.`exhibition_id` AS `exhibition_id`, `u`.`unit_id` AS `id`, `u`.`unit_name` AS `name`, `u`.`unit_type` AS `type`, (select count(0) from `units_checkins` `uc` where (`uc`.`unit_id` = `u`.`unit_id`)) AS `checkins`, (select round(avg(`a`.`score`),2) from (`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) where (`s`.`unit_id` = `u`.`unit_id`)) AS `rating` FROM `units` AS `u` ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `v_registrations`
---
-DROP TABLE IF EXISTS `v_registrations`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_registrations`  AS SELECT `r`.`registration_id` AS `registration_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `u`.`full_name` AS `user_name`, `r`.`registered_at` AS `registered_at` FROM ((`registrations` `r` join `exhibitions` `e` on((`r`.`exhibition_id` = `e`.`exhibition_id`))) join `normal_users` `u` on((`r`.`user_id` = `u`.`user_id`))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_org_unit_stats`  AS SELECT 
+  `u`.`exhibition_id` AS `exhibition_id`,
+  `u`.`unit_id` AS `id`,
+  `u`.`unit_code` AS `unit_code`,
+  `u`.`unit_name` AS `name`,
+  `u`.`unit_type` AS `type`,
+  COALESCE(COUNT(DISTINCT `uc`.`checkin_id`), 0) AS `checkins`,
+  ROUND(AVG(`a`.`score`), 2) AS `rating`
+FROM `units` `u`
+LEFT JOIN `units_checkins` `uc` ON `uc`.`unit_id` = `u`.`unit_id`
+LEFT JOIN `survey_submissions` `s` ON `s`.`unit_id` = `u`.`unit_id`
+LEFT JOIN `survey_answers` `a` ON `s`.`submission_id` = `a`.`submission_id`
+GROUP BY `u`.`exhibition_id`, `u`.`unit_id`, `u`.`unit_code`, `u`.`unit_name`, `u`.`unit_type` ;
 
 -- --------------------------------------------------------
 
@@ -1136,52 +1018,12 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_staff
 -- Structure for view `v_staff_dashboard_stats`
 --
 DROP TABLE IF EXISTS `v_staff_dashboard_stats`;
-
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_staff_dashboard_stats`  AS SELECT `us`.`staff_user_id` AS `staff_user_id`, `u`.`unit_id` AS `unit_id`, `u`.`unit_code` AS `unit_code`, `u`.`unit_name` AS `unit_name`, `u`.`unit_type` AS `unit_type`, `u`.`description` AS `description`, `u`.`description_delta` AS `description_delta`, `u`.`poster_url` AS `poster_url`, `u`.`detail_pdf_url` AS `detail_pdf_url`, `u`.`starts_at` AS `starts_at`, `u`.`ends_at` AS `ends_at`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_title`, `e`.`location` AS `exhibition_location`, `e`.`status` AS `exhibition_status`, coalesce(`checkin_stats`.`total_visitors`,0) AS `total_visitors`, coalesce(`review_stats`.`review_count`,0) AS `total_reviews`, coalesce(round(`review_stats`.`avg_score`,2),0.00) AS `average_score` FROM ((((`unit_staffs` `us` join `units` `u` on((`us`.`unit_id` = `u`.`unit_id`))) join `exhibitions` `e` on((`u`.`exhibition_id` = `e`.`exhibition_id`))) left join (select `units_checkins`.`unit_id` AS `unit_id`,count(`units_checkins`.`checkin_id`) AS `total_visitors` from `units_checkins` group by `units_checkins`.`unit_id`) `checkin_stats` on((`u`.`unit_id` = `checkin_stats`.`unit_id`))) left join (select `s`.`unit_id` AS `unit_id`,count(distinct `s`.`submission_id`) AS `review_count`,avg(`a`.`score`) AS `avg_score` from (`survey_submissions` `s` join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) where (`s`.`unit_id` is not null) group by `s`.`unit_id`) `review_stats` on((`u`.`unit_id` = `review_stats`.`unit_id`))) ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `v_stats_score_by_question`
---
-DROP TABLE IF EXISTS `v_stats_score_by_question`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_stats_score_by_question`  AS SELECT `e`.`title` AS `exhibition_name`, coalesce(`un`.`unit_name`,'Event Overview') AS `target_name`, `qt`.`content` AS `topic`, count(distinct `s`.`submission_id`) AS `total_voters`, round(avg(`a`.`score`),2) AS `average_score` FROM ((((`survey_answers` `a` join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) join `survey_submissions` `s` on((`a`.`submission_id` = `s`.`submission_id`))) join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) left join `units` `un` on((`s`.`unit_id` = `un`.`unit_id`))) GROUP BY `e`.`exhibition_id`, `un`.`unit_id`, `qt`.`qt_id` ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `v_units_by_exhibition`
---
-DROP TABLE IF EXISTS `v_units_by_exhibition`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units_by_exhibition`  AS SELECT `u`.`unit_id` AS `unit_id`, `u`.`unit_code` AS `unit_code`, `u`.`unit_name` AS `unit_name`, `u`.`unit_type` AS `unit_type`, `u`.`poster_url` AS `poster_url`, `u`.`starts_at` AS `starts_at`, `u`.`ends_at` AS `ends_at`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, coalesce(group_concat(`nu`.`full_name` separator ', '),'') AS `staff_names` FROM (((`units` `u` join `exhibitions` `e` on((`u`.`exhibition_id` = `e`.`exhibition_id`))) left join `unit_staffs` `us` on((`u`.`unit_id` = `us`.`unit_id`))) left join `normal_users` `nu` on((`us`.`staff_user_id` = `nu`.`user_id`))) GROUP BY `u`.`unit_id`, `e`.`exhibition_id`, `e`.`exhibition_code`, `e`.`title`, `u`.`unit_code`, `u`.`unit_name`, `u`.`unit_type`, `u`.`poster_url`, `u`.`starts_at`, `u`.`ends_at` ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `v_units_checkins`
---
-DROP TABLE IF EXISTS `v_units_checkins`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units_checkins`  AS SELECT `uc`.`checkin_id` AS `checkin_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `nu`.`full_name` AS `user_name`, `u`.`unit_code` AS `unit_code`, `u`.`unit_name` AS `unit_name`, `uc`.`checkin_at` AS `checkin_at` FROM (((`units_checkins` `uc` join `exhibitions` `e` on((`uc`.`exhibition_id` = `e`.`exhibition_id`))) join `normal_users` `nu` on((`uc`.`user_id` = `nu`.`user_id`))) join `units` `u` on((`uc`.`unit_id` = `u`.`unit_id`))) ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `v_unit_feedback`
---
-DROP TABLE IF EXISTS `v_unit_feedback`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_unit_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `un`.`unit_id` AS `unit_id`, `un`.`unit_name` AS `unit_name`, `u`.`user_id` AS `user_id`, `u`.`full_name` AS `user_name`, `qt`.`content` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM (((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `units` `un` on((`s`.`unit_id` = `un`.`unit_id`))) join `normal_users` `u` on((`s`.`user_id` = `u`.`user_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is not null) ;
-
--- --------------------------------------------------------
 
 --
 -- Structure for view `v_user_exhibition_checkin_status`
 --
 DROP TABLE IF EXISTS `v_user_exhibition_checkin_status`;
-
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_user_exhibition_checkin_status`  AS SELECT DISTINCT `e`.`exhibition_id` AS `exhibition_id`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`title` AS `exhibition_title`, `u`.`unit_id` AS `unit_id`, `u`.`unit_code` AS `unit_code`, `u`.`unit_name` AS `unit_name`, `u`.`unit_type` AS `unit_type`, `r`.`user_id` AS `user_id`, (case when (`uc`.`checkin_id` is not null) then 1 else 0 end) AS `is_checked_in` FROM (((`registrations` `r` join `exhibitions` `e` on((`r`.`exhibition_id` = `e`.`exhibition_id`))) left join `units` `u` on((`e`.`exhibition_id` = `u`.`exhibition_id`))) left join `units_checkins` `uc` on(((`uc`.`unit_id` = `u`.`unit_id`) and (`uc`.`user_id` = `r`.`user_id`) and (`uc`.`exhibition_id` = `e`.`exhibition_id`)))) ;
 
 --
