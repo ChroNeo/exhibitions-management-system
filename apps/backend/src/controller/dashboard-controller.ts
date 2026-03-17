@@ -11,7 +11,10 @@ import {
   getStaffDashboard,
   getStaffUnitByUserId,
 } from "../queries/dashboard-query.js";
-import { requireLiffAuth } from "../services/auth-middleware.js";
+import {
+  requireLiffAuth,
+  requireOrganizerAuth,
+} from "../services/auth-middleware.js";
 
 export default async function dashboardController(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -39,6 +42,7 @@ export default async function dashboardController(fastify: FastifyInstance) {
   app.get(
     "/staff/:ex_id/:unit_id",
     {
+      preHandler: requireLiffAuth,
       schema: {
         tags: ["Dashboard"],
         summary: "get the Staff Dashboard data",
@@ -59,6 +63,7 @@ export default async function dashboardController(fastify: FastifyInstance) {
   app.get(
     "/organizer/:id",
     {
+      preHandler: requireOrganizerAuth,
       schema: {
         tags: ["Dashboard"],
         summary: "get the Organizer Dashboard data",

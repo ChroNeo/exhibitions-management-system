@@ -1,7 +1,12 @@
-import { AppError } from "../errors.js";
-import { safeQuery, pool } from "../services/dbconn.js";
-import type { QuestionsTemplate, QuestionWithSet, QuestionSetWithQuestions, SurveySubmissionResponse } from "../models/survey.model.js";
 import type { ResultSetHeader } from "mysql2";
+import { AppError } from "../errors.js";
+import type {
+  QuestionSetWithQuestions,
+  QuestionsTemplate,
+  QuestionWithSet,
+  SurveySubmissionResponse,
+} from "../models/survey.model.js";
+import { pool, safeQuery } from "../services/dbconn.js";
 
 // ─── Questions Template CRUD ───────────────────────────────────────────────
 
@@ -9,7 +14,7 @@ import type { ResultSetHeader } from "mysql2";
  * Get all questions from the template bank
  */
 export async function getQuestionsTemplate(
-  category?: string
+  category?: string,
 ): Promise<QuestionsTemplate[]> {
   let query = `SELECT qt_id, content, category FROM questions_template`;
   const params: any[] = [];
@@ -20,17 +25,21 @@ export async function getQuestionsTemplate(
   }
 
   query += ` ORDER BY qt_id`;
-  return await safeQuery(query, params) as QuestionsTemplate[];
+  return (await safeQuery(query, params)) as QuestionsTemplate[];
 }
 
 /**
  * Create new question(s) in the template bank
  */
 export async function createQuestionsTemplate(
-  questions: Array<{ content: string; category?: string | null }>
+  questions: Array<{ content: string; category?: string | null }>,
 ): Promise<QuestionsTemplate[]> {
   if (!questions.length) {
-    throw new AppError("At least one question is required", 400, "VALIDATION_ERROR");
+    throw new AppError(
+      "At least one question is required",
+      400,
+      "VALIDATION_ERROR",
+    );
   }
 
   const values = questions.map(() => "(?, ?)").join(", ");
@@ -41,16 +50,17 @@ export async function createQuestionsTemplate(
 
   const rows = await safeQuery<ResultSetHeader>(
     `INSERT INTO questions_template (content, category) VALUES ${values}`,
-    params
+    params,
   );
 
+  // Q4: Re-query using insertId and count instead of assuming contiguous IDs
   const firstId = (rows as any).insertId;
-  const ids = questions.map((_, i) => firstId + i);
+  const count = questions.length;
 
-  return await safeQuery(
-    `SELECT qt_id, content, category FROM questions_template WHERE qt_id IN (${ids.map(() => '?').join(',')}) ORDER BY qt_id`,
-    ids
-  ) as QuestionsTemplate[];
+  return (await safeQuery(
+    `SELECT qt_id, content, category FROM questions_template WHERE qt_id >= ? ORDER BY qt_id LIMIT ?`,
+    [firstId, count],
+  )) as QuestionsTemplate[];
 }
 
 /**
@@ -59,16 +69,16 @@ export async function createQuestionsTemplate(
 export async function updateQuestionTemplate(
   qtId: number,
   content: string,
-  category?: string | null
+  category?: string | null,
 ): Promise<QuestionsTemplate> {
   await safeQuery(
     `UPDATE questions_template SET content = ?, category = ? WHERE qt_id = ?`,
-    [content, category ?? null, qtId]
+    [content, category ?? null, qtId],
   );
 
   const rows = await safeQuery(
     `SELECT qt_id, content, category FROM questions_template WHERE qt_id = ?`,
-    [qtId]
+    [qtId],
   );
 
   if (!(rows as any[]).length) {
@@ -84,7 +94,7 @@ export async function updateQuestionTemplate(
 export async function deleteQuestionTemplate(qtId: number): Promise<void> {
   const result = await safeQuery<ResultSetHeader>(
     `DELETE FROM questions_template WHERE qt_id = ?`,
-    [qtId]
+    [qtId],
   );
 
   if ((result as any).affectedRows === 0) {
@@ -100,7 +110,7 @@ export async function deleteQuestionTemplate(qtId: number): Promise<void> {
  */
 export async function getQuestionsByExhibitionId(
   exhibitionId: string | number,
-  type?: "EXHIBITION" | "UNIT"
+  type?: "EXHIBITION" | "UNIT",
 ): Promise<QuestionWithSet[]> {
   if (!/^\d+$/.test(String(exhibitionId))) {
     throw new AppError("invalid exhibition id", 400, "VALIDATION_ERROR");
@@ -134,7 +144,7 @@ export async function getQuestionsByExhibitionId(
 
   query += ` ORDER BY qs.type, sqm.sort_order, qt.qt_id`;
 
-  return await safeQuery(query, params) as QuestionWithSet[];
+  return (await safeQuery(query, params)) as QuestionWithSet[];
 }
 
 /**
@@ -142,7 +152,7 @@ export async function getQuestionsByExhibitionId(
  * Returns all master question sets with their questions
  */
 export async function getMasterQuestions(
-  type: "EXHIBITION" | "UNIT"
+  type: "EXHIBITION" | "UNIT",
 ): Promise<QuestionSetWithQuestions[]> {
   const rows = await safeQuery(
     `
@@ -161,7 +171,7 @@ export async function getMasterQuestions(
     WHERE qs.is_master = 1 AND qs.type = ?
     ORDER BY qs.set_id, sqm.sort_order, qt.qt_id
     `,
-    [type]
+    [type],
   );
 
   // Group questions by set
@@ -174,7 +184,7 @@ export async function getMasterQuestions(
         name: row.name,
         is_master: row.is_master,
         type: row.type,
-        questions: []
+        questions: [],
       });
     }
 
@@ -197,7 +207,7 @@ export async function getMasterQuestions(
 export async function createQuestionSetForExhibition(
   exhibitionId: number,
   type: "EXHIBITION" | "UNIT",
-  qtIds: Array<{ qt_id: number; sort_order: number }>
+  qtIds: Array<{ qt_id: number; sort_order: number }>,
 ): Promise<QuestionSetWithQuestions> {
   const connection = await pool.getConnection();
 
@@ -208,7 +218,7 @@ export async function createQuestionSetForExhibition(
     const [exhibitionRows] = await connection.query<any[]>(
       `SELECT exhibition_id, exhibition_code, exhibition_set_id, unit_set_id
        FROM exhibitions WHERE exhibition_id = ?`,
-      [exhibitionId]
+      [exhibitionId],
     );
 
     if (!exhibitionRows.length) {
@@ -218,25 +228,30 @@ export async function createQuestionSetForExhibition(
     const exhibition = exhibitionRows[0];
 
     // Step 2: Check for duplicate
-    const columnToCheck = type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
+    const columnToCheck =
+      type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
     if (exhibition[columnToCheck] !== null) {
       throw new AppError(
         `Exhibition already has a ${type} question set`,
         409,
-        "DUPLICATE"
+        "DUPLICATE",
       );
     }
 
     // Step 3: Validate qt_ids
     if (!qtIds || qtIds.length === 0) {
-      throw new AppError("At least one question is required", 400, "VALIDATION_ERROR");
+      throw new AppError(
+        "At least one question is required",
+        400,
+        "VALIDATION_ERROR",
+      );
     }
 
     // Step 4: Create new question set
     const newSetName = `Questions for Exhibition ${exhibition.exhibition_code} (${type})`;
     const [insertResult] = await connection.query<ResultSetHeader>(
       `INSERT INTO question_sets (name, is_master, type) VALUES (?, 0, ?)`,
-      [newSetName, type]
+      [newSetName, type],
     );
     const newSetId = insertResult.insertId;
 
@@ -248,14 +263,15 @@ export async function createQuestionSetForExhibition(
     });
     await connection.query<ResultSetHeader>(
       `INSERT INTO set_question_mapping (set_id, qt_id, sort_order) VALUES ${values}`,
-      params
+      params,
     );
 
     // Step 6: Update exhibition foreign key
-    const columnToUpdate = type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
+    const columnToUpdate =
+      type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
     await connection.query(
       `UPDATE exhibitions SET ${columnToUpdate} = ? WHERE exhibition_id = ?`,
-      [newSetId, exhibitionId]
+      [newSetId, exhibitionId],
     );
 
     await connection.commit();
@@ -276,11 +292,15 @@ export async function createQuestionSetForExhibition(
        LEFT JOIN questions_template qt ON sqm.qt_id = qt.qt_id
        WHERE qs.set_id = ?
        ORDER BY sqm.sort_order, qt.qt_id`,
-      [newSetId]
+      [newSetId],
     );
 
     if (!resultRows.length) {
-      throw new AppError("Failed to retrieve created question set", 500, "DB_ERROR");
+      throw new AppError(
+        "Failed to retrieve created question set",
+        500,
+        "DB_ERROR",
+      );
     }
 
     const questionSet: QuestionSetWithQuestions = {
@@ -314,7 +334,7 @@ export async function createQuestionSetForExhibition(
 export async function updateQuestionSet(
   exhibitionId: number,
   type: "EXHIBITION" | "UNIT",
-  qtIds: Array<{ qt_id: number; sort_order: number }>
+  qtIds: Array<{ qt_id: number; sort_order: number }>,
 ): Promise<QuestionSetWithQuestions> {
   const connection = await pool.getConnection();
 
@@ -322,11 +342,12 @@ export async function updateQuestionSet(
     await connection.beginTransaction();
 
     // Step 1: Validate exhibition exists and get the set_id
-    const columnToCheck = type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
+    const columnToCheck =
+      type === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
     const [exhibitionRows] = await connection.query<any[]>(
       `SELECT exhibition_id, exhibition_code, ${columnToCheck} as set_id
        FROM exhibitions WHERE exhibition_id = ?`,
-      [exhibitionId]
+      [exhibitionId],
     );
 
     if (!exhibitionRows.length) {
@@ -340,19 +361,23 @@ export async function updateQuestionSet(
       throw new AppError(
         `No ${type} question set found for this exhibition`,
         404,
-        "NOT_FOUND"
+        "NOT_FOUND",
       );
     }
 
     // Step 2: Validate qt_ids
     if (!qtIds || qtIds.length === 0) {
-      throw new AppError("At least one question is required", 400, "VALIDATION_ERROR");
+      throw new AppError(
+        "At least one question is required",
+        400,
+        "VALIDATION_ERROR",
+      );
     }
 
     // Step 3: Delete all existing mappings
     await connection.query(
       `DELETE FROM set_question_mapping WHERE set_id = ?`,
-      [setId]
+      [setId],
     );
 
     // Step 4: Insert new mappings
@@ -363,7 +388,7 @@ export async function updateQuestionSet(
     });
     await connection.query<ResultSetHeader>(
       `INSERT INTO set_question_mapping (set_id, qt_id, sort_order) VALUES ${values}`,
-      params
+      params,
     );
 
     await connection.commit();
@@ -384,11 +409,15 @@ export async function updateQuestionSet(
        LEFT JOIN questions_template qt ON sqm.qt_id = qt.qt_id
        WHERE qs.set_id = ?
        ORDER BY sqm.sort_order, qt.qt_id`,
-      [setId]
+      [setId],
     );
 
     if (!resultRows.length) {
-      throw new AppError("Failed to retrieve updated question set", 500, "DB_ERROR");
+      throw new AppError(
+        "Failed to retrieve updated question set",
+        500,
+        "DB_ERROR",
+      );
     }
 
     const questionSet: QuestionSetWithQuestions = {
@@ -423,9 +452,9 @@ export async function updateQuestionSet(
 export async function checkSurveyCompleted(
   userId: number,
   exhibitionId: number,
-  unitId?: number
+  unitId?: number,
 ): Promise<boolean> {
-  if (typeof userId !== 'number' || userId <= 0) {
+  if (typeof userId !== "number" || userId <= 0) {
     throw new AppError("invalid user id", 400, "VALIDATION_ERROR");
   }
 
@@ -467,7 +496,7 @@ export async function submitSurvey(
   exhibitionId: number,
   unitId: number | undefined,
   comment: string | undefined,
-  answers: Array<{ qt_id: number; score: number }>
+  answers: Array<{ qt_id: number; score: number }>,
 ): Promise<SurveySubmissionResponse> {
   const connection = await pool.getConnection();
 
@@ -477,11 +506,15 @@ export async function submitSurvey(
     // Step 1: Validate user is registered for the exhibition
     const [registrationRows] = await connection.query<any[]>(
       `SELECT * FROM registrations WHERE user_id = ? AND exhibition_id = ?`,
-      [userId, exhibitionId]
+      [userId, exhibitionId],
     );
 
     if (!registrationRows.length) {
-      throw new AppError("User not registered for this exhibition", 403, "NOT_REGISTERED");
+      throw new AppError(
+        "User not registered for this exhibition",
+        403,
+        "NOT_REGISTERED",
+      );
     }
 
     // Step 2: Check for duplicate submission
@@ -504,23 +537,32 @@ export async function submitSurvey(
 
     const [existingSubmissions] = await connection.query<any[]>(
       duplicateCheckQuery,
-      duplicateCheckParams
+      duplicateCheckParams,
     );
 
     if (existingSubmissions.length > 0) {
-      throw new AppError("Survey already submitted", 409, "DUPLICATE_SUBMISSION");
+      throw new AppError(
+        "Survey already submitted",
+        409,
+        "DUPLICATE_SUBMISSION",
+      );
     }
 
     // Step 3: Determine the set_id for this survey
     const surveyType = unitId === undefined ? "EXHIBITION" : "UNIT";
-    const setColumn = surveyType === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
+    const setColumn =
+      surveyType === "EXHIBITION" ? "exhibition_set_id" : "unit_set_id";
     const [exhRows] = await connection.query<any[]>(
       `SELECT ${setColumn} as set_id FROM exhibitions WHERE exhibition_id = ?`,
-      [exhibitionId]
+      [exhibitionId],
     );
 
     if (!exhRows.length || !exhRows[0].set_id) {
-      throw new AppError("No question set found for this exhibition", 404, "NOT_FOUND");
+      throw new AppError(
+        "No question set found for this exhibition",
+        404,
+        "NOT_FOUND",
+      );
     }
 
     const setId = exhRows[0].set_id;
@@ -529,7 +571,7 @@ export async function submitSurvey(
     const [insertResult] = await connection.query<ResultSetHeader>(
       `INSERT INTO survey_submissions (exhibition_id, unit_id, user_id, comment)
        VALUES (?, ?, ?, ?)`,
-      [exhibitionId, unitId ?? null, userId, comment ?? null]
+      [exhibitionId, unitId ?? null, userId, comment ?? null],
     );
     const submissionId = insertResult.insertId;
 
@@ -543,7 +585,7 @@ export async function submitSurvey(
 
       await connection.query<ResultSetHeader>(
         `INSERT INTO survey_answers (submission_id, set_id, qt_id, score) VALUES ${values}`,
-        params
+        params,
       );
     }
 
@@ -560,7 +602,7 @@ export async function submitSurvey(
         s.created_at
        FROM survey_submissions s
        WHERE s.submission_id = ?`,
-      [submissionId]
+      [submissionId],
     );
 
     const [answerRows] = await connection.query<any[]>(
@@ -568,7 +610,7 @@ export async function submitSurvey(
        FROM survey_answers
        WHERE submission_id = ?
        ORDER BY answer_id`,
-      [submissionId]
+      [submissionId],
     );
 
     if (!submissionRows.length) {
@@ -583,9 +625,10 @@ export async function submitSurvey(
       unit_id: submission.unit_id,
       user_id: submission.user_id,
       comment: submission.comment,
-      created_at: submission.created_at instanceof Date
-        ? submission.created_at.toISOString()
-        : new Date(submission.created_at).toISOString(),
+      created_at:
+        submission.created_at instanceof Date
+          ? submission.created_at.toISOString()
+          : new Date(submission.created_at).toISOString(),
       answers: answerRows.map((row: any) => ({
         answer_id: row.answer_id,
         set_id: row.set_id,

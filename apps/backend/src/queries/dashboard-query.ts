@@ -1,11 +1,16 @@
-import { DashboardResponse, OrgDashboardResponse } from "../models/dashboard.model.js";
 import { AppError } from "../errors.js";
+import {
+  DashboardResponse,
+  OrgDashboardResponse,
+} from "../models/dashboard.model.js";
 import { safeQuery } from "../services/dbconn.js";
 
 export async function getStaffUnitByUserId(
   userId: number,
 ): Promise<{ ex_id: number; unit_id: number }> {
-  const [row] = await safeQuery<Array<{ unit_id: number; exhibition_id: number }>>(
+  const [row] = await safeQuery<
+    Array<{ unit_id: number; exhibition_id: number }>
+  >(
     `SELECT us.unit_id, u.exhibition_id
      FROM unit_staffs us
      JOIN units u ON us.unit_id = u.unit_id
@@ -13,7 +18,12 @@ export async function getStaffUnitByUserId(
      LIMIT 1`,
     [userId],
   );
-  if (!row) throw new AppError("No unit assigned to this staff", 404, "NO_UNIT_ASSIGNED");
+  if (!row)
+    throw new AppError(
+      "No unit assigned to this staff",
+      404,
+      "NO_UNIT_ASSIGNED",
+    );
   return { ex_id: row.exhibition_id, unit_id: row.unit_id };
 }
 
@@ -110,7 +120,6 @@ export async function getStaffDashboard(
       feedback_breakdown: feedback,
     },
   };
-  console.log(JSON.stringify(result, null, 2));
   return result;
 }
 
@@ -151,7 +160,10 @@ export async function getOrgDashboard(
   );
 
   // Calculate percent for age groups
-  const totalAge = ageRows.reduce((sum: number, r: any) => sum + Number(r.value), 0);
+  const totalAge = ageRows.reduce(
+    (sum: number, r: any) => sum + Number(r.value),
+    0,
+  );
   const age_groups = ageRows.map((r: any) => ({
     label: r.label,
     value: Number(r.value),
@@ -183,43 +195,61 @@ export async function getOrgDashboard(
     [exhibitionId],
   );
 
-  // For each unit, fetch feedback details and recent comments in parallel
-  const all_units_stats = await Promise.all(
-    unitRows.map(async (unit: any) => {
-      const [feedbackDetails, commentRows] = await Promise.all([
-        safeQuery<any[]>(
-          `SELECT qt.content AS topic, ROUND(AVG(a.score), 2) AS score
-           FROM survey_submissions s
-           JOIN survey_answers a ON s.submission_id = a.submission_id
-           JOIN questions_template qt ON a.qt_id = qt.qt_id
-           WHERE s.unit_id = ?
-           GROUP BY qt.qt_id, qt.content`,
-          [unit.id],
-        ),
-        safeQuery<any[]>(
-          `SELECT comment
-           FROM survey_submissions
-           WHERE unit_id = ? AND comment IS NOT NULL AND comment != ''
-           ORDER BY created_at DESC
-           LIMIT 3`,
-          [unit.id],
-        ),
-      ]);
+  // O1: Batch queries for all units instead of N+1 per-unit queries
+  const unitIds = unitRows.map((u: any) => u.id);
+  let allFeedbackRows: any[] = [];
+  let allCommentRows: any[] = [];
 
-      return {
-        id: unit.id,
-        name: unit.name,
-        type: unit.type,
-        checkins: Number(unit.checkins),
-        rating: Number(unit.rating),
-        feedback_details: feedbackDetails.map((f: any) => ({
-          topic: f.topic,
-          score: Number(f.score),
-        })),
-        recent_comments: commentRows.map((c: any) => c.comment),
-      };
-    }),
-  );
+  if (unitIds.length > 0) {
+    const placeholders = unitIds.map(() => "?").join(",");
+    [allFeedbackRows, allCommentRows] = await Promise.all([
+      safeQuery<any[]>(
+        `SELECT s.unit_id, qt.content AS topic, ROUND(AVG(a.score), 2) AS score
+         FROM survey_submissions s
+         JOIN survey_answers a ON s.submission_id = a.submission_id
+         JOIN questions_template qt ON a.qt_id = qt.qt_id
+         WHERE s.unit_id IN (${placeholders})
+         GROUP BY s.unit_id, qt.qt_id, qt.content`,
+        unitIds,
+      ),
+      safeQuery<any[]>(
+        `SELECT unit_id, comment, created_at
+         FROM survey_submissions
+         WHERE unit_id IN (${placeholders}) AND comment IS NOT NULL AND comment != ''
+         ORDER BY created_at DESC`,
+        unitIds,
+      ),
+    ]);
+  }
+
+  // Group feedback and comments by unit_id in JS
+  const feedbackByUnit = new Map<
+    number,
+    Array<{ topic: string; score: number }>
+  >();
+  for (const f of allFeedbackRows) {
+    if (!feedbackByUnit.has(f.unit_id)) feedbackByUnit.set(f.unit_id, []);
+    feedbackByUnit
+      .get(f.unit_id)!
+      .push({ topic: f.topic, score: Number(f.score) });
+  }
+
+  const commentsByUnit = new Map<number, string[]>();
+  for (const c of allCommentRows) {
+    if (!commentsByUnit.has(c.unit_id)) commentsByUnit.set(c.unit_id, []);
+    const arr = commentsByUnit.get(c.unit_id)!;
+    if (arr.length < 3) arr.push(c.comment); // limit 3 per unit
+  }
+
+  const all_units_stats = unitRows.map((unit: any) => ({
+    id: unit.id,
+    name: unit.name,
+    type: unit.type,
+    checkins: Number(unit.checkins),
+    rating: Number(unit.rating),
+    feedback_details: feedbackByUnit.get(unit.id) || [],
+    recent_comments: commentsByUnit.get(unit.id) || [],
+  }));
 
   return {
     status: "success" as const,
@@ -235,10 +265,16 @@ export async function getOrgDashboard(
         total_registrations: Number(kpi.total_registrations),
         total_units: Number(kpi.total_units),
         total_checkins: Number(kpi.total_checkins),
-        exhibition_avg_score: kpi.exhibition_avg_score !== null ? Number(kpi.exhibition_avg_score) : null,
+        exhibition_avg_score:
+          kpi.exhibition_avg_score !== null
+            ? Number(kpi.exhibition_avg_score)
+            : null,
       },
       demographics: {
-        gender: genderRows.map((r: any) => ({ label: r.label, value: Number(r.value) })),
+        gender: genderRows.map((r: any) => ({
+          label: r.label,
+          value: Number(r.value),
+        })),
         age_groups,
       },
       feedback_breakdown: feedbackRows.map((r: any) => ({

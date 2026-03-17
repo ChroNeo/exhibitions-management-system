@@ -23,7 +23,7 @@ import {
   updateCertificateTemplate,
 } from "../queries/certificate-template-query.js";
 import {
-  optionalAuth,
+  requireLiffAuth,
   requireOrganizerAuth,
 } from "../services/auth-middleware.js";
 import { generateCertificate } from "../services/certificate-generator.js";
@@ -246,7 +246,7 @@ export default async function certificateTemplateController(
   app.get(
     "/:exhibitionId/certificates/:userId/preview",
     {
-      preHandler: optionalAuth,
+      preHandler: requireLiffAuth,
       schema: {
         tags: ["Certificate"],
         summary: "Get certificate preview data for a user",
@@ -261,6 +261,15 @@ export default async function certificateTemplateController(
     },
     async (req, reply) => {
       const { exhibitionId, userId } = req.params;
+
+      // S3: Ownership check — users can only preview their own certificate
+      if (req.lineUser && req.lineUser.user_id !== Number(userId)) {
+        throw new AppError(
+          "You can only preview your own certificate",
+          403,
+          "FORBIDDEN",
+        );
+      }
 
       // Get certificate template
       const template = await getCertificateTemplateByExhibitionId(exhibitionId);
@@ -294,7 +303,7 @@ export default async function certificateTemplateController(
   app.get(
     "/:exhibitionId/certificates/:userId/download",
     {
-      preHandler: optionalAuth,
+      preHandler: requireLiffAuth,
       schema: {
         tags: ["Certificate"],
         summary: "Download generated certificate for a registration",
@@ -316,6 +325,19 @@ export default async function certificateTemplateController(
 
       // Check if admin wants to skip validation (requires auth)
       const isAdminSkip = skipValidation === "true" && req.user;
+
+      // S3: Ownership check — users can only download their own certificate (unless admin skip)
+      if (
+        !isAdminSkip &&
+        req.lineUser &&
+        req.lineUser.user_id !== Number(userId)
+      ) {
+        throw new AppError(
+          "You can only download your own certificate",
+          403,
+          "FORBIDDEN",
+        );
+      }
 
       // Get certificate template
       const template = await getCertificateTemplateByExhibitionId(exhibitionId);

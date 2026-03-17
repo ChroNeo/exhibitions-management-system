@@ -8,7 +8,7 @@ import { safeQuery } from "../services/dbconn.js";
 
 export async function getAnnouncementList(): Promise<any[]> {
   const rows = await safeQuery(`
-  SELECT * 
+  SELECT announcement_id, exhibition_id, topic, description, image_url, is_active, created_at, updated_at
   FROM exhibition_announcements
   WHERE is_active = 1 ORDER BY created_at DESC;
 `);
@@ -23,7 +23,7 @@ export async function getAnnouncementListbyId(
   }
   const rows = await safeQuery(
     `
-      SELECT * 
+      SELECT announcement_id, exhibition_id, topic, description, image_url, is_active, created_at, updated_at
       FROM exhibition_announcements
       WHERE exhibition_id = ?
       AND is_active = 1
@@ -31,14 +31,9 @@ export async function getAnnouncementListbyId(
     `,
     [id],
   );
-  if (!rows.length) {
-    throw new AppError("exhibition not found", 404, "NOT_FOUND");
-  }
   return rows;
 }
-export async function getAnnouncementById(
-  id: string | number,
-): Promise<any> {
+export async function getAnnouncementById(id: string | number): Promise<any> {
   if (!/^\d+$/.test(String(id))) {
     throw new AppError("invalid announcement id", 400, "VALIDATION_ERROR");
   }
@@ -70,6 +65,18 @@ export async function createAnnouncement(
   return result;
 }
 
+// S5: Whitelist of allowed column names to prevent dynamic column injection
+const ANNOUNCEMENT_UPDATABLE_FIELDS = new Set<
+  keyof UpdateAnnouncementPayloadType
+>([
+  "exhibition_id",
+  "topic",
+  "description",
+  "description_delta",
+  "image_url",
+  "is_active",
+]);
+
 export async function updateAnnouncement(
   id: string | number,
   payload: UpdateAnnouncementPayloadType,
@@ -77,7 +84,9 @@ export async function updateAnnouncement(
   if (!/^\d+$/.test(String(id))) {
     throw new AppError("invalid announcement id", 400, "VALIDATION_ERROR");
   }
-  const fields = Object.keys(payload) as (keyof UpdateAnnouncementPayloadType)[];
+  const fields = (
+    Object.keys(payload) as (keyof UpdateAnnouncementPayloadType)[]
+  ).filter((f) => ANNOUNCEMENT_UPDATABLE_FIELDS.has(f));
   if (fields.length === 0) {
     throw new AppError("no fields to update", 400, "VALIDATION_ERROR");
   }
@@ -99,8 +108,9 @@ export async function deleteAnnouncement(
   if (!/^\d+$/.test(String(id))) {
     throw new AppError("invalid announcement id", 400, "VALIDATION_ERROR");
   }
+  // Q3: Soft delete — set is_active = 0 instead of hard DELETE
   const result = await safeQuery<ResultSetHeader>(
-    `DELETE FROM exhibition_announcements WHERE announcement_id = ?;`,
+    `UPDATE exhibition_announcements SET is_active = 0 WHERE announcement_id = ? AND is_active = 1;`,
     [id],
   );
   if (result.affectedRows === 0) {

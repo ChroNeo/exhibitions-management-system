@@ -66,17 +66,18 @@ export default async function ticketController(fastify: FastifyInstance) {
         );
       }
 
-      const jwtSecret = process.env.JWT_SECRET;
-      if (!jwtSecret)
-        throw new AppError("JWT_SECRET missing", 500, "CONFIG_ERROR");
+      const qrSecret = process.env.QR_TOKEN_SECRET || process.env.JWT_SECRET;
+      if (!qrSecret)
+        throw new AppError("QR_TOKEN_SECRET missing", 500, "CONFIG_ERROR");
 
       const qrTokenPayload = {
         uid: req.lineUser!.user_id,
         eid: targetExhibitionId,
+        purpose: "qr_checkin",
       };
 
       const expiresIn = 300; // 5 minutes in seconds
-      const qrToken = jwt.sign(qrTokenPayload, jwtSecret, {
+      const qrToken = jwt.sign(qrTokenPayload, qrSecret, {
         expiresIn,
       });
 
@@ -213,16 +214,25 @@ export default async function ticketController(fastify: FastifyInstance) {
     },
     async (req, reply) => {
       const { token } = req.body;
-      const secret = process.env.JWT_SECRET;
-      if (!secret)
-        throw new AppError("JWT_SECRET missing", 500, "CONFIG_ERROR");
+      const qrSecret = process.env.QR_TOKEN_SECRET || process.env.JWT_SECRET;
+      if (!qrSecret)
+        throw new AppError("QR_TOKEN_SECRET missing", 500, "CONFIG_ERROR");
 
       let payload: any;
       try {
-        payload = jwt.verify(token, secret);
+        payload = jwt.verify(token, qrSecret);
       } catch (err) {
         throw new AppError(
           "❌ QR Code ไม่ถูกต้องหรือหมดอายุ",
+          400,
+          "INVALID_QR_TOKEN",
+        );
+      }
+
+      // S4: Validate token purpose to prevent token type confusion
+      if (payload.purpose !== "qr_checkin") {
+        throw new AppError(
+          "❌ Token ไม่ถูกต้อง (Invalid token type)",
           400,
           "INVALID_QR_TOKEN",
         );

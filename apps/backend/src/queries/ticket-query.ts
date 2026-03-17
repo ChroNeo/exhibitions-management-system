@@ -41,12 +41,25 @@ export async function verifyAndCheckIn(
   visitorUserId: number,
   exhibitionId: number,
 ): Promise<CheckInResult> {
-  // Auto-Detect Unit: หาว่า Staff คนนี้คุม Unit ไหน
-  const staffAssignment = await safeQuery<any[]>(
-    `SELECT unit_id FROM unit_staffs WHERE staff_user_id = ? LIMIT 1`,
-    [staffUserId],
-  );
+  // O3: Parallelize independent queries — staff assignment + unit check + visitor registration
+  const [staffAssignment, visitor] = await Promise.all([
+    safeQuery<any[]>(
+      `SELECT us.unit_id, u.exhibition_id
+       FROM unit_staffs us
+       JOIN units u ON us.unit_id = u.unit_id
+       WHERE us.staff_user_id = ? LIMIT 1`,
+      [staffUserId],
+    ),
+    safeQuery<any[]>(
+      `SELECT u.full_name, u.picture_url
+       FROM registrations r
+       JOIN normal_users u ON r.user_id = u.user_id
+       WHERE r.user_id = ? AND r.exhibition_id = ?`,
+      [visitorUserId, exhibitionId],
+    ),
+  ]);
 
+  // Auto-Detect Unit: หาว่า Staff คนนี้คุม Unit ไหน
   if (staffAssignment.length === 0) {
     throw new AppError(
       "คุณยังไม่ได้ถูกมอบหมายให้ประจำจุดสแกนใดๆ (No Unit Assigned)",
@@ -55,16 +68,11 @@ export async function verifyAndCheckIn(
     );
   }
 
-  const unitId = staffAssignment[0].unit_id; //unit id ของ staff
+  const unitId = staffAssignment[0].unit_id;
+  const unitExhibitionId = staffAssignment[0].exhibition_id;
 
   // Check Unit Validity: Unit นี้อยู่ในงานนิทรรศการ เดียวกับตั๋วไหม?
-  const unitCheck = await safeQuery<any[]>(
-    `SELECT exhibition_id FROM units WHERE unit_id = ?`,
-    [unitId],
-  );
-
-  if (unitCheck.length === 0 || unitCheck[0].exhibition_id !== exhibitionId) {
-    // กรณี Staff อยู่บูธของ "งาน A" แต่ Visitor เอา QR "งาน B" มาสแกน
+  if (unitExhibitionId !== exhibitionId) {
     throw new AppError(
       "ตั๋วใบนี้สำหรับงานนิทรรศการอื่น ไม่ใช่งานนิทรรศการที่คุณประจำอยู่",
       400,
@@ -73,43 +81,37 @@ export async function verifyAndCheckIn(
   }
 
   // Check Visitor Registration: Visitor ลงทะเบียนมาไหม?
-  const visitor = await safeQuery<any[]>(
-    `SELECT u.full_name, u.picture_url
-     FROM registrations r
-     JOIN normal_users u ON r.user_id = u.user_id
-     WHERE r.user_id = ? AND r.exhibition_id = ?`,
-    [visitorUserId, exhibitionId],
-  );
-
   if (visitor.length === 0) {
     throw new AppError("ไม่พบข้อมูลการลงทะเบียน", 404, "USER_NOT_FOUND");
   }
 
-  // Check Duplicate: เคยสแกนที่ Unit นี้หรือยัง?
-  const duplicateCheck = await safeQuery<any[]>(
-    `SELECT checkin_at FROM units_checkins 
-     WHERE user_id = ? AND unit_id = ?`,
-    [visitorUserId, unitId],
-  );
-
-  if (duplicateCheck.length > 0) {
-    return {
-      success: false,
-      message: `สแกนซ้ำ! เช็คอินไปแล้วเมื่อ ${new Date(duplicateCheck[0].checkin_at).toLocaleTimeString("th-TH")}`,
-      visitor: {
-        full_name: visitor[0].full_name,
-        picture_url: visitor[0].picture_url,
-        checkin_at: duplicateCheck[0].checkin_at,
-      },
-    };
+  // S1: Insert directly and catch duplicate from UNIQUE constraint (uq_checkin)
+  // This eliminates the race condition from SELECT-then-INSERT
+  try {
+    await safeQuery(
+      `INSERT INTO units_checkins (exhibition_id, user_id, unit_id, checkin_at)
+       VALUES (?, ?, ?, NOW())`,
+      [exhibitionId, visitorUserId, unitId],
+    );
+  } catch (err: any) {
+    if (err?.details?.code === "ER_DUP_ENTRY" || err?.code === "DUPLICATE") {
+      const duplicateCheck = await safeQuery<any[]>(
+        `SELECT checkin_at FROM units_checkins
+         WHERE user_id = ? AND unit_id = ?`,
+        [visitorUserId, unitId],
+      );
+      return {
+        success: false,
+        message: `สแกนซ้ำ! เช็คอินไปแล้วเมื่อ ${new Date(duplicateCheck[0].checkin_at).toLocaleTimeString("th-TH")}`,
+        visitor: {
+          full_name: visitor[0].full_name,
+          picture_url: visitor[0].picture_url,
+          checkin_at: duplicateCheck[0].checkin_at,
+        },
+      };
+    }
+    throw err;
   }
-
-  // บันทึกการเช็คอิน
-  await safeQuery(
-    `INSERT INTO units_checkins (exhibition_id, user_id, unit_id, checkin_at)
-     VALUES (?, ?, ?, NOW())`,
-    [exhibitionId, visitorUserId, unitId],
-  );
 
   return {
     success: true,

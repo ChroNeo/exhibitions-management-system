@@ -1,24 +1,27 @@
-import path from "node:path";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import z from "zod";
 import { AppError } from "../errors.js";
 import {
-  AnnouncementSchema,
   AnnoucncementsPayload,
+  AnnouncementSchema,
   UpdateAnnouncementPayload,
 } from "../models/news.model.js";
 import {
-  getAnnouncementList,
-  getAnnouncementListbyId,
   createAnnouncement,
-  updateAnnouncement,
   deleteAnnouncement,
   getAnnouncementById,
+  getAnnouncementList,
+  getAnnouncementListbyId,
+  updateAnnouncement,
 } from "../queries/news-query.js";
 import { requireOrganizerAuth } from "../services/auth-middleware.js";
-import { collectMultipartFields, removeUploadedFile } from "../services/file-upload.js";
-import { fileURLToPath } from "node:url";
+import {
+  collectMultipartFields,
+  removeUploadedFile,
+} from "../services/file-upload.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,7 +70,7 @@ export default async function newsController(fastify: FastifyInstance) {
       schema: {
         tags: ["Announcements"],
         summary: "Create Announcement",
-        body: z.union([AnnoucncementsPayload, z.any()]),
+        body: AnnoucncementsPayload.optional(),
         response: {
           201: z.object({
             message: z.string(),
@@ -123,7 +126,7 @@ export default async function newsController(fastify: FastifyInstance) {
         tags: ["Announcements"],
         summary: "Update Announcement",
         params: z.object({ id: z.string().regex(/^\d+$/) }),
-        body: z.union([UpdateAnnouncementPayload, z.any()]),
+        body: UpdateAnnouncementPayload.optional(),
         response: {
           200: z.object({
             message: z.string(),
@@ -154,10 +157,13 @@ export default async function newsController(fastify: FastifyInstance) {
         });
 
         const raw: Record<string, unknown> = {};
-        if (fields.exhibition_id) raw.exhibition_id = Number(fields.exhibition_id);
+        if (fields.exhibition_id)
+          raw.exhibition_id = Number(fields.exhibition_id);
         if (fields.topic) raw.topic = fields.topic;
-        if (fields.description !== undefined) raw.description = fields.description || null;
-        if (fields.description_delta !== undefined) raw.description_delta = fields.description_delta || null;
+        if (fields.description !== undefined)
+          raw.description = fields.description || null;
+        if (fields.description_delta !== undefined)
+          raw.description_delta = fields.description_delta || null;
         if (fields.is_active) raw.is_active = Number(fields.is_active);
         if (files.image_url?.publicPath) {
           raw.image_url = files.image_url.publicPath;
@@ -177,7 +183,7 @@ export default async function newsController(fastify: FastifyInstance) {
       });
     },
   );
-  // Delete Announcement (soft delete)
+  // Soft-delete Announcement (sets is_active = 0)
   app.delete(
     "/:id",
     {
