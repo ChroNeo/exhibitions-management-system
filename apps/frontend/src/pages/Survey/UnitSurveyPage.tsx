@@ -1,13 +1,13 @@
 import liff from "@line/liff";
 import axios from "axios";
 import { useState } from "react";
+import { IoArrowBack, IoCheckmarkCircle, IoCloseCircle } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { submitSurveyLiff } from "../../api/survey";
 import { isLiffMockEnabled } from "../../hooks/useLiff";
 import { useUnitSurveyLiff } from "./hooks";
 import styles from "./UnitSurvey.module.css";
-import { IoCheckmarkCircle, IoCloseCircle, IoArrowBack } from "react-icons/io5";
 
 interface SurveyAnswer {
   qt_id: number;
@@ -109,17 +109,9 @@ export default function UnitSurveyPage() {
     } catch (error) {
       setSubmitState({ status: "idle" });
 
-      console.error("Survey submission error:", error);
-
       let errorMessage = "Failed to submit survey";
 
       if (axios.isAxiosError(error)) {
-        console.error("Axios error details:", {
-          status: error.response?.status,
-          data: error.response?.data,
-          headers: error.response?.headers,
-        });
-
         if (error.response?.data?.message) {
           errorMessage = error.response.data.message;
         } else if (error.response?.status) {

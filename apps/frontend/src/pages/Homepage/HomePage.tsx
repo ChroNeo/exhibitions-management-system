@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import ExhibitionCard from "../../components/exhibition/ExhibitionCard";
-import { useFeature } from "./hooks";
-import styles from "./HomePage.module.css";
 import { toFileUrl } from "../../utils/url";
+import styles from "./HomePage.module.css";
+import { useFeature } from "./hooks";
 
 export default function HomePage() {
   const { data, isLoading } = useFeature();
@@ -20,7 +20,7 @@ export default function HomePage() {
       }))
       .filter(
         (slide) =>
-          typeof slide.image === "string" && slide.image.trim().length > 0
+          typeof slide.image === "string" && slide.image.trim().length > 0,
       );
   }, [data?.featureImages, data?.exhibitions]);
 
@@ -45,8 +45,8 @@ export default function HomePage() {
       } else if (document.fullscreenElement) {
         await document.exitFullscreen();
       }
-    } catch (err) {
-      console.error("Failed to toggle fullscreen", err);
+    } catch {
+      // Fullscreen not supported or denied — ignore
     }
   };
 
@@ -278,9 +278,9 @@ export default function HomePage() {
                         location: ex.location ?? "",
                         coverUrl: `${ex.picture_path}`,
                         dateText: `${new Date(
-                          ex.start_date
+                          ex.start_date,
                         ).toLocaleDateString()} - ${new Date(
-                          ex.end_date
+                          ex.end_date,
                         ).toLocaleDateString()}`,
                         picture_path: ex.picture_path ?? "",
                         start_date: ex.start_date,

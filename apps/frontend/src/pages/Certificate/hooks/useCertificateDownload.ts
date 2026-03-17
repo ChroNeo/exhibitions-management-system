@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
 import liff from "@line/liff";
-import { LIFF_CONFIG } from "../../../config/liff";
+import { useCallback, useEffect, useState } from "react";
 import {
   fetchCertificatePreview,
   getCertificateDownloadUrl,
   type CertificatePreviewData,
 } from "../../../api/certificate";
+import { LIFF_CONFIG } from "../../../config/liff";
 
 export type CertificateDownloadState =
   | { status: "initializing" }
@@ -29,7 +29,7 @@ export function useCertificateDownload({
     status: "initializing",
   });
   const [previewData, setPreviewData] = useState<CertificatePreviewData | null>(
-    null
+    null,
   );
 
   const fetchPreview = useCallback(async () => {
@@ -48,11 +48,12 @@ export function useCertificateDownload({
       setPreviewData(data);
       setState({ status: "success", data });
     } catch (error) {
-      console.error("Failed to fetch certificate preview:", error);
       setState({
         status: "error",
         message:
-          error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+          error instanceof Error
+            ? error.message
+            : "เกิดข้อผิดพลาดในการโหลดข้อมูล",
       });
     }
   }, [exhibitionId, userId]);
@@ -71,7 +72,6 @@ export function useCertificateDownload({
 
       await fetchPreview();
     } catch (error) {
-      console.error("LIFF init error:", error);
       setState({
         status: "error",
         message: error instanceof Error ? error.message : "LIFF Init Failed",

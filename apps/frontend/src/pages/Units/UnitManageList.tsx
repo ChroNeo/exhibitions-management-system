@@ -1,18 +1,18 @@
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa6";
+import { useNavigate, useParams } from "react-router-dom";
 
+import Swal from "sweetalert2";
 import FloatingButton from "../../components/FloatingButton/FloatingButton";
-import styles from "./UnitManageList.module.css";
+import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import UnitExhibitionCard, {
   type UnitCardItem,
 } from "../../components/unit/UnitExhibitionCard";
-import { useExhibition, useDeleteUnit, useAuthStatus } from "../../hooks";
-import { useUnits } from "./hooks";
+import { useAuthStatus, useDeleteUnit, useExhibition } from "../../hooks";
 import type { Mode } from "../../types/mode";
 import { fmtDateRangeTH } from "../../utils/date";
-import Swal from "sweetalert2";
-import HeaderBar from "../../components/HeaderBar/HeaderBar";
+import { useUnits } from "./hooks";
+import styles from "./UnitManageList.module.css";
 
 type UnitManageListProps = { mode?: Mode; embedded?: boolean };
 
@@ -27,7 +27,7 @@ function toDate(value: string | number | Date): Date | null {
 
 function formatUnitDateRange(
   start: string | number | Date,
-  end: string | number | Date
+  end: string | number | Date,
 ): string {
   const startDate = toDate(start);
   const endDate = toDate(end);
@@ -115,8 +115,7 @@ export default function UnitManageList({
         icon: "success",
         confirmButtonText: "ตกลง",
       });
-    } catch (error) {
-      console.error("Failed to delete exhibition", error);
+    } catch {
       await Swal.fire({
         title: "ลบไม่สำเร็จ กรุณาลองใหม่",
         icon: "error",

@@ -84,9 +84,8 @@ export function TicketContent({ exhibitionId }: { exhibitionId: string }) {
             }
           }
         }
-      } catch (error) {
+      } catch {
         // Silently fail - user might not be logged in yet or network issue
-        console.error("Failed to check for incomplete surveys:", error);
       }
     };
 
