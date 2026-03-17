@@ -281,7 +281,6 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       }
       quillRef.current = null;
     } catch (error) {
-      console.error("Failed to save exhibition", error);
       const message =
         error instanceof Error && error.message
           ? error.message
@@ -318,8 +317,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         confirmButtonText: "ตกลง",
       });
       navigate("/exhibitions");
-    } catch (error) {
-      console.error("Failed to delete exhibition", error);
+    } catch {
       await Swal.fire({
         title: "ลบไม่สำเร็จ กรุณาลองใหม่",
         icon: "error",
@@ -362,7 +360,6 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       });
       navigate(`/exhibitions/${res.id}`);
     } catch (error) {
-      console.error("Failed to create exhibition", error);
       const message =
         error instanceof Error && error.message
           ? error.message

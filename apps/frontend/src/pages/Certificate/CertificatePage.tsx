@@ -154,7 +154,6 @@ export default function CertificatePage() {
         });
       }
     } catch (error) {
-      console.error("Failed to upload certificate template", error);
       await Swal.fire({
         title: template ? "อัปเดตไม่สำเร็จ" : "อัปโหลดไม่สำเร็จ",
         text: error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง",
@@ -199,7 +198,6 @@ export default function CertificatePage() {
         confirmButtonText: "ตกลง",
       });
     } catch (error) {
-      console.error("Failed to delete certificate template", error);
       await Swal.fire({
         title: "ลบไม่สำเร็จ",
         text: error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง",
@@ -250,7 +248,6 @@ export default function CertificatePage() {
         confirmButtonText: "ตกลง",
       });
     } catch (error) {
-      console.error("Failed to download certificate", error);
       await Swal.fire({
         title: "ดาวน์โหลดไม่สำเร็จ",
         text: error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง",

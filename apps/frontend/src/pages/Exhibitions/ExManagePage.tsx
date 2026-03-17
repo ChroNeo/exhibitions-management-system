@@ -207,8 +207,7 @@ export default function ExhibitionPage() {
         confirmButtonText: "ตกลง",
       });
       navigate(`/exhibitions/${res.id}`);
-    } catch (error) {
-      console.error("Failed to create exhibition", error);
+    } catch {
       await Swal.fire({
         title: "สร้างไม่สำเร็จ",
         text: "กรุณาลองใหม่อีกครั้ง",
@@ -256,8 +255,7 @@ export default function ExhibitionPage() {
         icon: "success",
         confirmButtonText: "ตกลง",
       });
-    } catch (error) {
-      console.error("Failed to delete exhibition", error);
+    } catch {
       await Swal.fire({
         title: "ลบไม่สำเร็จ กรุณาลองใหม่",
         icon: "error",

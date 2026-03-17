@@ -29,7 +29,6 @@ export default function VerifyTicketPage() {
     if (result) {
       const text = result.getText();
       if (text && !isProcessingRef.current) {
-        console.log("QR Code scanned:", text.substring(0, 20) + "...");
         isProcessingRef.current = true;
         setIsScanning(true);
         handleVerify(text);
