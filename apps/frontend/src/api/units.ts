@@ -1,9 +1,17 @@
-import type { Unit, UnitApi, UnitCreatePayload, UnitUpdatePayload } from "../types/units";
-import { toFileUrl } from "../utils/url";
-import { ensureQuillDeltaString, extractPlainTextDescription } from "../utils/text";
+import type {
+  Unit,
+  UnitApi,
+  UnitCreatePayload,
+  UnitUpdatePayload,
+} from "../types/units";
 import { loadAuth } from "../utils/authStorage";
+import {
+  ensureQuillDeltaString,
+  extractPlainTextDescription,
+} from "../utils/text";
+import { toFileUrl } from "../utils/url";
 
-const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
+const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api/v1";
 
 // Helper function to get auth headers
 function getAuthHeaders(): HeadersInit {
@@ -17,7 +25,10 @@ function getAuthHeaders(): HeadersInit {
 }
 
 function mapToUnit(x: UnitApi): Unit {
-  const type = x.unit_type === "booth" || x.unit_type === "activity" ? x.unit_type : "activity";
+  const type =
+    x.unit_type === "booth" || x.unit_type === "activity"
+      ? x.unit_type
+      : "activity";
   const posterPath = x.poster_url ?? undefined;
   const posterUrl = toFileUrl(posterPath);
   const detailPdfPath = x.detail_pdf_url ?? undefined;
@@ -30,7 +41,9 @@ function mapToUnit(x: UnitApi): Unit {
     delta: rawDelta,
   });
 
-  const staffUserIdsRaw = Array.isArray(x.staff_user_ids) ? x.staff_user_ids : [];
+  const staffUserIdsRaw = Array.isArray(x.staff_user_ids)
+    ? x.staff_user_ids
+    : [];
   let staffUserIds = staffUserIdsRaw
     .map((id) => Number(id))
     .filter((id) => Number.isFinite(id) && Number.isInteger(id) && id > 0);
@@ -42,7 +55,11 @@ function mapToUnit(x: UnitApi): Unit {
   let staffNames = staffNamesRaw
     .map((name) => (typeof name === "string" ? name.trim() : ""))
     .filter((name) => name.length > 0);
-  if (!staffNames.length && typeof x.staff_name === "string" && x.staff_name.trim()) {
+  if (
+    !staffNames.length &&
+    typeof x.staff_name === "string" &&
+    x.staff_name.trim()
+  ) {
     staffNames = [x.staff_name.trim()];
   }
 
@@ -65,12 +82,14 @@ function mapToUnit(x: UnitApi): Unit {
   };
 }
 
-export async function fetchUnits(exhibitionId: string | number): Promise<Unit[]> {
-      const id = encodeURIComponent(String(exhibitionId));
-      const res = await fetch(`${BASE}/exhibitions/${id}/units`);
-      if (!res.ok) throw new Error("ดึงรายการกิจกรรมไม่สำเร็จ");
-      const data = await res.json();
-      return data.map(mapToUnit);
+export async function fetchUnits(
+  exhibitionId: string | number,
+): Promise<Unit[]> {
+  const id = encodeURIComponent(String(exhibitionId));
+  const res = await fetch(`${BASE}/exhibitions/${id}/units`);
+  if (!res.ok) throw new Error("ดึงรายการกิจกรรมไม่สำเร็จ");
+  const data = await res.json();
+  return data.map(mapToUnit);
 }
 
 export async function fetchUnit(
@@ -92,7 +111,14 @@ export async function createUnit(
   payload: UnitCreatePayload,
 ): Promise<Unit> {
   const id = encodeURIComponent(String(exhibitionId));
-  const { posterFile, poster_url, detailPdfFile, detail_pdf_url, staff_user_ids, ...rest } = payload;
+  const {
+    posterFile,
+    poster_url,
+    detailPdfFile,
+    detail_pdf_url,
+    staff_user_ids,
+    ...rest
+  } = payload;
 
   if (posterFile || detailPdfFile) {
     const fd = new FormData();
@@ -139,8 +165,10 @@ export async function createUnit(
     ends_at: rest.ends_at,
   };
 
-  if (rest.description !== undefined) jsonPayload.description = rest.description;
-  if (rest.description_delta !== undefined) jsonPayload.description_delta = rest.description_delta;
+  if (rest.description !== undefined)
+    jsonPayload.description = rest.description;
+  if (rest.description_delta !== undefined)
+    jsonPayload.description_delta = rest.description_delta;
   if (staff_user_ids !== undefined) jsonPayload.staff_user_ids = staff_user_ids;
   if (poster_url !== undefined) jsonPayload.poster_url = poster_url;
   if (detail_pdf_url !== undefined) jsonPayload.detail_pdf_url = detail_pdf_url;
@@ -166,7 +194,14 @@ export async function updateUnit(
 ): Promise<Unit> {
   const exId = encodeURIComponent(String(exhibitionId));
   const uId = encodeURIComponent(String(unitId));
-  const { posterFile, poster_url, detailPdfFile, detail_pdf_url, staff_user_ids, ...rest } = payload;
+  const {
+    posterFile,
+    poster_url,
+    detailPdfFile,
+    detail_pdf_url,
+    staff_user_ids,
+    ...rest
+  } = payload;
 
   if (posterFile || detailPdfFile) {
     const fd = new FormData();
@@ -233,7 +268,10 @@ export async function updateUnit(
   return mapToUnit(data);
 }
 
-export async function deleteUnit(exhibitionId: string | number, unitId: string | number): Promise<void> {
+export async function deleteUnit(
+  exhibitionId: string | number,
+  unitId: string | number,
+): Promise<void> {
   const exId = encodeURIComponent(String(exhibitionId));
   const uId = encodeURIComponent(String(unitId));
   const res = await fetch(`${BASE}/exhibitions/${exId}/units/${uId}`, {

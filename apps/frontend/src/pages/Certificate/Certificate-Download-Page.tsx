@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
-import { useCertificateDownload } from "./hooks";
 import type { LayoutFieldConfig } from "../../types/certificate";
 import styles from "./CertificateDownloadPage.module.css";
+import { useCertificateDownload } from "./hooks";
 
 const DEFAULT_PARTICIPANT_NAME_CONFIG: LayoutFieldConfig = {
   x: 300,
@@ -49,7 +49,7 @@ export default function CertificateDownloadPage() {
         y: actual.y * scaleY,
       };
     },
-    [imageDimensions]
+    [imageDimensions],
   );
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -69,7 +69,7 @@ export default function CertificateDownloadPage() {
   const getBackgroundUrl = () => {
     if (!previewData?.template.background_url) return "";
     const baseUrl =
-      import.meta.env.VITE_API_BASE?.replace("/api/v1", "") ||
+      import.meta.env.VITE_API_URL?.replace("/api/v1", "") ||
       "http://localhost:3001";
     return `${baseUrl}/${previewData.template.background_url}`;
   };

@@ -3,18 +3,24 @@
 ระบบพัฒนาแบบ pnpm workspace และตอนนี้รันทุก service ผ่าน Docker Compose ทั้งหมด ลดปัญหาการติดตั้ง dependency บนเครื่องนักพัฒนา
 
 ## เครื่องมือที่ต้องเตรียม
+
 - Docker Desktop (หรือ Docker Engine + Docker Compose v2)
 - Node.js 20+ พร้อม Corepack เพื่อเรียกใช้ `pnpm`
 - pnpm 9 (มาพร้อม Corepack แล้ว แค่รัน `corepack enable` ครั้งเดียว)
 
 ## ตั้งค่า Environment
+
 แก้ไขค่าตามต้องการในไฟล์ `infra/docker/.env` ก่อนสตาร์ท stack โดยเฉพาะ
+
 - `FRONTEND_PORT`, `BACKEND_PORT`, `PMA_PORT`, `DB_PORT`
 - ข้อมูล MySQL (`MYSQL_ROOT_PASSWORD`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`)
 - `VITE_API_URL` ที่ frontend ใช้เรียก backend
 - ค่าเชื่อมต่อ LINE Official (`LINE_CHANNEL_SECRET`, `LINE_CHANNEL_ACCESS_TOKEN`) หากต้องการเปิดใช้งาน Line Webhook
+- LINE Rich Menu IDs (`LINE_RICH_MENU_STAFF`, `LINE_RICH_MENU_MEMBER`)
+- LIFF App IDs (`VITE_LIFF_REGISTRATION`, `VITE_LIFF_EXHIBITION`, `VITE_LIFF_CERTIFICATE`, etc.)
 
 ## การเริ่มต้นครั้งแรก
+
 ```bash
 # เปิดใช้งาน pnpm บนเครื่องเรา (ครั้งเดียว)
 corepack enable
@@ -25,13 +31,16 @@ pnpm install
 # สตาร์ทบริการทั้งหมด (MySQL + phpMyAdmin + Backend + Frontend)
 pnpm run docker:up
 ```
+
 บริการที่เปิดไว้ตามค่าจาก `.env`
+
 - Frontend: http://localhost:3001 (ค่าเริ่มต้นจาก `FRONTEND_PORT`)
 - Backend API: http://localhost:3001/api (ค่าเริ่มต้นจาก `BACKEND_PORT`)
 - phpMyAdmin: http://localhost:8080 (ค่าเริ่มต้นจาก `PMA_PORT`, ใช้ `MYSQL_USER`/`MYSQL_PASSWORD` ล็อกอิน)
 - MySQL: localhost:`DB_PORT` (เช่น 3306)
 
 ## เวิร์กโฟลว์ระหว่างพัฒนา
+
 - เปิด stack: `pnpm run docker:up`
 - ปิด stack: `pnpm run docker:down`
 - ติดตาม log ทุก service: `pnpm run docker:logs` (กด Ctrl+C เพื่อออก)
@@ -40,6 +49,7 @@ pnpm run docker:up
 โค้ดใน `apps/backend` และ `apps/frontend` ถูก mount เข้า container และ reload อัตโนมัติผ่าน nodemon/Vite ที่ตั้งค่า polling ไว้แล้ว
 
 ## เพิ่ม/อัปเดต dependency
+
 - รันจาก root ของโปรเจกต์เพื่ออัปเดต lockfile เช่น
   ```bash
   pnpm --filter @ems/backend add zod
@@ -58,6 +68,7 @@ pnpm run docker:up
 ระบบเก็บไฟล์ที่อัปโหลดไว้ใน Docker volume (`uploads-data`) เพื่อให้ไฟล์คงอยู่แม้จะ restart container
 
 **โครงสร้างไฟล์:**
+
 ```
 /app/uploads/                    (ใน container)
 ├── exhibitions/                 (รูปนิทรรศการ)
@@ -65,6 +76,7 @@ pnpm run docker:up
 ```
 
 **คำสั่งที่เป็นประโยชน์:**
+
 ```bash
 # ดูไฟล์ที่อัปโหลดทั้งหมด
 make list-uploads
@@ -78,12 +90,14 @@ make shell-backend
 ```
 
 **หมายเหตุ:**
+
 - ไฟล์ uploads จะถูกเก็บไว้ใน Docker volume ชื่อ `uploads-data`
 - เมื่อ restart container ไฟล์จะยังคงอยู่
 - การรัน `make clean` จะลบ volume รวมทั้งไฟล์ uploads ด้วย (ควร backup ก่อน!)
 - Database เก็บ path ของไฟล์เป็น relative path เช่น `uploads/exhibitions/EXP1761332723861.png`
 
 ## เคล็ดลับ & Troubleshooting
+
 - เปลี่ยนค่าภายใน `.env` แล้วให้รัน `pnpm run docker:down` ตามด้วย `pnpm run docker:up` เพื่อให้ค่าใหม่มีผล
 - ต้องการ rebuild image หลังเพิ่ม dependency: `docker compose -f infra/docker/docker-compose.yml build backend frontend`
 - รีเซ็ตฐานข้อมูล (ข้อมูลหายหมด): `docker compose -f infra/docker/docker-compose.yml down -v`

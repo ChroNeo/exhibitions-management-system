@@ -6,7 +6,7 @@ import type {
 import { loadAuth } from "../utils/authStorage";
 import liffClient from "./liffClient";
 
-const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
+const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api/v1";
 
 function getAuthHeaders(): HeadersInit {
   const auth = loadAuth();

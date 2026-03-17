@@ -10,11 +10,11 @@ import type { LineConfig, LineMessage } from "../types.js";
 import { HELP_TEXT, staff_Help_text } from "../utils/message-formatter.js";
 
 const RICH_MENU_IDS = {
-  STAFF: "richmenu-0fd067f1629b1eb3ddffd0d619aa0f6c",
-  MEMBER: "richmenu-105e3b56020a5d67fd5b09d40e154c84",
+  STAFF: process.env.LINE_RICH_MENU_STAFF!,
+  MEMBER: process.env.LINE_RICH_MENU_MEMBER!,
 };
 
-const LIFF_REGISTRATION_ID = "2008498720-KaJrlZBN";
+const LIFF_REGISTRATION_ID = process.env.VITE_LIFF_REGISTRATION!;
 
 function buildRegistrationFlexMessage(
   headerText: string,
@@ -136,7 +136,6 @@ async function handleEnterExhibition(
     await linkRichMenuToUser(userId, richMenuId, config);
     await setCurrentExhibition(userId, exhibitionId);
   } catch (err) {
-    console.log("🚀 ~ handleEnterExhibition ~ err:", err);
     log.error({ err }, "Failed to link rich menu for exhibition entry");
 
     await replyToLineMessage(

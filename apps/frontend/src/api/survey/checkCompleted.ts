@@ -1,7 +1,7 @@
-import axios from 'axios';
-import liff from '@line/liff';
+import liff from "@line/liff";
+import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE;
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export interface CheckCompletedResponse {
   is_completed: boolean;
@@ -12,11 +12,11 @@ export interface CheckCompletedResponse {
  */
 export async function checkSurveyCompleted(
   exhibitionId: string | number,
-  unitId?: string | number
+  unitId?: string | number,
 ): Promise<boolean> {
   const idToken = liff.getIDToken();
   if (!idToken) {
-    throw new Error('Failed to get ID token');
+    throw new Error("Failed to get ID token");
   }
 
   const params: any = {
@@ -33,9 +33,9 @@ export async function checkSurveyCompleted(
       params,
       headers: {
         Authorization: `Bearer ${idToken}`,
-        'ngrok-skip-browser-warning': 'true',
+        "ngrok-skip-browser-warning": "true",
       },
-    }
+    },
   );
 
   return response.data.is_completed;

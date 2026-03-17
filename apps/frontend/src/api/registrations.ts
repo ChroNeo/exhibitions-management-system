@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
+const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api/v1";
 
 export type RegistrationRole = "visitor" | "staff";
 export type RegistrationGender = "male" | "female" | "other";
@@ -31,7 +31,7 @@ export type RegistrationResponse = {
 };
 
 export async function registerForExhibition(
-  payload: RegistrationPayload
+  payload: RegistrationPayload,
 ): Promise<RegistrationResponse> {
   const response = await fetch(`${BASE}/registrations`, {
     method: "POST",
@@ -61,4 +61,3 @@ export async function registerForExhibition(
 
   return response.json() as Promise<RegistrationResponse>;
 }
-

@@ -2,7 +2,7 @@ import axios from "axios";
 import { loadAuth } from "../utils/authStorage";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || "http://localhost:3001/api/v1",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1",
   timeout: 10000,
 });
 
@@ -17,7 +17,7 @@ api.interceptors.request.use(
   },
   (err) => {
     return Promise.reject(err);
-  }
+  },
 );
 
 api.interceptors.response.use(
@@ -25,7 +25,7 @@ api.interceptors.response.use(
   (err) => {
     console.error("API error:", err);
     return Promise.reject(err);
-  }
+  },
 );
 
 export default api;

@@ -8,7 +8,7 @@ import {
 } from "../utils/text";
 import { toFileUrl } from "../utils/url";
 
-const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
+const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api/v1";
 
 // Helper function to get auth headers
 function getAuthHeaders(): HeadersInit {

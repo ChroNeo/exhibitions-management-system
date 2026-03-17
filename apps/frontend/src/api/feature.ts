@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
+const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api/v1";
 
 // FS1: Local type definition instead of cross-monorepo import from backend
 export interface FeatureImage {

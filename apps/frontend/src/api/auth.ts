@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3001/api/v1";
+const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001/api/v1";
 
 export type SignInPayload = {
   username: string;
@@ -17,9 +17,7 @@ export type SignInResponse = {
   };
 };
 
-export async function signIn(
-  payload: SignInPayload
-): Promise<SignInResponse> {
+export async function signIn(payload: SignInPayload): Promise<SignInResponse> {
   const response = await fetch(`${BASE}/auth/signin`, {
     method: "POST",
     headers: {
