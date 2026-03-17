@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useState } from "react";
+import { IoCloseCircle } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useSurveyLiff } from "../hooks";
 import { submitSurveyLiff } from "../../../api/survey";
 import styles from "../ExhibitionSurvey.module.css";
-import { IoCloseCircle } from "react-icons/io5";
+import { useSurveyLiff } from "../hooks";
 
 interface SurveyAnswer {
   qt_id: number;
@@ -18,7 +18,9 @@ interface ExhibitionSurveyContentProps {
   exhibitionId: string;
 }
 
-export function ExhibitionSurveyContent({ exhibitionId }: ExhibitionSurveyContentProps) {
+export function ExhibitionSurveyContent({
+  exhibitionId,
+}: ExhibitionSurveyContentProps) {
   const navigate = useNavigate();
 
   const [answers, setAnswers] = useState<SurveyAnswer[]>([]);
@@ -97,17 +99,9 @@ export function ExhibitionSurveyContent({ exhibitionId }: ExhibitionSurveyConten
     } catch (error) {
       setSubmitState({ status: "idle" });
 
-      console.error("Survey submission error:", error);
-
       let errorMessage = "Failed to submit survey";
 
       if (axios.isAxiosError(error)) {
-        console.error("Axios error details:", {
-          status: error.response?.status,
-          data: error.response?.data,
-          headers: error.response?.headers,
-        });
-
         if (error.response?.data?.message) {
           errorMessage = error.response.data.message;
         } else if (error.response?.status) {

@@ -1,6 +1,4 @@
-import liff from "@line/liff";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useCallback } from "react";
 import liffClient from "../../../api/liffClient";
 import {
@@ -8,12 +6,9 @@ import {
   getNewsByExhibitionIdLiff,
   getNewsLists,
 } from "../../../api/newsApi";
-import { LIFF_CONFIG } from "../../../config/liff";
 import { useLiff } from "../../../hooks";
 import type { NewsLists } from "../../../types/news";
 import type { UnitApi } from "../../../types/units";
-
-const API_BASE = import.meta.env.VITE_BASE;
 
 export interface NewsPageData {
   news: NewsLists[];
@@ -29,25 +24,10 @@ export function useAllNews(exhibitionId?: number) {
 }
 
 export function useAllNewsLiff() {
+  // FS5: Use liffClient instead of raw axios + VITE_BASE
   const fetchData = useCallback(async (): Promise<NewsPageData> => {
-    // Init LIFF if needed
-    if (!liff.id) {
-      await liff.init({ liffId: LIFF_CONFIG.NEWS });
-    }
-    const idToken = liff.getIDToken();
-    if (!idToken) {
-      throw new Error("Failed to get LIFF ID token");
-    }
-
-    // Fetch current exhibition ID from backend
-    const res = await axios.get<{ current_exhibition_id: number | null }>(
-      `${API_BASE}/api/v1/ticket/current-exhibition`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      },
+    const res = await liffClient.get<{ current_exhibition_id: number | null }>(
+      "/ticket/current-exhibition",
     );
 
     const exhibitionId = res.data.current_exhibition_id;

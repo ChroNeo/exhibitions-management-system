@@ -1,15 +1,18 @@
-import { useState, useCallback, useEffect } from 'react';
-import liff from '@line/liff';
-import { verifyTicket as verifyTicketApi, type ScanResult } from '../../../api/tickets';
-import { LIFF_CONFIG } from '../../../config/liff';
+import liff from "@line/liff";
+import { useCallback, useEffect, useState } from "react";
+import {
+  verifyTicket as verifyTicketApi,
+  type ScanResult,
+} from "../../../api/tickets";
+import { LIFF_CONFIG } from "../../../config/liff";
 
 export type VerifyTicketState =
-  | { status: 'initializing' }
-  | { status: 'not_logged_in' }
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'success'; result: ScanResult }
-  | { status: 'error'; message: string };
+  | { status: "initializing" }
+  | { status: "not_logged_in" }
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "success"; result: ScanResult }
+  | { status: "error"; message: string };
 
 interface UseVerifyTicketOptions {
   enableLiff?: boolean;
@@ -18,34 +21,34 @@ interface UseVerifyTicketOptions {
 export function useVerifyTicket(options: UseVerifyTicketOptions = {}) {
   const { enableLiff = false } = options;
   const [state, setState] = useState<VerifyTicketState>(
-    enableLiff ? { status: 'initializing' } : { status: 'idle' }
+    enableLiff ? { status: "initializing" } : { status: "idle" },
   );
 
   const verifyTicket = useCallback(async (token: string) => {
-    setState({ status: 'loading' });
+    setState({ status: "loading" });
 
     try {
       const data = await verifyTicketApi(token);
 
       setState({
-        status: 'success',
-        result: data
+        status: "success",
+        result: data,
       });
 
       return data;
     } catch {
-      const errorMessage = 'Connection Error - Cannot connect to server';
+      const errorMessage = "Connection Error - Cannot connect to server";
 
       setState({
-        status: 'error',
-        message: errorMessage
+        status: "error",
+        message: errorMessage,
       });
       throw new Error(errorMessage);
     }
   }, []);
 
   const reset = useCallback(() => {
-    setState({ status: 'idle' });
+    setState({ status: "idle" });
   }, []);
 
   const initializeLiff = useCallback(async () => {
@@ -58,17 +61,16 @@ export function useVerifyTicket(options: UseVerifyTicketOptions = {}) {
       }
 
       if (!liff.isLoggedIn()) {
-        setState({ status: 'not_logged_in' });
+        setState({ status: "not_logged_in" });
         liff.login({ redirectUri: window.location.href });
         return;
       }
 
-      setState({ status: 'idle' });
+      setState({ status: "idle" });
     } catch (error) {
-      console.error('LIFF init error:', error);
       setState({
-        status: 'error',
-        message: error instanceof Error ? error.message : 'LIFF Init Failed',
+        status: "error",
+        message: error instanceof Error ? error.message : "LIFF Init Failed",
       });
     }
   }, [enableLiff]);
@@ -85,10 +87,10 @@ export function useVerifyTicket(options: UseVerifyTicketOptions = {}) {
     verifyTicket,
     reset,
     initializeLiff,
-    isLoading: state.status === 'loading',
-    isIdle: state.status === 'idle',
-    isError: state.status === 'error',
-    result: state.status === 'success' ? state.result : null,
-    error: state.status === 'error' ? state.message : null
+    isLoading: state.status === "loading",
+    isIdle: state.status === "idle",
+    isError: state.status === "error",
+    result: state.status === "success" ? state.result : null,
+    error: state.status === "error" ? state.message : null,
   };
 }

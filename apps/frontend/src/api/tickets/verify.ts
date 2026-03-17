@@ -1,27 +1,13 @@
-import axios from 'axios';
-import liff from '@line/liff';
-import type { ScanResult } from './types';
+import axios from "axios";
+import liffClient from "../liffClient";
+import type { ScanResult } from "./types";
 
-const BASE = import.meta.env.VITE_API_BASE;
-
+// FS3: Use liffClient instead of raw axios — consistent auth handling + mock mode support
 export async function verifyTicket(token: string): Promise<ScanResult> {
   try {
-    // Get LIFF ID token for authentication
-    const idToken = liff.getIDToken();
-    if (!idToken) {
-      throw new Error('Failed to get ID token. Please login again.');
-    }
-    const response = await axios.post<ScanResult>(
-      `${BASE}/ticket/verify`,
-      {
-        token: token
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
-    );
+    const response = await liffClient.post<ScanResult>("/ticket/verify", {
+      token,
+    });
 
     return response.data;
   } catch (err: unknown) {

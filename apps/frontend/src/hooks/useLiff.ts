@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
-import liff from '@line/liff';
-import { handleLiffError, performLogout } from '../utils/liffErrorHandler';
-import { LIFF_CONFIG, type LiffAppType } from '../config/liff';
+import liff from "@line/liff";
+import { useCallback, useEffect, useState } from "react";
+import { LIFF_CONFIG, type LiffAppType } from "../config/liff";
+import { handleLiffError, performLogout } from "../utils/liffErrorHandler";
 
 // Check if LIFF mock mode is enabled
 export const isLiffMockEnabled = (): boolean => {
-  return import.meta.env.VITE_LIFF_MOCK === 'true';
+  return import.meta.env.VITE_LIFF_MOCK === "true";
 };
 
 // Get mock LINE user ID
@@ -14,11 +14,11 @@ export const getMockLineUserId = (): string | null => {
 };
 
 export type LiffState<T> =
-  | { status: 'initializing' }
-  | { status: 'not_logged_in' }
-  | { status: 'loading' }
-  | { status: 'success'; data: T }
-  | { status: 'error'; message: string };
+  | { status: "initializing" }
+  | { status: "not_logged_in" }
+  | { status: "loading" }
+  | { status: "success"; data: T }
+  | { status: "error"; message: string };
 
 interface UseLiffOptions<T> {
   liffApp: LiffAppType;
@@ -26,27 +26,25 @@ interface UseLiffOptions<T> {
   dependencies?: unknown[];
 }
 
-export function useLiff<T>({ liffApp, fetchData, dependencies: _dependencies = [] }: UseLiffOptions<T>) {
-  const [state, setState] = useState<LiffState<T>>({ status: 'initializing' });
+export function useLiff<T>({ liffApp, fetchData }: UseLiffOptions<T>) {
+  const [state, setState] = useState<LiffState<T>>({ status: "initializing" });
 
   const fetch = useCallback(async () => {
-    setState({ status: 'loading' });
+    setState({ status: "loading" });
 
     try {
       const data = await fetchData();
-      setState({ status: 'success', data });
+      setState({ status: "success", data });
     } catch (error) {
-      console.error('Failed to fetch data:', error);
-
-      const errorResult = handleLiffError(error, 'Failed to load data');
+      const errorResult = handleLiffError(error, "Failed to load data");
 
       if (errorResult.shouldLogout) {
-        setState({ status: 'not_logged_in' });
+        setState({ status: "not_logged_in" });
         performLogout();
         return;
       }
 
-      setState({ status: 'error', message: errorResult.message });
+      setState({ status: "error", message: errorResult.message });
     }
   }, [fetchData]);
 
@@ -56,12 +54,12 @@ export function useLiff<T>({ liffApp, fetchData, dependencies: _dependencies = [
       const mockUserId = getMockLineUserId();
       if (!mockUserId) {
         setState({
-          status: 'error',
-          message: 'LIFF Mock mode enabled but VITE_MOCK_LINE_USER_ID is not set',
+          status: "error",
+          message:
+            "LIFF Mock mode enabled but VITE_MOCK_LINE_USER_ID is not set",
         });
         return;
       }
-      console.log('[LIFF Mock] Using mock mode with user ID:', mockUserId);
       await fetch();
       return;
     }
@@ -73,17 +71,16 @@ export function useLiff<T>({ liffApp, fetchData, dependencies: _dependencies = [
       }
 
       if (!liff.isLoggedIn()) {
-        setState({ status: 'not_logged_in' });
+        setState({ status: "not_logged_in" });
         liff.login({ redirectUri: window.location.href });
         return;
       }
 
       await fetch();
     } catch (error) {
-      console.error('LIFF init error:', error);
       setState({
-        status: 'error',
-        message: error instanceof Error ? error.message : 'LIFF Init Failed',
+        status: "error",
+        message: error instanceof Error ? error.message : "LIFF Init Failed",
       });
     }
   }, [liffApp, fetch]);

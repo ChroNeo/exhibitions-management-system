@@ -1,40 +1,33 @@
 import liff from "@line/liff";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import liffClient from "../../api/liffClient";
 import { LIFF_CONFIG as LIFF_IDS } from "../../config/liff";
+import { isLiffMockEnabled } from "../../hooks/useLiff";
 import { TicketContent } from "./TicketContent";
-
-const API_BASE = import.meta.env.VITE_BASE;
 
 export default function TicketPage() {
   const [exhibitionId, setExhibitionId] = useState<string | null>(null);
   const [fetchingExhibition, setFetchingExhibition] = useState(true);
 
-  // Fetch current exhibition ID from API
+  // FS5: Use liffClient instead of raw axios + VITE_BASE
   useEffect(() => {
     async function fetchCurrentExhibition() {
       try {
-        if (!liff.id) {
-          await liff.init({ liffId: LIFF_IDS.TICKET });
+        if (!isLiffMockEnabled()) {
+          if (!liff.id) {
+            await liff.init({ liffId: LIFF_IDS.TICKET });
+          }
+          if (!liff.isLoggedIn()) return;
         }
-        if (!liff.isLoggedIn()) return;
-        const idToken = liff.getIDToken();
-        if (!idToken) return;
-        const res = await axios.get<{ current_exhibition_id: number | null }>(
-          `${API_BASE}/api/v1/ticket/current-exhibition`,
-          {
-            headers: {
-              Authorization: `Bearer ${idToken}`,
-              "ngrok-skip-browser-warning": "true",
-            },
-          },
-        );
+        const res = await liffClient.get<{
+          current_exhibition_id: number | null;
+        }>("/ticket/current-exhibition");
         if (res.data.current_exhibition_id) {
           setExhibitionId(String(res.data.current_exhibition_id));
         }
-      } catch (err) {
-        console.error("Failed to fetch current exhibition:", err);
+      } catch {
+        // Silently fail — no exhibition will be shown
       } finally {
         setFetchingExhibition(false);
       }
