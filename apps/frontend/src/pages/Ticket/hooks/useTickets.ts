@@ -1,6 +1,6 @@
-import { useCallback, useState, useEffect } from 'react';
-import { useLiff } from '../../../hooks';
-import { fetchQRToken } from '../../../api/tickets';
+import { useCallback, useEffect, useState } from "react";
+import { fetchQRToken } from "../../../api/tickets";
+import { useLiff } from "../../../hooks";
 
 export interface TicketData {
   qrToken: string;
@@ -13,12 +13,17 @@ interface UseTicketsOptions {
   autoRefresh?: boolean;
 }
 
-export function useTickets({ exhibitionId, autoRefresh = true }: UseTicketsOptions = {}) {
-  const [refreshTimeoutId, setRefreshTimeoutId] = useState<NodeJS.Timeout | null>(null);
+export function useTickets({
+  exhibitionId,
+  autoRefresh = true,
+}: UseTicketsOptions = {}) {
+  const [refreshTimeoutId, setRefreshTimeoutId] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null);
 
   const fetchData = useCallback(async (): Promise<TicketData> => {
     if (!exhibitionId) {
-      throw new Error('No exhibition selected');
+      throw new Error("No exhibition selected");
     }
 
     const { qr_token, expires_in } = await fetchQRToken(exhibitionId);
@@ -32,14 +37,14 @@ export function useTickets({ exhibitionId, autoRefresh = true }: UseTicketsOptio
   }, [exhibitionId]);
 
   const { state, refetch, initializeLiff } = useLiff({
-    liffApp: 'TICKET',
+    liffApp: "TICKET",
     fetchData,
     dependencies: [exhibitionId],
   });
 
   // Auto-refresh logic
   useEffect(() => {
-    if (autoRefresh && state.status === 'success') {
+    if (autoRefresh && state.status === "success") {
       const timeoutId = setTimeout(refetch, state.data.expiresIn * 1000);
       setRefreshTimeoutId(timeoutId);
       return () => clearTimeout(timeoutId);

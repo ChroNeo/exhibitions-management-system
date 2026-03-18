@@ -71,7 +71,7 @@ export default function HomePage() {
 
   // ล็อกกันสแปมคลิก
   const animLock = useRef(false);
-  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+  const autoPlayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const lock = (ms = 450) => {
     animLock.current = true;
