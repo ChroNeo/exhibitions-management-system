@@ -1,10 +1,9 @@
-﻿
--- phpMyAdmin SQL Dump
+﻿-- phpMyAdmin SQL Dump
 -- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Mar 01, 2026 at 09:21 AM
+-- Generation Time: Mar 15, 2026 at 10:47 AM
 -- Server version: 8.4.8
 -- PHP Version: 8.3.30
 
@@ -65,6 +64,7 @@ CREATE TABLE `exhibitions` (
   `location` varchar(255) DEFAULT NULL,
   `organizer_name` varchar(255) NOT NULL,
   `picture_path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `detail_pdf_url` varchar(500) DEFAULT NULL,
   `status` enum('draft','published','ongoing','ended','archived') DEFAULT 'draft',
   `created_by` int NOT NULL,
   `updated_by` int DEFAULT NULL,
@@ -404,9 +404,9 @@ CREATE TABLE `v_my_event_surveys` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_org_dashboard_kpis` (
-`exhibition_avg_score` decimal(13,2)
+`description` mediumtext
+,`exhibition_avg_score` decimal(13,2)
 ,`exhibition_id` int
-,`description` mediumtext
 ,`location` varchar(255)
 ,`status` enum('draft','published','ongoing','ended','archived')
 ,`title` varchar(255)
