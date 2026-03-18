@@ -96,6 +96,83 @@ make shell-backend
 - การรัน `make clean` จะลบ volume รวมทั้งไฟล์ uploads ด้วย (ควร backup ก่อน!)
 - Database เก็บ path ของไฟล์เป็น relative path เช่น `uploads/exhibitions/EXP1761332723861.png`
 
+## Production Deployment (Docker)
+
+สำหรับการ deploy ขึ้น production server (Ubuntu/Debian) ด้วย Docker
+
+### ขั้นตอนโดยย่อ
+
+```bash
+# 1. SSH เข้า server แล้ว clone repository
+git clone <repo-url> exhibitions-management-system
+cd exhibitions-management-system
+
+# 2. ติดตั้ง Docker (ครั้งแรกเท่านั้น)
+chmod +x deploy.sh
+./deploy.sh setup
+# ออกจาก SSH แล้วเข้าใหม่เพื่อให้ docker group มีผล
+
+# 3. สร้างไฟล์ .env.production จาก template
+cp infra/docker/.env.production.example infra/docker/.env.production
+nano infra/docker/.env.production   # แก้ค่าทั้งหมด
+
+# 4. Deploy!
+./deploy.sh deploy
+```
+
+### ค่าที่ต้องแก้ใน `.env.production`
+
+- **`MYSQL_ROOT_PASSWORD`**, **`MYSQL_PASSWORD`** — ตั้งรหัสผ่านที่แข็งแกร่ง
+- **`JWT_SECRET`**, **`QR_TOKEN_SECRET`** — สร้างด้วย `openssl rand -hex 32`
+- **`ALLOWED_ORIGINS`** — URL ของ server เช่น `http://203.0.113.50`
+- **`VITE_API_URL`** — เช่น `http://203.0.113.50/api/v1`
+- **`VITE_BASE`** — เช่น `http://203.0.113.50`
+- ค่า LINE และ LIFF ตามการตั้งค่าของ LINE Official Account
+
+### คำสั่งที่ใช้บ่อย
+
+| คำสั่ง                           | รายละเอียด                           |
+| -------------------------------- | ------------------------------------ |
+| `./deploy.sh deploy`             | Build และเริ่ม production containers |
+| `./deploy.sh update`             | ดึงโค้ดล่าสุดแล้ว redeploy           |
+| `./deploy.sh stop`               | หยุด containers ทั้งหมด              |
+| `./deploy.sh status`             | ดูสถานะ containers                   |
+| `./deploy.sh logs`               | ดู logs                              |
+| `./deploy.sh backup`             | Backup database และ uploads          |
+| `./deploy.sh restore <file.sql>` | Restore database จาก backup          |
+| `make prod-rebuild`              | Rebuild แล้ว restart ทั้งหมด         |
+
+### สถาปัตยกรรม Production
+
+```
+                  ┌─────────┐
+  Client ──:80──▶ │  Nginx  │ (reverse proxy)
+                  └────┬────┘
+                 ┌─────┴─────┐
+                 ▼           ▼
+           ┌──────────┐ ┌──────────┐
+           │ Frontend │ │ Backend  │
+           │ (Nginx)  │ │ (Node)   │
+           └──────────┘ └────┬─────┘
+                             ▼
+                       ┌──────────┐
+                       │  MySQL   │
+                       └──────────┘
+```
+
+- **Nginx reverse proxy** — รับ traffic บน port 80, route `/api/`, `/line/`, `/uploads/` ไปที่ backend, ที่เหลือไป frontend
+- **Frontend** — Vite build → static files served ด้วย Nginx
+- **Backend** — TypeScript compiled → Node.js production
+- **MySQL** — พร้อม health check และ auto-restart
+
+### การเพิ่ม SSL/HTTPS (ภายหลัง)
+
+เมื่อได้ domain name แล้ว สามารถเพิ่ม Let's Encrypt SSL ได้โดย:
+
+1. เพิ่ม certbot service ใน `docker-compose.prod.yml`
+2. อัปเดต nginx config เพื่อรองรับ HTTPS
+3. เปลี่ยน `ALLOWED_ORIGINS`, `VITE_API_URL`, `VITE_BASE` เป็น `https://`
+
 ## เคล็ดลับ & Troubleshooting
 
 - เปลี่ยนค่าภายใน `.env` แล้วให้รัน `pnpm run docker:down` ตามด้วย `pnpm run docker:up` เพื่อให้ค่าใหม่มีผล

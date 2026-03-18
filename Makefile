@@ -3,8 +3,10 @@
 
 # Docker Compose variables
 DOCKER_COMPOSE = docker compose -f infra/docker/docker-compose.yml --env-file infra/docker/.env
+DOCKER_COMPOSE_PROD = docker compose -f infra/docker/docker-compose.prod.yml --env-file infra/docker/.env.production
 
 .PHONY: help up down build rebuild rebuild-clean restart logs clean status ps backup-uploads list-uploads
+.PHONY: prod-build prod-up prod-down prod-rebuild prod-logs prod-status prod-backup
 
 # Default target - show help
 help:
@@ -36,6 +38,16 @@ help:
 	@echo ""
 	@echo "  make clean           Stop containers and remove volumes (DESTRUCTIVE)"
 	@echo "  make clean-build     Remove all images and rebuild from scratch"
+	@echo ""
+	@echo "--- Production ---"
+	@echo ""
+	@echo "  make prod-build      Build production Docker images"
+	@echo "  make prod-up         Start production containers"
+	@echo "  make prod-down       Stop production containers"
+	@echo "  make prod-rebuild    Rebuild and restart production containers"
+	@echo "  make prod-logs       View production logs"
+	@echo "  make prod-status     Show production container status"
+	@echo "  make prod-backup     Backup production database and uploads"
 	@echo ""
 	@echo "==================================================================="
 
@@ -158,3 +170,47 @@ clean-build:
 	else \
 		echo "Cancelled."; \
 	fi
+
+# ===================================================================
+# Production Targets
+# ===================================================================
+
+# Build production images
+prod-build:
+	@echo "Building production images..."
+	$(DOCKER_COMPOSE_PROD) build
+	@echo "✓ Production images built!"
+
+# Start production containers
+prod-up:
+	@echo "Starting production containers..."
+	$(DOCKER_COMPOSE_PROD) up -d
+	@echo "✓ Production containers started!"
+	@echo "  Application: http://localhost (port 80)"
+
+# Stop production containers
+prod-down:
+	@echo "Stopping production containers..."
+	$(DOCKER_COMPOSE_PROD) down
+	@echo "✓ Production containers stopped!"
+
+# Rebuild and restart production
+prod-rebuild: prod-down prod-build prod-up
+
+# View production logs
+prod-logs:
+	$(DOCKER_COMPOSE_PROD) logs -f
+
+# Production container status
+prod-status:
+	$(DOCKER_COMPOSE_PROD) ps
+
+# Backup production database and uploads
+prod-backup:
+	@echo "Creating production backup..."
+	@mkdir -p backups
+	@echo "Backing up database..."
+	@docker exec ems-mysql mysqldump -u$$(grep '^MYSQL_USER=' infra/docker/.env.production | cut -d= -f2) -p$$(grep '^MYSQL_PASSWORD=' infra/docker/.env.production | cut -d= -f2) $$(grep '^MYSQL_DATABASE=' infra/docker/.env.production | cut -d= -f2) > backups/db_$$(date +%Y%m%d_%H%M%S).sql 2>/dev/null
+	@echo "Backing up uploads..."
+	@docker cp ems-backend:/app/apps/backend/uploads backups/uploads_$$(date +%Y%m%d_%H%M%S) 2>/dev/null || echo "Note: No uploads found"
+	@echo "✓ Backup complete! (Check backups/ directory)"
