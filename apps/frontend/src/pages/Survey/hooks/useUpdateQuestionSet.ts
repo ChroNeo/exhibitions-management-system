@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateQuestionSet } from "../../../api/survey";
-import type { QuestionSetWithQuestions, CreateQuestionSetPayload } from "../../../types/survey";
+import type {
+  CreateQuestionSetPayload,
+  QuestionSetWithQuestions,
+} from "../../../types/survey";
 
 /**
  * Hook to update a question set for an exhibition
@@ -8,17 +11,15 @@ import type { QuestionSetWithQuestions, CreateQuestionSetPayload } from "../../.
 export function useUpdateQuestionSet() {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    QuestionSetWithQuestions,
-    Error,
-    CreateQuestionSetPayload
-  >({
-    mutationFn: (payload) => updateQuestionSet(payload),
-    onSuccess: (data) => {
-      // Invalidate related queries to refresh the data
-      queryClient.invalidateQueries({
-        queryKey: ["survey", "questions", data.exhibition_id],
-      });
+  return useMutation<QuestionSetWithQuestions, Error, CreateQuestionSetPayload>(
+    {
+      mutationFn: (payload) => updateQuestionSet(payload),
+      onSuccess: (_data, variables) => {
+        // Invalidate related queries to refresh the data
+        queryClient.invalidateQueries({
+          queryKey: ["survey", "questions", variables.exhibition_id],
+        });
+      },
     },
-  });
+  );
 }
