@@ -1,0 +1,39 @@
+name: Deploy to Production (Self-Hosted)
+
+on:
+  push:
+    branches:
+      - prod
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: self-hosted  # Run on your own server
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy application
+        run: |
+          set -e
+          echo "📥 Pulling latest code..."
+          git pull origin prod
+          
+          echo "🚀 Running deployment..."
+          ./deploy.sh update
+          
+          echo "✅ Deployment completed!"
+
+      - name: Verify deployment
+        run: |
+          echo "🔍 Checking server health..."
+          sleep 10
+          curl -f http://localhost/health || exit 1
+          echo "✅ Server is healthy!"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed! Check the logs above."
