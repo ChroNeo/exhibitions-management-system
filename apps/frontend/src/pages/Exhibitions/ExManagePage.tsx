@@ -37,6 +37,7 @@ const EMPTY_FORM = {
   status: null as ModalStatus | null,
   imagePreview: "",
   imageFile: null as File | null,
+  pdfFile: null as File | null,
 };
 
 export default function ExhibitionPage() {
@@ -164,6 +165,19 @@ export default function ExhibitionPage() {
     }));
   }, []);
 
+  const handlePdfChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setModalForm((prev) => ({ ...prev, pdfFile: file }));
+    },
+    [],
+  );
+
+  const removePdf = useCallback(() => {
+    setModalForm((prev) => ({ ...prev, pdfFile: null }));
+  }, []);
+
   const handleModalSubmit = useCallback(async () => {
     if (!modalForm.title.trim()) {
       setTitleError(true);
@@ -198,6 +212,7 @@ export default function ExhibitionPage() {
         description: modalForm.description || undefined,
         status: modalForm.status ? statusMap[modalForm.status] : "draft",
         file: modalForm.imageFile ?? undefined,
+        detailPdfFile: modalForm.pdfFile ?? undefined,
       });
 
       closeModal();
@@ -525,6 +540,88 @@ export default function ExhibitionPage() {
                   <div className={styles.uploadHint}>
                     JPG, PNG, WEBP — สูงสุด 5MB
                   </div>
+                </label>
+              )}
+            </div>
+
+            {/* PDF upload */}
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>
+                ไฟล์ PDF รายละเอียด (ถ้ามี)
+              </label>
+              {modalForm.pdfFile ? (
+                <div className={styles.imgPrevBox}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "12px 14px",
+                      border: "1.5px solid var(--border)",
+                      borderRadius: "var(--radius-xs)",
+                      background: "var(--surface-hover)",
+                    }}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ flexShrink: 0, color: "var(--brand)" }}
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: "var(--ink)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {modalForm.pdfFile.name}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.imgRemove}
+                    onClick={removePdf}
+                    style={{ top: 8, right: 8 }}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                <label className={styles.imgUpload}>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handlePdfChange}
+                    className={styles.imgUploadInput}
+                  />
+                  <div className={styles.uploadIcon}>
+                    <svg
+                      width="20"
+                      height="20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </div>
+                  <div className={styles.uploadText}>
+                    คลิกเพื่อเลือกไฟล์ PDF
+                  </div>
+                  <div className={styles.uploadHint}>PDF — สูงสุด 10MB</div>
                 </label>
               )}
             </div>
