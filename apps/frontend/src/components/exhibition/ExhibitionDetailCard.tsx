@@ -224,8 +224,8 @@ export default function ExhibitionDetailCard({
                     }}
                   >
                     <input
-                      type="datetime"
-                      // className={styles.editInput}
+                      type="datetime-local"
+                      className={styles.editInput}
                       value={editForm.start_date}
                       onChange={(e) =>
                         onFieldChange?.("start_date", e.target.value)

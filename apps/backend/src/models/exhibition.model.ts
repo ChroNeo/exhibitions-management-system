@@ -52,7 +52,7 @@ export const UpdateExhibitionSchema = CreateExhibitionSchema.partial();
 export const AddExhibitionPayloadSchema = CreateExhibitionSchema.extend({
   created_by: z.number(),
   picture_path: z.string().optional(),
-  detail_pdf_url: z.string().optional(),
+  detail_pdf_url: z.string().nullable().optional(),
 });
 
 // Schema for Update Exhibition Payload (includes picture_path)
