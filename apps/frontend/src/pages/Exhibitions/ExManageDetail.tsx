@@ -28,6 +28,7 @@ import {
 import type { Exhibition } from "../../types/exhibition";
 import type { Mode } from "../../types/mode";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
+import { optimizeImage } from "../../utils/imageOptimize";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject } from "../../utils/quillDelta";
 import { toFileUrl } from "../../utils/url";
@@ -218,11 +219,12 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     setEditForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   }, []);
 
-  const handleFileChange = useCallback((file: File | undefined) => {
-    setEditForm((prev) => (prev ? { ...prev, file } : prev));
+  const handleFileChange = useCallback(async (file: File | undefined) => {
+    const optimized = file ? await optimizeImage(file) : undefined;
+    setEditForm((prev) => (prev ? { ...prev, file: optimized } : prev));
     setImagePreview((prev) => {
       if (prev) URL.revokeObjectURL(prev);
-      return file ? URL.createObjectURL(file) : undefined;
+      return optimized ? URL.createObjectURL(optimized) : undefined;
     });
   }, []);
 

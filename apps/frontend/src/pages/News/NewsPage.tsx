@@ -8,15 +8,17 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import type { TextChangeHandler } from "quill";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
-import { toFileUrl } from "../../utils/url";
-import { initializeRichTextEditor } from "../../utils/quill";
+import type { NewsLists } from "../../types/news";
+import { optimizeImage } from "../../utils/imageOptimize";
 import type { Quill as QuillType } from "../../utils/quill";
-import type { TextChangeHandler } from "quill";
+import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
+import { toFileUrl } from "../../utils/url";
 import styles from "./NewsPage.module.css";
 import {
   useCreateNews,
@@ -24,7 +26,6 @@ import {
   useNewsList,
   useUpdateNews,
 } from "./hooks/useNews";
-import type { NewsLists } from "../../types/news";
 
 type FormData = {
   title: string;
@@ -121,13 +122,14 @@ export default function NewsPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const optimized = await optimizeImage(file);
       setFormData((prev) => ({
         ...prev,
-        image: file,
-        imagePreview: URL.createObjectURL(file),
+        image: optimized,
+        imagePreview: URL.createObjectURL(optimized),
       }));
     }
   };
@@ -149,7 +151,8 @@ export default function NewsPage() {
           data: {
             topic: formData.title,
             description: formData.description || null,
-            description_delta: toDeltaString(formData.description_delta) || null,
+            description_delta:
+              toDeltaString(formData.description_delta) || null,
             file: formData.image ?? undefined,
           },
         },
@@ -237,13 +240,19 @@ export default function NewsPage() {
         <div className={styles.grid}>
           {/* Left Column — Form */}
           <div>
-            <div className={`${styles.formCard} ${isEditing ? styles.formCardEditing : ""}`}>
+            <div
+              className={`${styles.formCard} ${isEditing ? styles.formCardEditing : ""}`}
+            >
               <div className={styles.formHeader}>
                 <h2 className={styles.formHeaderTitle}>
                   {isEditing ? (
-                    <><Pencil className={styles.iconSm} /> แก้ไขข่าวสาร</>
+                    <>
+                      <Pencil className={styles.iconSm} /> แก้ไขข่าวสาร
+                    </>
                   ) : (
-                    <><Plus className={styles.iconSm} /> สร้างข่าวสารใหม่</>
+                    <>
+                      <Plus className={styles.iconSm} /> สร้างข่าวสารใหม่
+                    </>
                   )}
                 </h2>
                 {isEditing && (
@@ -265,7 +274,10 @@ export default function NewsPage() {
                     รูปภาพประกอบ{" "}
                     {!isEditing && <span className={styles.required}>*</span>}
                     {isEditing && (
-                      <span className={styles.labelHint}> (เว้นว่างเพื่อคงรูปเดิม)</span>
+                      <span className={styles.labelHint}>
+                        {" "}
+                        (เว้นว่างเพื่อคงรูปเดิม)
+                      </span>
                     )}
                   </label>
 

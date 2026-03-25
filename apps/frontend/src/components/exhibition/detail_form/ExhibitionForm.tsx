@@ -10,6 +10,7 @@ import {
 } from "react";
 import { FaRegFilePdf } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import { optimizeImage } from "../../../utils/imageOptimize";
 import { initializeRichTextEditor } from "../../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../../utils/quillDelta";
 import FormButtons from "../../DetailButton/FormButtons";
@@ -136,6 +137,14 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(
       k: K,
       v: ExhibitionFormValues[K],
     ) => setForm((p) => ({ ...p, [k]: v }));
+
+    const handleImageFileChange = async (
+      e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+      const file = e.target.files?.[0];
+      const optimized = file ? await optimizeImage(file) : undefined;
+      update("file", optimized);
+    };
 
     // init quill
     useEffect(() => {
@@ -493,7 +502,7 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(
               className={styles.ex_input}
               type="file"
               accept="image/*"
-              onChange={(e) => update("file", e.target.files?.[0])}
+              onChange={handleImageFileChange}
               disabled={disabled}
             />
             <p className={styles.ex_fileName} aria-live="polite">

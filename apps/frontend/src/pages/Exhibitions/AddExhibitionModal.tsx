@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { optimizeImage } from "../../utils/imageOptimize";
 import styles from "./ExManagePage.module.css";
 
 type ModalStatus = "active" | "upcoming" | "ended";
@@ -91,18 +92,19 @@ function AddExhibitionModal({
   }, []);
 
   const handleImageChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      const optimized = await optimizeImage(file);
       const reader = new FileReader();
       reader.onload = (ev) => {
         setForm((prev) => ({
           ...prev,
           imagePreview: (ev.target?.result as string) ?? "",
-          imageFile: file,
+          imageFile: optimized,
         }));
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(optimized);
     },
     [],
   );
