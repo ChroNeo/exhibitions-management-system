@@ -69,7 +69,7 @@ INSERT INTO `certificate_templates` (`template_id`, `exhibition_id`, `background
 --
 
 CREATE TABLE `exhibitions` (
-  `exhibition_id` int NOT NULL,
+  `exhibition_id` int NOT NULL AUTO_INCREMENT,
   `exhibition_code` varchar(20) NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` mediumtext,
