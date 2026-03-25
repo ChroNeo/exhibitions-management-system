@@ -9,15 +9,14 @@ import { LuBadgeCheck, LuCamera, LuClock } from "react-icons/lu";
 import { MdOutlineCalendarToday } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { toThaiDate, toThaiTimeRange } from "../../utils/dateFormat";
-import formStyles from "./detail_form/ExManageForm.module.css";
 import styles from "./ExhibitionDetailCard.module.css";
 
 const STATUS_OPTIONS = [
-  { value: "draft", label: "Draft" },
-  { value: "published", label: "Published" },
-  { value: "ongoing", label: "Ongoing" },
-  { value: "ended", label: "Ended" },
-  { value: "archived", label: "Archived" },
+  { value: "draft", label: "ร่าง" },
+  { value: "published", label: "เผยแพร่" },
+  { value: "ongoing", label: "กำลังจัด" },
+  { value: "ended", label: "จบงาน" },
+  { value: "archived", label: "เก็บ" },
 ];
 
 export type EditFormState = {
@@ -339,37 +338,95 @@ export default function ExhibitionDetailCard({
                     ไฟล์รายละเอียด PDF{" "}
                     <span className={styles.descEditHint}>(ถ้ามี)</span>
                   </h3>
-                  <div style={{ marginTop: 4 }}>
-                    <input
-                      className={styles.editInput}
-                      type="file"
-                      accept="application/pdf"
-                      onChange={(e) => onPdfFileChange?.(e.target.files?.[0])}
-                    />
-                  </div>
-                  {(editForm?.detailPdfFile ||
-                    (initialDetailPdfName && !editForm?.detailPdfRemoved)) && (
-                    <div
-                      className={formStyles.ex_fileBadge}
-                      aria-live="polite"
-                      style={{ marginTop: 6 }}
-                    >
-                      <FaRegFilePdf
-                        className={formStyles.ex_fileBadgeIcon}
-                        aria-hidden="true"
-                      />
-                      <span className={formStyles.ex_fileBadgeName}>
-                        {editForm?.detailPdfFile?.name || initialDetailPdfName}
-                      </span>
+
+                  {editForm?.detailPdfFile ||
+                  (initialDetailPdfName && !editForm?.detailPdfRemoved) ? (
+                    <div style={{ position: "relative", marginTop: 10 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "12px 14px",
+                          border: "1.5px solid #cbd5e1",
+                          borderRadius: "8px",
+                          background: "#fff",
+                        }}
+                      >
+                        <FaRegFilePdf size={20} style={{ color: "#3b82f6" }} />
+                        <span
+                          style={{
+                            fontSize: 13,
+                            color: "#334155",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {editForm?.detailPdfFile?.name ||
+                            initialDetailPdfName}
+                        </span>
+                      </div>
                       <button
                         type="button"
-                        className={formStyles.ex_fileBadgeRemove}
                         onClick={onPdfFileRemove}
-                        aria-label="ลบไฟล์รายละเอียด"
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          width: 28,
+                          height: 28,
+                          borderRadius: 7,
+                          background: "rgba(0, 0, 0, 0.55)",
+                          backdropFilter: "blur(4px)",
+                          color: "white",
+                          border: "none",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "background 0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background =
+                            "rgba(220, 50, 50, 0.8)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background =
+                            "rgba(0, 0, 0, 0.55)")
+                        }
                       >
-                        ×
+                        <X size={14} />
                       </button>
                     </div>
+                  ) : (
+                    <label className={styles.uploadBox}>
+                      <input
+                        className={styles.uploadInput}
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => onPdfFileChange?.(e.target.files?.[0])}
+                      />
+                      <div className={styles.uploadIcon}>
+                        <svg
+                          width="24"
+                          height="24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                      </div>
+                      <div className={styles.uploadText}>
+                        คลิกเพื่อเลือกไฟล์ PDF
+                      </div>
+                      <div className={styles.uploadHint}>PDF — สูงสุด 10MB</div>
+                    </label>
                   )}
                 </div>
               </>

@@ -48,10 +48,17 @@ function AddExhibitionModal({
   const titleRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Lazy mount: keep DOM alive during close animation, unmount after
+  // Lazy mount: mount DOM first (invisible), then add open class next frame
   const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
   useEffect(() => {
-    if (open) setMounted(true);
+    if (open) {
+      setMounted(true);
+      requestAnimationFrame(() => requestAnimationFrame(() => setIsOpen(true)));
+    } else {
+      setIsOpen(false);
+    }
   }, [open]);
 
   const handleTransitionEnd = useCallback(() => {
@@ -63,7 +70,7 @@ function AddExhibitionModal({
     if (open) {
       setForm({ ...EMPTY_FORM });
       setTitleError(false);
-      setTimeout(() => titleRef.current?.focus(), 400);
+      setTimeout(() => titleRef.current?.focus(), 220);
     }
   }, [open]);
 
@@ -141,7 +148,7 @@ function AddExhibitionModal({
   return (
     <div
       ref={overlayRef}
-      className={`${styles.modalOverlay}${open ? ` ${styles.modalOverlayOpen}` : ""}`}
+      className={`${styles.modalOverlay}${isOpen ? ` ${styles.modalOverlayOpen}` : ""}`}
       onTransitionEnd={handleTransitionEnd}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -193,7 +200,7 @@ function AddExhibitionModal({
                 onClick={() => selectStatus("upcoming")}
               >
                 <span className={`${styles.sDot} ${styles.sDotUpcoming}`} />
-                กำลังจะมา
+                เผยแพร่
               </button>
               <button
                 type="button"

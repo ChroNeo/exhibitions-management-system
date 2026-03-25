@@ -39,11 +39,11 @@ import { useCreateExhibition, useUpdateExhibition } from "./hooks";
 const DEFAULT_STATUS = "draft";
 
 const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  published: "Published",
-  ongoing: "Ongoing",
-  ended: "Ended",
-  archived: "Archived",
+  draft: "ร่าง",
+  published: "เผยแพร่",
+  ongoing: "กำลังจัด",
+  ended: "จบงาน",
+  archived: "เก็บ",
 };
 
 type ExManageDetailProps = { mode?: Mode };

@@ -1,4 +1,5 @@
-﻿import type QuillType from "quill";
+﻿import { X } from "lucide-react";
+import type QuillType from "quill";
 import type { MutableRefObject, ReactNode } from "react";
 import {
   forwardRef,
@@ -18,11 +19,11 @@ import styles from "./ExManageForm.module.css";
 
 const DEFAULT_STATUS = "draft" as const;
 const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  published: "Published",
-  ongoing: "Ongoing",
-  ended: "Ended",
-  archived: "Archived",
+  draft: "ร่าง",
+  published: "เผยแพร่",
+  ongoing: "กำลังจัด",
+  ended: "จบงาน",
+  archived: "เก็บ",
 };
 const EDITABLE_STATUS_VALUES = ["draft", "published", "archived"] as const;
 
@@ -514,37 +515,101 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(
             <label className={styles.ex_label}>
               ไฟล์รายละเอียด PDF (ถ้ามี)
             </label>
-            <input
-              className={styles.ex_input}
-              type="file"
-              accept="application/pdf"
-              ref={detailPdfInputRef}
-              onChange={handleDetailPdfChange}
-              disabled={disabled}
-            />
-            {detailPdfBadgeName && (
-              <div
-                className={styles.ex_fileBadge}
-                aria-live="polite"
-                style={{ marginTop: 6 }}
-              >
-                <FaRegFilePdf
-                  className={styles.ex_fileBadgeIcon}
-                  aria-hidden="true"
-                />
-                <span className={styles.ex_fileBadgeName}>
-                  {detailPdfBadgeName}
-                </span>
+
+            {detailPdfBadgeName ? (
+              <div style={{ position: "relative", marginTop: 10 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "12px 14px",
+                    border: "1.5px solid #de6424",
+                    borderRadius: "10px",
+                    background: "#fff",
+                  }}
+                >
+                  <FaRegFilePdf size={20} style={{ color: "#de6424" }} />
+                  <span
+                    style={{
+                      fontSize: 14,
+                      color: "#1f2937",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {detailPdfBadgeName}
+                  </span>
+                </div>
                 <button
                   type="button"
-                  className={styles.ex_fileBadgeRemove}
                   onClick={handleDetailPdfRemove}
                   disabled={disabled}
-                  aria-label="ลบไฟล์รายละเอียด"
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    width: 28,
+                    height: 28,
+                    borderRadius: 7,
+                    background: "rgba(0, 0, 0, 0.55)",
+                    backdropFilter: "blur(4px)",
+                    color: "white",
+                    border: "none",
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "background 0.2s",
+                    opacity: disabled ? 0.5 : 1,
+                  }}
+                  onMouseEnter={(e) =>
+                    !disabled &&
+                    (e.currentTarget.style.background =
+                      "rgba(220, 50, 50, 0.8)")
+                  }
+                  onMouseLeave={(e) =>
+                    !disabled &&
+                    (e.currentTarget.style.background = "rgba(0, 0, 0, 0.55)")
+                  }
                 >
-                  ×
+                  <X size={14} />
                 </button>
               </div>
+            ) : (
+              <label
+                className={styles.uploadBox}
+                style={
+                  disabled ? { opacity: 0.6, pointerEvents: "none" } : undefined
+                }
+              >
+                <input
+                  className={styles.uploadInput}
+                  type="file"
+                  accept="application/pdf"
+                  ref={detailPdfInputRef}
+                  onChange={handleDetailPdfChange}
+                  disabled={disabled}
+                />
+                <div className={styles.uploadIcon}>
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                </div>
+                <div className={styles.uploadText}>คลิกเพื่อเลือกไฟล์ PDF</div>
+                <div className={styles.uploadHint}>PDF — สูงสุด 10MB</div>
+              </label>
             )}
           </div>
 

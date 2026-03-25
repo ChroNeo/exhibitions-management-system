@@ -1,4 +1,5 @@
 import { ChevronRight, FileText, Settings2 } from "lucide-react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useSurveyQuestions } from "../../pages/Survey/hooks";
@@ -9,11 +10,35 @@ interface SurveyManageModalProps {
   onClose: () => void;
 }
 
-export default function SurveyManageModal({
-  exhibitionId,
-  onClose,
-}: SurveyManageModalProps) {
+function SurveyManageModal({ exhibitionId, onClose }: SurveyManageModalProps) {
   const navigate = useNavigate();
+
+  // Entrance: mount in closed state, then transition to open next frame
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => setIsOpen(true)));
+  }, []);
+
+  // Close: transition out, then unmount via onClose
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const handleTransitionEnd = useCallback(
+    (e: React.TransitionEvent<HTMLDivElement>) => {
+      if (e.target === e.currentTarget && !isOpen) onClose();
+    },
+    [isOpen, onClose],
+  );
+
+  // Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [handleClose]);
 
   // Check if surveys exist
   const { data: exhibitionSurveys } = useSurveyQuestions({
@@ -29,21 +54,26 @@ export default function SurveyManageModal({
   const hasExhibitionSurvey = exhibitionSurveys && exhibitionSurveys.length > 0;
   const hasUnitSurvey = unitSurveys && unitSurveys.length > 0;
 
-  const handleCreateOrEdit = (type: "EXHIBITION" | "UNIT") => {
-    const hasSurvey =
-      type === "EXHIBITION" ? hasExhibitionSurvey : hasUnitSurvey;
+  const handleCreateOrEdit = useCallback(
+    (type: "EXHIBITION" | "UNIT") => {
+      const hasSurvey =
+        type === "EXHIBITION" ? hasExhibitionSurvey : hasUnitSurvey;
 
-    if (hasSurvey) {
-      // Edit mode
-      navigate(`/survey/create/${exhibitionId}?edit=true&type=${type}`);
-    } else {
-      // Create mode - also pass type so user doesn't have to select
-      navigate(`/survey/create/${exhibitionId}?type=${type}`);
-    }
-  };
+      if (hasSurvey) {
+        navigate(`/survey/create/${exhibitionId}?edit=true&type=${type}`);
+      } else {
+        navigate(`/survey/create/${exhibitionId}?type=${type}`);
+      }
+    },
+    [hasExhibitionSurvey, hasUnitSurvey, exhibitionId, navigate],
+  );
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div
+      className={`${styles.overlay}${isOpen ? ` ${styles.overlayOpen}` : ""}`}
+      onTransitionEnd={handleTransitionEnd}
+      onClick={handleClose}
+    >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <div className={styles.headerIcon}>
@@ -120,7 +150,7 @@ export default function SurveyManageModal({
         <div className={styles.footer}>
           <button
             className={styles.closeButton}
-            onClick={onClose}
+            onClick={handleClose}
             type="button"
           >
             ปิด
@@ -130,3 +160,5 @@ export default function SurveyManageModal({
     </div>
   );
 }
+
+export default memo(SurveyManageModal);
