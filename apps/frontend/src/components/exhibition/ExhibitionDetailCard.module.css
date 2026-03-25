@@ -422,20 +422,21 @@
 /* ── Quill editor wrapper ── */
 .editorWrap {
   border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #cbd5e1;
 }
 
 .editorWrap :global(.ql-toolbar) {
-  border: none;
+  border: 1px solid #cbd5e1;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
+  border-radius: 8px 8px 0 0;
 }
 
 .editorWrap :global(.ql-container) {
-  border: none;
+  border: 1px solid #cbd5e1;
+  border-top: none;
   min-height: 150px;
   font-size: 0.875rem;
+  border-radius: 0 0 8px 8px;
 }
 
 .editorWrap :global(.ql-editor) {
