@@ -5,16 +5,16 @@ import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 
+import Swal from "sweetalert2";
 import cardStyles from "../../components/exhibition/ExhibitionDetailCard.module.css";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import UnitDetailCard from "../../components/unit/UnitDetailCard";
 import UnitForm, { type UnitFormValues } from "../../components/unit/UnitForm";
-import { useDeleteUnit, useAuthStatus } from "../../hooks";
-import { useCreateUnit, useUnit, useUpdateUnit } from "./hooks";
+import { useAuthStatus, useDeleteUnit } from "../../hooks";
 import type { Mode } from "../../types/mode";
 import type { UnitCreatePayload } from "../../types/units";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
-import Swal from "sweetalert2";
+import { useCreateUnit, useUnit, useUpdateUnit } from "./hooks";
 import styles from "./UnitManageDetail.module.css";
 
 type UnitManageDetailProps = { mode?: Mode };
@@ -40,7 +40,7 @@ function toDate(value: string | number | Date): Date | null {
 
 function buildDateTimeText(
   start: string | number | Date,
-  end: string | number | Date
+  end: string | number | Date,
 ) {
   const startDate = toDate(start);
   const endDate = toDate(end);
@@ -61,10 +61,10 @@ function buildDateTimeText(
   });
 
   const dateText = `วันที่ ${dateFmt.format(startDate)} – ${dateFmt.format(
-    endDate
+    endDate,
   )}`;
   const timeText = `เวลา ${timeFmt.format(startDate)} – ${timeFmt.format(
-    endDate
+    endDate,
   )} น.`;
 
   return { dateText, timeText } as const;
@@ -124,59 +124,46 @@ export default function UnitManageDetail({
         }`
       : undefined;
 
-  const { initialFormValues, initialPosterName, initialPosterUrl, initialDetailPdfName } = useMemo(() => {
-    if (!data || mode === "create") {
+  const { initialFormValues, initialPosterUrl, initialDetailPdfName } =
+    useMemo(() => {
+      if (!data || mode === "create") {
+        return {
+          initialFormValues: undefined,
+          initialPosterUrl: undefined,
+          initialDetailPdfName: undefined,
+        };
+      }
+
+      const detailPdfSource = data.detailPdfPath ?? data.detailPdfUrl ?? "";
+      let detailPdfName: string | undefined;
+      if (detailPdfSource) {
+        const rawName =
+          detailPdfSource.split("/").pop()?.split("?")[0] ?? detailPdfSource;
+        try {
+          detailPdfName = decodeURIComponent(rawName);
+        } catch {
+          detailPdfName = rawName;
+        }
+      }
+
       return {
-        initialFormValues: undefined,
-        initialPosterName: undefined,
-        initialPosterUrl: undefined,
-        initialDetailPdfName: undefined,
+        initialFormValues: {
+          name: data.name,
+          type: data.type,
+          starts_at: toInputValue(data.startsAt),
+          ends_at: toInputValue(data.endsAt),
+          staff_user_ids: data.staffUserIds ?? [],
+          description: data.descriptionHtml ?? "",
+          description_delta: data.descriptionDelta ?? "",
+          file: undefined,
+          detailPdfFile: undefined,
+          detailPdfRemoved: false,
+          posterRemoved: false,
+        } satisfies UnitFormValues,
+        initialPosterUrl: data.posterUrl,
+        initialDetailPdfName: detailPdfName,
       };
-    }
-
-    const posterSource = data.posterPath ?? data.posterUrl ?? "";
-    let posterName: string | undefined;
-    if (posterSource) {
-      const rawName =
-        posterSource.split("/").pop()?.split("?")[0] ?? posterSource;
-      try {
-        posterName = decodeURIComponent(rawName);
-      } catch {
-        posterName = rawName;
-      }
-    }
-
-    const detailPdfSource = data.detailPdfPath ?? data.detailPdfUrl ?? "";
-    let detailPdfName: string | undefined;
-    if (detailPdfSource) {
-      const rawName =
-        detailPdfSource.split("/").pop()?.split("?")[0] ?? detailPdfSource;
-      try {
-        detailPdfName = decodeURIComponent(rawName);
-      } catch {
-        detailPdfName = rawName;
-      }
-    }
-
-    return {
-      initialFormValues: {
-        name: data.name,
-        type: data.type,
-        starts_at: toInputValue(data.startsAt),
-        ends_at: toInputValue(data.endsAt),
-        staff_user_ids: data.staffUserIds ?? [],
-        description: data.descriptionHtml ?? "",
-        description_delta: data.descriptionDelta ?? "",
-        file: undefined,
-        detailPdfFile: undefined,
-        detailPdfRemoved: false,
-        posterRemoved: false
-      } satisfies UnitFormValues,
-      initialPosterName: posterName,
-      initialPosterUrl: data.posterUrl,
-      initialDetailPdfName: detailPdfName,
-    };
-  }, [data, mode]);
+    }, [data, mode]);
 
   const buildPayload = (values: UnitFormValues): UnitCreatePayload => {
     const trimmedName = values.name.trim();
@@ -203,10 +190,10 @@ export default function UnitManageDetail({
     if (values.staff_user_ids !== undefined) {
       const cleanedStaffIds = Array.from(
         new Set(
-          (values.staff_user_ids ?? []).map((id) => Number(id)).filter(
-            (id) => Number.isFinite(id) && id > 0
-          )
-        )
+          (values.staff_user_ids ?? [])
+            .map((id) => Number(id))
+            .filter((id) => Number.isFinite(id) && id > 0),
+        ),
       );
       payload.staff_user_ids = cleanedStaffIds;
     }
@@ -360,11 +347,7 @@ export default function UnitManageDetail({
 
   const viewActionBar = isAuthenticated ? (
     <>
-      <button
-        type="button"
-        className={cardStyles.toolBtn}
-        onClick={handleEdit}
-      >
+      <button type="button" className={cardStyles.toolBtn} onClick={handleEdit}>
         <FaEdit size={16} />
         แก้ไข
       </button>
@@ -455,7 +438,6 @@ export default function UnitManageDetail({
                     exhibitionId={exhibitionId}
                     unitId={unitId}
                     initialValues={initialFormValues}
-                    initialPosterName={initialPosterName}
                     initialPosterUrl={initialPosterUrl}
                     initialDetailPdfName={initialDetailPdfName}
                     onSubmit={handleEditSubmit}
