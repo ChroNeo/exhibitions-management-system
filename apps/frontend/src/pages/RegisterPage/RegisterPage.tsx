@@ -1,20 +1,20 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import HeaderBar from "../../components/HeaderBar/HeaderBar";
-import Panel from "../../components/Panel/Panel";
-import styles from "./RegisterPage.module.css";
 import {
-  User,
-  Users,
   Calendar,
+  CheckCircle2,
+  IdCard,
   Mail,
   Phone,
-  IdCard,
   QrCode,
-  CheckCircle2,
+  User,
+  Users,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import HeaderBar from "../../components/HeaderBar/HeaderBar";
+import Panel from "../../components/Panel/Panel";
 import { useRegisterForExhibition } from "./hooks";
+import styles from "./RegisterPage.module.css";
 
 type Role = "VISITOR" | "STAFF";
 
@@ -34,17 +34,18 @@ export default function RegisterPage() {
     phone: "",
     code: "",
   });
-  const { closeWindow, getAutoFillName, isLiffReady, register, isPending } = useRegisterForExhibition({
-    enableLiff: true,
-    autoFillName: true
-  });
+  const { closeWindow, getAutoFillName, isLiffReady, register, isPending } =
+    useRegisterForExhibition({
+      enableLiff: true,
+      autoFillName: true,
+    });
 
   // Auto-fill name from LINE Profile when ready
   useEffect(() => {
     if (isLiffReady) {
       const autoFillName = getAutoFillName();
       if (autoFillName && !form.name) {
-        setForm(prev => ({ ...prev, name: autoFillName }));
+        setForm((prev) => ({ ...prev, name: autoFillName }));
       }
     }
   }, [isLiffReady, getAutoFillName, form.name]);
@@ -66,7 +67,8 @@ export default function RegisterPage() {
   }, [isLiffReady, exhibitionId, navigate, closeWindow]);
 
   const set =
-    (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    (k: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((s) => ({ ...s, [k]: e.target.value }));
 
   const onChangeRole = (r: Role) => {
@@ -96,8 +98,15 @@ export default function RegisterPage() {
     <>
       <HeaderBar />
       <main className={styles.container}>
-        <Panel title="ลงทะเบียน" onBack={() => !closeWindow() && navigate(-1)}>
-          <p style={{ textAlign: "center", color: "var(--ink-muted)", fontSize: 14, margin: "-4px 0 8px" }}>
+        <Panel title="ลงทะเบียน" onBack={() => navigate(-1)}>
+          <p
+            style={{
+              textAlign: "center",
+              color: "var(--ink-muted)",
+              fontSize: 14,
+              margin: "-4px 0 8px",
+            }}
+          >
             กรอกข้อมูลเพื่อรับสิทธิ์เข้าใช้งาน
           </p>
 
@@ -108,7 +117,9 @@ export default function RegisterPage() {
                 ชื่อ <span className={styles.required}>*</span>
               </label>
               <div className={styles.inputWrapper}>
-                <span className={styles.inputIcon}><User size={18} /></span>
+                <span className={styles.inputIcon}>
+                  <User size={18} />
+                </span>
                 <input
                   className={styles.textInput}
                   value={form.name}
@@ -127,14 +138,18 @@ export default function RegisterPage() {
                     เพศ <span className={styles.required}>*</span>
                   </label>
                   <div className={styles.inputWrapper}>
-                    <span className={styles.inputIcon}><Users size={18} /></span>
+                    <span className={styles.inputIcon}>
+                      <Users size={18} />
+                    </span>
                     <select
                       className={styles.textInput}
                       value={form.gender}
                       onChange={set("gender")}
                       required
                     >
-                      <option value="" disabled>เลือกเพศ</option>
+                      <option value="" disabled>
+                        เลือกเพศ
+                      </option>
                       <option value="male">ชาย</option>
                       <option value="female">หญิง</option>
                       <option value="other">ไม่ระบุ</option>
@@ -148,7 +163,9 @@ export default function RegisterPage() {
                     วันเกิด <span className={styles.required}>*</span>
                   </label>
                   <div className={styles.inputWrapper}>
-                    <span className={styles.inputIcon}><Calendar size={18} /></span>
+                    <span className={styles.inputIcon}>
+                      <Calendar size={18} />
+                    </span>
                     <input
                       type="date"
                       className={styles.textInput}
@@ -166,7 +183,9 @@ export default function RegisterPage() {
                 อีเมล <span className={styles.required}>*</span>
               </label>
               <div className={styles.inputWrapper}>
-                <span className={styles.inputIcon}><Mail size={18} /></span>
+                <span className={styles.inputIcon}>
+                  <Mail size={18} />
+                </span>
                 <input
                   type="email"
                   className={styles.textInput}
@@ -183,7 +202,9 @@ export default function RegisterPage() {
                 โทรศัพท์ <span className={styles.required}>*</span>
               </label>
               <div className={styles.inputWrapper}>
-                <span className={styles.inputIcon}><Phone size={18} /></span>
+                <span className={styles.inputIcon}>
+                  <Phone size={18} />
+                </span>
                 <input
                   className={styles.textInput}
                   value={form.phone}
@@ -206,7 +227,9 @@ export default function RegisterPage() {
                   className={`${styles.roleBtn} ${role === "VISITOR" ? styles.active : ""}`}
                   onClick={() => onChangeRole("VISITOR")}
                 >
-                  <span className={styles.roleBtnIcon}><IdCard size={18} /></span>
+                  <span className={styles.roleBtnIcon}>
+                    <IdCard size={18} />
+                  </span>
                   <span>Visitors</span>
                 </button>
                 <button
@@ -214,21 +237,27 @@ export default function RegisterPage() {
                   className={`${styles.roleBtn} ${role === "STAFF" ? styles.active : ""}`}
                   onClick={() => onChangeRole("STAFF")}
                 >
-                  <span className={styles.roleBtnIcon}><Users size={18} /></span>
+                  <span className={styles.roleBtnIcon}>
+                    <Users size={18} />
+                  </span>
                   <span>Staff</span>
                 </button>
               </div>
             </div>
 
             {/* Staff Booth Code */}
-            <div className={`${styles.staffSection} ${role === "STAFF" ? styles.visible : styles.hidden}`}>
+            <div
+              className={`${styles.staffSection} ${role === "STAFF" ? styles.visible : styles.hidden}`}
+            >
               <div className={styles.staffInner}>
                 <div className={styles.field}>
                   <label className={styles.fieldLabel}>
                     รหัสบูธประจำตัว <span className={styles.required}>*</span>
                   </label>
                   <div className={styles.inputWrapper}>
-                    <span className={styles.inputIcon}><QrCode size={18} /></span>
+                    <span className={styles.inputIcon}>
+                      <QrCode size={18} />
+                    </span>
                     <input
                       className={styles.textInput}
                       value={form.code}
@@ -248,7 +277,7 @@ export default function RegisterPage() {
             <div className={styles.actions}>
               <button
                 type="button"
-                onClick={() => !closeWindow() && navigate(-1)}
+                onClick={() => navigate(-1)}
                 className={`${styles.btn} ${styles.cancel}`}
               >
                 ยกเลิก
