@@ -151,7 +151,7 @@ export default function ExhibitionPage() {
   );
 
   const handleSelect = (id: string) => {
-    navigate(`/exhibitions/${id}?view=true`);
+    navigate(`/exhibitions/${id}`);
   };
 
   const handleEdit = (id: string) => {

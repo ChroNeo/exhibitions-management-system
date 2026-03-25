@@ -196,11 +196,17 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   }, [data]);
 
   // ── Auto-start edit when ?edit=true ──
+  const hasHandledEditParam = useRef(false);
   useEffect(() => {
-    if (searchParams.get("edit") === "true" && data && !isEditing) {
-      handleStartEdit();
+    if (searchParams.get("edit") === "true") {
+      if (data && !hasHandledEditParam.current) {
+        hasHandledEditParam.current = true;
+        handleStartEdit();
+      }
+    } else {
+      hasHandledEditParam.current = false;
     }
-  }, [searchParams, data, isEditing, handleStartEdit]);
+  }, [searchParams, data, handleStartEdit]);
 
   const handleCancelInlineEdit = useCallback(() => {
     setIsEditing(false);
