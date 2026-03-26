@@ -1,6 +1,6 @@
 import cors from "@fastify/cors";
-import rateLimit from "@fastify/rate-limit";
 import multipart from "@fastify/multipart";
+import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import swagger from "@fastify/swagger";
 import fastifySwaggerUI from "@fastify/swagger-ui";
@@ -85,7 +85,11 @@ await app.register(fastifyRawBody, {
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
-  : ["http://localhost:5173"];
+  : [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://app.chroneo.dev",
+    ];
 
 const allowedHeaders = ["Content-Type", "Authorization"];
 if (process.env.NODE_ENV !== "production") {
@@ -93,7 +97,14 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 await app.register(cors, {
-  origin: allowedOrigins,
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Not allowed by CORS"), false);
+    }
+  },
+  credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders,
 });

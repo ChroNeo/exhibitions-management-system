@@ -33,3 +33,9 @@ body {
         padding: 24px
     }
 }
+
+/* Utility classes */
+.req {
+    color: #ef4444;
+    margin-left: 2px;
+}

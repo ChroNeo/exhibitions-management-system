@@ -28,6 +28,7 @@ import {
 import type { Exhibition } from "../../types/exhibition";
 import type { Mode } from "../../types/mode";
 import { toApiDateTime, toInputDateTime } from "../../utils/date";
+import { optimizeImage } from "../../utils/imageOptimize";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject } from "../../utils/quillDelta";
 import { toFileUrl } from "../../utils/url";
@@ -38,11 +39,11 @@ import { useCreateExhibition, useUpdateExhibition } from "./hooks";
 const DEFAULT_STATUS = "draft";
 
 const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  published: "Published",
-  ongoing: "Ongoing",
-  ended: "Ended",
-  archived: "Archived",
+  draft: "ร่าง",
+  published: "เผยแพร่",
+  ongoing: "กำลังจัด",
+  ended: "จบงาน",
+  archived: "เก็บ",
 };
 
 type ExManageDetailProps = { mode?: Mode };
@@ -195,11 +196,17 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   }, [data]);
 
   // ── Auto-start edit when ?edit=true ──
+  const hasHandledEditParam = useRef(false);
   useEffect(() => {
-    if (searchParams.get("edit") === "true" && data && !isEditing) {
-      handleStartEdit();
+    if (searchParams.get("edit") === "true") {
+      if (data && !hasHandledEditParam.current) {
+        hasHandledEditParam.current = true;
+        handleStartEdit();
+      }
+    } else {
+      hasHandledEditParam.current = false;
     }
-  }, [searchParams, data, isEditing, handleStartEdit]);
+  }, [searchParams, data, handleStartEdit]);
 
   const handleCancelInlineEdit = useCallback(() => {
     setIsEditing(false);
@@ -218,11 +225,12 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     setEditForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   }, []);
 
-  const handleFileChange = useCallback((file: File | undefined) => {
-    setEditForm((prev) => (prev ? { ...prev, file } : prev));
+  const handleFileChange = useCallback(async (file: File | undefined) => {
+    const optimized = file ? await optimizeImage(file) : undefined;
+    setEditForm((prev) => (prev ? { ...prev, file: optimized } : prev));
     setImagePreview((prev) => {
       if (prev) URL.revokeObjectURL(prev);
-      return file ? URL.createObjectURL(file) : undefined;
+      return optimized ? URL.createObjectURL(optimized) : undefined;
     });
   }, []);
 

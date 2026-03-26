@@ -196,6 +196,7 @@
   visibility: hidden;
   transition: opacity 0.2s ease, visibility 0.2s ease;
   padding: 16px;
+  will-change: opacity;
 }
 
 .modalOverlayOpen {
@@ -221,6 +222,7 @@
   transform: translateY(12px);
   opacity: 0;
   transition: transform 0.2s ease, opacity 0.2s ease;
+  will-change: opacity, transform;
 }
 
 .modal::-webkit-scrollbar {
@@ -400,15 +402,15 @@
 }
 
 .statusActive {
-  border-color: #2d8a54;
-  background: #e8f5ee;
-  color: #2d8a54;
+  border-color: var(--brand);
+  background: rgba(46, 79, 139, 0.08);
+  color: var(--brand);
 }
 
 .statusUpcoming {
-  border-color: #d4910a;
-  background: #fdf4e0;
-  color: #d4910a;
+  border-color: #2d8a54;
+  background: #e8f5ee;
+  color: #2d8a54;
 }
 
 .statusEnded {
@@ -426,11 +428,11 @@
 }
 
 .sDotActive {
-  background: #2d8a54;
+  background: var(--brand);
 }
 
 .sDotUpcoming {
-  background: #d4910a;
+  background: #2d8a54;
 }
 
 .sDotEnded {

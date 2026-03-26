@@ -1,4 +1,6 @@
 // components/units/UnitForm.tsx
+import type QuillType from "quill";
+import type { ChangeEvent, MutableRefObject, ReactNode } from "react";
 import {
   forwardRef,
   useCallback,
@@ -7,22 +9,20 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ReactNode, ChangeEvent, MutableRefObject } from "react";
-import { useNavigate } from "react-router-dom";
-import type QuillType from "quill";
-import Swal from "sweetalert2";
-import { MdOutlineCalendarToday } from "react-icons/md";
-import { LuClock, LuCamera } from "react-icons/lu";
-import { FiUser } from "react-icons/fi";
 import { BsTag } from "react-icons/bs";
 import { FaRegFilePdf } from "react-icons/fa6";
+import { FiUser } from "react-icons/fi";
+import { LuCamera, LuClock } from "react-icons/lu";
+import { MdOutlineCalendarToday } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import Select, { type MultiValue, type StylesConfig } from "react-select";
+import Swal from "sweetalert2";
+import { useUserOptions } from "../../pages/Exhibitions/hooks";
+import { initializeRichTextEditor } from "../../utils/quill";
+import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
 import cardStyles from "../exhibition/ExhibitionDetailCard.module.css";
 import formStyles from "../exhibition/detail_form/ExManageForm.module.css";
 import unitStyles from "./UnitForm.module.css";
-import Select, { type MultiValue, type StylesConfig } from "react-select";
-import { initializeRichTextEditor } from "../../utils/quill";
-import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
-import { useUserOptions } from "../../pages/Exhibitions/hooks";
 
 export type UnitFormValues = {
   name: string;
@@ -55,7 +55,6 @@ type Props = {
   onSubmit?: (values: UnitFormValues) => Promise<void> | void;
   footer?: ReactNode;
   isSubmitting?: boolean;
-  initialPosterName?: string;
   initialPosterUrl?: string;
   initialDetailPdfName?: string;
 };
@@ -78,7 +77,7 @@ type DeltaLike = { ops: unknown[] };
 type TextChangeHandler = (
   delta: DeltaLike,
   oldDelta: DeltaLike,
-  source: QuillSource
+  source: QuillSource,
 ) => void;
 type StaffSelectOption = { value: number; label: string };
 type UnitTypeOption = { value: "booth" | "activity"; label: string };
@@ -86,7 +85,7 @@ type UnitTypeOption = { value: "booth" | "activity"; label: string };
 const storageKey = (
   exId?: string | number,
   unitId?: string | number,
-  mode?: Props["mode"]
+  mode?: Props["mode"],
 ) =>
   `ems:unit:draft:v1:${exId ?? "no-ex"}:${unitId ?? `new-${mode ?? "create"}`}`;
 
@@ -96,8 +95,10 @@ function normalizeStaffIds(source: unknown): number[] {
       new Set(
         source
           .map((value) => Number(value))
-          .filter((id) => Number.isFinite(id) && Number.isInteger(id) && id > 0)
-      )
+          .filter(
+            (id) => Number.isFinite(id) && Number.isInteger(id) && id > 0,
+          ),
+      ),
     );
   }
   if (typeof source === "number" && Number.isFinite(source) && source > 0) {
@@ -123,11 +124,10 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     onSubmit,
     footer,
     isSubmitting = false,
-    initialPosterName,
     initialPosterUrl,
     initialDetailPdfName,
   }: Props,
-  ref
+  ref,
 ) {
   const [form, setForm] = useState<UnitFormValues>(() => ({
     ...EMPTY,
@@ -151,14 +151,14 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         value: option.value,
         label: option.label,
       })),
-    [staffOptions]
+    [staffOptions],
   );
   const selectedStaffOptions = useMemo(
     () =>
       staffSelectOptions.filter((option) =>
-        form.staff_user_ids?.includes(option.value)
+        form.staff_user_ids?.includes(option.value),
       ),
-    [staffSelectOptions, form.staff_user_ids]
+    [staffSelectOptions, form.staff_user_ids],
   );
 
   const navigate = useNavigate();
@@ -170,14 +170,14 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       if (typeof ref === "function") ref(node);
       else (ref as MutableRefObject<HTMLFormElement | null>).current = node;
     },
-    [ref]
+    [ref],
   );
 
   const canSubmit = mode === "edit" || mode === "create";
   const update = useCallback(
     <K extends keyof UnitFormValues>(k: K, v: UnitFormValues[K]) =>
       setForm((p) => ({ ...p, [k]: v })),
-    []
+    [],
   );
   const hasInitialPoster = Boolean(initialPosterUrl);
   const hasInitialDetailPdf = Boolean(initialDetailPdfName);
@@ -203,7 +203,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         detailPdfRemoved: file ? false : prev.detailPdfRemoved,
       }));
     },
-    []
+    [],
   );
 
   const handleDetailPdfRemove = useCallback(() => {
@@ -213,8 +213,8 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       detailPdfRemoved: prev.detailPdfFile
         ? false
         : hasInitialDetailPdf
-        ? true
-        : false,
+          ? true
+          : false,
     }));
     if (detailPdfInputRef.current) {
       detailPdfInputRef.current.value = "";
@@ -225,14 +225,14 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     () => ({
       control: (base, state) => ({
         ...base,
-        borderRadius: 10,
-        borderColor: state.isFocused ? "#c7571f" : "#de6424",
+        borderRadius: 8,
+        borderColor: state.isFocused ? "#3b82f6" : "#cbd5e1",
         boxShadow: state.isFocused
-          ? "0 0 0 2px rgba(199, 87, 31, 0.2)"
+          ? "0 0 0 2px rgba(59, 130, 246, 0.15)"
           : "none",
         minHeight: 44,
         ":hover": {
-          borderColor: "#c7571f",
+          borderColor: "#3b82f6",
         },
       }),
       valueContainer: (base) => ({
@@ -248,10 +248,10 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         ...base,
         fontWeight: state.isSelected ? 700 : 500,
         backgroundColor: state.isSelected
-          ? "#fde8db"
+          ? "#eff6ff"
           : state.isFocused
-          ? "#fff3ea"
-          : base.backgroundColor,
+            ? "#f1f5f9"
+            : base.backgroundColor,
         color: "#1f2937",
       }),
       indicatorSeparator: () => ({
@@ -259,9 +259,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       }),
       dropdownIndicator: (base) => ({
         ...base,
-        color: "#c7571f",
+        color: "#64748b",
         ":hover": {
-          color: "#c7571f",
+          color: "#3b82f6",
         },
       }),
       menu: (base) => ({
@@ -274,38 +274,38 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         fontWeight: 500,
       }),
     }),
-    []
+    [],
   );
 
   const staffSelectStyles: StylesConfig<StaffSelectOption, true> = useMemo(
     () => ({
       control: (base, state) => ({
         ...base,
-        borderRadius: 10,
-        borderColor: state.isFocused ? "#c7571f" : "#de6424",
+        borderRadius: 8,
+        borderColor: state.isFocused ? "#3b82f6" : "#cbd5e1",
         boxShadow: state.isFocused
-          ? "0 0 0 2px rgba(199, 87, 31, 0.2)"
+          ? "0 0 0 2px rgba(59, 130, 246, 0.15)"
           : "none",
         minHeight: 44,
         ":hover": {
-          borderColor: "#c7571f",
+          borderColor: "#3b82f6",
         },
       }),
       multiValue: (base) => ({
         ...base,
-        backgroundColor: "#fde8db",
+        backgroundColor: "#eff6ff",
       }),
       multiValueLabel: (base) => ({
         ...base,
-        color: "#7f2d08",
+        color: "#1e40af",
         fontWeight: 600,
       }),
       multiValueRemove: (base) => ({
         ...base,
-        color: "#7f2d08",
+        color: "#1e40af",
         ":hover": {
-          backgroundColor: "#fbd4b8",
-          color: "#7f2d08",
+          backgroundColor: "#dbeafe",
+          color: "#1e40af",
         },
       }),
       valueContainer: (base) => ({
@@ -321,10 +321,10 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         ...base,
         fontWeight: state.isSelected ? 700 : 500,
         backgroundColor: state.isSelected
-          ? "#fde8db"
+          ? "#eff6ff"
           : state.isFocused
-          ? "#fff3ea"
-          : base.backgroundColor,
+            ? "#f1f5f9"
+            : base.backgroundColor,
         color: "#1f2937",
       }),
       indicatorSeparator: () => ({
@@ -332,9 +332,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       }),
       dropdownIndicator: (base) => ({
         ...base,
-        color: "#c7571f",
+        color: "#64748b",
         ":hover": {
-          color: "#c7571f",
+          color: "#3b82f6",
         },
       }),
       menu: (base) => ({
@@ -342,7 +342,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         zIndex: 20,
       }),
     }),
-    []
+    [],
   );
 
   const handleStaffChange = useCallback(
@@ -350,7 +350,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       const ids = normalizeStaffIds(selected.map((option) => option.value));
       update("staff_user_ids", ids);
     },
-    [update]
+    [update],
   );
 
   // init Quill
@@ -368,7 +368,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
       setForm((p) =>
         p.description_delta === deltaString
           ? p
-          : { ...p, description_delta: deltaString }
+          : { ...p, description_delta: deltaString },
       );
     };
 
@@ -444,7 +444,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         if (
           draft.form &&
           !Array.isArray(
-            (draft.form as Record<string, unknown>)["staff_user_ids"]
+            (draft.form as Record<string, unknown>)["staff_user_ids"],
           ) &&
           (draft.form as Record<string, unknown>)["staff_user_id"] !== undefined
         ) {
@@ -455,8 +455,8 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
             typeof legacy === "number"
               ? [legacy]
               : typeof legacy === "string" && legacy.trim().length
-              ? [Number(legacy)]
-              : [];
+                ? [Number(legacy)]
+                : [];
           (draft.form as Record<string, unknown>)["staff_user_ids"] =
             coerced.filter((id) => Number.isFinite(id) && Number(id) > 0);
           delete (draft.form as Record<string, unknown>)["staff_user_id"];
@@ -464,7 +464,7 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
         if (
           draft.form &&
           Array.isArray(
-            (draft.form as Record<string, unknown>)["staff_user_ids"]
+            (draft.form as Record<string, unknown>)["staff_user_ids"],
           )
         ) {
           (draft.form as Record<string, unknown>)["staff_user_ids"] = (
@@ -599,12 +599,6 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     }
   }, [form.file, form.posterRemoved, initialPosterUrl]);
 
-  const displayedPosterName = useMemo(() => {
-    if (form.file) return form.file.name;
-    if (initialPosterName) return initialPosterName;
-    return "ยังไม่ได้เลือกไฟล์";
-  }, [form.file, initialPosterName]);
-
   const detailPdfBadgeName = useMemo(() => {
     if (form.detailPdfFile) return form.detailPdfFile.name;
     if (!form.detailPdfRemoved && initialDetailPdfName)
@@ -645,9 +639,13 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   };
 
   const renderedFooter =
-    footer !== undefined ? footer : (
+    footer !== undefined ? (
+      footer
+    ) : (
       <div className={`${cardStyles.actionBar} ${cardStyles.actionBarEditing}`}>
-        <span className={`${cardStyles.actionBarLabel} ${cardStyles.actionBarEditingLabel}`}>
+        <span
+          className={`${cardStyles.actionBarLabel} ${cardStyles.actionBarEditingLabel}`}
+        >
           {mode === "create" ? "กำลังสร้างกิจกรรมใหม่" : "กำลังอยู่ในโหมดแก้ไข"}
         </span>
         <div className={cardStyles.actionBarButtons}>
@@ -664,14 +662,22 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
             className={cardStyles.saveBtn}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "กำลังบันทึก..." : mode === "create" ? "สร้างกิจกรรม" : "บันทึกการเปลี่ยนแปลง"}
+            {isSubmitting
+              ? "กำลังบันทึก..."
+              : mode === "create"
+                ? "สร้างกิจกรรม"
+                : "บันทึกการเปลี่ยนแปลง"}
           </button>
         </div>
       </div>
     );
 
   return (
-    <form ref={setFormRef} className={unitStyles.formRoot} onSubmit={handleSubmit}>
+    <form
+      ref={setFormRef}
+      className={unitStyles.formRoot}
+      onSubmit={handleSubmit}
+    >
       <section className={`${cardStyles.card} ${cardStyles.editing}`}>
         <div className={cardStyles.layout}>
           {/* Left: Poster image */}
@@ -706,7 +712,13 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
                     onClick={handlePosterRemove}
                     disabled={isSubmitting}
                     className={unitStyles.posterRemoveButton}
-                    style={{ marginTop: 8, width: "100%", borderRadius: 6, height: 28, fontSize: 13 }}
+                    style={{
+                      marginTop: 8,
+                      width: "100%",
+                      borderRadius: 6,
+                      height: 28,
+                      fontSize: 13,
+                    }}
                   >
                     ลบโปสเตอร์
                   </button>
@@ -719,7 +731,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
           <div className={cardStyles.content}>
             {/* Title */}
             <div className={cardStyles.titleBlock}>
-              <label className={cardStyles.editLabel}>ชื่อกิจกรรม</label>
+              <label className={cardStyles.editLabel}>
+                ชื่อกิจกรรม <span className="req">*</span>
+              </label>
               <input
                 type="text"
                 className={`${cardStyles.editInput} ${cardStyles.editInputTitle}`}
@@ -737,12 +751,23 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
             <div className={cardStyles.infoGrid}>
               {/* Date range */}
               <div className={cardStyles.infoItem}>
-                <div className={`${cardStyles.iconframe} ${cardStyles.iconBlue}`}>
+                <div
+                  className={`${cardStyles.iconframe} ${cardStyles.iconBlue}`}
+                >
                   <MdOutlineCalendarToday size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className={cardStyles.infoLabel}>ช่วงเวลา</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+                  <p className={cardStyles.infoLabel}>
+                    ช่วงเวลา <span className="req">*</span>
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                      marginTop: 4,
+                    }}
+                  >
                     <input
                       type="datetime-local"
                       className={cardStyles.editInput}
@@ -765,7 +790,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
               {/* Type */}
               <div className={cardStyles.infoItem}>
-                <div className={`${cardStyles.iconframe} ${cardStyles.iconGreen}`}>
+                <div
+                  className={`${cardStyles.iconframe} ${cardStyles.iconGreen}`}
+                >
                   <BsTag size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -776,12 +803,20 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
                       options={unit_types}
                       value={unit_types.find((o) => o.value === form.type)}
                       onChange={(sel) =>
-                        update("type", (sel as UnitTypeOption)?.value as UnitFormValues["type"])
+                        update(
+                          "type",
+                          (sel as UnitTypeOption)
+                            ?.value as UnitFormValues["type"],
+                        )
                       }
                       isDisabled={isSubmitting}
                       placeholder="เลือกประเภท"
                       styles={unitTypeSelectStyles}
-                      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+                      menuPortalTarget={
+                        typeof document !== "undefined"
+                          ? document.body
+                          : undefined
+                      }
                       menuPosition="fixed"
                     />
                   </div>
@@ -790,7 +825,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
               {/* Staff */}
               <div className={`${cardStyles.infoItem} ${cardStyles.infoFull}`}>
-                <div className={`${cardStyles.iconframe} ${cardStyles.iconRed}`}>
+                <div
+                  className={`${cardStyles.iconframe} ${cardStyles.iconRed}`}
+                >
                   <FiUser size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -809,7 +846,11 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
                       noOptionsMessage={() => "ไม่พบผู้ใช้"}
                       styles={staffSelectStyles}
                       onChange={handleStaffChange}
-                      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+                      menuPortalTarget={
+                        typeof document !== "undefined"
+                          ? document.body
+                          : undefined
+                      }
                       menuPosition="fixed"
                     />
                   </div>
@@ -818,7 +859,9 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
               {/* Detail PDF */}
               <div className={`${cardStyles.infoItem} ${cardStyles.infoFull}`}>
-                <div className={`${cardStyles.iconframe} ${cardStyles.iconOrange}`}>
+                <div
+                  className={`${cardStyles.iconframe} ${cardStyles.iconOrange}`}
+                >
                   <LuClock size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -835,9 +878,18 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
                     />
                   </div>
                   {detailPdfBadgeName ? (
-                    <div className={formStyles.ex_fileBadge} aria-live="polite" style={{ marginTop: 6 }}>
-                      <FaRegFilePdf className={formStyles.ex_fileBadgeIcon} aria-hidden="true" />
-                      <span className={formStyles.ex_fileBadgeName}>{detailPdfBadgeName}</span>
+                    <div
+                      className={formStyles.ex_fileBadge}
+                      aria-live="polite"
+                      style={{ marginTop: 6 }}
+                    >
+                      <FaRegFilePdf
+                        className={formStyles.ex_fileBadgeIcon}
+                        aria-hidden="true"
+                      />
+                      <span className={formStyles.ex_fileBadgeName}>
+                        {detailPdfBadgeName}
+                      </span>
                       <button
                         type="button"
                         className={formStyles.ex_fileBadgeRemove}
@@ -854,9 +906,12 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
             </div>
 
             {/* Description */}
-            <div className={`${cardStyles.descBox} ${cardStyles.descBoxEditing}`}>
+            <div
+              className={`${cardStyles.descBox} ${cardStyles.descBoxEditing}`}
+            >
               <h3 className={cardStyles.descTitle}>
-                รายละเอียด <span className={cardStyles.descEditHint}>(แก้ไข)</span>
+                รายละเอียด{" "}
+                <span className={cardStyles.descEditHint}>(แก้ไข)</span>
               </h3>
               <div className={cardStyles.editorWrap}>
                 <div ref={quillElRef} aria-label="รายละเอียดกิจกรรม" />

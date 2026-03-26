@@ -151,7 +151,7 @@ export default function ExhibitionPage() {
   );
 
   const handleSelect = (id: string) => {
-    navigate(`/exhibitions/${id}?view=true`);
+    navigate(`/exhibitions/${id}`);
   };
 
   const handleEdit = (id: string) => {
@@ -212,11 +212,11 @@ export default function ExhibitionPage() {
             <div className={styles.statLabel}>ทั้งหมด</div>
             <div className={styles.statValue}>{stats.total}</div>
           </div>
-          <div className={`${styles.statCard} ${styles.statSuccess}`}>
+          <div className={`${styles.statCard} ${styles.statAccent}`}>
             <div className={styles.statLabel}>กำลังจัด</div>
             <div className={styles.statValue}>{stats.ongoing}</div>
           </div>
-          <div className={`${styles.statCard} ${styles.statAccent}`}>
+          <div className={`${styles.statCard} ${styles.statSuccess}`}>
             <div className={styles.statLabel}>เผยแพร่</div>
             <div className={styles.statValue}>{stats.published}</div>
           </div>
