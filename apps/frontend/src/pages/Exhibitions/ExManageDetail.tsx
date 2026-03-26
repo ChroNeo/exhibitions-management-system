@@ -61,6 +61,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const [imagePreview, setImagePreview] = useState<string>();
   const quillContainerRef = useRef<HTMLDivElement | null>(null);
   const quillRef = useRef<QuillType | null>(null);
+  const [quillReady, setQuillReady] = useState(false);
 
   // ── Data hooks ──
   const { mutateAsync: deleteExhibitionAsync } = useDeleteExhibition();
@@ -138,48 +139,49 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       };
     }, [data, mode]);
 
-  // ── Quill lifecycle ──
+  // ── Quill initialization ──
   useEffect(() => {
     if (!isEditing) {
       // Cleanup on exit
       if (quillRef.current) {
         quillRef.current = null;
+        setQuillReady(false);
       }
       return;
     }
 
-    // Wait for DOM to be ready
-    const raf = requestAnimationFrame(() => {
-      const container = quillContainerRef.current;
-      if (!container || quillRef.current) return;
+    const container = quillContainerRef.current;
+    if (!container || quillRef.current) return;
 
-      const { quill, cleanup } = initializeRichTextEditor({
-        container,
-        placeholder: "รายละเอียดเพิ่มเติมของนิทรรศการ",
-      });
-
-      // Hydrate with existing content
-      if (data) {
-        const deltaRaw = data.descriptionDelta;
-        if (deltaRaw) {
-          const deltaObj = toDeltaObject(deltaRaw);
-          quill.setContents(deltaObj, "silent");
-        } else if (data.descriptionHtml) {
-          const clip = quill.clipboard.convert({ html: data.descriptionHtml });
-          quill.setContents(clip, "silent");
-        }
-      }
-
-      quillRef.current = quill;
-
-      // Store cleanup for when effect re-runs
-      return cleanup;
+    const { quill, cleanup } = initializeRichTextEditor({
+      container,
+      placeholder: "รายละเอียดเพิ่มเติมของนิทรรศการ",
     });
 
+    quillRef.current = quill;
+    setQuillReady(true);
+
     return () => {
-      cancelAnimationFrame(raf);
+      cleanup();
+      quillRef.current = null;
+      setQuillReady(false);
     };
-  }, [isEditing, data]);
+  }, [isEditing]);
+
+  // ── Quill content hydration ──
+  useEffect(() => {
+    const quill = quillRef.current;
+    if (!quillReady || !quill || !data) return;
+
+    const deltaRaw = data.descriptionDelta;
+    if (deltaRaw) {
+      const deltaObj = toDeltaObject(deltaRaw);
+      quill.setContents(deltaObj, "silent");
+    } else if (data.descriptionHtml) {
+      const clip = quill.clipboard.convert({ html: data.descriptionHtml });
+      quill.setContents(clip, "silent");
+    }
+  }, [quillReady, data]);
 
   // ── Inline edit handlers ──
   const handleStartEdit = useCallback(() => {
