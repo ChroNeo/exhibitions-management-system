@@ -1,9 +1,10 @@
 services:
   db:
     container_name: ems-mysql
-    image: mysql:8.4
+    image: mysql:8.4.0
     restart: unless-stopped
-    ports: ["${DB_PORT:-3306}:3306"]
+    expose:
+      - 3306
     environment:
       TZ: Asia/Bangkok
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -27,6 +28,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - backend-net
 
   backend:
     container_name: ems-backend
@@ -61,6 +64,9 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
+    networks:
+      - frontend-net
+      - backend-net
 
   frontend:
     container_name: ems-frontend
@@ -88,10 +94,11 @@ services:
       options:
         max-size: "5m"
         max-file: "3"
-
+    networks:
+      - frontend-net
   nginx:
     container_name: ems-nginx
-    image: nginx:alpine
+    image: nginx:1.25-alpine
     restart: unless-stopped
     ports: ["${APP_PORT:-80}:80"]
     volumes:
@@ -113,7 +120,14 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
-
+    networks:
+      - frontend-net
+networks:
+  frontend-net:
+    driver: bridge
+  backend-net:
+    driver: bridge
+  
 volumes:
   db-data:
   uploads-data:

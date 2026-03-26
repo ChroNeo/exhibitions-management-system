@@ -141,25 +141,24 @@ cmd_deploy() {
     sleep 10
 
     docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps
-
+    log_info "Cleaning up old images..."
+    docker image prune -f
     log_info "=== Deployment complete! ==="
     log_info "Application should be accessible at your server's IP on port 80."
 }
 
 # ---- Update (pull + redeploy) ----
 cmd_update() {
-    log_info "=== Updating Exhibition Management System ==="
+    log_info "=== Updating System ==="
     check_env
-
-    log_info "Pulling latest code..."
     git pull
 
-    log_info "Rebuilding images..."
-    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build
-
-    log_info "Restarting containers..."
+    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --pull
     docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
 
+    log_info "Cleaning up old images..."
+    docker image prune -f
+    
     log_info "=== Update complete! ==="
 }
 
@@ -187,22 +186,20 @@ cmd_backup() {
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
     mkdir -p "$BACKUP_DIR"
 
+    eval $(grep -v '^#' "$ENV_FILE" | xargs)
+
     # Backup database
     log_info "Backing up database..."
-    docker exec ems-mysql mysqldump \
-        -u"$(grep MYSQL_USER "$ENV_FILE" | head -1 | cut -d= -f2)" \
-        -p"$(grep MYSQL_PASSWORD "$ENV_FILE" | head -1 | cut -d= -f2)" \
-        "$(grep MYSQL_DATABASE "$ENV_FILE" | head -1 | cut -d= -f2)" \
-        > "$BACKUP_DIR/db_${TIMESTAMP}.sql" 2>/dev/null
+    docker exec -e MYSQL_PWD="$MYSQL_PASSWORD" ems-mysql \
+        mysqldump -u"$MYSQL_USER" "$MYSQL_DATABASE" \
+        > "$BACKUP_DIR/db_${TIMESTAMP}.sql"
 
-    log_info "Database backup: $BACKUP_DIR/db_${TIMESTAMP}.sql"
+    log_info "Database backup saved."
 
-    # Backup uploads
-    log_info "Backing up uploads..."
-    docker cp ems-backend:/app/apps/backend/uploads "$BACKUP_DIR/uploads_${TIMESTAMP}" 2>/dev/null || \
-        log_warn "No uploads found (this is normal for fresh installs)"
-
+    log_info "Compressing uploads..."
+    tar -czf "$BACKUP_DIR/uploads_${TIMESTAMP}.tar.gz" -C "../../apps/backend" uploads
     log_info "=== Backup complete! ==="
+
     ls -lh "$BACKUP_DIR/"
 }
 
@@ -226,11 +223,11 @@ cmd_restore() {
     fi
 
     log_info "Restoring database from $2..."
-    docker exec -i ems-mysql mysql \
-        -u"$(grep MYSQL_USER "$ENV_FILE" | head -1 | cut -d= -f2)" \
-        -p"$(grep MYSQL_PASSWORD "$ENV_FILE" | head -1 | cut -d= -f2)" \
-        "$(grep MYSQL_DATABASE "$ENV_FILE" | head -1 | cut -d= -f2)" \
-        < "$2"
+    eval $(grep -v '^#' "$ENV_FILE" | xargs)
+
+    docker exec -i -e MYSQL_PWD="$MYSQL_PASSWORD" ems-mysql mysql \
+        -u"$MYSQL_USER" \
+        "$MYSQL_DATABASE" < "$2"
 
     log_info "Database restored successfully!"
 }
