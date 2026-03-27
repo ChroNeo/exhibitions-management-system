@@ -172,7 +172,10 @@ export default async function ticketController(fastify: FastifyInstance) {
       return rows.map((row) => ({
         unit_id: row.unit_id,
         unit_name: row.unit_name,
-        checkin_at: new Date(row.checkin_at).toISOString(),
+        // MySQL DATETIME stores local time without timezone; assume Thailand (UTC+7)
+        checkin_at: new Date(row.checkin_at)
+          .toISOString()
+          .replace("Z", "+07:00"),
         survey_completed: row.survey_completed > 0,
       }));
     },
