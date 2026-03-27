@@ -6,7 +6,6 @@ import { FiTrash2 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Swal from "sweetalert2";
-import cardStyles from "../../components/exhibition/ExhibitionDetailCard.module.css";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import UnitDetailCard from "../../components/unit/UnitDetailCard";
 import UnitForm, { type UnitFormValues } from "../../components/unit/UnitForm";
@@ -347,13 +346,13 @@ export default function UnitManageDetail({
 
   const viewActionBar = isAuthenticated ? (
     <>
-      <button type="button" className={cardStyles.toolBtn} onClick={handleEdit}>
+      <button type="button" className="toolBtn" onClick={handleEdit}>
         <FaEdit size={16} />
         แก้ไข
       </button>
       <button
         type="button"
-        className={`${cardStyles.toolBtn} ${cardStyles.toolBtnDanger}`}
+        className="toolBtn toolBtnDanger"
         onClick={handleDelete}
       >
         <FiTrash2 size={16} />

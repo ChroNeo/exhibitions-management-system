@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { IoArrowBack } from "react-icons/io5";
+import { MdAddCircleOutline } from "react-icons/md";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import type { QuestionType } from "../../types/survey";
@@ -10,7 +12,6 @@ import {
   useSurveyQuestions,
   useUpdateQuestionSet,
 } from "./hooks";
-import { IoArrowBack } from "react-icons/io5";
 
 interface CustomQuestion {
   id: string;
@@ -276,8 +277,6 @@ export default function CreateSurveyPage() {
               {isEditMode ? "แก้ไข" : "สร้าง"}
               {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
             </h1>
-            <p className={styles.subTitle}>Exhibition ID: {exhibition_id}</p>
-            <div className={styles.divider} />
           </div>
         </div>
 
@@ -314,7 +313,7 @@ export default function CreateSurveyPage() {
         {selectedType && (
           <div className={styles.typePanel}>
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Select Template</h2>
+              <h2 className={styles.sectionTitle}>เลือกชุดคำถาม</h2>
 
               <select
                 value={selectedSetId || ""}
@@ -345,7 +344,7 @@ export default function CreateSurveyPage() {
                 className={styles.dropdown}
               >
                 <option value="" disabled>
-                  Select a question template
+                  เลือกชุดคำถาม
                 </option>
                 {masterQuestionSets?.map((set) => (
                   <option key={set.set_id} value={set.set_id}>
@@ -357,7 +356,7 @@ export default function CreateSurveyPage() {
 
             {selectedSetId && (
               <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Questions</h2>
+                <h2 className={styles.sectionTitle}>คำถาม</h2>
 
                 <div className={styles.questionsWrap}>
                   {(!isEditMode || !hasLoadedExisting) &&
@@ -441,11 +440,9 @@ export default function CreateSurveyPage() {
                 </div>
 
                 <div className={styles.actionsRow}>
-                  <button
-                    onClick={handleAddNewQuestion}
-                    className={styles.addButton}
-                  >
-                    Add Question
+                  <button onClick={handleAddNewQuestion} className="toolBtn">
+                    <MdAddCircleOutline />
+                    เพิ่มคำถาม
                   </button>
                 </div>
               </div>
@@ -456,22 +453,22 @@ export default function CreateSurveyPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={isCreating || isUpdating}
-                  className={styles.primaryButton}
+                  className="toolBtn"
                 >
                   {isCreating || isUpdating
                     ? isEditMode
-                      ? "Updating..."
-                      : "Creating..."
+                      ? "กำลังอัปเดต..."
+                      : "กำลังสร้าง..."
                     : isEditMode
-                      ? "Update Survey"
-                      : "Create Survey"}
+                      ? "อัปเดตแบบสอบถาม"
+                      : "สร้างแบบสอบถาม"}
                 </button>
 
                 <button
                   onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
-                  className={styles.secondaryButton}
+                  className="toolBtn toolBtnDanger"
                 >
-                  Cancel
+                  ยกเลิก
                 </button>
               </div>
             )}

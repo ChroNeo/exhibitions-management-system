@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
+import {
+  IoArrowBack,
+  IoArrowForward,
+  IoBanOutline,
+  IoCalendarOutline,
+  IoCheckmark,
+  IoSearchOutline,
+} from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useUnitList } from "./hooks";
-import {
-  IoSearchOutline,
-  IoCheckmark,
-  IoArrowForward,
-  IoCalendarOutline,
-  IoArrowBack,
-  IoBanOutline,
-} from "react-icons/io5";
 import styles from "./UnitList.module.css";
 
 type TabKey = "all" | "pending" | "completed";
@@ -228,13 +228,11 @@ export default function UnitListPage() {
                               {new Date(unit.checkin_at).toLocaleString(
                                 "th-TH",
                                 {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
+                                  dateStyle: "short",
+                                  timeStyle: "short",
                                 },
                               )}
+                              น.
                             </p>
                           </div>
 

@@ -1,10 +1,8 @@
-import {
-  IoCreateOutline,
-  IoTrashOutline,
-  IoCheckmarkCircleOutline,
-} from "react-icons/io5";
-import { RatingPreview } from "./RatingPreview";
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { IoCheckmarkCircleOutline } from "react-icons/io5";
 import styles from "../CreateSurvey.module.css";
+import { RatingPreview } from "./RatingPreview";
 
 interface QuestionItemProps {
   id: string | number;
@@ -50,30 +48,33 @@ export function QuestionItem({
           {isEditing ? (
             <button
               onClick={onConfirm}
-              className={styles.iconButtonOk}
+              className="toolBtn"
               aria-label="ยืนยันคำถาม"
               type="button"
             >
-              <IoCheckmarkCircleOutline size={20} />
+              <IoCheckmarkCircleOutline size={18} />
+              ยืนยัน
             </button>
           ) : (
             <button
               onClick={onEdit}
-              className={styles.iconButton}
+              className="toolBtn"
               aria-label="แก้ไขคำถาม"
               type="button"
             >
-              <IoCreateOutline size={20} />
+              <FaEdit size={16} />
+              แก้ไข
             </button>
           )}
 
           <button
             onClick={onDelete}
-            className={styles.iconButtonDelete}
+            className="toolBtn toolBtnDanger"
             aria-label="ลบคำถาม"
             type="button"
           >
-            <IoTrashOutline size={20} />
+            <FiTrash2 size={16} />
+            ลบ
           </button>
         </div>
       </div>

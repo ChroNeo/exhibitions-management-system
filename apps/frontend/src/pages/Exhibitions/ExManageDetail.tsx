@@ -15,7 +15,6 @@ import type { ExhibitionFormValues } from "../../components/exhibition/detail_fo
 import ExhibitionForm from "../../components/exhibition/detail_form/ExhibitionForm";
 import type { EditFormState } from "../../components/exhibition/ExhibitionDetailCard";
 import ExhibitionDetailCard from "../../components/exhibition/ExhibitionDetailCard";
-import cardStyles from "../../components/exhibition/ExhibitionDetailCard.module.css";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import NotFound from "../../components/NotFound";
 import SurveyManageModal from "../../components/SurveyManageModal/SurveyManageModal";
@@ -409,17 +408,13 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const viewActionBar =
     hasAuthToken && !isReadOnlyView ? (
       <>
-        <button
-          type="button"
-          className={cardStyles.toolBtn}
-          onClick={handleStartEdit}
-        >
+        <button type="button" className="toolBtn" onClick={handleStartEdit}>
           <FaEdit size={16} />
           แก้ไข
         </button>
         <button
           type="button"
-          className={cardStyles.toolBtn}
+          className="toolBtn"
           onClick={() => setShowSurveyModal(true)}
         >
           <FaClipboardList size={16} />
@@ -428,7 +423,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         {id && (
           <button
             type="button"
-            className={cardStyles.toolBtn}
+            className="toolBtn"
             onClick={() => navigate(`/exhibitions/${id}/certificate`)}
           >
             <FaCertificate size={16} />
@@ -438,7 +433,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         {id && (
           <button
             type="button"
-            className={cardStyles.toolBtn}
+            className="toolBtn"
             onClick={() => navigate(`/exhibitions/${id}/news`)}
           >
             <FaBullhorn size={16} />
@@ -447,7 +442,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
         )}
         <button
           type="button"
-          className={`${cardStyles.toolBtn} ${cardStyles.toolBtnDanger}`}
+          className="toolBtn toolBtnDanger"
           onClick={handleDelete}
         >
           <FiTrash2 size={16} />
