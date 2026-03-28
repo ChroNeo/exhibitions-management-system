@@ -1,3 +1,18 @@
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
 import { MdAddCircleOutline } from "react-icons/md";
@@ -36,6 +51,13 @@ export default function CreateSurveyPage() {
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
   const [excludedMasterIds, setExcludedMasterIds] = useState<number[]>([]);
   const [hasLoadedExisting, setHasLoadedExisting] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const { data: masterQuestionSets, isLoading: isLoadingMaster } =
     useMasterQuestions(selectedType!, { enabled: !!selectedType });
@@ -80,13 +102,13 @@ export default function CreateSurveyPage() {
     }
   }, [isEditMode, existingQuestions]);
 
-  const handleTypeSelect = (type: QuestionType) => {
+  const handleTypeSelect = useCallback((type: QuestionType) => {
     setSelectedType(type);
     setSelectedSetId(null);
     setCustomQuestions([]);
     setExcludedMasterIds([]);
     setHasLoadedExisting(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (masterQuestionSets && masterQuestionSets.length > 0 && !selectedSetId) {
@@ -94,14 +116,14 @@ export default function CreateSurveyPage() {
     }
   }, [masterQuestionSets, selectedSetId]);
 
-  const handleAddNewQuestion = () => {
+  const handleAddNewQuestion = useCallback(() => {
     const newQuestion: CustomQuestion = {
       id: `custom-${Date.now()}`,
       topic: "",
       isEditing: true,
     };
     setCustomQuestions((prev) => [...prev, newQuestion]);
-  };
+  }, []);
 
   const handleUpdateQuestionTopic = useCallback((id: string, topic: string) => {
     setCustomQuestions((prev) =>
@@ -158,6 +180,67 @@ export default function CreateSurveyPage() {
     return masterQuestions.filter((q) => !excludedMasterIds.includes(q.qt_id));
   }, [masterQuestions, excludedMasterIds]);
 
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (!over || active.id === over.id) {
+        return;
+      }
+
+      if (isEditMode && hasLoadedExisting) {
+        setCustomQuestions((items) => {
+          const oldIndex = items.findIndex(
+            (item) => String(item.id) === active.id,
+          );
+          const newIndex = items.findIndex(
+            (item) => String(item.id) === over.id,
+          );
+          return arrayMove(items, oldIndex, newIndex);
+        });
+      } else {
+        const allItems = [
+          ...visibleMasterQuestions.map((q) => ({
+            id: String(q.qt_id),
+            type: "master" as const,
+            data: q,
+          })),
+          ...customQuestions
+            .filter((q) => !q.originalMasterId)
+            .map((q) => ({ id: q.id, type: "custom" as const, data: q })),
+        ];
+
+        const oldIndex = allItems.findIndex((item) => item.id === active.id);
+        const newIndex = allItems.findIndex((item) => item.id === over.id);
+        const reordered = arrayMove(allItems, oldIndex, newIndex);
+
+        const newExcludedIds: number[] = [];
+        const newCustomQuestions: CustomQuestion[] = [];
+
+        reordered.forEach((item) => {
+          if (item.type === "master") {
+            const wasExcluded = excludedMasterIds.includes(item.data.qt_id);
+            if (wasExcluded) {
+              newExcludedIds.push(item.data.qt_id);
+            }
+          } else {
+            newCustomQuestions.push(item.data);
+          }
+        });
+
+        setExcludedMasterIds(newExcludedIds);
+        setCustomQuestions(newCustomQuestions);
+      }
+    },
+    [
+      isEditMode,
+      hasLoadedExisting,
+      visibleMasterQuestions,
+      customQuestions,
+      excludedMasterIds,
+    ],
+  );
+
   const allQuestionsList = useMemo(() => {
     if (isEditMode && hasLoadedExisting) {
       return customQuestions
@@ -180,7 +263,7 @@ export default function CreateSurveyPage() {
     return [...masterList, ...customList];
   }, [isEditMode, hasLoadedExisting, customQuestions, visibleMasterQuestions]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!selectedType) {
       Swal.fire({ icon: "warning", title: "กรุณาเลือกประเภทแบบสอบถาม" });
       return;
@@ -246,10 +329,32 @@ export default function CreateSurveyPage() {
         text: error instanceof Error ? error.message : "Unknown error",
       });
     }
-  };
+  }, [
+    selectedType,
+    exhibition_id,
+    customQuestions,
+    allQuestionsList,
+    isEditMode,
+    updateQuestionSet,
+    createQuestionSet,
+    navigate,
+  ]);
 
-  const surveyTypeLabel =
-    selectedType === "EXHIBITION" ? "แบบสอบถามนิทรรศการ" : "แบบสอบถามบูธ";
+  const surveyTypeLabel = useMemo(
+    () =>
+      selectedType === "EXHIBITION" ? "แบบสอบถามนิทรรศการ" : "แบบสอบถามบูธ",
+    [selectedType],
+  );
+
+  const sortableItems = useMemo(() => {
+    if (isEditMode && hasLoadedExisting) {
+      return customQuestions.map((q) => String(q.id));
+    }
+    return [
+      ...visibleMasterQuestions.map((q) => String(q.qt_id)),
+      ...customQuestions.filter((q) => !q.originalMasterId).map((q) => q.id),
+    ];
+  }, [isEditMode, hasLoadedExisting, customQuestions, visibleMasterQuestions]);
 
   return (
     <div className={styles.pageBg}>
@@ -358,86 +463,107 @@ export default function CreateSurveyPage() {
               <div className={styles.section}>
                 <h2 className={styles.sectionTitle}>คำถาม</h2>
 
-                <div className={styles.questionsWrap}>
-                  {(!isEditMode || !hasLoadedExisting) &&
-                    masterQuestions?.map((masterQuestion, index) => {
-                      const editedVersion = customQuestions.find(
-                        (q) => q.originalMasterId === masterQuestion.qt_id,
-                      );
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={sortableItems}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className={styles.questionsWrap}>
+                      {(!isEditMode || !hasLoadedExisting) &&
+                        masterQuestions?.map((masterQuestion, index) => {
+                          const editedVersion = customQuestions.find(
+                            (q) => q.originalMasterId === masterQuestion.qt_id,
+                          );
 
-                      if (editedVersion) {
-                        return (
-                          <QuestionItem
-                            key={editedVersion.id}
-                            id={editedVersion.id}
-                            topic={editedVersion.topic}
-                            questionNumber={index + 1}
-                            isEditing={editedVersion.isEditing}
-                            onUpdateTopic={(value) =>
-                              handleUpdateQuestionTopic(editedVersion.id, value)
-                            }
-                            onConfirm={() =>
-                              handleConfirmQuestion(editedVersion.id)
-                            }
-                            onEdit={() => handleEditQuestion(editedVersion.id)}
-                            onDelete={() =>
-                              handleDeleteQuestion(editedVersion.id)
-                            }
-                          />
-                        );
-                      }
-
-                      if (excludedMasterIds.includes(masterQuestion.qt_id)) {
-                        return null;
-                      }
-
-                      return (
-                        <QuestionItem
-                          key={masterQuestion.qt_id}
-                          id={String(masterQuestion.qt_id)}
-                          topic={masterQuestion.content}
-                          questionNumber={index + 1}
-                          isEditing={false}
-                          onUpdateTopic={() => {}}
-                          onConfirm={() => {}}
-                          onEdit={() =>
-                            handleEditMasterQuestion(
-                              masterQuestion.qt_id,
-                              masterQuestion.content,
-                            )
+                          if (editedVersion) {
+                            return (
+                              <QuestionItem
+                                key={editedVersion.id}
+                                id={editedVersion.id}
+                                topic={editedVersion.topic}
+                                questionNumber={index + 1}
+                                isEditing={editedVersion.isEditing}
+                                onUpdateTopic={(value) =>
+                                  handleUpdateQuestionTopic(
+                                    editedVersion.id,
+                                    value,
+                                  )
+                                }
+                                onConfirm={() =>
+                                  handleConfirmQuestion(editedVersion.id)
+                                }
+                                onEdit={() =>
+                                  handleEditQuestion(editedVersion.id)
+                                }
+                                onDelete={() =>
+                                  handleDeleteQuestion(editedVersion.id)
+                                }
+                              />
+                            );
                           }
-                          onDelete={() =>
-                            handleDeleteMasterQuestion(masterQuestion.qt_id)
-                          }
-                        />
-                      );
-                    })}
 
-                  {customQuestions
-                    .filter((q) => hasLoadedExisting || !q.originalMasterId)
-                    .map((question, index) => {
-                      const totalMasterQuestions = hasLoadedExisting
-                        ? 0
-                        : masterQuestions?.length || 0;
-                      const questionNumber = totalMasterQuestions + index + 1;
-
-                      return (
-                        <QuestionItem
-                          key={question.id}
-                          id={question.id}
-                          topic={question.topic}
-                          questionNumber={questionNumber}
-                          isEditing={question.isEditing}
-                          onUpdateTopic={(value) =>
-                            handleUpdateQuestionTopic(question.id, value)
+                          if (
+                            excludedMasterIds.includes(masterQuestion.qt_id)
+                          ) {
+                            return null;
                           }
-                          onConfirm={() => handleConfirmQuestion(question.id)}
-                          onEdit={() => handleEditQuestion(question.id)}
-                          onDelete={() => handleDeleteQuestion(question.id)}
-                        />
-                      );
-                    })}
-                </div>
+
+                          return (
+                            <QuestionItem
+                              key={masterQuestion.qt_id}
+                              id={String(masterQuestion.qt_id)}
+                              topic={masterQuestion.content}
+                              questionNumber={index + 1}
+                              isEditing={false}
+                              onUpdateTopic={() => {}}
+                              onConfirm={() => {}}
+                              onEdit={() =>
+                                handleEditMasterQuestion(
+                                  masterQuestion.qt_id,
+                                  masterQuestion.content,
+                                )
+                              }
+                              onDelete={() =>
+                                handleDeleteMasterQuestion(masterQuestion.qt_id)
+                              }
+                            />
+                          );
+                        })}
+
+                      {customQuestions
+                        .filter((q) => hasLoadedExisting || !q.originalMasterId)
+                        .map((question, index) => {
+                          const totalMasterQuestions = hasLoadedExisting
+                            ? 0
+                            : masterQuestions?.length || 0;
+                          const questionNumber =
+                            totalMasterQuestions + index + 1;
+
+                          return (
+                            <QuestionItem
+                              key={question.id}
+                              id={question.id}
+                              topic={question.topic}
+                              questionNumber={questionNumber}
+                              isEditing={question.isEditing}
+                              onUpdateTopic={(value) =>
+                                handleUpdateQuestionTopic(question.id, value)
+                              }
+                              onConfirm={() =>
+                                handleConfirmQuestion(question.id)
+                              }
+                              onEdit={() => handleEditQuestion(question.id)}
+                              onDelete={() => handleDeleteQuestion(question.id)}
+                            />
+                          );
+                        })}
+                    </div>
+                  </SortableContext>
+                </DndContext>
 
                 <div className={styles.actionsRow}>
                   <button onClick={handleAddNewQuestion} className="toolBtn">

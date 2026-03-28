@@ -1,4 +1,4 @@
-import styles from "../CreateSurvey.module.css";
+import styles from "./QuestionItem.module.css";
 
 interface RatingPreviewProps {
   questionId: string | number;
