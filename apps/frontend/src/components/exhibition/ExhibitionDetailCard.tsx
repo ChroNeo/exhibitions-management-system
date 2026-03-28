@@ -10,6 +10,7 @@ import { MdOutlineCalendarToday } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { toThaiDate, toThaiTimeRange } from "../../utils/dateFormat";
 import styles from "./ExhibitionDetailCard.module.css";
+import PdfUploadBox from "./PdfUploadBox";
 
 const STATUS_OPTIONS = [
   { value: "draft", label: "ร่าง" },
@@ -339,95 +340,18 @@ export default function ExhibitionDetailCard({
                     <span className={styles.descEditHint}>(ถ้ามี)</span>
                   </h3>
 
-                  {editForm?.detailPdfFile ||
-                  (initialDetailPdfName && !editForm?.detailPdfRemoved) ? (
-                    <div style={{ position: "relative", marginTop: 10 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          padding: "12px 14px",
-                          border: "1.5px solid #cbd5e1",
-                          borderRadius: "8px",
-                          background: "#fff",
-                        }}
-                      >
-                        <FaRegFilePdf size={20} style={{ color: "#3b82f6" }} />
-                        <span
-                          style={{
-                            fontSize: 13,
-                            color: "#334155",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {editForm?.detailPdfFile?.name ||
-                            initialDetailPdfName}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={onPdfFileRemove}
-                        style={{
-                          position: "absolute",
-                          top: 8,
-                          right: 8,
-                          width: 28,
-                          height: 28,
-                          borderRadius: 7,
-                          background: "rgba(0, 0, 0, 0.55)",
-                          backdropFilter: "blur(4px)",
-                          color: "white",
-                          border: "none",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          transition: "background 0.2s",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background =
-                            "rgba(220, 50, 50, 0.8)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background =
-                            "rgba(0, 0, 0, 0.55)")
-                        }
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ) : (
-                    <label className={styles.uploadBox}>
-                      <input
-                        className={styles.uploadInput}
-                        type="file"
-                        accept="application/pdf"
-                        onChange={(e) => onPdfFileChange?.(e.target.files?.[0])}
-                      />
-                      <div className={styles.uploadIcon}>
-                        <svg
-                          width="24"
-                          height="24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                      </div>
-                      <div className={styles.uploadText}>
-                        คลิกเพื่อเลือกไฟล์ PDF
-                      </div>
-                      <div className={styles.uploadHint}>PDF — สูงสุด 10MB</div>
-                    </label>
-                  )}
+                  <PdfUploadBox
+                    fileName={
+                      editForm?.detailPdfFile?.name ||
+                      (initialDetailPdfName && !editForm?.detailPdfRemoved
+                        ? initialDetailPdfName
+                        : undefined)
+                    }
+                    onRemove={onPdfFileRemove || (() => {})}
+                    onFileChange={(file: File | undefined) =>
+                      onPdfFileChange?.(file)
+                    }
+                  />
                 </div>
               </>
             ) : hasDescriptionHtml || hasDescriptionText || detailPdfUrl ? (

@@ -1,6 +1,6 @@
 // components/units/UnitForm.tsx
 import type QuillType from "quill";
-import type { ChangeEvent, MutableRefObject, ReactNode } from "react";
+import type { MutableRefObject, ReactNode } from "react";
 import {
   forwardRef,
   useCallback,
@@ -10,9 +10,8 @@ import {
   useState,
 } from "react";
 import { BsTag } from "react-icons/bs";
-import { FaRegFilePdf } from "react-icons/fa6";
 import { FiUser } from "react-icons/fi";
-import { LuCamera, LuClock } from "react-icons/lu";
+import { LuCamera } from "react-icons/lu";
 import { MdOutlineCalendarToday } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import Select, { type MultiValue, type StylesConfig } from "react-select";
@@ -21,7 +20,7 @@ import { useUserOptions } from "../../pages/Exhibitions/hooks";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
 import cardStyles from "../exhibition/ExhibitionDetailCard.module.css";
-import formStyles from "../exhibition/detail_form/ExManageForm.module.css";
+import PdfUploadBox from "../exhibition/PdfUploadBox";
 import unitStyles from "./UnitForm.module.css";
 
 export type UnitFormValues = {
@@ -137,7 +136,6 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   const quillElRef = useRef<HTMLDivElement | null>(null);
   const quillRef = useRef<QuillType | null>(null);
   const [quillReady, setQuillReady] = useState(false);
-  const detailPdfInputRef = useRef<HTMLInputElement | null>(null);
   const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
   const { data: staffOptions = [], isLoading: isStaffLoading } =
     useUserOptions("staff");
@@ -194,18 +192,6 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
     }
   }, [hasInitialPoster]);
 
-  const handleDetailPdfChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      setForm((prev) => ({
-        ...prev,
-        detailPdfFile: file,
-        detailPdfRemoved: file ? false : prev.detailPdfRemoved,
-      }));
-    },
-    [],
-  );
-
   const handleDetailPdfRemove = useCallback(() => {
     setForm((prev) => ({
       ...prev,
@@ -216,9 +202,6 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
           ? true
           : false,
     }));
-    if (detailPdfInputRef.current) {
-      detailPdfInputRef.current.value = "";
-    }
   }, [hasInitialDetailPdf]);
 
   const unitTypeSelectStyles: StylesConfig<UnitTypeOption, false> = useMemo(
@@ -859,48 +842,19 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
 
               {/* Detail PDF */}
               <div className={`${cardStyles.infoItem} ${cardStyles.infoFull}`}>
-                <div
-                  className={`${cardStyles.iconframe} ${cardStyles.iconOrange}`}
-                >
-                  <LuClock size={20} />
-                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p className={cardStyles.infoLabel}>ไฟล์รายละเอียด (PDF)</p>
-                  <div style={{ marginTop: 4 }}>
-                    <input
-                      id="unit-detail-pdf-input"
-                      className={cardStyles.editInput}
-                      type="file"
-                      accept="application/pdf"
-                      ref={detailPdfInputRef}
-                      onChange={handleDetailPdfChange}
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                  {detailPdfBadgeName ? (
-                    <div
-                      className={formStyles.ex_fileBadge}
-                      aria-live="polite"
-                      style={{ marginTop: 6 }}
-                    >
-                      <FaRegFilePdf
-                        className={formStyles.ex_fileBadgeIcon}
-                        aria-hidden="true"
-                      />
-                      <span className={formStyles.ex_fileBadgeName}>
-                        {detailPdfBadgeName}
-                      </span>
-                      <button
-                        type="button"
-                        className={formStyles.ex_fileBadgeRemove}
-                        onClick={handleDetailPdfRemove}
-                        disabled={isSubmitting}
-                        aria-label="ลบไฟล์รายละเอียด"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  ) : null}
+                  <PdfUploadBox
+                    fileName={detailPdfBadgeName}
+                    onRemove={handleDetailPdfRemove}
+                    onFileChange={(file: File | undefined) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        detailPdfFile: file,
+                        detailPdfRemoved: file ? false : prev.detailPdfRemoved,
+                      }));
+                    }}
+                  />
                 </div>
               </div>
             </div>
