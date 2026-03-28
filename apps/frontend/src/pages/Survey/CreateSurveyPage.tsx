@@ -18,6 +18,7 @@ import { IoArrowBack } from "react-icons/io5";
 import { MdAddCircleOutline } from "react-icons/md";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import type { QuestionType } from "../../types/survey";
 import { LoadingOverlay, QuestionItem } from "./components";
 import styles from "./CreateSurvey.module.css";
@@ -357,250 +358,262 @@ export default function CreateSurveyPage() {
   }, [isEditMode, hasLoadedExisting, customQuestions, visibleMasterQuestions]);
 
   return (
-    <div className={styles.pageBg}>
-      <div className={styles.container}>
-        {isLoading && (
-          <LoadingOverlay
-            message={
-              isEditMode ? "กำลังโหลดคำถามเดิม..." : "กำลังโหลดคำถามต้นแบบ..."
-            }
-          />
-        )}
+    <>
+      <HeaderBar active="exhibition_unit" />
+      <div className={styles.pageBg}>
+        <div className={styles.container}>
+          {isLoading && (
+            <LoadingOverlay
+              message={
+                isEditMode ? "กำลังโหลดคำถามเดิม..." : "กำลังโหลดคำถามต้นแบบ..."
+              }
+            />
+          )}
 
-        <div className={styles.headerRow}>
-          <button
-            type="button"
-            className={styles.backBtn}
-            onClick={() => navigate(-1)}
-            aria-label="ย้อนกลับ"
-          >
-            <IoArrowBack />
-          </button>
+          <div className={styles.headerRow}>
+            <button
+              type="button"
+              className={styles.backBtn}
+              onClick={() => navigate(-1)}
+              aria-label="ย้อนกลับ"
+            >
+              <IoArrowBack />
+            </button>
 
-          <div className={styles.header}>
-            <h1 className={styles.headerTitle}>
-              {isEditMode ? "แก้ไข" : "สร้าง"}
-              {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
-            </h1>
-          </div>
-        </div>
-
-        {!typeFromQuery && (
-          <div className={styles.card}>
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Select Survey Type</h2>
-
-              <div className={styles.buttonGroup}>
-                <button
-                  onClick={() => handleTypeSelect("EXHIBITION")}
-                  className={`${styles.typeButton} ${
-                    selectedType === "EXHIBITION" ? styles.typeButtonActive : ""
-                  }`}
-                  disabled={isEditMode}
-                >
-                  Exhibition Survey
-                </button>
-
-                <button
-                  onClick={() => handleTypeSelect("UNIT")}
-                  className={`${styles.typeButton} ${
-                    selectedType === "UNIT" ? styles.typeButtonActive : ""
-                  }`}
-                  disabled={isEditMode}
-                >
-                  Unit Survey
-                </button>
-              </div>
+            <div className={styles.header}>
+              <h1 className={styles.headerTitle}>
+                {isEditMode ? "แก้ไข" : "สร้าง"}
+                {typeFromQuery ? surveyTypeLabel : "แบบสอบถาม"}
+              </h1>
             </div>
           </div>
-        )}
 
-        {selectedType && (
-          <div className={styles.typePanel}>
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>เลือกชุดคำถาม</h2>
-
-              <select
-                value={selectedSetId || ""}
-                onChange={async (e) => {
-                  const newSetId = Number(e.target.value);
-
-                  if (isEditMode) {
-                    const result = await Swal.fire({
-                      title: "เปลี่ยน Template?",
-                      text: "การเปลี่ยน template จะแทนที่คำถามทั้งหมดที่คุณแก้ไขแล้ว คุณแน่ใจหรือไม่?",
-                      icon: "warning",
-                      showCancelButton: true,
-                      confirmButtonText: "ใช่, เปลี่ยนเลย",
-                      cancelButtonText: "ยกเลิก",
-                      confirmButtonColor: "#ef4444",
-                    });
-
-                    if (result.isConfirmed) {
-                      setSelectedSetId(newSetId);
-                      setCustomQuestions([]);
-                      setExcludedMasterIds([]);
-                      setHasLoadedExisting(false);
-                    }
-                  } else {
-                    setSelectedSetId(newSetId);
-                  }
-                }}
-                className={styles.dropdown}
-              >
-                <option value="" disabled>
-                  เลือกชุดคำถาม
-                </option>
-                {masterQuestionSets?.map((set) => (
-                  <option key={set.set_id} value={set.set_id}>
-                    {set.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {selectedSetId && (
+          {!typeFromQuery && (
+            <div className={styles.card}>
               <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>คำถาม</h2>
+                <h2 className={styles.sectionTitle}>Select Survey Type</h2>
 
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={sortableItems}
-                    strategy={verticalListSortingStrategy}
+                <div className={styles.buttonGroup}>
+                  <button
+                    onClick={() => handleTypeSelect("EXHIBITION")}
+                    className={`${styles.typeButton} ${
+                      selectedType === "EXHIBITION"
+                        ? styles.typeButtonActive
+                        : ""
+                    }`}
+                    disabled={isEditMode}
                   >
-                    <div className={styles.questionsWrap}>
-                      {(!isEditMode || !hasLoadedExisting) &&
-                        masterQuestions?.map((masterQuestion, index) => {
-                          const editedVersion = customQuestions.find(
-                            (q) => q.originalMasterId === masterQuestion.qt_id,
-                          );
+                    Exhibition Survey
+                  </button>
 
-                          if (editedVersion) {
-                            return (
-                              <QuestionItem
-                                key={editedVersion.id}
-                                id={editedVersion.id}
-                                topic={editedVersion.topic}
-                                questionNumber={index + 1}
-                                isEditing={editedVersion.isEditing}
-                                onUpdateTopic={(value) =>
-                                  handleUpdateQuestionTopic(
-                                    editedVersion.id,
-                                    value,
-                                  )
-                                }
-                                onConfirm={() =>
-                                  handleConfirmQuestion(editedVersion.id)
-                                }
-                                onEdit={() =>
-                                  handleEditQuestion(editedVersion.id)
-                                }
-                                onDelete={() =>
-                                  handleDeleteQuestion(editedVersion.id)
-                                }
-                              />
-                            );
-                          }
-
-                          if (
-                            excludedMasterIds.includes(masterQuestion.qt_id)
-                          ) {
-                            return null;
-                          }
-
-                          return (
-                            <QuestionItem
-                              key={masterQuestion.qt_id}
-                              id={String(masterQuestion.qt_id)}
-                              topic={masterQuestion.content}
-                              questionNumber={index + 1}
-                              isEditing={false}
-                              onUpdateTopic={() => {}}
-                              onConfirm={() => {}}
-                              onEdit={() =>
-                                handleEditMasterQuestion(
-                                  masterQuestion.qt_id,
-                                  masterQuestion.content,
-                                )
-                              }
-                              onDelete={() =>
-                                handleDeleteMasterQuestion(masterQuestion.qt_id)
-                              }
-                            />
-                          );
-                        })}
-
-                      {customQuestions
-                        .filter((q) => hasLoadedExisting || !q.originalMasterId)
-                        .map((question, index) => {
-                          const totalMasterQuestions = hasLoadedExisting
-                            ? 0
-                            : masterQuestions?.length || 0;
-                          const questionNumber =
-                            totalMasterQuestions + index + 1;
-
-                          return (
-                            <QuestionItem
-                              key={question.id}
-                              id={question.id}
-                              topic={question.topic}
-                              questionNumber={questionNumber}
-                              isEditing={question.isEditing}
-                              onUpdateTopic={(value) =>
-                                handleUpdateQuestionTopic(question.id, value)
-                              }
-                              onConfirm={() =>
-                                handleConfirmQuestion(question.id)
-                              }
-                              onEdit={() => handleEditQuestion(question.id)}
-                              onDelete={() => handleDeleteQuestion(question.id)}
-                            />
-                          );
-                        })}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-
-                <div className={styles.actionsRow}>
-                  <button onClick={handleAddNewQuestion} className="toolBtn">
-                    <MdAddCircleOutline />
-                    เพิ่มคำถาม
+                  <button
+                    onClick={() => handleTypeSelect("UNIT")}
+                    className={`${styles.typeButton} ${
+                      selectedType === "UNIT" ? styles.typeButtonActive : ""
+                    }`}
+                    disabled={isEditMode}
+                  >
+                    Unit Survey
                   </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {selectedSetId && (
-              <div className={styles.submitSection}>
-                <button
-                  onClick={handleSubmit}
-                  disabled={isCreating || isUpdating}
-                  className="toolBtn"
-                >
-                  {isCreating || isUpdating
-                    ? isEditMode
-                      ? "กำลังอัปเดต..."
-                      : "กำลังสร้าง..."
-                    : isEditMode
-                      ? "อัปเดตแบบสอบถาม"
-                      : "สร้างแบบสอบถาม"}
-                </button>
+          {selectedType && (
+            <div className={styles.typePanel}>
+              <div className={styles.section}>
+                <h2 className={styles.sectionTitle}>เลือกชุดคำถาม</h2>
 
-                <button
-                  onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
-                  className="toolBtn toolBtnDanger"
+                <select
+                  value={selectedSetId || ""}
+                  onChange={async (e) => {
+                    const newSetId = Number(e.target.value);
+
+                    if (isEditMode) {
+                      const result = await Swal.fire({
+                        title: "เปลี่ยน Template?",
+                        text: "การเปลี่ยน template จะแทนที่คำถามทั้งหมดที่คุณแก้ไขแล้ว คุณแน่ใจหรือไม่?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "ใช่, เปลี่ยนเลย",
+                        cancelButtonText: "ยกเลิก",
+                        confirmButtonColor: "#ef4444",
+                      });
+
+                      if (result.isConfirmed) {
+                        setSelectedSetId(newSetId);
+                        setCustomQuestions([]);
+                        setExcludedMasterIds([]);
+                        setHasLoadedExisting(false);
+                      }
+                    } else {
+                      setSelectedSetId(newSetId);
+                    }
+                  }}
+                  className={styles.dropdown}
                 >
-                  ยกเลิก
-                </button>
+                  <option value="" disabled>
+                    เลือกชุดคำถาม
+                  </option>
+                  {masterQuestionSets?.map((set) => (
+                    <option key={set.set_id} value={set.set_id}>
+                      {set.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
-          </div>
-        )}
+
+              {selectedSetId && (
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>คำถาม</h2>
+
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={sortableItems}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className={styles.questionsWrap}>
+                        {(!isEditMode || !hasLoadedExisting) &&
+                          masterQuestions?.map((masterQuestion, index) => {
+                            const editedVersion = customQuestions.find(
+                              (q) =>
+                                q.originalMasterId === masterQuestion.qt_id,
+                            );
+
+                            if (editedVersion) {
+                              return (
+                                <QuestionItem
+                                  key={editedVersion.id}
+                                  id={editedVersion.id}
+                                  topic={editedVersion.topic}
+                                  questionNumber={index + 1}
+                                  isEditing={editedVersion.isEditing}
+                                  onUpdateTopic={(value) =>
+                                    handleUpdateQuestionTopic(
+                                      editedVersion.id,
+                                      value,
+                                    )
+                                  }
+                                  onConfirm={() =>
+                                    handleConfirmQuestion(editedVersion.id)
+                                  }
+                                  onEdit={() =>
+                                    handleEditQuestion(editedVersion.id)
+                                  }
+                                  onDelete={() =>
+                                    handleDeleteQuestion(editedVersion.id)
+                                  }
+                                />
+                              );
+                            }
+
+                            if (
+                              excludedMasterIds.includes(masterQuestion.qt_id)
+                            ) {
+                              return null;
+                            }
+
+                            return (
+                              <QuestionItem
+                                key={masterQuestion.qt_id}
+                                id={String(masterQuestion.qt_id)}
+                                topic={masterQuestion.content}
+                                questionNumber={index + 1}
+                                isEditing={false}
+                                onUpdateTopic={() => {}}
+                                onConfirm={() => {}}
+                                onEdit={() =>
+                                  handleEditMasterQuestion(
+                                    masterQuestion.qt_id,
+                                    masterQuestion.content,
+                                  )
+                                }
+                                onDelete={() =>
+                                  handleDeleteMasterQuestion(
+                                    masterQuestion.qt_id,
+                                  )
+                                }
+                              />
+                            );
+                          })}
+
+                        {customQuestions
+                          .filter(
+                            (q) => hasLoadedExisting || !q.originalMasterId,
+                          )
+                          .map((question, index) => {
+                            const totalMasterQuestions = hasLoadedExisting
+                              ? 0
+                              : masterQuestions?.length || 0;
+                            const questionNumber =
+                              totalMasterQuestions + index + 1;
+
+                            return (
+                              <QuestionItem
+                                key={question.id}
+                                id={question.id}
+                                topic={question.topic}
+                                questionNumber={questionNumber}
+                                isEditing={question.isEditing}
+                                onUpdateTopic={(value) =>
+                                  handleUpdateQuestionTopic(question.id, value)
+                                }
+                                onConfirm={() =>
+                                  handleConfirmQuestion(question.id)
+                                }
+                                onEdit={() => handleEditQuestion(question.id)}
+                                onDelete={() =>
+                                  handleDeleteQuestion(question.id)
+                                }
+                              />
+                            );
+                          })}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+
+                  <div className={styles.actionsRow}>
+                    <button onClick={handleAddNewQuestion} className="toolBtn">
+                      <MdAddCircleOutline />
+                      เพิ่มคำถาม
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {selectedSetId && (
+                <div className={styles.submitSection}>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isCreating || isUpdating}
+                    className="toolBtn"
+                  >
+                    {isCreating || isUpdating
+                      ? isEditMode
+                        ? "กำลังอัปเดต..."
+                        : "กำลังสร้าง..."
+                      : isEditMode
+                        ? "อัปเดตแบบสอบถาม"
+                        : "สร้างแบบสอบถาม"}
+                  </button>
+
+                  <button
+                    onClick={() => navigate(`/exhibitions/${exhibition_id}`)}
+                    className="toolBtn toolBtnDanger"
+                  >
+                    ยกเลิก
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
