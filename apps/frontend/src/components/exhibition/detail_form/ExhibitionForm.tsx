@@ -555,7 +555,6 @@ const ExhibitionForm = forwardRef<HTMLFormElement, Props>(
                     height: 28,
                     borderRadius: 7,
                     background: "rgba(0, 0, 0, 0.55)",
-                    backdropFilter: "blur(4px)",
                     color: "white",
                     border: "none",
                     cursor: disabled ? "not-allowed" : "pointer",
