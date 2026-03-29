@@ -1,8 +1,8 @@
 import { LogOut, Menu, UserCircle, X } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStatus, useAuthUser } from "../../hooks";
-import { clearAuth } from "../../utils/authStorage";
+import { clearAuth, loadAuth } from "../../utils/authStorage";
 import styles from "./HeaderBar.module.css";
 
 type TabId = "home" | "exhibition_unit" | "dashboard" | "admin";
@@ -43,17 +43,48 @@ export default function HeaderBar({
     [navigate],
   );
 
+  const handleLogout = useCallback(() => {
+    setMobileOpen(false);
+    clearAuth();
+    onLogoutClick?.();
+    if (!onLogoutClick) navigate("/");
+  }, [navigate, onLogoutClick]);
+
+  useEffect(() => {
+    if (!hasAuth || typeof window === "undefined") return;
+
+    const auth = loadAuth();
+    if (!auth) {
+      handleLogout();
+      return;
+    }
+
+    if (!Number.isFinite(auth.expiresAt) || auth.expiresAt <= 0) return;
+
+    const msUntilExpiry = auth.expiresAt - Date.now();
+    if (msUntilExpiry <= 0) {
+      handleLogout();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      handleLogout();
+    }, msUntilExpiry);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [handleLogout, hasAuth]);
+
   const handleLoginClick = useCallback(() => {
     setMobileOpen(false);
     if (hasAuth) {
-      clearAuth();
-      onLogoutClick?.();
-      if (!onLogoutClick) navigate("/");
+      handleLogout();
       return;
     }
     if (onLoginClick) onLoginClick();
     else navigate("/login");
-  }, [hasAuth, navigate, onLoginClick, onLogoutClick]);
+  }, [handleLogout, hasAuth, navigate, onLoginClick]);
 
   const userInitial = user?.username?.[0]?.toUpperCase() ?? "A";
 
