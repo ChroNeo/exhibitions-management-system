@@ -1,7 +1,7 @@
 import liff from "@line/liff";
 import axios from "axios";
 import { useState } from "react";
-import { IoArrowBack, IoCheckmarkCircle, IoCloseCircle } from "react-icons/io5";
+import { IoCheckmarkCircle, IoCloseCircle } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { submitSurveyLiff } from "../../api/survey";
@@ -73,8 +73,8 @@ export default function UnitSurveyPage() {
       if (unansweredCount > 0) {
         Swal.fire({
           icon: "warning",
-          title: "แบบสอบถามยังไม่ครบถ้วน",
-          text: `กรุณาตอบคำถามให้ครบทุกข้อ. ยังเหลืออีก ${unansweredCount} ข้อที่ยังไม่ได้ตอบ.`,
+          title: "คุณยังตอบแบบสอบถามไม่ครบถ้วน",
+          text: `กรุณาตอบคำถามให้ครบทุกข้อ (ยังเหลือ 4 ข้อ)`,
         });
         return;
       }
@@ -98,7 +98,7 @@ export default function UnitSurveyPage() {
       const result = await Swal.fire({
         icon: "success",
         title: "ขอบคุณสำหรับความคิดเห็นของคุณ!",
-        text: "แบบสอบถามของคุณถูกส่งเรียบร้อยแล้ว",
+        text: "แบบสอบถามของคุณถูกส่งเรียบร้อยล้ว",
         confirmButtonText: "กลับไปหน้าเลือกงาน",
         confirmButtonColor: "#1976d2",
       });
@@ -133,16 +133,8 @@ export default function UnitSurveyPage() {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.headerRow}>
-          <button
-            type="button"
-            className={styles.backBtn}
-            onClick={() => navigate(`/survey/list?ex_id=${exhibitionId}`)}
-            aria-label="ย้อนกลับ"
-          >
-            <IoArrowBack />
-          </button>
           <div className={styles.header}>
-            <h1 className={styles.title}>Unit Survey</h1>
+            <h1 className={styles.title}>แบบประเมินความพึงพอใจบูธกิจกรรม</h1>
             <p className={styles.subtitle}>
               กรุณาประเมินความพึงพอใจของท่านต่อบูธนี้
             </p>
@@ -167,7 +159,7 @@ export default function UnitSurveyPage() {
         {state.status === "loading" && (
           <div className={styles.statusMessage}>
             <div className={styles.spinner} />
-            <p>Loading questions...</p>
+            <p>กำลังโหลดคำถาม...</p>
           </div>
         )}
 
@@ -257,8 +249,8 @@ export default function UnitSurveyPage() {
                       disabled={submitState.status === "submitting"}
                     >
                       {submitState.status === "submitting"
-                        ? "Submitting..."
-                        : "Submit Survey"}
+                        ? "กำลังส่งแบบสอบถาม..."
+                        : "ยืนยัน"}
                     </button>
                   </div>
                 ) : (
@@ -282,4 +274,3 @@ export default function UnitSurveyPage() {
     </div>
   );
 }
-

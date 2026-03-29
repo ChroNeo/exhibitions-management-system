@@ -19,7 +19,7 @@
 
 .title {
   margin: 0;
-  font-size: 52px;
+  font-size: clamp(1.5rem, 4vw, 3rem);
   font-weight: 900;
   letter-spacing: -0.5px;
   color: #0f172a;

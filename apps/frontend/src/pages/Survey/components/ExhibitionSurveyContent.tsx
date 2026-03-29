@@ -62,8 +62,8 @@ export function ExhibitionSurveyContent({
       if (unansweredCount > 0) {
         Swal.fire({
           icon: "warning",
-          title: "Incomplete Survey",
-          text: `Please answer all questions. ${unansweredCount} question(s) remaining.`,
+          title: "คุณยังตอบแบบสอบถามไม่ครบถ้วน",
+          text: `กรุณาตอบคำถามให้ครบทุกข้อ (ยังเหลือ 4 ข้อ)`,
         });
         return;
       }
@@ -124,7 +124,7 @@ export function ExhibitionSurveyContent({
       <div className={styles.shell}>
         <header className={styles.header}>
           <div className={styles.titleWrap}>
-            <h1 className={styles.title}>Exhibition Survey</h1>
+            <h1 className={styles.title}>แบบประเมินความพึงพอใจงานนิทรรศการ</h1>
             <p className={styles.subtitle}>กรุณาประเมินความพึงพอใจของท่าน</p>
           </div>
         </header>
@@ -215,8 +215,8 @@ export function ExhibitionSurveyContent({
                       disabled={submitState.status === "submitting"}
                     >
                       {submitState.status === "submitting"
-                        ? "Submitting..."
-                        : "Submit Survey"}
+                        ? "กำลังส่งแบบสอบถาม..."
+                        : "ยืนยัน"}
                     </button>
                   </div>
                 </>
@@ -232,4 +232,3 @@ export function ExhibitionSurveyContent({
     </div>
   );
 }
-

@@ -88,6 +88,14 @@
   color: rgba(15, 23, 42, 0.58);
 }
 
+.surveySection {
+  margin-top: 8px;
+}
+
+.pinnedSurveyCard {
+  margin-bottom: 20px;
+}
+
 .exhibitionSection {
   margin-bottom: 20px;
 }

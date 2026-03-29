@@ -1,6 +1,5 @@
 .page {
   min-height: 100vh;
-  background: #d3ecf0;
   padding: 28px 16px 48px;
 }
 
@@ -184,12 +183,12 @@
   box-shadow: 0 10px 18px rgba(15, 23, 42, 0.1);
 }
 
-.ratingInput:focus-visible + .ratingValue {
+.ratingInput:focus-visible+.ratingValue {
   outline: 3px solid rgba(25, 118, 210, 0.35);
   outline-offset: 2px;
 }
 
-.ratingInput:checked + .ratingValue {
+.ratingInput:checked+.ratingValue {
   background: rgba(25, 118, 210, 0.14);
   border-color: rgba(25, 118, 210, 0.55);
   box-shadow: 0 12px 24px rgba(25, 118, 210, 0.18);
@@ -293,12 +292,15 @@
   .title {
     font-size: 36px;
   }
+
   .subtitle {
     font-size: 15px;
   }
+
   .form {
     padding: 16px;
   }
+
   .ratingValue {
     width: 42px;
     height: 42px;
