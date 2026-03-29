@@ -10,7 +10,12 @@ import {
   type RegistrationResponse,
   type RegistrationRole,
 } from "../../../api/registrations";
-import { useLiff, type LiffState } from "../../../hooks/useLiff";
+import {
+  getMockLineUserId,
+  isLiffMockEnabled,
+  useLiff,
+  type LiffState,
+} from "../../../hooks/useLiff";
 
 type LiffProfile = {
   userId: string;
@@ -95,9 +100,32 @@ const toRegistrationPayload = (input: RegisterFormPayload): RegistrationPayload 
 };
 
 const fetchProfile = async (): Promise<LiffProfile | null> => {
+  if (isLiffMockEnabled()) {
+    const mockUserId = getMockLineUserId();
+    if (mockUserId) {
+      return {
+        userId: mockUserId,
+        displayName: "",
+      };
+    }
+  }
+
   try {
     return await liff.getProfile();
   } catch (profileError) {
+    const decoded = liff.getDecodedIDToken();
+    const fallbackUserId =
+      decoded && typeof decoded.sub === "string" && decoded.sub.trim().length
+        ? decoded.sub
+        : null;
+
+    if (fallbackUserId) {
+      return {
+        userId: fallbackUserId,
+        displayName: "",
+      };
+    }
+
     console.warn("Cannot access LINE profile (missing 'profile' scope):", profileError);
     return null;
   }

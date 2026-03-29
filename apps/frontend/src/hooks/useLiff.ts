@@ -5,7 +5,10 @@ import { handleLiffError, performLogout } from "../utils/liffErrorHandler";
 
 // Check if LIFF mock mode is enabled
 export const isLiffMockEnabled = (): boolean => {
-  return import.meta.env.LIFF_MOCK === "true";
+  return (
+    import.meta.env.VITE_LIFF_MOCK === "true" ||
+    import.meta.env.LIFF_MOCK === "true"
+  );
 };
 
 // Get mock LINE user ID

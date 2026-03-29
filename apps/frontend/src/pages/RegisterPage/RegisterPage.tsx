@@ -21,7 +21,7 @@ type Role = "VISITOR" | "STAFF";
 export default function RegisterPage() {
   const { id: exhibitionIdFromParams } = useParams();
   const [searchParams] = useSearchParams();
-  const exhibitionIdFromQuery = searchParams.get("exhibition_id");
+  const exhibitionIdFromQuery = searchParams.get("exhibitionId");
   const exhibitionId = exhibitionIdFromQuery || exhibitionIdFromParams;
   const navigate = useNavigate();
 

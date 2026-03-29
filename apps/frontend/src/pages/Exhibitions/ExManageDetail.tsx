@@ -516,7 +516,7 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                         : undefined
                     }
                     registerLink={
-                      id ? `/register?exhibition_id=${id}` : undefined
+                      id ? `/register?exhibitionId=${id}` : undefined
                     }
                     isEditing={isEditing}
                     editForm={editForm ?? undefined}
