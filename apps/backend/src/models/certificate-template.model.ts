@@ -72,6 +72,7 @@ export const CertificatePreviewResponseSchema = z.object({
 // Certificate download query schema
 export const CertificateDownloadQuerySchema = z.object({
   skipValidation: z.string().optional(),
+  liff_id_token: z.string().optional(),
 });
 
 // Certificate download error response with details

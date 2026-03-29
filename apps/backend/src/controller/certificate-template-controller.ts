@@ -105,6 +105,7 @@ export default async function certificateTemplateController(
               publicPrefix: "uploads/certificates/templates",
               fallbackName: "certificate_bg",
               filenamePrefix: "EX_C",
+              preserveOriginalImage: true,
             },
           },
         },
@@ -113,6 +114,14 @@ export default async function certificateTemplateController(
       const backgroundUrl = files.file?.publicPath;
       if (!backgroundUrl) {
         throw new AppError("file is required", 400, "VALIDATION_ERROR");
+      }
+      if (backgroundUrl.toLowerCase().endsWith(".pdf")) {
+        await removeUploadedFile(backgroundUrl, req.log);
+        throw new AppError(
+          "PDF background is not supported for certificate generation. Please upload PNG or JPG image.",
+          400,
+          "INVALID_FILE_TYPE",
+        );
       }
 
       let layoutConfig: LayoutConfig | undefined;
@@ -167,6 +176,7 @@ export default async function certificateTemplateController(
               publicPrefix: "uploads/certificates/templates",
               fallbackName: "certificate_bg",
               filenamePrefix: "EX_C",
+              preserveOriginalImage: true,
             },
           },
         },
@@ -178,6 +188,14 @@ export default async function certificateTemplateController(
       // Handle file upload if provided
       const backgroundUrl = files.file?.publicPath;
       if (backgroundUrl) {
+        if (backgroundUrl.toLowerCase().endsWith(".pdf")) {
+          await removeUploadedFile(backgroundUrl, req.log);
+          throw new AppError(
+            "PDF background is not supported for certificate generation. Please upload PNG or JPG image.",
+            400,
+            "INVALID_FILE_TYPE",
+          );
+        }
         payload.background_url = backgroundUrl;
       }
 
@@ -403,6 +421,8 @@ export default async function certificateTemplateController(
         layoutConfig: template.layout_config || {},
         data: {
           participant_name: userData.participant_name,
+          exhibition_title: userData.exhibition_title,
+          organizer_name: userData.organizer_name,
         },
       });
 

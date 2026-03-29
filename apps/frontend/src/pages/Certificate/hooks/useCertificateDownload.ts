@@ -1,6 +1,7 @@
 import liff from "@line/liff";
 import { useCallback, useEffect, useState } from "react";
 import {
+  downloadCertificate,
   fetchCertificatePreview,
   getCertificateDownloadUrl,
   type CertificatePreviewData,
@@ -19,6 +20,10 @@ export type CertificateDownloadState =
 interface UseCertificateDownloadOptions {
   exhibitionId: string | null;
   userId: string | null;
+}
+
+function isAndroidDevice() {
+  return /Android/i.test(navigator.userAgent);
 }
 
 export function useCertificateDownload({
@@ -79,32 +84,99 @@ export function useCertificateDownload({
     }
   }, [fetchPreview]);
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (!exhibitionId || !userId) return;
 
-    // Get the direct download URL
-    const downloadUrl = getCertificateDownloadUrl(exhibitionId, userId);
+    setState({ status: "downloading" });
+    const isLineClient = liff.isInClient();
+    const isAndroid = isAndroidDevice();
 
-    // Use liff.openWindow to open in external browser for download
-    // This works better in LINE's in-app browser
-    if (liff.isInClient()) {
-      liff.openWindow({
-        url: downloadUrl,
-        external: true,
-      });
-    } else {
-      // For regular browser, just open the URL
-      window.open(downloadUrl, "_blank");
-    }
+    try {
+      if (isLineClient && isAndroid) {
+        const idToken = liff.getIDToken();
+        if (!idToken) {
+          throw new Error("Failed to get LIFF ID token");
+        }
 
-    setState({ status: "download_complete" });
+        const externalUrl = getCertificateDownloadUrl(exhibitionId, userId, {
+          liffIdToken: idToken,
+        });
 
-    // Reset to success state after a moment
-    setTimeout(() => {
-      if (previewData) {
-        setState({ status: "success", data: previewData });
+        liff.openWindow({
+          url: externalUrl,
+          external: true,
+        });
+
+        setState({ status: "download_complete" });
+        setTimeout(() => {
+          if (previewData) {
+            setState({ status: "success", data: previewData });
+          }
+        }, 2000);
+        return;
       }
-    }, 2000);
+
+      const blob = await downloadCertificate(exhibitionId, userId);
+      const fileUrl = URL.createObjectURL(blob);
+
+      if (isLineClient && typeof navigator.share === "function") {
+        const file = new File([blob], `certificate_${userId}.pdf`, {
+          type: "application/pdf",
+        });
+        if (
+          typeof navigator.canShare === "function" &&
+          navigator.canShare({ files: [file] })
+        ) {
+          await navigator.share({
+            title: "Certificate",
+            text: "ดาวน์โหลดใบประกาศนียบัตร",
+            files: [file],
+          });
+        } else {
+          // Fallback if share with files is unsupported
+          window.location.href = fileUrl;
+        }
+      } else if (isLineClient) {
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.target = "_self";
+        link.rel = "noopener";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.download = `certificate_${userId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      // Keep blob URL alive for a while to ensure viewer can load on mobile.
+      setTimeout(() => URL.revokeObjectURL(fileUrl), 60000);
+
+      setState({ status: "download_complete" });
+      setTimeout(() => {
+        if (previewData) {
+          setState({ status: "success", data: previewData });
+        }
+      }, 2000);
+    } catch (error) {
+      // User canceled share dialog should not be treated as hard error.
+      if (error instanceof DOMException && error.name === "AbortError") {
+        if (previewData) {
+          setState({ status: "success", data: previewData });
+        }
+        return;
+      }
+      setState({
+        status: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "ดาวน์โหลดใบประกาศนียบัตรไม่สำเร็จ",
+      });
+    }
   }, [exhibitionId, userId, previewData]);
 
   useEffect(() => {

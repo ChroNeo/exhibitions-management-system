@@ -135,13 +135,27 @@
   user-select: none;
 }
 
-.nameOverlay {
+.textOverlay {
   position: absolute;
-  font-weight: 600;
   transform: translate(-50%, -50%);
-  white-space: nowrap;
+  max-width: 82%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.1;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
   pointer-events: none;
+}
+
+.participantOverlay {
+  font-weight: 700;
+}
+
+.exhibitionOverlay {
+  font-weight: 600;
+}
+
+.organizerOverlay {
+  font-weight: 500;
 }
 
 /* Action Section */

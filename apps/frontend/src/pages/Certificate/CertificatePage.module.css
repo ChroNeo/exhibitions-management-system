@@ -1,7 +1,9 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  width: min(100%, 960px);
+  margin: 0 auto;
 }
 
 .exhibitionInfo {
@@ -23,9 +25,11 @@
 }
 
 .currentTemplate {
-  padding: 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
 .currentTemplate h4 {
@@ -37,9 +41,10 @@
 .templatePreview {
   display: flex;
   justify-content: center;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  padding: 1rem;
+  background: linear-gradient(180deg, #f8fbff 0%, #f2f6fb 100%);
+  border: 1px solid #dfe7f1;
+  border-radius: 10px;
+  padding: 1rem 1rem 0.85rem;
 }
 
 .previewImage {
@@ -50,10 +55,10 @@
 }
 
 .templateInfo {
-  margin: 0.75rem 0 0;
-  font-size: 0.75rem;
-  color: #888;
-  text-align: right;
+  margin: 0.85rem 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: center;
 }
 
 .uploadSection {
@@ -185,6 +190,8 @@
 
 .actionButtons {
   margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #d6dee8;
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
@@ -212,31 +219,119 @@
 }
 
 .noTemplate {
-  padding: 2rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
   text-align: center;
-  border: 2px dashed #e0e0e0;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at top right, #eef6ff 0%, rgba(238, 246, 255, 0) 48%),
+    #ffffff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.exampleCertificateSection {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #f8fbff;
+  text-align: center;
+}
+
+.exampleTitle {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.exampleHint {
+  margin: 0 auto 0.75rem;
+  max-width: 520px;
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.exampleImage {
+  width: min(100%, 380px);
+  margin: 0 auto;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.12);
+  object-fit: contain;
+  background: #fff;
+}
+
+.exampleMissing {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px dashed #d1d5db;
   border-radius: 8px;
-  background-color: #fafafa;
+  font-size: 0.875rem;
+  color: #6b7280;
+  background-color: #ffffff;
+}
+
+.fieldGrid {
+  margin: 0 auto 1.1rem;
+  width: min(100%, 760px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.85rem;
+  text-align: left;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #ffffff;
+}
+
+.fieldLabel {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.fieldInput {
+  height: 2.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background: #f8fafc;
 }
 
 .noTemplate p {
-  margin: 0 0 1rem;
-  color: #666;
-  font-size: 1rem;
+  margin: 0 auto 0.9rem;
+  width: fit-content;
+  padding: 0.45rem 0.8rem;
+  color: #334155;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  background: #eaf2ff;
 }
 
 .testDownloadSection {
-  margin-top: 1.5rem;
+  margin-top: 0.25rem;
   padding: 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #f0fdf4;
+  border: 1px solid #d3efe2;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at top right, #ebfff4 0%, rgba(235, 255, 244, 0) 52%),
+    #f7fef9;
 }
 
 .testDownloadSection h4 {
   margin: 0 0 1rem;
   font-size: 1rem;
-  color: #333;
+  color: #14532d;
 }
 
 .testDownloadForm {
@@ -248,11 +343,34 @@
 
 .testInput {
   flex: 1;
-  min-width: 150px;
+  min-width: 220px;
   padding: 0.75rem 1rem;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .currentTemplate,
+  .noTemplate,
+  .testDownloadSection {
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .templatePreview {
+    padding: 0.75rem;
+  }
+
+  .uploadButton,
+  .deleteButton,
+  .testDownloadButton {
+    width: 100%;
+  }
+
+  .testInput {
+    min-width: 100%;
+  }
 }
 
 .testInput:focus {

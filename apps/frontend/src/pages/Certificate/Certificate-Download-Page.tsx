@@ -11,6 +11,22 @@ const DEFAULT_PARTICIPANT_NAME_CONFIG: LayoutFieldConfig = {
   align: "center",
 };
 
+const DEFAULT_EXHIBITION_TITLE_CONFIG: LayoutFieldConfig = {
+  x: 300,
+  y: 250,
+  font_size: 36,
+  color: "#333333",
+  align: "center",
+};
+
+const DEFAULT_ORGANIZER_NAME_CONFIG: LayoutFieldConfig = {
+  x: 300,
+  y: 750,
+  font_size: 20,
+  color: "#666666",
+  align: "center",
+};
+
 export default function CertificateDownloadPage() {
   // Get query params from URL
   const params = new URLSearchParams(window.location.search);
@@ -31,6 +47,10 @@ export default function CertificateDownloadPage() {
   const layoutConfig = previewData?.template.layout_config;
   const participantConfig =
     layoutConfig?.participant_name ?? DEFAULT_PARTICIPANT_NAME_CONFIG;
+  const exhibitionConfig =
+    layoutConfig?.exhibition_title ?? DEFAULT_EXHIBITION_TITLE_CONFIG;
+  const organizerConfig =
+    layoutConfig?.organizer_name ?? DEFAULT_ORGANIZER_NAME_CONFIG;
 
   const toDisplayCoords = useCallback(
     (actual: { x: number; y: number }) => {
@@ -61,9 +81,45 @@ export default function CertificateDownloadPage() {
     setImageLoaded(true);
   };
 
-  const displayPosition = toDisplayCoords({
+  const participantDisplayPosition = toDisplayCoords({
     x: participantConfig.x,
     y: participantConfig.y,
+  });
+  const exhibitionDisplayPosition = toDisplayCoords({
+    x: exhibitionConfig.x,
+    y: exhibitionConfig.y,
+  });
+  const organizerDisplayPosition = toDisplayCoords({
+    x: organizerConfig.x,
+    y: organizerConfig.y,
+  });
+
+  const getDisplayFontSize = useCallback(
+    (fontSize: number) => {
+      if (
+        imageDimensions.natural.width === 0 ||
+        imageDimensions.display.width === 0
+      ) {
+        return Math.max(8, fontSize);
+      }
+      const scaleX =
+        imageDimensions.display.width / imageDimensions.natural.width;
+      const scaleY =
+        imageDimensions.display.height / imageDimensions.natural.height;
+      return Math.max(8, fontSize * Math.min(scaleX, scaleY));
+    },
+    [imageDimensions],
+  );
+
+  const buildOverlayStyle = (
+    config: LayoutFieldConfig,
+    position: { x: number; y: number },
+  ) => ({
+    left: position.x,
+    top: position.y,
+    fontSize: config.font_size ? `${getDisplayFontSize(config.font_size)}px` : "14px",
+    color: config.color || "#000000",
+    textAlign: config.align || "center",
   });
 
   const getBackgroundUrl = () => {
@@ -131,20 +187,37 @@ export default function CertificateDownloadPage() {
                   />
 
                   {imageLoaded && (
-                    <div
-                      className={styles.nameOverlay}
-                      style={{
-                        left: displayPosition.x,
-                        top: displayPosition.y,
-                        fontSize: participantConfig.font_size
-                          ? `${participantConfig.font_size * 0.4}px`
-                          : "14px",
-                        color: participantConfig.color || "#000000",
-                        textAlign: participantConfig.align || "center",
-                      }}
-                    >
-                      {previewData.participantName}
-                    </div>
+                    <>
+                      <div
+                        className={`${styles.textOverlay} ${styles.exhibitionOverlay}`}
+                        style={buildOverlayStyle(
+                          exhibitionConfig,
+                          exhibitionDisplayPosition,
+                        )}
+                      >
+                        {previewData.template.exhibition_title}
+                      </div>
+
+                      <div
+                        className={`${styles.textOverlay} ${styles.participantOverlay}`}
+                        style={buildOverlayStyle(
+                          participantConfig,
+                          participantDisplayPosition,
+                        )}
+                      >
+                        {previewData.participantName}
+                      </div>
+
+                      <div
+                        className={`${styles.textOverlay} ${styles.organizerOverlay}`}
+                        style={buildOverlayStyle(
+                          organizerConfig,
+                          organizerDisplayPosition,
+                        )}
+                      >
+                        {previewData.template.organizer_name}
+                      </div>
+                    </>
                   )}
                 </div>
 

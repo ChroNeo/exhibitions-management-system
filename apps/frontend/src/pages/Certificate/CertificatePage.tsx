@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
-import { downloadCertificate } from "../../api/certificate";
 import CertificatePreview from "../../components/CertificateEditor/CertificatePreview";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import NotFound from "../../components/NotFound";
@@ -18,6 +17,8 @@ import {
 } from "./hooks";
 
 import styles from "./CertificatePage.module.css";
+
+const EXAMPLE_CERTIFICATE_IMAGE_URL = "/images/certificate-example.png";
 
 function getImageDimensions(
   file: File,
@@ -45,30 +46,23 @@ function buildCenteredLayoutConfig(
   return {
     participant_name: {
       x: centerX,
-      y: Math.round(height * 0.5),
-      font_size: 48,
+      y: Math.round(height * 0.43),
+      font_size: 100,
       color: "#000000",
       align: "center",
     },
     exhibition_title: {
       x: centerX,
-      y: Math.round(height * 0.25),
-      font_size: 36,
-      color: "#333333",
-      align: "center",
-    },
-    date: {
-      x: centerX,
-      y: Math.round(height * 0.65),
-      font_size: 24,
-      color: "#666666",
+      y: Math.round(height * 0.63),
+      font_size: 80,
+      color: "#000000",
       align: "center",
     },
     organizer_name: {
       x: centerX,
-      y: Math.round(height * 0.75),
-      font_size: 20,
-      color: "#666666",
+      y: Math.round(height * 0.91),
+      font_size: 50,
+      color: "#000000",
       align: "center",
     },
   };
@@ -79,9 +73,7 @@ export default function CertificatePage() {
   const navigate = useNavigate();
   const hasAuthToken = useAuthStatus();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [testUserId, setTestUserId] = useState("");
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isExampleImageAvailable, setIsExampleImageAvailable] = useState(true);
 
   // Fetch exhibition details
   const {
@@ -104,6 +96,10 @@ export default function CertificatePage() {
 
   const isLoading = isLoadingExhibition || isLoadingTemplate;
   const isMutating = isCreating || isUpdating || isDeleting;
+  const exhibitionNameValue =
+    template?.exhibition_title ?? exhibition?.title ?? "";
+  const organizerNameValue =
+    template?.organizer_name ?? exhibition?.organizer_name ?? "";
 
   useEffect(() => {
     if (isLoading) {
@@ -178,7 +174,7 @@ export default function CertificatePage() {
     if (!exhibitionId) return;
 
     const confirmResult = await Swal.fire({
-      title: "ยืนยันการลบ Certificate Template?",
+      title: "ยืนยันการลบเทมเพลตใบประกาศนียบัตร?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
@@ -215,50 +211,6 @@ export default function CertificatePage() {
     }
   };
 
-  const handleTestDownload = async () => {
-    if (!exhibitionId || !testUserId) {
-      await Swal.fire({
-        title: "กรุณาระบุ User ID",
-        icon: "warning",
-        confirmButtonText: "ตกลง",
-      });
-      return;
-    }
-
-    setIsDownloading(true);
-    try {
-      // Admin test download - skip check-in validation
-      const blob = await downloadCertificate(exhibitionId, testUserId, {
-        skipValidation: true,
-      });
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `certificate_${testUserId}.pdf`;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      await Swal.fire({
-        title: "ดาวน์โหลดสำเร็จ",
-        icon: "success",
-        confirmButtonText: "ตกลง",
-      });
-    } catch (error) {
-      await Swal.fire({
-        title: "ดาวน์โหลดไม่สำเร็จ",
-        text: error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง",
-        icon: "error",
-        confirmButtonText: "ตกลง",
-      });
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
   if (isExhibitionError) {
     return <NotFound />;
   }
@@ -274,13 +226,13 @@ export default function CertificatePage() {
       <input
         type="file"
         ref={fileInputRef}
-        accept="image/*,.pdf"
+        accept="image/*"
         onChange={handleFileChange}
         style={{ display: "none" }}
       />
 
       <div className="container">
-        <Panel title="จัดการ Certificate Template" onBack={handleBack}>
+        <Panel title="จัดการใบประกาศนียบัตร" onBack={handleBack}>
           {!isLoading && exhibition && (
             <div className={styles.content}>
               {/* Template exists - show preview or editor */}
@@ -317,7 +269,7 @@ export default function CertificatePage() {
                         disabled={isMutating}
                         className={styles.deleteButton}
                       >
-                        {isDeleting ? "กำลังลบ..." : "ลบ Template"}
+                        {isDeleting ? "กำลังลบ..." : "ลบเทมเพลต"}
                       </button>
                     </div>
                   )}
@@ -327,7 +279,50 @@ export default function CertificatePage() {
               {/* No template - show upload prompt */}
               {!template && hasAuthToken && (
                 <div className={styles.noTemplate}>
-                  <p>ยังไม่มี Certificate Template</p>
+                  <div className={styles.exampleCertificateSection}>
+                    <h4 className={styles.exampleTitle}>
+                      ตัวอย่างใบประกาศนียบัตร
+                    </h4>
+                    <p className={styles.exampleHint}>
+                      ขนาดแนะนำ 3300 x 2550 px | aspect ratio 11 x 8.5
+                    </p>
+                    {isExampleImageAvailable ? (
+                      <img
+                        src={EXAMPLE_CERTIFICATE_IMAGE_URL}
+                        alt="ตัวอย่างเทมเพลตใบประกาศนียบัตร"
+                        className={styles.exampleImage}
+                        onError={() => setIsExampleImageAvailable(false)}
+                      />
+                    ) : (
+                      <p className={styles.exampleMissing}>
+                        ไม่พบรูปตัวอย่าง กรุณานำไฟล์มาวางตามพาธด้านบน
+                      </p>
+                    )}
+                  </div>
+
+                  <div className={styles.fieldGrid}>
+                    <label className={styles.fieldGroup}>
+                      <span className={styles.fieldLabel}>ชื่อนิทรรศการ</span>
+                      <input
+                        type="text"
+                        value={exhibitionNameValue}
+                        readOnly
+                        className={styles.fieldInput}
+                        placeholder="ชื่อนิทรรศการ"
+                      />
+                    </label>
+                    <label className={styles.fieldGroup}>
+                      <span className={styles.fieldLabel}>ชื่อหน่วยงาน</span>
+                      <input
+                        type="text"
+                        value={organizerNameValue}
+                        readOnly
+                        className={styles.fieldInput}
+                        placeholder="ชื่อหน่วยงาน"
+                      />
+                    </label>
+                  </div>
+                  <p>ยังไม่มีเทมเพลตใบประกาศนียบัตร</p>
                   <button
                     type="button"
                     onClick={handleUploadClick}
@@ -341,33 +336,10 @@ export default function CertificatePage() {
 
               {!hasAuthToken && (
                 <p className={styles.authWarning}>
-                  กรุณาเข้าสู่ระบบเพื่อจัดการ Certificate Template
+                  กรุณาเข้าสู่ระบบเพื่อจัดการเทมเพลตใบประกาศนียบัตร
                 </p>
               )}
 
-              {/* Test download section */}
-              {template && (
-                <div className={styles.testDownloadSection}>
-                  <h4>ทดสอบดาวน์โหลดใบประกาศนียบัตร</h4>
-                  <div className={styles.testDownloadForm}>
-                    <input
-                      type="text"
-                      placeholder="UserId"
-                      value={testUserId}
-                      onChange={(e) => setTestUserId(e.target.value)}
-                      className={styles.testInput}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleTestDownload}
-                      disabled={isDownloading || !testUserId}
-                      className={styles.testDownloadButton}
-                    >
-                      {isDownloading ? "กำลังดาวน์โหลด..." : "ดาวน์โหลด"}
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </Panel>

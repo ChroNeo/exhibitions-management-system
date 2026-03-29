@@ -131,25 +131,32 @@ export async function requireLiffAuth(
   }
 
   const authHeader = request.headers.authorization;
+  let token: string | undefined;
 
-  if (!authHeader) {
+  if (authHeader) {
+    const parts = authHeader.split(" ");
+    if (parts.length !== 2 || parts[0] !== "Bearer") {
+      throw new AppError(
+        "Authorization header must be in format: Bearer <token>",
+        401,
+        "UNAUTHORIZED",
+      );
+    }
+    token = parts[1];
+  } else {
+    const query = request.query as { liff_id_token?: unknown } | undefined;
+    if (typeof query?.liff_id_token === "string" && query.liff_id_token.trim()) {
+      token = query.liff_id_token;
+    }
+  }
+
+  if (!token) {
     throw new AppError(
-      "Authorization header is required",
+      "Authorization header or liff_id_token query is required",
       401,
       "MISSING_AUTH_HEADER",
     );
   }
-
-  const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") {
-    throw new AppError(
-      "Authorization header must be in format: Bearer <token>",
-      401,
-      "UNAUTHORIZED",
-    );
-  }
-
-  const token = parts[1];
 
   // Verify LIFF ID token
   const verifiedToken = await verifyLiffIdToken(token);

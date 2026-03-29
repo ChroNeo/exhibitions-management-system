@@ -38,6 +38,8 @@ export interface SaveMultipartFileOptions {
   fallbackName?: string;
   /** Custom prefix for the filename (defaults to EXP or EXP_PDF based on extension) */
   filenamePrefix?: string;
+  /** Keep original image bytes and extension (skip resize/convert to WebP) */
+  preserveOriginalImage?: boolean;
 }
 
 export interface SavedMultipartFile {
@@ -54,6 +56,7 @@ export async function saveMultipartFile(
     publicPrefix,
     fallbackName = "file",
     filenamePrefix,
+    preserveOriginalImage = false,
   }: SaveMultipartFileOptions,
 ): Promise<SavedMultipartFile> {
   await mkdir(targetDir, { recursive: true });
@@ -81,7 +84,7 @@ export async function saveMultipartFile(
   const prefix = filenamePrefix ?? (extension === ".pdf" ? "EXP_PDF" : "EXP");
   const isImage = IMAGE_EXTENSIONS.has(extension);
 
-  if (isImage) {
+  if (isImage && !preserveOriginalImage) {
     // Buffer the stream, optimize with sharp, save as WebP
     const chunks: Buffer[] = [];
     for await (const chunk of part.file) {
@@ -108,7 +111,7 @@ export async function saveMultipartFile(
     return { filename: outFilename, absolutePath, publicPath };
   }
 
-  // Non-image files (PDF etc.) — stream directly to disk
+  // Non-image files (PDF etc.) or preserved images — stream directly to disk
   const filename = `${prefix}${timestamp}${extension}`;
   const absolutePath = path.join(targetDir, filename);
   await pipeline(part.file, createWriteStream(absolutePath));

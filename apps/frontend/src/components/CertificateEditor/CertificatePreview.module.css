@@ -17,12 +17,27 @@
 .placeholder {
   position: absolute;
   padding: 6px 12px;
-  border: 2px dashed rgba(0, 123, 255, 0.6);
-  background-color: rgba(0, 123, 255, 0.1);
+  border: 2px dashed rgba(59, 130, 246, 0.7);
+  background-color: rgba(59, 130, 246, 0.14);
   border-radius: 4px;
   white-space: nowrap;
   transform: translate(-50%, -50%);
   pointer-events: none;
+}
+
+.exhibitionPlaceholder {
+  border-color: rgba(37, 99, 235, 0.7);
+  background-color: rgba(37, 99, 235, 0.14);
+}
+
+.participantPlaceholder {
+  border-color: rgba(29, 78, 216, 0.75);
+  background-color: rgba(29, 78, 216, 0.16);
+}
+
+.organizerPlaceholder {
+  border-color: rgba(30, 64, 175, 0.75);
+  background-color: rgba(30, 64, 175, 0.16);
 }
 
 .label {

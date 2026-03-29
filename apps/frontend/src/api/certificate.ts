@@ -150,8 +150,17 @@ export async function downloadCertificate(
 export function getCertificateDownloadUrl(
   exhibitionId: string | number,
   userId: string,
+  options?: { skipValidation?: boolean; liffIdToken?: string },
 ): string {
-  return `${BASE}/exhibitions/${exhibitionId}/certificates/${userId}/download`;
+  const params = new URLSearchParams();
+  if (options?.skipValidation) {
+    params.set("skipValidation", "true");
+  }
+  if (options?.liffIdToken) {
+    params.set("liff_id_token", options.liffIdToken);
+  }
+  const queryString = params.toString();
+  return `${BASE}/exhibitions/${exhibitionId}/certificates/${userId}/download${queryString ? `?${queryString}` : ""}`;
 }
 
 export interface CertificatePreviewData {
