@@ -34,21 +34,34 @@ export default function RegisterPage() {
     phone: "",
     code: "",
   });
-  const { closeWindow, getAutoFillName, isLiffReady, register, isPending } =
+  const { closeWindow, getAutoFillFields, isLiffReady, register, isPending } =
     useRegisterForExhibition({
       enableLiff: true,
       autoFillName: true,
     });
 
-  // Auto-fill name from LINE Profile when ready
+  // Auto-fill fields from LINE data when available (without overriding user input)
   useEffect(() => {
-    if (isLiffReady) {
-      const autoFillName = getAutoFillName();
-      if (autoFillName && !form.name) {
-        setForm((prev) => ({ ...prev, name: autoFillName }));
+    if (!isLiffReady) return;
+
+    const { name, email } = getAutoFillFields();
+    if (!name && !email) return;
+
+    setForm((prev) => {
+      const nextName = prev.name || name || "";
+      const nextEmail = prev.email || email || "";
+
+      if (nextName === prev.name && nextEmail === prev.email) {
+        return prev;
       }
-    }
-  }, [isLiffReady, getAutoFillName, form.name]);
+
+      return {
+        ...prev,
+        name: nextName,
+        email: nextEmail,
+      };
+    });
+  }, [isLiffReady, getAutoFillFields]);
 
   // Check Exhibition ID (wait for LIFF to be ready first)
   useEffect(() => {

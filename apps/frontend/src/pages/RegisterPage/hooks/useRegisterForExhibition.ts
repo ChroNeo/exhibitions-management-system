@@ -22,6 +22,7 @@ type LiffProfile = {
   displayName: string;
   pictureUrl?: string;
   statusMessage?: string;
+  email?: string;
 };
 
 export type RegisterFormPayload = {
@@ -99,30 +100,54 @@ const toRegistrationPayload = (input: RegisterFormPayload): RegistrationPayload 
   };
 };
 
+const readClaimString = (source: unknown, key: string): string | undefined => {
+  if (!source || typeof source !== "object") {
+    return undefined;
+  }
+  const value = (source as Record<string, unknown>)[key];
+  return typeof value === "string" && value.trim().length ? value : undefined;
+};
+
 const fetchProfile = async (): Promise<LiffProfile | null> => {
+  const decoded = liff.getDecodedIDToken();
+  const decodedUserId = readClaimString(decoded, "sub");
+  const decodedDisplayName =
+    readClaimString(decoded, "name") ??
+    readClaimString(decoded, "given_name") ??
+    "";
+  const decodedEmail = readClaimString(decoded, "email");
+  const decodedPictureUrl = readClaimString(decoded, "picture");
+
   if (isLiffMockEnabled()) {
     const mockUserId = getMockLineUserId();
     if (mockUserId) {
       return {
         userId: mockUserId,
-        displayName: "",
+        displayName: decodedDisplayName,
+        email: decodedEmail,
+        pictureUrl: decodedPictureUrl,
       };
     }
   }
 
   try {
-    return await liff.getProfile();
+    const profile = await liff.getProfile();
+    return {
+      userId: profile.userId,
+      displayName: profile.displayName || decodedDisplayName,
+      pictureUrl: profile.pictureUrl ?? decodedPictureUrl,
+      statusMessage: profile.statusMessage,
+      email: decodedEmail,
+    };
   } catch (profileError) {
-    const decoded = liff.getDecodedIDToken();
-    const fallbackUserId =
-      decoded && typeof decoded.sub === "string" && decoded.sub.trim().length
-        ? decoded.sub
-        : null;
+    const fallbackUserId = decodedUserId ?? null;
 
     if (fallbackUserId) {
       return {
         userId: fallbackUserId,
-        displayName: "",
+        displayName: decodedDisplayName,
+        email: decodedEmail,
+        pictureUrl: decodedPictureUrl,
       };
     }
 
@@ -168,6 +193,20 @@ export function useRegisterForExhibition(options: UseRegisterForExhibitionOption
       return liffState.data.displayName;
     }
     return "";
+  }, [autoFillName, liffState]);
+
+  const getAutoFillFields = useCallback(() => {
+    if (liffState.status !== "success" || !liffState.data) {
+      return {
+        name: "",
+        email: "",
+      };
+    }
+
+    return {
+      name: autoFillName ? liffState.data.displayName || "" : "",
+      email: liffState.data.email || "",
+    };
   }, [autoFillName, liffState]);
 
   const profile = liffState.status === "success" ? liffState.data : null;
@@ -225,6 +264,7 @@ export function useRegisterForExhibition(options: UseRegisterForExhibitionOption
     refetch,
     closeWindow,
     getAutoFillName,
+    getAutoFillFields,
     register,
     isLiffReady: liffState.status === "success",
     isLiffInitializing: liffState.status === "initializing" || liffState.status === "loading",
