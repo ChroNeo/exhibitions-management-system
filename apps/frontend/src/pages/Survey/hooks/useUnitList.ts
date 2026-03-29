@@ -9,7 +9,7 @@ interface UseUnitListOptions {
 export function useUnitList({ exhibitionId }: UseUnitListOptions = {}) {
   const fetchData = useCallback(async (): Promise<CheckedInUnit[]> => {
     if (!exhibitionId) {
-      throw new Error('Exhibition ID is required');
+      return [];
     }
 
     return await getCheckedInUnits(exhibitionId);

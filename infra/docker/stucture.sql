@@ -225,9 +225,26 @@ CREATE TABLE `survey_submissions` (
   `submission_id` int NOT NULL,
   `exhibition_id` int NOT NULL,
   `unit_id` int DEFAULT NULL COMMENT 'ถ้า NULL แสดงว่าประเมินงาน, ถ้ามีค่าแสดงว่าประเมินบูธ',
-  `user_id` int NOT NULL,
   `comment` text,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` date DEFAULT (CURRENT_DATE)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `survey_tracking`
+--
+
+CREATE TABLE `survey_tracking` (
+  `tracking_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `exhibition_id` int NOT NULL,
+  `unit_id` int NOT NULL DEFAULT '0' COMMENT '0 = exhibition-level survey',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tracking_id`),
+  UNIQUE KEY `uq_user_exh_unit` (`user_id`,`exhibition_id`,`unit_id`),
+  KEY `fk_tracking_user` (`user_id`),
+  KEY `fk_tracking_exh` (`exhibition_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -351,14 +368,12 @@ CREATE TABLE `v_exhibitions` (
 --
 CREATE TABLE `v_exhibition_feedback` (
 `comment` text
-,`created_at` timestamp
+,`created_at` date
 ,`exhibition_id` int
 ,`exhibition_name` varchar(255)
 ,`question_topic` text
 ,`score` int
 ,`submission_id` int
-,`user_id` int
-,`user_name` varchar(255)
 );
 
 -- --------------------------------------------------------
@@ -556,7 +571,7 @@ CREATE TABLE `v_units_checkins` (
 --
 CREATE TABLE `v_unit_feedback` (
 `comment` text
-,`created_at` timestamp
+,`created_at` date
 ,`exhibition_id` int
 ,`exhibition_name` varchar(255)
 ,`question_topic` text
@@ -564,8 +579,6 @@ CREATE TABLE `v_unit_feedback` (
 ,`submission_id` int
 ,`unit_id` int
 ,`unit_name` varchar(255)
-,`user_id` int
-,`user_name` varchar(255)
 );
 
 -- --------------------------------------------------------
@@ -677,8 +690,7 @@ ALTER TABLE `survey_answers`
 ALTER TABLE `survey_submissions`
   ADD PRIMARY KEY (`submission_id`),
   ADD KEY `fk_sub_exh` (`exhibition_id`),
-  ADD KEY `fk_sub_unit` (`unit_id`),
-  ADD KEY `fk_sub_user` (`user_id`);
+  ADD KEY `fk_sub_unit` (`unit_id`);
 
 --
 -- Indexes for table `units`
@@ -807,7 +819,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhib
 --
 DROP TABLE IF EXISTS `v_exhibition_feedback`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhibition_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `u`.`user_id` AS `user_id`, `u`.`full_name` AS `user_name`, `qt`.`content` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM ((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `normal_users` `u` on((`s`.`user_id` = `u`.`user_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is null) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhibition_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `qt`.`content` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM (((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is null) ;
 
 -- --------------------------------------------------------
 
@@ -825,7 +837,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_exhib
 --
 DROP TABLE IF EXISTS `v_my_event_surveys`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_my_event_surveys`  AS SELECT `r`.`user_id` AS `user_id`, `r`.`registration_id` AS `registration_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `title`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`location` AS `location`, `e`.`start_date` AS `start_date`, `e`.`end_date` AS `end_date`, `e`.`picture_path` AS `picture_path`, `e`.`status` AS `status`, `e`.`exhibition_set_id` AS `exhibition_set_id`, `r`.`registered_at` AS `registered_at`, (case when (`ss`.`submission_id` is not null) then 1 else 0 end) AS `survey_completed` FROM ((`registrations` `r` join `exhibitions` `e` on((`r`.`exhibition_id` = `e`.`exhibition_id`))) left join `survey_submissions` `ss` on(((`ss`.`user_id` = `r`.`user_id`) and (`ss`.`exhibition_id` = `r`.`exhibition_id`) and (`ss`.`unit_id` is null)))) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_my_event_surveys`  AS SELECT `r`.`user_id` AS `user_id`, `r`.`registration_id` AS `registration_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `title`, `e`.`exhibition_code` AS `exhibition_code`, `e`.`location` AS `location`, `e`.`start_date` AS `start_date`, `e`.`end_date` AS `end_date`, `e`.`picture_path` AS `picture_path`, `e`.`status` AS `status`, `e`.`exhibition_set_id` AS `exhibition_set_id`, `r`.`registered_at` AS `registered_at`, (case when (`st`.`tracking_id` is not null) then 1 else 0 end) AS `survey_completed` FROM ((`registrations` `r` join `exhibitions` `e` on((`r`.`exhibition_id` = `e`.`exhibition_id`))) left join `survey_tracking` `st` on(((`st`.`user_id` = `r`.`user_id`) and (`st`.`exhibition_id` = `r`.`exhibition_id`) and (`st`.`unit_id` = 0)))) ;
 
 -- --------------------------------------------------------
 
@@ -915,7 +927,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_units
 --
 DROP TABLE IF EXISTS `v_unit_feedback`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_unit_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `un`.`unit_id` AS `unit_id`, `un`.`unit_name` AS `unit_name`, `u`.`user_id` AS `user_id`, `u`.`full_name` AS `user_name`, `qt`.`content` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM (((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `units` `un` on((`s`.`unit_id` = `un`.`unit_id`))) join `normal_users` `u` on((`s`.`user_id` = `u`.`user_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is not null) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`%` SQL SECURITY DEFINER VIEW `v_unit_feedback`  AS SELECT `s`.`submission_id` AS `submission_id`, `e`.`exhibition_id` AS `exhibition_id`, `e`.`title` AS `exhibition_name`, `un`.`unit_id` AS `unit_id`, `un`.`unit_name` AS `unit_name`, `qt`.`content` AS `question_topic`, `a`.`score` AS `score`, `s`.`comment` AS `comment`, `s`.`created_at` AS `created_at` FROM ((((`survey_submissions` `s` join `exhibitions` `e` on((`s`.`exhibition_id` = `e`.`exhibition_id`))) join `units` `un` on((`s`.`unit_id` = `un`.`unit_id`))) join `survey_answers` `a` on((`s`.`submission_id` = `a`.`submission_id`))) join `questions_template` `qt` on((`a`.`qt_id` = `qt`.`qt_id`))) WHERE (`s`.`unit_id` is not null) ;
 
 -- --------------------------------------------------------
 
@@ -969,8 +981,14 @@ ALTER TABLE `survey_answers`
 --
 ALTER TABLE `survey_submissions`
   ADD CONSTRAINT `fk_sub_exh` FOREIGN KEY (`exhibition_id`) REFERENCES `exhibitions` (`exhibition_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_sub_unit` FOREIGN KEY (`unit_id`) REFERENCES `units` (`unit_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_sub_user` FOREIGN KEY (`user_id`) REFERENCES `normal_users` (`user_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_sub_unit` FOREIGN KEY (`unit_id`) REFERENCES `units` (`unit_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `survey_tracking`
+--
+ALTER TABLE `survey_tracking`
+  ADD CONSTRAINT `fk_tracking_user` FOREIGN KEY (`user_id`) REFERENCES `normal_users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_tracking_exh` FOREIGN KEY (`exhibition_id`) REFERENCES `exhibitions` (`exhibition_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `units`

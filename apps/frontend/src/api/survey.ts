@@ -1,14 +1,14 @@
-import api from "./client";
-import liffClient from './liffClient';
 import type {
-  QuestionsTemplate,
-  QuestionWithSet,
-  QuestionSetWithQuestions,
-  MasterQuestionSet,
   CreateQuestionSetPayload,
   GetQuestionsParams,
+  MasterQuestionSet,
+  QuestionSetWithQuestions,
+  QuestionsTemplate,
   QuestionType,
+  QuestionWithSet,
 } from "../types/survey";
+import api from "./client";
+import liffClient from "./liffClient";
 
 const SURVEY_BASE = "/surveys";
 
@@ -18,11 +18,14 @@ const SURVEY_BASE = "/surveys";
  * Get all questions from the template bank
  */
 export async function getQuestionsTemplateApi(
-  category?: string
+  category?: string,
 ): Promise<QuestionsTemplate[]> {
-  const { data } = await api.get<QuestionsTemplate[]>(`${SURVEY_BASE}/questions-template`, {
-    params: category ? { category } : {},
-  });
+  const { data } = await api.get<QuestionsTemplate[]>(
+    `${SURVEY_BASE}/questions-template`,
+    {
+      params: category ? { category } : {},
+    },
+  );
   return data;
 }
 
@@ -30,11 +33,11 @@ export async function getQuestionsTemplateApi(
  * Create new question(s) in the template bank
  */
 export async function createQuestionsTemplateApi(
-  questions: Array<{ content: string; category?: string | null }>
+  questions: Array<{ content: string; category?: string | null }>,
 ): Promise<QuestionsTemplate[]> {
   const { data } = await api.post<QuestionsTemplate[]>(
     `${SURVEY_BASE}/questions-template`,
-    { questions }
+    { questions },
   );
   return data;
 }
@@ -44,11 +47,11 @@ export async function createQuestionsTemplateApi(
  */
 export async function updateQuestionTemplateApi(
   qtId: number,
-  payload: { content: string; category?: string | null }
+  payload: { content: string; category?: string | null },
 ): Promise<QuestionsTemplate> {
   const { data } = await api.put<QuestionsTemplate>(
     `${SURVEY_BASE}/questions-template/${qtId}`,
-    payload
+    payload,
   );
   return data;
 }
@@ -66,11 +69,11 @@ export async function deleteQuestionTemplateApi(qtId: number): Promise<void> {
  * Get questions by exhibition ID and optional type (for LIFF - uses ID token)
  */
 export async function getQuestionsByExhibitionLiff(
-  params: GetQuestionsParams
+  params: GetQuestionsParams,
 ): Promise<QuestionWithSet[]> {
   const response = await liffClient.get<QuestionWithSet[]>(
     `${SURVEY_BASE}/questions`,
-    { params }
+    { params },
   );
 
   return response.data;
@@ -80,11 +83,14 @@ export async function getQuestionsByExhibitionLiff(
  * Get questions by exhibition ID and optional type (regular auth)
  */
 export async function getQuestionsByExhibition(
-  params: GetQuestionsParams
+  params: GetQuestionsParams,
 ): Promise<QuestionWithSet[]> {
-  const { data } = await api.get<QuestionWithSet[]>(`${SURVEY_BASE}/questions`, {
-    params,
-  });
+  const { data } = await api.get<QuestionWithSet[]>(
+    `${SURVEY_BASE}/questions`,
+    {
+      params,
+    },
+  );
   return data;
 }
 
@@ -92,10 +98,15 @@ export async function getQuestionsByExhibition(
  * Get master question sets by type (EXHIBITION or UNIT)
  * Returns all master question sets with their questions for the specified type
  */
-export async function getMasterQuestions(type: QuestionType): Promise<MasterQuestionSet[]> {
-  const { data } = await api.get<MasterQuestionSet[]>(`${SURVEY_BASE}/master-questions`, {
-    params: { type },
-  });
+export async function getMasterQuestions(
+  type: QuestionType,
+): Promise<MasterQuestionSet[]> {
+  const { data } = await api.get<MasterQuestionSet[]>(
+    `${SURVEY_BASE}/master-questions`,
+    {
+      params: { type },
+    },
+  );
   return data;
 }
 
@@ -103,11 +114,11 @@ export async function getMasterQuestions(type: QuestionType): Promise<MasterQues
  * Create a question set for an exhibition
  */
 export async function createQuestionSet(
-  payload: CreateQuestionSetPayload
+  payload: CreateQuestionSetPayload,
 ): Promise<QuestionSetWithQuestions> {
   const { data } = await api.post<QuestionSetWithQuestions>(
     `${SURVEY_BASE}/questions`,
-    payload
+    payload,
   );
   return data;
 }
@@ -116,11 +127,11 @@ export async function createQuestionSet(
  * Update a question set for an exhibition
  */
 export async function updateQuestionSet(
-  payload: CreateQuestionSetPayload
+  payload: CreateQuestionSetPayload,
 ): Promise<QuestionSetWithQuestions> {
   const { data } = await api.put<QuestionSetWithQuestions>(
     `${SURVEY_BASE}/questions`,
-    payload
+    payload,
   );
   return data;
 }
@@ -143,7 +154,6 @@ export interface SurveySubmissionResponse {
   submission_id: number;
   exhibition_id: number;
   unit_id: number | null;
-  user_id: number;
   comment: string | null;
   created_at: string;
   answers: {
@@ -158,11 +168,11 @@ export interface SurveySubmissionResponse {
  * Submit survey responses (for LIFF - uses ID token)
  */
 export async function submitSurveyLiff(
-  payload: SubmitSurveyPayload
+  payload: SubmitSurveyPayload,
 ): Promise<SurveySubmissionResponse> {
   const response = await liffClient.post<SurveySubmissionResponse>(
     `${SURVEY_BASE}/submit`,
-    payload
+    payload,
   );
 
   return response.data;
@@ -173,7 +183,7 @@ export async function submitSurveyLiff(
  */
 export async function checkSurveyCompletedLiff(
   exhibitionId: string | number,
-  unitId?: string | number
+  unitId?: string | number,
 ): Promise<boolean> {
   const params: any = {
     exhibition_id: String(exhibitionId),
@@ -185,7 +195,7 @@ export async function checkSurveyCompletedLiff(
 
   const response = await liffClient.get<{ is_completed: boolean }>(
     `${SURVEY_BASE}/check-completed`,
-    { params }
+    { params },
   );
 
   return response.data.is_completed;

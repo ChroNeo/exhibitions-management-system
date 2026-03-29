@@ -466,22 +466,14 @@ export async function checkSurveyCompleted(
     throw new AppError("invalid unit id", 400, "VALIDATION_ERROR");
   }
 
-  let query: string;
-  let params: any[];
+  // Use sentinel 0 for exhibition-level surveys in survey_tracking
+  const trackingUnitId = unitId ?? 0;
 
-  if (unitId === undefined) {
-    query = `
-      SELECT COUNT(*) as count FROM survey_submissions
-      WHERE user_id = ? AND exhibition_id = ? AND unit_id IS NULL
-    `;
-    params = [userId, exhibitionId];
-  } else {
-    query = `
-      SELECT COUNT(*) as count FROM survey_submissions
-      WHERE user_id = ? AND exhibition_id = ? AND unit_id = ?
-    `;
-    params = [userId, exhibitionId, unitId];
-  }
+  const query = `
+    SELECT COUNT(*) as count FROM survey_tracking
+    WHERE user_id = ? AND exhibition_id = ? AND unit_id = ?
+  `;
+  const params = [userId, exhibitionId, trackingUnitId];
 
   const rows = await safeQuery<any[]>(query, params);
   return rows[0].count > 0;
@@ -490,6 +482,7 @@ export async function checkSurveyCompleted(
 /**
  * Submit a survey response for an exhibition or unit
  * Creates a survey submission with answers referencing (set_id, qt_id)
+ * Also inserts into survey_tracking for duplicate prevention (anonymous submissions)
  */
 export async function submitSurvey(
   userId: number,
@@ -517,35 +510,23 @@ export async function submitSurvey(
       );
     }
 
-    // Step 2: Check for duplicate submission
-    let duplicateCheckQuery: string;
-    let duplicateCheckParams: any[];
-
-    if (unitId === undefined) {
-      duplicateCheckQuery = `
-        SELECT * FROM survey_submissions
-        WHERE user_id = ? AND exhibition_id = ? AND unit_id IS NULL
-      `;
-      duplicateCheckParams = [userId, exhibitionId];
-    } else {
-      duplicateCheckQuery = `
-        SELECT * FROM survey_submissions
-        WHERE user_id = ? AND exhibition_id = ? AND unit_id = ?
-      `;
-      duplicateCheckParams = [userId, exhibitionId, unitId];
-    }
-
-    const [existingSubmissions] = await connection.query<any[]>(
-      duplicateCheckQuery,
-      duplicateCheckParams,
-    );
-
-    if (existingSubmissions.length > 0) {
-      throw new AppError(
-        "Survey already submitted",
-        409,
-        "DUPLICATE_SUBMISSION",
+    // Step 2: Insert into survey_tracking for duplicate prevention
+    // Uses sentinel 0 for exhibition-level surveys; UNIQUE constraint prevents duplicates
+    const trackingUnitId = unitId ?? 0;
+    try {
+      await connection.query<ResultSetHeader>(
+        `INSERT INTO survey_tracking (user_id, exhibition_id, unit_id) VALUES (?, ?, ?)`,
+        [userId, exhibitionId, trackingUnitId],
       );
+    } catch (err: any) {
+      if (err.code === "ER_DUP_ENTRY") {
+        throw new AppError(
+          "Survey already submitted",
+          409,
+          "DUPLICATE_SUBMISSION",
+        );
+      }
+      throw err;
     }
 
     // Step 3: Determine the set_id for this survey
@@ -567,11 +548,11 @@ export async function submitSurvey(
 
     const setId = exhRows[0].set_id;
 
-    // Step 4: Insert survey submission
+    // Step 4: Insert anonymous survey submission (no user_id)
     const [insertResult] = await connection.query<ResultSetHeader>(
-      `INSERT INTO survey_submissions (exhibition_id, unit_id, user_id, comment)
-       VALUES (?, ?, ?, ?)`,
-      [exhibitionId, unitId ?? null, userId, comment ?? null],
+      `INSERT INTO survey_submissions (exhibition_id, unit_id, comment)
+       VALUES (?, ?, ?)`,
+      [exhibitionId, unitId ?? null, comment ?? null],
     );
     const submissionId = insertResult.insertId;
 
@@ -597,7 +578,6 @@ export async function submitSurvey(
         s.submission_id,
         s.exhibition_id,
         s.unit_id,
-        s.user_id,
         s.comment,
         s.created_at
        FROM survey_submissions s
@@ -623,12 +603,11 @@ export async function submitSurvey(
       submission_id: submission.submission_id,
       exhibition_id: submission.exhibition_id,
       unit_id: submission.unit_id,
-      user_id: submission.user_id,
       comment: submission.comment,
       created_at:
         submission.created_at instanceof Date
           ? submission.created_at.toISOString()
-          : new Date(submission.created_at).toISOString(),
+          : String(submission.created_at),
       answers: answerRows.map((row: any) => ({
         answer_id: row.answer_id,
         set_id: row.set_id,

@@ -1,5 +1,5 @@
 import liff from "@line/liff";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LIFF_CONFIG, type LiffAppType } from "../config/liff";
 import { handleLiffError, performLogout } from "../utils/liffErrorHandler";
 
@@ -26,14 +26,23 @@ interface UseLiffOptions<T> {
   dependencies?: unknown[];
 }
 
-export function useLiff<T>({ liffApp, fetchData }: UseLiffOptions<T>) {
+export function useLiff<T>({
+  liffApp,
+  fetchData,
+  dependencies = [],
+}: UseLiffOptions<T>) {
   const [state, setState] = useState<LiffState<T>>({ status: "initializing" });
+  const fetchDataRef = useRef(fetchData);
+
+  useEffect(() => {
+    fetchDataRef.current = fetchData;
+  }, [fetchData]);
 
   const fetch = useCallback(async () => {
     setState({ status: "loading" });
 
     try {
-      const data = await fetchData();
+      const data = await fetchDataRef.current();
       setState({ status: "success", data });
     } catch (error) {
       const errorResult = handleLiffError(error, "Failed to load data");
@@ -46,7 +55,7 @@ export function useLiff<T>({ liffApp, fetchData }: UseLiffOptions<T>) {
 
       setState({ status: "error", message: errorResult.message });
     }
-  }, [fetchData]);
+  }, dependencies);
 
   const initializeLiff = useCallback(async () => {
     // If mock mode is enabled, skip LIFF initialization
@@ -86,7 +95,7 @@ export function useLiff<T>({ liffApp, fetchData }: UseLiffOptions<T>) {
   }, [liffApp, fetch]);
 
   useEffect(() => {
-    initializeLiff();
+    void initializeLiff();
   }, [initializeLiff]);
 
   return {

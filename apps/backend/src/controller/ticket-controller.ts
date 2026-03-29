@@ -158,10 +158,10 @@ export default async function ticketController(fastify: FastifyInstance) {
            uc.unit_id,
            u.unit_name as unit_name,
            uc.checkin_at,
-           (SELECT COUNT(*) FROM survey_submissions ss
-            WHERE ss.user_id = uc.user_id
-            AND ss.exhibition_id = uc.exhibition_id
-            AND ss.unit_id = uc.unit_id) as survey_completed
+           (SELECT COUNT(*) FROM survey_tracking st
+            WHERE st.user_id = uc.user_id
+            AND st.exhibition_id = uc.exhibition_id
+            AND st.unit_id = uc.unit_id) as survey_completed
          FROM units_checkins uc
          JOIN units u ON uc.unit_id = u.unit_id
          WHERE uc.user_id = ? AND uc.exhibition_id = ? AND uc.checkin_at IS NOT NULL

@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import AdminGuard from "./components/AdminGuard";
 import AdminDashboardPage from "./pages/AdminPanel/AdminDashboardPage";
@@ -19,24 +19,27 @@ import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import VerifyTicketPage from "./pages/ScanPage/VerifyTicketPage";
 import CreateSurveyPage from "./pages/Survey/CreateSurveyPage";
 import ExhibitionSurveyPage from "./pages/Survey/ExhibitionSurveyPage";
-import UnitListPage from "./pages/Survey/UnitListPage";
+import SurveyListPage from "./pages/Survey/SurveyListPage";
 import UnitSurveyPage from "./pages/Survey/UnitSurveyPage";
 import TicketPage from "./pages/Ticket/TicketPage";
 import UnitDashboardPage from "./pages/UnitDashboard/UnitDashboardPage";
 import UnitManageDetail from "./pages/Units/UnitManageDetail";
 
+function LegacySurveyListRedirect() {
+  const location = useLocation();
+
+  return <Navigate replace to={`/survey/list${location.search}`} />;
+}
+
 export default function App() {
   return (
     <Routes>
-      {/* หน้าแรก = Home */}
       <Route path="/" element={<HomePage />} />
 
-      {/* ข่าวสารสำหรับผู้ใช้ทั่วไป */}
       <Route path="/news" element={<PublicNewsPage />} />
       <Route path="/news/detail/:id" element={<NewsDetailPage />} />
       <Route path="/news/:exhibitionId" element={<PublicNewsPage />} />
 
-      {/* Exhibitions */}
       <Route path="/exhibitions" element={<ExhibitionPage />} />
       <Route
         path="/exhibitions/new"
@@ -44,7 +47,6 @@ export default function App() {
       />
       <Route path="/exhibitions/:id" element={<ExManageDetail mode="view" />} />
 
-      {/* Unit management within exhibitions */}
       <Route
         path="/exhibitions/:exhibitionId/unit/new"
         element={<UnitManageDetail mode="create" />}
@@ -57,10 +59,8 @@ export default function App() {
         path="/exhibitions/:exhibitionId/unit/:unitId/edit"
         element={<UnitManageDetail mode="edit" />}
       />
-      {/*Announcement Page*/}
       <Route path="/exhibitions/:exhibitionId/news" element={<NewsPage />} />
 
-      {/* Certificate management */}
       <Route
         path="/exhibitions/:exhibitionId/certificate"
         element={<CertificatePage />}
@@ -74,20 +74,21 @@ export default function App() {
       <Route path="/ticket" element={<TicketPage />} />
       <Route path="/verify-ticket" element={<VerifyTicketPage />} />
 
-      {/* Survey Routes */}
       <Route
         path="/survey/create/:exhibition_id"
         element={<CreateSurveyPage />}
       />
       <Route path="/survey/answer" element={<ExhibitionSurveyPage />} />
       <Route path="/survey/units" element={<UnitSurveyPage />} />
-      <Route path="/survey/unit-list" element={<UnitListPage />} />
+      <Route path="/survey/list" element={<SurveyListPage />} />
+      <Route
+        path="/survey/unit-list"
+        element={<LegacySurveyListRedirect />}
+      />
 
-      {/* Organizer Dashboard */}
       <Route path="/dashboard/selector" element={<DashboardSelectorPage />} />
       <Route path="/dashboard/organizer/:id" element={<OrgDashboardPage />} />
 
-      {/* Admin Panel */}
       <Route
         path="/admin"
         element={
@@ -115,7 +116,6 @@ export default function App() {
       />
       <Route path="/dashboard/staff" element={<UnitDashboardPage />} />
 
-      {/* กันหลงทาง */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

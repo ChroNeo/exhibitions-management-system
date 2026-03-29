@@ -94,7 +94,7 @@ export function ExhibitionSurveyContent({
       });
 
       if (result.isConfirmed) {
-        navigate("/survey/exhibitions");
+        navigate(`/survey/list?ex_id=${exhibitionId}`);
       }
     } catch (error) {
       setSubmitState({ status: "idle" });
@@ -232,3 +232,4 @@ export function ExhibitionSurveyContent({
     </div>
   );
 }
+

@@ -247,6 +247,7 @@ Flow ของ API ต่างๆ นะจ่ะ
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  5. บันทึกผล                                                     │
+│     INSERT INTO survey_tracking (...)                           │
 │     INSERT INTO survey_submissions (...)                        │
 │     INSERT INTO survey_answers (...)                            │
 └─────────────────────────────────────────────────────────────────┘
@@ -260,7 +261,8 @@ Flow ของ API ต่างๆ นะจ่ะ
 | ------------------- | ------------------------------------------ |
 | `question_sets`     | ชุดคำถาม (is_master=1 คือ template)        |
 | `questions`         | คำถามแต่ละข้อ                              |
-| `survey_submissions`| การส่ง survey ของผู้ใช้                    |
+| `survey_tracking`   | ตรวจสอบการส่งซ้ำด้วย user/exhibition/unit     |
+| `survey_submissions`| การส่ง survey แบบไม่ระบุตัวตน             |
 | `survey_answers`    | คำตอบแต่ละข้อ (score 1-5)                  |
 
 **Database Views:**
@@ -572,3 +574,4 @@ Content-Disposition: attachment; filename="certificate_สมชาย_ใจด
 | ------------ | ------------------------------------- |
 | `เกียรติบัตร` | ดูสถานะและดาวน์โหลดเกียรติบัตร         |
 | `ใบประกาศ`   | เหมือนกับ "เกียรติบัตร"               |
+

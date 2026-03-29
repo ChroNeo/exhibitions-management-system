@@ -1,6 +1,9 @@
 export const LIFF_CONFIG = {
   TICKET: import.meta.env.VITE_LIFF_TICKET,
   SURVEY: import.meta.env.VITE_LIFF_SURVEY,
+  EXHIBITION_SURVEY:
+    import.meta.env.VITE_LIFF_EXHIBITION_SURVEY ||
+    import.meta.env.VITE_LIFF_EXHIBITION,
   UNIT_SURVEY: import.meta.env.VITE_LIFF_UNIT_SURVEY,
   REGISTRATION: import.meta.env.VITE_LIFF_REGISTRATION,
   VERIFY_TICKET: import.meta.env.VITE_LIFF_VERIFY_TICKET,

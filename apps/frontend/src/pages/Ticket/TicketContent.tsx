@@ -80,7 +80,7 @@ export function TicketContent({ exhibitionId }: { exhibitionId: string }) {
 
             if (result.isConfirmed) {
               // Navigate to unit list page
-              navigate(`/survey/unit-list?ex_id=${exhibitionId}`);
+              navigate(`/survey/list?ex_id=${exhibitionId}`);
             }
           }
         }
@@ -169,3 +169,4 @@ export function TicketContent({ exhibitionId }: { exhibitionId: string }) {
     </div>
   );
 }
+

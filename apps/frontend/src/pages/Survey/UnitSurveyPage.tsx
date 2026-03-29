@@ -104,7 +104,7 @@ export default function UnitSurveyPage() {
       });
 
       if (result.isConfirmed) {
-        navigate("/survey/exhibitions");
+        navigate(`/survey/list?ex_id=${exhibitionId}`);
       }
     } catch (error) {
       setSubmitState({ status: "idle" });
@@ -136,7 +136,7 @@ export default function UnitSurveyPage() {
           <button
             type="button"
             className={styles.backBtn}
-            onClick={() => navigate(`/survey/unit-list?ex_id=${exhibitionId}`)}
+            onClick={() => navigate(`/survey/list?ex_id=${exhibitionId}`)}
             aria-label="ย้อนกลับ"
           >
             <IoArrowBack />
@@ -282,3 +282,4 @@ export default function UnitSurveyPage() {
     </div>
   );
 }
+
