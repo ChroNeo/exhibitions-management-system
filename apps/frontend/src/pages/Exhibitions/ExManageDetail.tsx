@@ -89,12 +89,24 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
   const descriptionPlain = data?.description?.trim() || undefined;
   const descriptionHtml = data?.descriptionHtml;
 
-  const toISO = (value?: string | number | Date | null): string | undefined => {
+  const normalizeDateTimeValue = (
+    value?: string | number | Date | null,
+  ): string | undefined => {
     if (value === undefined || value === null) return undefined;
+
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed) return undefined;
+      return trimmed.includes("T") ? trimmed : trimmed.replace(" ", "T");
+    }
+
     const d = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(d.getTime())) return undefined;
     return d.toISOString();
   };
+
+  const toInputValue = (value?: string | number | Date | null): string =>
+    toInputDateTime(normalizeDateTimeValue(value) ?? null);
 
   const pageTitle = isEditing
     ? "แก้ไขนิทรรศการ"
@@ -124,8 +136,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
       return {
         initialValues: {
           title: ex.title ?? "",
-          start_date: toInputDateTime(toISO(ex.start_date) ?? null),
-          end_date: toInputDateTime(toISO(ex.end_date) ?? null),
+          start_date: toInputValue(ex.start_date),
+          end_date: toInputValue(ex.end_date),
           location: ex.location ?? "",
           organizer_name: ex.organizer_name ?? "",
           description: ex.descriptionHtml ?? "",
@@ -187,8 +199,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
     if (!data) return;
     setEditForm({
       title: data.title ?? "",
-      start_date: toInputDateTime(toISO(data.start_date) ?? null),
-      end_date: toInputDateTime(toISO(data.end_date) ?? null),
+      start_date: toInputValue(data.start_date),
+      end_date: toInputValue(data.end_date),
       location: data.location ?? "",
       organizer_name: data.organizer_name ?? "",
       status: data.status ?? DEFAULT_STATUS,
@@ -490,8 +502,8 @@ export default function ExManageDetail({ mode = "view" }: ExManageDetailProps) {
                 <>
                   <ExhibitionDetailCard
                     title={data.title}
-                    startISO={toISO(data.start_date)}
-                    endISO={toISO(data.end_date)}
+                    startISO={normalizeDateTimeValue(data.start_date)}
+                    endISO={normalizeDateTimeValue(data.end_date)}
                     location={data.location}
                     organizer={data.organizer_name}
                     description={descriptionPlain}

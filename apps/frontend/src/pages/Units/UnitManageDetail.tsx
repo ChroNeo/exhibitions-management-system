@@ -29,6 +29,12 @@ function translateType(type: string | undefined) {
 }
 
 function toDate(value: string | number | Date): Date | null {
+  if (typeof value === "string") {
+    const normalized = value.includes("T") ? value : value.replace(" ", "T");
+    const date = new Date(normalized);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
   if (value instanceof Date) {
     return Number.isNaN(value.getTime()) ? null : value;
   }
@@ -70,6 +76,10 @@ function buildDateTimeText(
 }
 
 function toInputValue(value: string | number | Date) {
+  if (typeof value === "string") {
+    return toInputDateTime(value);
+  }
+
   const date = toDate(value);
   if (!date) return "";
   return toInputDateTime(date.toISOString());
