@@ -1,7 +1,9 @@
+import DOMPurify from "dompurify";
 import { Bell, Clock, Newspaper, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import type { UnitApi } from "../../types/units";
+import { extractPlainTextDescription } from "../../utils/text";
 import { toFileUrl } from "../../utils/url";
 import { useAllNewsLiff } from "./hooks/useAllNews";
 import styles from "./PublicNewsPage.module.css";
@@ -19,6 +21,13 @@ function formatStartTime(startsAt: string | undefined): string {
   return timePart.slice(0, 5);
 }
 
+function sanitizeTextContent(value: string): string {
+  return DOMPurify.sanitize(value, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  }).trim();
+}
+
 function UpcomingUnitCard({
   unit,
   onClick,
@@ -27,6 +36,12 @@ function UpcomingUnitCard({
   onClick: () => void;
 }) {
   const minutesLeft = getMinutesUntil(unit.starts_at);
+  const descriptionText = sanitizeTextContent(
+    extractPlainTextDescription({
+      html: unit.description ?? undefined,
+      delta: unit.description_delta ?? undefined,
+    }),
+  );
   const staffNames = Array.isArray(unit.staff_names)
     ? unit.staff_names.filter(Boolean)
     : [];
@@ -45,8 +60,8 @@ function UpcomingUnitCard({
 
       <h3 className={styles.upcomingUnitName}>{unit.unit_name}</h3>
 
-      {unit.description && (
-        <p className={styles.upcomingDesc}>{unit.description}</p>
+      {descriptionText && (
+        <p className={styles.upcomingDesc}>{descriptionText}</p>
       )}
 
       <div className={styles.upcomingMeta}>
@@ -128,6 +143,9 @@ export default function PublicNewsPage() {
               <div className={styles.grid}>
                 {state.data.news.map((news) => {
                   const [datePart] = news.created_at?.split(" ") ?? [];
+                  const newsDescription = news.description
+                    ? sanitizeTextContent(news.description)
+                    : "";
 
                   return (
                     <div
@@ -157,8 +175,8 @@ export default function PublicNewsPage() {
 
                         <h3 className={styles.newsTitle}>{news.topic}</h3>
 
-                        {news.description && (
-                          <p className={styles.newsDesc}>{news.description}</p>
+                        {newsDescription && (
+                          <p className={styles.newsDesc}>{newsDescription}</p>
                         )}
                       </div>
                     </div>

@@ -70,7 +70,7 @@ export default async function newsController(fastify: FastifyInstance) {
       schema: {
         tags: ["Announcements"],
         summary: "Create Announcement",
-        body: AnnoucncementsPayload.optional(),
+        body: z.union([AnnoucncementsPayload, z.any()]),
         response: {
           201: z.object({
             message: z.string(),
@@ -98,7 +98,8 @@ export default async function newsController(fastify: FastifyInstance) {
             },
           },
         });
-        payload = AnnoucncementsPayload.parse({
+
+        const result = AnnoucncementsPayload.safeParse({
           exhibition_id: Number(fields.exhibition_id),
           topic: fields.topic,
           description: fields.description || null,
@@ -106,8 +107,30 @@ export default async function newsController(fastify: FastifyInstance) {
           image_url: files.image_url?.publicPath ?? null,
           is_active: fields.is_active ? Number(fields.is_active) : 1,
         });
+
+        if (!result.success) {
+          throw new AppError(
+            "Validation failed",
+            400,
+            "VALIDATION_ERROR",
+            z.treeifyError(result.error),
+          );
+        }
+
+        payload = result.data;
       } else {
-        payload = AnnoucncementsPayload.parse(req.body);
+        const result = AnnoucncementsPayload.safeParse(req.body);
+
+        if (!result.success) {
+          throw new AppError(
+            "Validation failed",
+            400,
+            "VALIDATION_ERROR",
+            z.treeifyError(result.error),
+          );
+        }
+
+        payload = result.data;
       }
 
       const result = await createAnnouncement(payload);
@@ -117,6 +140,7 @@ export default async function newsController(fastify: FastifyInstance) {
       });
     },
   );
+
   // Update Announcement
   app.patch(
     "/:id",
@@ -126,7 +150,7 @@ export default async function newsController(fastify: FastifyInstance) {
         tags: ["Announcements"],
         summary: "Update Announcement",
         params: z.object({ id: z.string().regex(/^\d+$/) }),
-        body: UpdateAnnouncementPayload.optional(),
+        body: z.union([UpdateAnnouncementPayload, z.any()]),
         response: {
           200: z.object({
             message: z.string(),
@@ -138,6 +162,7 @@ export default async function newsController(fastify: FastifyInstance) {
       if (!req.user) {
         throw new AppError("User not authenticated", 401, "UNAUTHORIZED");
       }
+
       const { id } = req.params as { id: string };
 
       let payload;
@@ -157,14 +182,21 @@ export default async function newsController(fastify: FastifyInstance) {
         });
 
         const raw: Record<string, unknown> = {};
-        if (fields.exhibition_id)
+        if (fields.exhibition_id) {
           raw.exhibition_id = Number(fields.exhibition_id);
-        if (fields.topic) raw.topic = fields.topic;
-        if (fields.description !== undefined)
+        }
+        if (fields.topic) {
+          raw.topic = fields.topic;
+        }
+        if (fields.description !== undefined) {
           raw.description = fields.description || null;
-        if (fields.description_delta !== undefined)
+        }
+        if (fields.description_delta !== undefined) {
           raw.description_delta = fields.description_delta || null;
-        if (fields.is_active) raw.is_active = Number(fields.is_active);
+        }
+        if (fields.is_active) {
+          raw.is_active = Number(fields.is_active);
+        }
         if (files.image_url?.publicPath) {
           raw.image_url = files.image_url.publicPath;
           if (existing?.image_url) {
@@ -172,9 +204,31 @@ export default async function newsController(fastify: FastifyInstance) {
           }
         }
 
-        payload = UpdateAnnouncementPayload.parse(raw);
+        const result = UpdateAnnouncementPayload.safeParse(raw);
+
+        if (!result.success) {
+          throw new AppError(
+            "Validation failed",
+            400,
+            "VALIDATION_ERROR",
+            z.treeifyError(result.error),
+          );
+        }
+
+        payload = result.data;
       } else {
-        payload = UpdateAnnouncementPayload.parse(req.body);
+        const result = UpdateAnnouncementPayload.safeParse(req.body);
+
+        if (!result.success) {
+          throw new AppError(
+            "Validation failed",
+            400,
+            "VALIDATION_ERROR",
+            z.treeifyError(result.error),
+          );
+        }
+
+        payload = result.data;
       }
 
       await updateAnnouncement(id, payload);
@@ -183,6 +237,7 @@ export default async function newsController(fastify: FastifyInstance) {
       });
     },
   );
+
   // Soft-delete Announcement (sets is_active = 0)
   app.delete(
     "/:id",

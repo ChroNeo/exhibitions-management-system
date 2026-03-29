@@ -8,7 +8,7 @@ import { safeQuery } from "../services/dbconn.js";
 
 export async function getAnnouncementList(): Promise<any[]> {
   const rows = await safeQuery(`
-  SELECT announcement_id, exhibition_id, topic, description, image_url, is_active, created_at, updated_at
+  SELECT announcement_id, exhibition_id, topic, description, description_delta, image_url, is_active, created_at, updated_at
   FROM exhibition_announcements
   WHERE is_active = 1 ORDER BY created_at DESC;
 `);
@@ -23,7 +23,7 @@ export async function getAnnouncementListbyId(
   }
   const rows = await safeQuery(
     `
-      SELECT announcement_id, exhibition_id, topic, description, image_url, is_active, created_at, updated_at
+      SELECT announcement_id, exhibition_id, topic, description, description_delta, image_url, is_active, created_at, updated_at
       FROM exhibition_announcements
       WHERE exhibition_id = ?
       AND is_active = 1
