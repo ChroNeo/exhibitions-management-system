@@ -18,6 +18,7 @@ import { IoArrowBack } from "react-icons/io5";
 import { MdAddCircleOutline } from "react-icons/md";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import { createQuestionsTemplateApi } from "../../api/survey";
 import HeaderBar from "../../components/HeaderBar/HeaderBar";
 import type { QuestionType } from "../../types/survey";
 import { LoadingOverlay, QuestionItem } from "./components";
@@ -296,11 +297,63 @@ export default function CreateSurveyPage() {
     }
 
     try {
+      // Build a map of original content by qt_id to detect edits
+      const originalContentMap = new Map<number, string>();
+      if (existingQuestions) {
+        existingQuestions.forEach((q) => {
+          originalContentMap.set(q.qt_id, q.content);
+        });
+      }
+
+      // Find questions that need new qt_ids:
+      // 1. Brand new questions (no qt_id)
+      // 2. Existing questions whose content was edited
+      const questionsNeedingNewId = customQuestions.filter((q) => {
+        if (!q.qt_id && q.topic.trim()) return true; // new question
+        if (q.qt_id && originalContentMap.has(q.qt_id)) {
+          return q.topic.trim() !== originalContentMap.get(q.qt_id)!.trim();
+        }
+        return false;
+      });
+
+      // Create new template entries for all modified/new questions
+      const qtIdMap = new Map<string, number>();
+      if (questionsNeedingNewId.length > 0) {
+        const payload = questionsNeedingNewId.map((q) => ({
+          content: q.topic,
+          category: null,
+        }));
+
+        const created = await createQuestionsTemplateApi(payload);
+        questionsNeedingNewId.forEach((q, index) => {
+          qtIdMap.set(q.id, created[index].qt_id);
+        });
+      }
+
+      // Build final questions list, replacing qt_ids for modified questions
+      let finalQuestionsList: { qt_id: number; sort_order: number }[];
+
+      if (isEditMode && hasLoadedExisting) {
+        finalQuestionsList = customQuestions
+          .map((q, i) => ({
+            qt_id: qtIdMap.get(q.id) ?? q.qt_id!,
+            sort_order: i + 1,
+          }))
+          .filter((q) => q.qt_id != null);
+      } else {
+        // Create mode: master questions + new custom questions
+        const newQuestionsWithIds = questionsNeedingNewId.map((q, i) => ({
+          qt_id: qtIdMap.get(q.id)!,
+          sort_order: allQuestionsList.length + i + 1,
+        }));
+        finalQuestionsList = [...allQuestionsList, ...newQuestionsWithIds];
+      }
+
       if (isEditMode) {
         await updateQuestionSet({
           exhibition_id: exhibitionIdNum,
           type: selectedType,
-          questions: allQuestionsList,
+          questions: finalQuestionsList,
         });
 
         await Swal.fire({
@@ -312,7 +365,7 @@ export default function CreateSurveyPage() {
         await createQuestionSet({
           exhibition_id: exhibitionIdNum,
           type: selectedType,
-          questions: allQuestionsList,
+          questions: finalQuestionsList,
         });
 
         await Swal.fire({
@@ -336,6 +389,8 @@ export default function CreateSurveyPage() {
     customQuestions,
     allQuestionsList,
     isEditMode,
+    hasLoadedExisting,
+    existingQuestions,
     updateQuestionSet,
     createQuestionSet,
     navigate,

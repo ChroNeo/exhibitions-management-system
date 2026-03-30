@@ -14,7 +14,9 @@ export async function getStaffUnitByUserId(
     `SELECT us.unit_id, u.exhibition_id
      FROM unit_staffs us
      JOIN units u ON us.unit_id = u.unit_id
+     LEFT JOIN normal_users nu ON nu.user_id = us.staff_user_id
      WHERE us.staff_user_id = ?
+     ORDER BY CASE WHEN u.exhibition_id = nu.current_exhibition_id THEN 0 ELSE 1 END
      LIMIT 1`,
     [userId],
   );

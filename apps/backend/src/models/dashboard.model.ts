@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EXHIBITION_STATUSES } from "./exhibition.model.js";
 
 const FeedbackBreakdownItemSchema = z.object({
   qt_id: z.number().int(),
@@ -17,7 +18,7 @@ const DashboardDataSchema = z.object({
     code: z.string().nullable(),
     name: z.string(),
     type: z.string(),
-    description: z.string(),
+    description: z.string().nullable(),
     description_delta: z.any().nullable(),
     poster_url: z.string().nullable(),
     detail_pdf_url: z.string().nullable(),
@@ -29,8 +30,8 @@ const DashboardDataSchema = z.object({
   exhibition_context: z.object({
     id: z.number().int(),
     title: z.string(),
-    location: z.string(),
-    status: z.enum(["upcoming", "ongoing", "ended"]),
+    location: z.string().nullable(),
+    status: z.enum(EXHIBITION_STATUSES),
   }),
   stats: z.object({
     total_checkins: z.number().int(),
