@@ -47,8 +47,8 @@ export async function verifyAndCheckIn(
       `SELECT us.unit_id, u.exhibition_id
        FROM unit_staffs us
        JOIN units u ON us.unit_id = u.unit_id
-       WHERE us.staff_user_id = ? LIMIT 1`,
-      [staffUserId],
+       WHERE us.staff_user_id = ? AND u.exhibition_id = ? LIMIT 1`,
+      [staffUserId, exhibitionId],
     ),
     safeQuery<any[]>(
       `SELECT u.full_name, u.picture_url
