@@ -8,9 +8,6 @@ export interface LayoutFieldConfig {
 
 export interface LayoutConfig {
   participant_name?: LayoutFieldConfig;
-  exhibition_title?: LayoutFieldConfig;
-  date?: LayoutFieldConfig;
-  organizer_name?: LayoutFieldConfig;
   [key: string]: LayoutFieldConfig | undefined;
 }
 

@@ -326,7 +326,7 @@ export default async function certificateTemplateController(
         tags: ["Certificate"],
         summary: "Download generated certificate for a registration",
         description:
-          "Generates a certificate image with participant name overlaid on the template background. Admin users can add ?skipValidation=true to bypass check-in requirements.",
+          "Generates a certificate PDF with participant name overlaid on the template background. Admin users can add ?skipValidation=true to bypass check-in requirements.",
         params: CertificateUserParamsSchema,
         querystring: CertificateDownloadQuerySchema,
         produces: ["application/pdf"],
@@ -421,8 +421,6 @@ export default async function certificateTemplateController(
         layoutConfig: template.layout_config || {},
         data: {
           participant_name: userData.participant_name,
-          exhibition_title: userData.exhibition_title,
-          organizer_name: userData.organizer_name,
         },
       });
 

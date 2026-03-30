@@ -146,10 +146,6 @@ export async function deleteCertificateTemplate(
 
 export interface CertificateDataForGeneration {
   participant_name: string;
-  exhibition_title: string;
-  organizer_name: string;
-  start_date: string | null;
-  end_date: string | null;
 }
 
 export async function getRegisteredParticipantName(
@@ -162,14 +158,9 @@ export async function getRegisteredParticipantName(
 
   const rows = await safeQuery<CertificateDataForGeneration[]>(
     `SELECT
-      u.full_name AS participant_name,
-      e.title AS exhibition_title,
-      e.organizer_name,
-      e.start_date,
-      e.end_date
+      u.full_name AS participant_name
       FROM registrations r
       JOIN normal_users u ON r.user_id = u.user_id
-      JOIN exhibitions e ON r.exhibition_id = e.exhibition_id
       WHERE u.user_id = ? AND r.exhibition_id = ?
       LIMIT 1`,
     [userId, exhibitionId]

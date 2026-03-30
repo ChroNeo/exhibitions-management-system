@@ -10,22 +10,6 @@ const DEFAULT_PARTICIPANT_NAME_CONFIG: LayoutFieldConfig = {
   align: "center",
 };
 
-const DEFAULT_EXHIBITION_TITLE_CONFIG: LayoutFieldConfig = {
-  x: 300,
-  y: 580,
-  font_size: 34,
-  color: "#333333",
-  align: "center",
-};
-
-const DEFAULT_ORGANIZER_NAME_CONFIG: LayoutFieldConfig = {
-  x: 300,
-  y: 920,
-  font_size: 16,
-  color: "#666666",
-  align: "center",
-};
-
 interface CertificatePreviewProps {
   backgroundUrl: string;
   layoutConfig: LayoutConfig | null;
@@ -48,10 +32,6 @@ export default function CertificatePreview({
 
   const participantConfig =
     layoutConfig?.participant_name ?? DEFAULT_PARTICIPANT_NAME_CONFIG;
-  const exhibitionConfig =
-    layoutConfig?.exhibition_title ?? DEFAULT_EXHIBITION_TITLE_CONFIG;
-  const organizerConfig =
-    layoutConfig?.organizer_name ?? DEFAULT_ORGANIZER_NAME_CONFIG;
 
   // Convert actual coordinates to display coordinates
   const toDisplayCoords = useCallback(
@@ -122,14 +102,6 @@ export default function CertificatePreview({
     x: participantConfig.x,
     y: participantConfig.y,
   });
-  const exhibitionDisplayPosition = toDisplayCoords({
-    x: exhibitionConfig.x,
-    y: exhibitionConfig.y,
-  });
-  const organizerDisplayPosition = toDisplayCoords({
-    x: organizerConfig.x,
-    y: organizerConfig.y,
-  });
 
   const buildPlaceholderStyle = (
     config: LayoutFieldConfig,
@@ -154,31 +126,15 @@ export default function CertificatePreview({
       />
 
       {imageLoaded && (
-        <>
-          <div
-            className={`${styles.placeholder} ${styles.exhibitionPlaceholder}`}
-            style={buildPlaceholderStyle(exhibitionConfig, exhibitionDisplayPosition)}
-          >
-            <span className={styles.label}>ชื่อนิทรรศการ</span>
-          </div>
-
-          <div
-            className={`${styles.placeholder} ${styles.participantPlaceholder}`}
-            style={buildPlaceholderStyle(
-              participantConfig,
-              participantDisplayPosition,
-            )}
-          >
-            <span className={styles.label}>ชื่อผู้เข้าร่วม</span>
-          </div>
-
-          <div
-            className={`${styles.placeholder} ${styles.organizerPlaceholder}`}
-            style={buildPlaceholderStyle(organizerConfig, organizerDisplayPosition)}
-          >
-            <span className={styles.label}>ชื่อหน่วยงาน</span>
-          </div>
-        </>
+        <div
+          className={`${styles.placeholder} ${styles.participantPlaceholder}`}
+          style={buildPlaceholderStyle(
+            participantConfig,
+            participantDisplayPosition,
+          )}
+        >
+          <span className={styles.label}>ชื่อผู้เข้าร่วม</span>
+        </div>
       )}
     </div>
   );

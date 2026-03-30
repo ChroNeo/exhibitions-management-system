@@ -13,11 +13,8 @@ export const LayoutFieldConfigSchema = z.object({
 export const LayoutConfigSchema = z
   .object({
     participant_name: LayoutFieldConfigSchema.optional(),
-    exhibition_title: LayoutFieldConfigSchema.optional(),
-    date: LayoutFieldConfigSchema.optional(),
-    organizer_name: LayoutFieldConfigSchema.optional(),
   })
-  .passthrough(); // Allow additional fields
+  .passthrough(); // Preserve legacy keys, but only participant_name is used
 
 // Certificate Template Schema (from database)
 export const CertificateTemplateSchema = z.object({

@@ -26,8 +26,6 @@ async function getFontBytes(): Promise<Buffer> {
 
 interface CertificateData {
   participant_name: string;
-  exhibition_title?: string;
-  organizer_name?: string;
 }
 
 interface GenerateCertificateParams {
@@ -114,10 +112,7 @@ export async function generateCertificate(
   });
 
   const drawConfiguredText = (
-    field:
-      | LayoutConfig["participant_name"]
-      | LayoutConfig["exhibition_title"]
-      | LayoutConfig["organizer_name"],
+    field: LayoutConfig["participant_name"],
     text: string | undefined,
   ) => {
     if (!field || !text) return;
@@ -147,8 +142,6 @@ export async function generateCertificate(
   };
 
   drawConfiguredText(layoutConfig.participant_name, data.participant_name);
-  drawConfiguredText(layoutConfig.exhibition_title, data.exhibition_title);
-  drawConfiguredText(layoutConfig.organizer_name, data.organizer_name);
 
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);

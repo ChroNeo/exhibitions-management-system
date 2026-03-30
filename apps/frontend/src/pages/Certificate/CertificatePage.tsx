@@ -51,20 +51,6 @@ function buildCenteredLayoutConfig(
       color: "#000000",
       align: "center",
     },
-    exhibition_title: {
-      x: centerX,
-      y: Math.round(height * 0.63),
-      font_size: 80,
-      color: "#000000",
-      align: "center",
-    },
-    organizer_name: {
-      x: centerX,
-      y: Math.round(height * 0.91),
-      font_size: 50,
-      color: "#000000",
-      align: "center",
-    },
   };
 }
 
@@ -96,10 +82,6 @@ export default function CertificatePage() {
 
   const isLoading = isLoadingExhibition || isLoadingTemplate;
   const isMutating = isCreating || isUpdating || isDeleting;
-  const exhibitionNameValue =
-    template?.exhibition_title ?? exhibition?.title ?? "";
-  const organizerNameValue =
-    template?.organizer_name ?? exhibition?.organizer_name ?? "";
 
   useEffect(() => {
     if (isLoading) {
@@ -300,28 +282,6 @@ export default function CertificatePage() {
                     )}
                   </div>
 
-                  <div className={styles.fieldGrid}>
-                    <label className={styles.fieldGroup}>
-                      <span className={styles.fieldLabel}>ชื่อนิทรรศการ</span>
-                      <input
-                        type="text"
-                        value={exhibitionNameValue}
-                        readOnly
-                        className={styles.fieldInput}
-                        placeholder="ชื่อนิทรรศการ"
-                      />
-                    </label>
-                    <label className={styles.fieldGroup}>
-                      <span className={styles.fieldLabel}>ชื่อหน่วยงาน</span>
-                      <input
-                        type="text"
-                        value={organizerNameValue}
-                        readOnly
-                        className={styles.fieldInput}
-                        placeholder="ชื่อหน่วยงาน"
-                      />
-                    </label>
-                  </div>
                   <p>ยังไม่มีเทมเพลตใบประกาศนียบัตร</p>
                   <button
                     type="button"
