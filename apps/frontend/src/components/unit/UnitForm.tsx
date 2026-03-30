@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import Select, { type MultiValue, type StylesConfig } from "react-select";
 import Swal from "sweetalert2";
 import { useUserOptions } from "../../pages/Exhibitions/hooks";
+import { useUnits } from "../../pages/Units/hooks";
 import { initializeRichTextEditor } from "../../utils/quill";
 import { toDeltaObject, toDeltaString } from "../../utils/quillDelta";
 import cardStyles from "../exhibition/ExhibitionDetailCard.module.css";
@@ -139,17 +140,34 @@ const UnitForm = forwardRef<HTMLFormElement, Props>(function UnitForm(
   const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
   const { data: staffOptions = [], isLoading: isStaffLoading } =
     useUserOptions("staff");
+  const { data: allUnits = [] } = useUnits(exhibitionId);
   const unit_types: UnitTypeOption[] = [
     { value: "booth", label: "บูธ" },
     { value: "activity", label: "กิจกรรม" },
   ];
+
+  // Get staff IDs that are already assigned to OTHER units (not this one)
+  const assignedStaffIds = useMemo(() => {
+    const ids = new Set<number>();
+    allUnits.forEach((unit) => {
+      // Skip current unit when editing
+      if (mode === "edit" && unitId && unit.id === String(unitId)) {
+        return;
+      }
+      unit.staffUserIds.forEach((staffId) => ids.add(staffId));
+    });
+    return ids;
+  }, [allUnits, unitId, mode]);
+
   const staffSelectOptions = useMemo(
     () =>
-      staffOptions.map((option) => ({
-        value: option.value,
-        label: option.label,
-      })),
-    [staffOptions],
+      staffOptions
+        .filter((option) => !assignedStaffIds.has(option.value))
+        .map((option) => ({
+          value: option.value,
+          label: option.label,
+        })),
+    [staffOptions, assignedStaffIds],
   );
   const selectedStaffOptions = useMemo(
     () =>

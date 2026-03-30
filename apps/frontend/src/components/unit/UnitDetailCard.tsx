@@ -1,12 +1,12 @@
 import DOMPurify from "dompurify";
+import { X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState, useCallback, useEffect } from "react";
-import { MdOutlineCalendarToday } from "react-icons/md";
-import { LuClock } from "react-icons/lu";
-import { FiUser } from "react-icons/fi";
+import { useCallback, useEffect, useState } from "react";
 import { BsTag } from "react-icons/bs";
 import { FaRegFilePdf } from "react-icons/fa6";
-import { X } from "lucide-react";
+import { FiUser } from "react-icons/fi";
+import { LuClock } from "react-icons/lu";
+import { MdOutlineCalendarToday } from "react-icons/md";
 import cardStyles from "../exhibition/ExhibitionDetailCard.module.css";
 import styles from "./UnitDetailCard.module.css";
 
@@ -96,7 +96,9 @@ export default function UnitDetailCard({
             {/* Time */}
             {timeText && (
               <div className={cardStyles.infoItem}>
-                <div className={`${cardStyles.iconframe} ${cardStyles.iconOrange}`}>
+                <div
+                  className={`${cardStyles.iconframe} ${cardStyles.iconOrange}`}
+                >
                   <LuClock size={20} />
                 </div>
                 <div>
@@ -109,7 +111,9 @@ export default function UnitDetailCard({
             {/* Type */}
             {typeText && (
               <div className={cardStyles.infoItem}>
-                <div className={`${cardStyles.iconframe} ${cardStyles.iconGreen}`}>
+                <div
+                  className={`${cardStyles.iconframe} ${cardStyles.iconGreen}`}
+                >
                   <BsTag size={20} />
                 </div>
                 <div>
@@ -122,7 +126,9 @@ export default function UnitDetailCard({
             {/* Staff */}
             {staffText && (
               <div className={`${cardStyles.infoItem} ${styles.staffItem}`}>
-                <div className={`${cardStyles.iconframe} ${cardStyles.iconRed}`}>
+                <div
+                  className={`${cardStyles.iconframe} ${cardStyles.iconRed}`}
+                >
                   <FiUser size={20} />
                 </div>
                 <div>
@@ -142,7 +148,9 @@ export default function UnitDetailCard({
               {hasDescriptionHtml ? (
                 <div
                   className={cardStyles.descContent}
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(descriptionHtml ?? "") }}
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(descriptionHtml ?? ""),
+                  }}
                 />
               ) : hasDescriptionText ? (
                 <p className={cardStyles.descContent}>{description}</p>
