@@ -77,7 +77,7 @@ export default function UnitExhibitionCard({
 
   return (
     <div
-      className={styles.card}
+      className={`${styles.card} ${menuOpen ? styles.cardMenuOpen : ""}`}
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
       onClick={handleClick}

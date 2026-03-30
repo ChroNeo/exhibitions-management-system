@@ -40,7 +40,11 @@ export default function UnitManageList({
   mode = "view",
   embedded = false,
 }: UnitManageListProps) {
-  const { id: exhibitionId } = useParams<{ id: string }>();
+  const { id, exhibitionId: exhibitionIdParam } = useParams<{
+    id?: string;
+    exhibitionId?: string;
+  }>();
+  const exhibitionId = id ?? exhibitionIdParam;
   const navigate = useNavigate();
   const isAuthenticated = useAuthStatus();
   const { mutateAsync: deleteUnit } = useDeleteUnit();
