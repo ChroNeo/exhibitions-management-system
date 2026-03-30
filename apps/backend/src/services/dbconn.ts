@@ -27,6 +27,7 @@ export async function safeQuery<T = any>(
     const map: Record<string, [number, string]> = {
       ER_DUP_ENTRY: [409, "DUPLICATE"],
       ER_NO_REFERENCED_ROW_2: [409, "FK_CONSTRAINT"],
+      ER_ROW_IS_REFERENCED_2: [409, "FK_CONSTRAINT"],
       ER_BAD_FIELD_ERROR: [400, "BAD_FIELD"],
       ER_PARSE_ERROR: [400, "SQL_SYNTAX"],
     };

@@ -8,6 +8,67 @@ import type {
 } from "../models/survey.model.js";
 import { pool, safeQuery } from "../services/dbconn.js";
 
+async function insertSetQuestionMappings(
+  connection: any,
+  setId: number,
+  qtIds: Array<{ qt_id: number; sort_order: number }>,
+): Promise<void> {
+  const values = qtIds.map(() => "(?, ?, ?)").join(", ");
+  const params: any[] = [];
+
+  qtIds.forEach((item) => {
+    params.push(setId, item.qt_id, item.sort_order);
+  });
+
+  await connection.query(
+    `INSERT INTO set_question_mapping (set_id, qt_id, sort_order) VALUES ${values}`,
+    params,
+  );
+}
+
+async function getQuestionSetById(
+  connection: any,
+  setId: number,
+  notFoundMessage: string,
+): Promise<QuestionSetWithQuestions> {
+  const [resultRows] = await connection.query(
+    `SELECT
+      qs.set_id,
+      qs.name,
+      qs.is_master,
+      qs.type,
+      qt.qt_id,
+      qt.content,
+      qt.category,
+      sqm.sort_order
+     FROM question_sets qs
+     LEFT JOIN set_question_mapping sqm ON sqm.set_id = qs.set_id
+     LEFT JOIN questions_template qt ON sqm.qt_id = qt.qt_id
+     WHERE qs.set_id = ?
+     ORDER BY sqm.sort_order, qt.qt_id`,
+    [setId],
+  );
+
+  if (!resultRows.length) {
+    throw new AppError(notFoundMessage, 500, "DB_ERROR");
+  }
+
+  return {
+    set_id: resultRows[0].set_id,
+    name: resultRows[0].name,
+    is_master: resultRows[0].is_master,
+    type: resultRows[0].type,
+    questions: resultRows
+      .filter((row: any) => row.qt_id !== null)
+      .map((row: any) => ({
+        qt_id: row.qt_id,
+        content: row.content,
+        category: row.category,
+        sort_order: row.sort_order,
+      })),
+  };
+}
+
 // ─── Questions Template CRUD ───────────────────────────────────────────────
 
 /**
@@ -92,6 +153,20 @@ export async function updateQuestionTemplate(
  * Delete a question template
  */
 export async function deleteQuestionTemplate(qtId: number): Promise<void> {
+  const usageRows = await safeQuery<any[]>(
+    `SELECT COUNT(*) AS mapping_count FROM set_question_mapping WHERE qt_id = ?`,
+    [qtId],
+  );
+
+  if (usageRows[0]?.mapping_count > 0) {
+    throw new AppError(
+      "Cannot delete this question because it is still used in a question set",
+      409,
+      "FK_CONSTRAINT",
+      { qt_id: qtId, mapping_count: usageRows[0].mapping_count },
+    );
+  }
+
   const result = await safeQuery<ResultSetHeader>(
     `DELETE FROM questions_template WHERE qt_id = ?`,
     [qtId],
@@ -256,15 +331,7 @@ export async function createQuestionSetForExhibition(
     const newSetId = insertResult.insertId;
 
     // Step 5: Insert mappings
-    const values = qtIds.map(() => "(?, ?, ?)").join(", ");
-    const params: any[] = [];
-    qtIds.forEach((item) => {
-      params.push(newSetId, item.qt_id, item.sort_order);
-    });
-    await connection.query<ResultSetHeader>(
-      `INSERT INTO set_question_mapping (set_id, qt_id, sort_order) VALUES ${values}`,
-      params,
-    );
+    await insertSetQuestionMappings(connection, newSetId, qtIds);
 
     // Step 6: Update exhibition foreign key
     const columnToUpdate =
@@ -277,48 +344,11 @@ export async function createQuestionSetForExhibition(
     await connection.commit();
 
     // Step 7: Retrieve complete result
-    const [resultRows] = await connection.query<any[]>(
-      `SELECT
-        qs.set_id,
-        qs.name,
-        qs.is_master,
-        qs.type,
-        qt.qt_id,
-        qt.content,
-        qt.category,
-        sqm.sort_order
-       FROM question_sets qs
-       LEFT JOIN set_question_mapping sqm ON sqm.set_id = qs.set_id
-       LEFT JOIN questions_template qt ON sqm.qt_id = qt.qt_id
-       WHERE qs.set_id = ?
-       ORDER BY sqm.sort_order, qt.qt_id`,
-      [newSetId],
+    return await getQuestionSetById(
+      connection,
+      newSetId,
+      "Failed to retrieve created question set",
     );
-
-    if (!resultRows.length) {
-      throw new AppError(
-        "Failed to retrieve created question set",
-        500,
-        "DB_ERROR",
-      );
-    }
-
-    const questionSet: QuestionSetWithQuestions = {
-      set_id: resultRows[0].set_id,
-      name: resultRows[0].name,
-      is_master: resultRows[0].is_master,
-      type: resultRows[0].type,
-      questions: resultRows
-        .filter((row: any) => row.qt_id !== null)
-        .map((row: any) => ({
-          qt_id: row.qt_id,
-          content: row.content,
-          category: row.category,
-          sort_order: row.sort_order,
-        })),
-    };
-
-    return questionSet;
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -374,68 +404,65 @@ export async function updateQuestionSet(
       );
     }
 
-    // Step 3: Delete all existing mappings
-    await connection.query(
-      `DELETE FROM set_question_mapping WHERE set_id = ?`,
+    const [setRows] = await connection.query<any[]>(
+      `SELECT set_id, name, is_master, type
+       FROM question_sets
+       WHERE set_id = ?`,
       [setId],
     );
 
-    // Step 4: Insert new mappings
-    const values = qtIds.map(() => "(?, ?, ?)").join(", ");
-    const params: any[] = [];
-    qtIds.forEach((item) => {
-      params.push(setId, item.qt_id, item.sort_order);
-    });
-    await connection.query<ResultSetHeader>(
-      `INSERT INTO set_question_mapping (set_id, qt_id, sort_order) VALUES ${values}`,
-      params,
+    if (!setRows.length) {
+      throw new AppError("Question set not found", 404, "NOT_FOUND");
+    }
+
+    const currentSet = setRows[0];
+    const [answerCountRows] = await connection.query<any[]>(
+      `SELECT COUNT(*) AS answer_count FROM survey_answers WHERE set_id = ?`,
+      [setId],
     );
+    const answerCount = Number(answerCountRows[0]?.answer_count ?? 0);
+
+    const [referenceRows] = await connection.query<any[]>(
+      `SELECT COUNT(*) AS reference_count
+       FROM exhibitions
+       WHERE ${columnToCheck} = ?`,
+      [setId],
+    );
+    const referenceCount = Number(referenceRows[0]?.reference_count ?? 0);
+
+    const shouldVersionSet =
+      answerCount > 0 || currentSet.is_master === 1 || referenceCount > 1;
+
+    let targetSetId = setId;
+
+    if (shouldVersionSet) {
+      const [insertResult] = await connection.query<ResultSetHeader>(
+        `INSERT INTO question_sets (name, is_master, type) VALUES (?, 0, ?)`,
+        [currentSet.name, currentSet.type],
+      );
+      targetSetId = insertResult.insertId;
+
+      await insertSetQuestionMappings(connection, targetSetId, qtIds);
+      await connection.query(
+        `UPDATE exhibitions SET ${columnToCheck} = ? WHERE exhibition_id = ?`,
+        [targetSetId, exhibitionId],
+      );
+    } else {
+      await connection.query(
+        `DELETE FROM set_question_mapping WHERE set_id = ?`,
+        [setId],
+      );
+      await insertSetQuestionMappings(connection, setId, qtIds);
+    }
 
     await connection.commit();
 
     // Step 5: Retrieve complete result
-    const [resultRows] = await connection.query<any[]>(
-      `SELECT
-        qs.set_id,
-        qs.name,
-        qs.is_master,
-        qs.type,
-        qt.qt_id,
-        qt.content,
-        qt.category,
-        sqm.sort_order
-       FROM question_sets qs
-       LEFT JOIN set_question_mapping sqm ON sqm.set_id = qs.set_id
-       LEFT JOIN questions_template qt ON sqm.qt_id = qt.qt_id
-       WHERE qs.set_id = ?
-       ORDER BY sqm.sort_order, qt.qt_id`,
-      [setId],
+    return await getQuestionSetById(
+      connection,
+      targetSetId,
+      "Failed to retrieve updated question set",
     );
-
-    if (!resultRows.length) {
-      throw new AppError(
-        "Failed to retrieve updated question set",
-        500,
-        "DB_ERROR",
-      );
-    }
-
-    const questionSet: QuestionSetWithQuestions = {
-      set_id: resultRows[0].set_id,
-      name: resultRows[0].name,
-      is_master: resultRows[0].is_master,
-      type: resultRows[0].type,
-      questions: resultRows
-        .filter((row: any) => row.qt_id !== null)
-        .map((row: any) => ({
-          qt_id: row.qt_id,
-          content: row.content,
-          category: row.category,
-          sort_order: row.sort_order,
-        })),
-    };
-
-    return questionSet;
   } catch (error) {
     await connection.rollback();
     throw error;
