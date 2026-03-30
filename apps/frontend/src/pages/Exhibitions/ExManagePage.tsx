@@ -27,6 +27,7 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_MAP: Record<string, string> = {
+  draft: "draft",
   active: "ongoing",
   upcoming: "published",
   ended: "ended",

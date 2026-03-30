@@ -14,10 +14,10 @@ export function useCreateQuestionSet() {
     CreateQuestionSetPayload
   >({
     mutationFn: (payload) => createQuestionSet(payload),
-    onSuccess: (data) => {
+    onSuccess: (_data, variables) => {
       // Invalidate related queries to refresh the data
       queryClient.invalidateQueries({
-        queryKey: ["survey", "questions", data.exhibition_id],
+        queryKey: ["survey", "questions", String(variables.exhibition_id)],
       });
     },
   });

@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { optimizeImage } from "../../utils/imageOptimize";
 import styles from "./ExManagePage.module.css";
 
-type ModalStatus = "active" | "upcoming" | "ended";
+type ModalStatus = "draft" | "active" | "upcoming" | "ended";
 
 const EMPTY_FORM = {
   title: "",
@@ -12,7 +12,7 @@ const EMPTY_FORM = {
   location: "",
   organizer: "",
   description: "",
-  status: null as ModalStatus | null,
+  status: "draft" as ModalStatus | null,
   imagePreview: "",
   imageFile: null as File | null,
   pdfFile: null as File | null,
@@ -186,6 +186,14 @@ function AddExhibitionModal({
               สถานะ <span className={styles.req}>*</span>
             </label>
             <div className={styles.statusOptions}>
+              <button
+                type="button"
+                className={`${styles.statusOption}${form.status === "draft" ? ` ${styles.statusDraft}` : ""}`}
+                onClick={() => selectStatus("draft")}
+              >
+                <span className={`${styles.sDot} ${styles.sDotDraft}`} />
+                ร่าง
+              </button>
               <button
                 type="button"
                 className={`${styles.statusOption}${form.status === "active" ? ` ${styles.statusActive}` : ""}`}
