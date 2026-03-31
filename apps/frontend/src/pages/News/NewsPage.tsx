@@ -369,7 +369,6 @@ export default function NewsPage() {
               <h2 className={styles.feedTitle}>
                 ข่าวสารทั้งหมด ({newsList.length})
               </h2>
-              <div className={styles.feedBadge}>มุมมองมือถือ</div>
             </div>
 
             <div className={styles.feedList}>

@@ -12,6 +12,7 @@ import styles from "./UnitDetailCard.module.css";
 
 type Props = {
   title: string;
+  unitcode?: string;
   dateText: string;
   timeText?: string;
   typeText?: string;
@@ -25,6 +26,7 @@ type Props = {
 
 export default function UnitDetailCard({
   title,
+  unitcode,
   dateText,
   timeText,
   typeText,
@@ -76,6 +78,7 @@ export default function UnitDetailCard({
         <div className={cardStyles.content}>
           <div className={cardStyles.titleBlock}>
             <h2 className={cardStyles.title}>{title}</h2>
+            {unitcode && <p className={styles.unitCode}>{unitcode}</p>}
           </div>
 
           <hr className={cardStyles.divider} />

@@ -2,6 +2,7 @@ export type Unit = {
   id: string;
   exhibitionId: number;
   name: string;
+  unitcode?: string;
   type: "booth" | "activity";
   description?: string; // plain text
   descriptionHtml?: string;
@@ -18,6 +19,7 @@ export type Unit = {
 
 export interface UnitApi {
   unit_id: number;
+  unit_code?: string | null;
   exhibition_id: number;
   unit_name: string;
   unit_type: string;

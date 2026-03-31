@@ -67,6 +67,7 @@ function mapToUnit(x: UnitApi): Unit {
     id: String(x.unit_id),
     exhibitionId: x.exhibition_id,
     name: x.unit_name,
+    unitcode: x.unit_code ?? undefined,
     type,
     description: description || undefined,
     descriptionHtml: descriptionHtml || undefined,

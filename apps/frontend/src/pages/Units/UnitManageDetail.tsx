@@ -370,7 +370,6 @@ export default function UnitManageDetail({
       </button>
     </>
   ) : undefined;
-
   return (
     <div>
       <HeaderBar
@@ -396,6 +395,7 @@ export default function UnitManageDetail({
           {isViewMode && !isLoading && !isError && data && (
             <UnitDetailCard
               title={data.name}
+              unitcode={isAuthenticated ? data.unitcode : undefined}
               dateText={dateText}
               timeText={timeText}
               typeText={translateType(data.type)}

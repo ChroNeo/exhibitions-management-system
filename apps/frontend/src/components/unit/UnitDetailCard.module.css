@@ -1,4 +1,12 @@
 /* Staff row spans full width when present alongside other items */
+.unitCode {
+  margin: -2px 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
 .staffItem {
   grid-column: 1 / -1;
 }
